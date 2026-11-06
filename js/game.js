@@ -1,6 +1,6 @@
 /* Игровая логика и отрисовка экранов. */
 (function () {
-  const { CARDS, ENEMIES, RELICS, EVENTS, CLASSES } = window.Data;
+  const { CARDS, ENEMIES, RELICS, EVENTS, CLASSES, DIFFICULTIES } = window.Data;
   const STORY = window.Story.story;
   const SKY = window.Story.sky;
   document.title = STORY.title;
@@ -61,7 +61,7 @@
   const screen = $('#screen');
   const overlay = $('#overlay');
   /* ---------- Настройки и статистика (хранятся в браузере) ---------- */
-  const VERSION = '0.7';
+  const VERSION = '0.8';
   const SETTINGS_KEY = 'lastray.settings';
   const STATS_KEY = 'lastray.stats';
   const loadJSON = (k, def) => { try { return { ...def, ...JSON.parse(localStorage.getItem(k) || '{}') }; } catch (e) { return { ...def }; } };
@@ -69,8 +69,10 @@
   // skipIntro — сразу в путь без вступления, fast — быстрые анимации,
   // snow — снегопад (выключение экономит заряд), oneTap — карта разыгрывается с одного касания
   // cls — последний выбранный герой
-  const SETTINGS = loadJSON(SETTINGS_KEY, { skipIntro: false, fast: false, snow: true, oneTap: false, cls: 'lamp' });
+  // diff — последний выбранный уровень сложности (0..4, по умолчанию «Обычный маршрут»)
+  const SETTINGS = loadJSON(SETTINGS_KEY, { skipIntro: false, fast: false, snow: true, oneTap: false, cls: 'lamp', diff: 1 });
   if (!CLASSES[SETTINGS.cls]) SETTINGS.cls = 'lamp';
+  if (!DIFFICULTIES[SETTINGS.diff]) SETTINGS.diff = 1;
   const STATS_DEF = { runs: 0, wins: 0, losses: 0, best: 0, fights: 0, elites: 0, bosses: 0, cards: 0 };
   const STATS = loadJSON(STATS_KEY, STATS_DEF);
   const saveStats = () => { saveJSON(STATS_KEY, STATS); achCheck(); };
@@ -141,6 +143,9 @@
   const hero = () => CLASSES[heroId()];
   const heroArt = (cls = heroId()) => Art.hero(CLASSES[cls].look);
   const txt = (v) => (typeof v === 'function' ? v(hero()) : v);
+  // сложность забега; у сохранений до её появления — «Обычный маршрут»
+  const diffOf = (r) => (r && DIFFICULTIES[r.diff] ? r.diff : 1);
+  const DIFF = () => DIFFICULTIES[diffOf(run)];
   // карты, которые могут выпасть этому герою: общие и его собственные
   const cardPool = (rarity) => Object.keys(CARDS).filter((k) => CARDS[k].rarity === rarity && (!CARDS[k].cls || CARDS[k].cls === heroId()));
   // случайная карта с перевесом в сторону билда героя
@@ -205,12 +210,13 @@
   let busy = false; // блокировка ввода на время анимаций
   let selected = -1;
 
-  function newRun(cls = SETTINGS.cls) {
+  function newRun(cls = SETTINGS.cls, diff = SETTINGS.diff) {
     STATS.runs++; saveStats();
     const h = CLASSES[cls] || CLASSES.lamp;
+    const d = DIFFICULTIES[diff] || DIFFICULTIES[1];
     run = {
-      cls, hp: h.hp, maxHp: h.hp, gold: h.gold, step: 0, lit: 0, relics: [h.relic], fights: 0,
-      deck: h.deck.map((id) => mk(id)),
+      cls, diff: DIFFICULTIES.indexOf(d), hp: h.hp + d.heroHp, maxHp: h.hp + d.heroHp, gold: h.gold, step: 0, lit: 0, relics: [h.relic], fights: 0,
+      deck: [...h.deck, ...d.curses].map((id) => mk(id)),
       choices: null,
       // боссы стадий выбираются случайно в начале забега
       bosses: STAGES.map((g) => pick(g.boss)),
@@ -368,7 +374,7 @@
     hideOverlay();
     SND.music('title');
     const s = loadSave();
-    const info = s && `${CLASSES[s.run.cls || 'lamp'].name} · уровень ${s.run.step + 1} из ${MAX_STEPS} · ${s.run.hp}/${s.run.maxHp} HP`;
+    const info = s && `${CLASSES[s.run.cls || 'lamp'].name} · ${DIFFICULTIES[diffOf(s.run)].name} · ур. ${s.run.step + 1} · ${s.run.hp}/${s.run.maxHp} HP`;
     screen.className = 'scr-title';
     screen.innerHTML = `
       <div class="logo"><small>почтовая сказка</small><h1>${STORY.title}</h1></div>
@@ -400,6 +406,7 @@
   /* Пауза во время забега: справочник и выход в главное меню */
   function showPause() {
     showOverlay(`<div class="pause"><h2>Пауза</h2>
+      <p class="ovhint">${hero().name} · ${DIFF().name}</p>
       <p class="ovhint">${C ? 'Прогресс сохранён до начала этого боя. Если выйти, бой начнётся заново.' : 'Прогресс сохранён. Можно выйти и вернуться позже.'}</p>
       <button class="btn" data-act="p-resume">Вернуться в игру</button>
       <button class="btn ghost" data-act="p-gloss">Справочник</button>
@@ -587,7 +594,7 @@
 
   /* ---------- Выбор героя перед забегом ---------- */
   const heroCards = (id) => Object.keys(CARDS).filter((k) => CARDS[k].cls === id);
-  function goClassSelect(sel = SETTINGS.cls) {
+  function goClassSelect(sel = SETTINGS.cls, diff = SETTINGS.diff) {
     run = null; C = null; busy = false; setBg(0.45);
     hideOverlay();
     SND.music('title');
@@ -596,6 +603,9 @@
     const own = heroCards(sel);
     screen.className = 'scr-class';
     screen.dataset.cls = sel;
+    screen.dataset.diff = diff;
+    const d = DIFFICULTIES[diff];
+    const won = ACH.s.winsDiff || [];
     screen.innerHTML = `
       <div class="clshead"><h2>Кто понесёт письмо?</h2><p>У каждого героя свой путь к победе</p></div>
       <div class="clsrow">${Object.entries(CLASSES).map(([id, c]) => `<button class="clscard ${id === sel ? 'on' : ''}" data-act="pickcls" data-cls="${id}">
@@ -611,6 +621,13 @@
       </div>
       <div class="clsrelic">${Art.icon(r.art)}<span><small>Особенность</small><b>${r.name}</b>${r.desc}</span></div>
       <button class="clscards" data-act="clscards"><span class="mini3">${own.map((k) => Art.icon(CARDS[k].art)).join('')}</span><span><b>Карты героя</b><small>${own.map((k) => CARDS[k].name).join(', ')}</small></span><i>›</i></button>
+      <div class="diffbox">
+        <div class="diffhead"><button class="darrow" data-act="diffset" data-d="${Math.max(0, diff - 1)}" ${diff ? '' : 'disabled'}>‹</button>
+          <span><small>Сложность ${diff + 1} из ${DIFFICULTIES.length}</small><b>${d.name}${won.includes(diff) ? ' <i class="dwon">✓</i>' : ''}</b></span>
+          <button class="darrow" data-act="diffset" data-d="${Math.min(DIFFICULTIES.length - 1, diff + 1)}" ${diff < DIFFICULTIES.length - 1 ? '' : 'disabled'}>›</button></div>
+        <div class="dpips">${DIFFICULTIES.map((x, i) => `<button class="dpip d${i} ${i <= diff ? 'on' : ''} ${won.includes(i) ? 'won' : ''}" data-act="diffset" data-d="${i}" aria-label="${x.name}"></button>`).join('')}</div>
+        <p class="diffhint">${d.hint}</p>
+      </div>
       <div class="clsbtns"><button class="btn ghost" data-act="title">Назад</button><button class="btn big" data-act="clsgo">В путь</button></div>`;
   }
   // стартовая колода и собственные карты героя
@@ -938,7 +955,7 @@
   }
 
   /* ---------- Привал ---------- */
-  const restHeal = () => Math.round(run.maxHp * 0.3) + (hasRelic('kettle') ? 10 : 0);
+  const restHeal = () => Math.round(run.maxHp * DIFF().rest) + (hasRelic('kettle') ? 10 : 0);
   function goRest() {
     const noHeal = hasRelic('bottomless');
     screen.className = 'scr-rest';
@@ -1023,7 +1040,7 @@
     return Math.max(0, v);
   }
   function enemyDmg(v) {
-    let d = v + C.enemy.str;
+    let d = Math.round((v + C.enemy.str) * DIFF().dmg);
     if (C.enemy.weak > 0) d = Math.floor(d * 0.75);
     return Math.max(0, d);
   }
@@ -1038,7 +1055,7 @@
     run.seen[enemyId] = (run.seen[enemyId] || 0) + 1;
     run.recent = [...run.recent, enemyId].slice(-4);
     const scale = tier === 'boss' ? 1 : 1 + run.step * (MAX_STEPS > 20 ? 0.035 : 0.08);
-    const hp = Math.round(e.hp * scale);
+    const hp = Math.round(e.hp * scale * DIFF().hp);
     const str = (tier === 'boss' ? 0 : Math.floor(run.step / (MAX_STEPS > 20 ? 8 : 3))) - (hasRelic('frostglass') ? 2 : 0);
     C = {
       tier, id: enemyId,
@@ -1415,12 +1432,12 @@
   /* ---------- Награда ---------- */
   function goReward(tier) {
     const boss = tier === 'boss';
-    const gold = (boss ? rnd(50, 60) : tier === 'elite' ? rnd(30, 40) : rnd(12, 20)) + (hasRelic('envelope') ? 8 : 0);
+    const gold = Math.round((boss ? rnd(50, 60) : tier === 'elite' ? rnd(30, 40) : rnd(12, 20)) * DIFF().gold) + (hasRelic('envelope') ? 8 : 0);
     run.gold += gold;
     if (!boss) { SND.sfx('win'); SND.music(mapTrack()); }
     if (tier === 'elite') evApi.giveRelic();
     // после босса стадии Ива переводит дух
-    const healed = boss ? Math.min(run.maxHp - run.hp, Math.round(run.maxHp * 0.5)) : 0;
+    const healed = boss ? Math.min(run.maxHp - run.hp, Math.round(run.maxHp * DIFF().bossHeal)) : 0;
     run.hp += healed;
     const rareChance = boss ? 0.7 : tier === 'elite' ? 0.5 : 0.2;
     const count = Math.max(2, 3 + (hasRelic('clover') ? 1 : 0) - (hasRelic('crown') ? 1 : 0));
@@ -1453,6 +1470,7 @@
     STATS.wins++; STATS.best = MAX_STEPS;
     if (run.deck.length <= 15) ach.flag('light');
     ach.put('winsCls', run.cls);
+    ach.put('winsDiff', diffOf(run));
     saveStats();
     SND.music('title'); SND.sfx('victory');
     screen.className = 'scr-end win';
@@ -1461,7 +1479,7 @@
         <div class="book-art moon">${heroArt()}</div>
         <h1>${STORY.winTitle}</h1>
         <p class="story">${txt(STORY.winText)}</p>
-        <p class="stats">Побед: ${run.fights} · Карт в колоде: ${run.deck.length} · Талисманов: ${run.relics.length}</p>
+        <p class="stats">${DIFF().name} · Побед: ${run.fights} · Карт в колоде: ${run.deck.length} · Талисманов: ${run.relics.length}</p>
       </div></div>
       <button class="btn big" data-act="title">В главное меню</button>`;
   }
@@ -1475,7 +1493,7 @@
         <div class="book-art dim">${heroArt()}</div>
         <h1>${STORY.loseTitle}</h1>
         <p class="story">${txt(STORY.loseText)}</p>
-        <p class="stats">Пройдено уровней: ${run.step + 1} из ${MAX_STEPS} · Побед: ${run.fights}</p>
+        <p class="stats">${DIFF().name} · Пройдено уровней: ${run.step + 1} из ${MAX_STEPS} · Побед: ${run.fights}</p>
       </div></div>
       <div class="endbtns"><button class="btn big" data-act="retry">Попробовать снова</button><button class="btn ghost" data-act="title">Главное меню</button></div>`;
   }
@@ -1518,8 +1536,9 @@
     switch (act) {
       case 'start': newRun(); break;
       case 'retry': goClassSelect(); break;
-      case 'pickcls': goClassSelect(t.dataset.cls); break;
-      case 'clsgo': SETTINGS.cls = screen.dataset.cls; saveJSON(SETTINGS_KEY, SETTINGS); if (SETTINGS.skipIntro) newRun(); else goIntro(); break;
+      case 'pickcls': goClassSelect(t.dataset.cls, +screen.dataset.diff); break;
+      case 'diffset': goClassSelect(screen.dataset.cls, +t.dataset.d); break;
+      case 'clsgo': SETTINGS.cls = screen.dataset.cls; SETTINGS.diff = +screen.dataset.diff; saveJSON(SETTINGS_KEY, SETTINGS); if (SETTINGS.skipIntro) newRun(); else goIntro(); break;
       case 'clscards': showClassCards(screen.dataset.cls); break;
       case 'title': goTitle(); break;
       case 'continue': continueRun(); break;

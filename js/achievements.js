@@ -37,6 +37,13 @@
   hero('guard', 'Несокрушимая', 'Доставить письмо за сторожиху Марфу.');
   hero('stoker', 'С огоньком', 'Доставить письмо за трубочиста Фому.');
   add('path', 'allheroes', 'Вся почта Горки', 'Доставить письмо каждым героем: {p}.', 's', 'winsCls', Object.keys(window.Data.CLASSES).length, 'i:horn');
+  // победа на каждом уровне сложности
+  const diff = (i, name, art) => add('path', `diff-${i}`, name, `Доставить письмо на сложности «${window.Data.DIFFICULTIES[i].name}».`, 'has', 'winsDiff', 1, art, i);
+  diff(0, 'Лёгкой походкой', 'i:tea');
+  diff(1, 'По расписанию', 'i:envelope');
+  diff(2, 'Наперегонки с сумерками', 'i:lantern');
+  diff(3, 'Сквозь метель', 'i:frostlace');
+  diff(4, 'Свет в полярной ночи', 'i:lullaby');
   add('path', 'events', 'Любопытная', 'Побывать во всех событиях пути: {p}.', 's', 'events', EVENTS.length, 'i:well');
   tiers('path', 'chest', 'Будильник', 'Разбудить {p} сундуков-сонь.', 'c', 'chests', [10, 40], ['i:chest', 'i:bell']);
   const boss = (id, name, desc) => add('path', `boss-${id}`, name, desc, 'has', 'bosses', 1, `e:${id}`, id);

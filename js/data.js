@@ -636,7 +636,7 @@
     },
     courier: {
       name: 'Тиша', role: 'Скороход', f: false, who: 'скороход Тиша', whom: 'скороходу Тише', look: 'courier',
-      hp: 32, gold: 35, relic: 'wingboots', build: 'Доставка и длинные ходы',
+      hp: 32, gold: 35, relic: 'wingboots', build: 'Доставка и серии',
       about: 'Играет много дешёвых карт за ход и шлёт Доставки на следующий.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'urgent', 'telegram', 'wind'],
       favored: ['wind', 'parcel', 'telegram', 'surprise', 'flurry', 'finale', 'breath', 'compass', 'inkpen', 'blotter', 'spark', 'cocoa'],
@@ -657,5 +657,21 @@
     },
   };
 
-  window.Data = { CARDS, ENEMIES, RELICS, EVENTS, CLASSES };
+  /* Уровни сложности. hp и dmg — множители здоровья и урона врагов, heroHp — сколько HP прибавить герою,
+     gold — множитель монет за бои, rest — доля HP, которую лечит костёр, bossHeal — доля после босса стадии,
+     curses — помехи в колоде с самого начала забега. */
+  const DIFFICULTIES = [
+    { name: 'Прогулка', hp: 0.75, dmg: 0.8, heroHp: 12, gold: 1.25, rest: 0.4, bossHeal: 0.7, curses: [],
+      hint: 'Враги слабее на четверть, у героя +12 HP, больше монет и лечения.' },
+    { name: 'Обычный маршрут', hp: 1, dmg: 1, heroHp: 0, gold: 1, rest: 0.3, bossHeal: 0.5, curses: [],
+      hint: 'Задуманный баланс игры.' },
+    { name: 'Ранние сумерки', hp: 1.15, dmg: 1.1, heroHp: 0, gold: 1, rest: 0.3, bossHeal: 0.4, curses: [],
+      hint: 'Враги крепче на 15% и бьют на 10% сильнее. После босса меньше лечения.' },
+    { name: 'Метель', hp: 1.3, dmg: 1.2, heroHp: -4, gold: 0.85, rest: 0.25, bossHeal: 0.35, curses: ['blot'],
+      hint: 'Враги крепче на 30%, бьют на 20% сильнее. Меньше HP, монет и отдыха. В колоде Клякса.' },
+    { name: 'Полярная ночь', hp: 1.45, dmg: 1.3, heroHp: -8, gold: 0.75, rest: 0.2, bossHeal: 0.25, curses: ['blot', 'dread'],
+      hint: 'Враги крепче на 45%, бьют на 30% сильнее. Ещё меньше HP, монет и отдыха. В колоде Клякса и Недоставленное письмо.' },
+  ];
+
+  window.Data = { CARDS, ENEMIES, RELICS, EVENTS, CLASSES, DIFFICULTIES };
 })();

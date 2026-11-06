@@ -535,15 +535,15 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 /* ---------- Выбор героя ---------- */
 .scr-class ~ #menu { display: none; }
 .scr-class ~ #gear { top: 12px; }
-.clshead { padding-top: 22px; text-align: center; animation: rise .4s backwards; }
+.clshead { padding-top: 14px; text-align: center; animation: rise .4s backwards; }
 .clshead h2 { margin: 0; font-family: var(--title); font-size: 28px; font-weight: normal; color: #fff4d6; text-shadow: 0 3px 0 var(--ink), 0 0 18px rgba(255, 170, 90, .7); }
 .clshead p { margin: 4px 0 0; font-size: 15px; color: #fff4d6; text-shadow: 0 2px 3px #000; opacity: .9; }
-.clsrow { display: flex; justify-content: center; gap: 6px; margin-top: 18px; }
+.clsrow { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
 .clscard {
   width: 92px; padding: 5px 4px 6px; border-radius: 8px; text-align: center; transition: transform .15s;
   background: linear-gradient(#2b2440, #171320); border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px #5a5070, 0 4px 8px rgba(0, 0, 0, .45);
 }
-.clscard .cp { display: block; height: 112px; border-radius: 6px; border: 2px solid var(--ink); overflow: hidden; }
+.clscard .cp { display: block; height: 100px; border-radius: 6px; border: 2px solid var(--ink); overflow: hidden; }
 .clscard .cp svg { filter: grayscale(.55) brightness(.8); }
 .clscard b { display: block; margin-top: 4px; font-family: var(--title); font-size: 17px; font-weight: normal; color: #d8d0e4; }
 .clscard small { display: block; font-size: 12px; line-height: 1.05; color: #a89cbc; min-height: 25px; }
@@ -555,8 +555,8 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .cp.courier, .clsbig.courier { background: radial-gradient(circle at 50% 35%, #bcd8ec, #6f8fc8 50%, #26304e); }
 .cp.guard, .clsbig.guard { background: radial-gradient(circle at 50% 35%, #d8e4c0, #7a9a6a 50%, #2a3a26); }
 .cp.stoker, .clsbig.stoker { background: radial-gradient(circle at 50% 35%, #ffc89a, #c8603a 50%, #3a2430); }
-.clsinfo { display: flex; gap: 12px; margin: 20px 14px 0; padding: 10px; border-radius: 10px; background: linear-gradient(90deg, rgba(43, 36, 64, .96), rgba(27, 23, 39, .96)); border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--gold); animation: rise .3s backwards; }
-.clsbig { width: 140px; height: 176px; flex: none; padding: 4px; border-radius: 8px; border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--gold); }
+.clsinfo { display: flex; gap: 12px; margin: 12px 14px 0; padding: 10px; border-radius: 10px; background: linear-gradient(90deg, rgba(43, 36, 64, .96), rgba(27, 23, 39, .96)); border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--gold); animation: rise .3s backwards; }
+.clsbig { width: 128px; height: 160px; flex: none; padding: 4px; border-radius: 8px; border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--gold); }
 .clstext { flex: 1; min-width: 0; text-align: left; }
 .clstext h3 { margin: 0; font-family: var(--title); font-size: 26px; font-weight: normal; line-height: 1; color: var(--gold-hi); }
 .clstext h3 small { display: block; margin-top: 3px; font-family: var(--body); font-size: 15px; color: #fff4d6; }
@@ -565,8 +565,8 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .clsstats svg { width: 22px; height: 22px; }
 .clsbuild { margin: 8px 0 0; display: inline-block; padding: 2px 9px; border-radius: 10px; font-family: var(--title); font-size: 15px; color: #fff4d6; background: #8a2a24; border: 1.5px solid var(--ink); }
 .clsabout { margin: 7px 0 0; font-size: 15px; line-height: 1.2; color: #d8d0e4; }
-.clsrelic, .clscards { display: flex; align-items: center; gap: 10px; margin: 12px 14px 0; padding: 8px 10px; border-radius: 10px; text-align: left; background: rgba(20, 17, 30, .92); border: 2px solid var(--ink); box-shadow: inset 0 0 0 1.5px rgba(216, 169, 74, .55); }
-.clsrelic > svg { width: 52px; height: 52px; flex: none; padding: 5px; border-radius: 50%; background: radial-gradient(#5a4a6e, #2c2433 70%); border: 2px solid var(--gold); }
+.clsrelic, .clscards { display: flex; align-items: center; gap: 10px; margin: 8px 14px 0; padding: 6px 10px; border-radius: 10px; text-align: left; background: rgba(20, 17, 30, .92); border: 2px solid var(--ink); box-shadow: inset 0 0 0 1.5px rgba(216, 169, 74, .55); }
+.clsrelic > svg { width: 46px; height: 46px; flex: none; padding: 5px; border-radius: 50%; background: radial-gradient(#5a4a6e, #2c2433 70%); border: 2px solid var(--gold); }
 .clsrelic span { font-size: 15px; line-height: 1.2; color: #d8d0e4; }
 .clsrelic small { display: block; font-size: 12px; letter-spacing: .06em; color: var(--gold-hi); text-transform: uppercase; }
 .clsrelic b { display: block; font-family: var(--title); font-size: 17px; font-weight: normal; color: #fff4d6; }
@@ -577,6 +577,21 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .clscards b { display: block; font-family: var(--title); font-size: 17px; font-weight: normal; color: var(--gold-hi); }
 .clscards small { display: block; font-size: 13px; line-height: 1.15; color: #d8d0e4; }
 .clscards i { font-style: normal; font-size: 28px; color: var(--gold-hi); }
-.clsbtns { position: absolute; left: 0; right: 0; bottom: 26px; display: flex; justify-content: center; align-items: center; gap: 14px; }
+.clsbtns { position: absolute; left: 0; right: 0; bottom: 16px; display: flex; justify-content: center; align-items: center; gap: 14px; }
 .clsbtns .btn.ghost { font-size: 18px; padding: 9px 18px; }
 .clsbtns .btn.big { font-size: 28px; padding: 10px 40px; }
+
+/* ---------- Сложность на экране выбора героя ---------- */
+.diffbox { margin: 8px 14px 0; padding: 6px 10px 8px; border-radius: 10px; text-align: center; background: rgba(20, 17, 30, .92); border: 2px solid var(--ink); box-shadow: inset 0 0 0 1.5px rgba(216, 169, 74, .55); }
+.diffhead { display: flex; align-items: center; justify-content: space-between; }
+.diffhead span small { display: block; font-size: 12px; letter-spacing: .06em; color: var(--gold-hi); text-transform: uppercase; }
+.diffhead span b { font-family: var(--title); font-size: 21px; font-weight: normal; color: #fff4d6; }
+.dwon { font-style: normal; font-size: 16px; color: #7ad07a; }
+.darrow { width: 40px; height: 40px; border-radius: 8px; font-size: 28px; line-height: 1; color: var(--gold-hi); background: linear-gradient(#3b4664, #262d45); border: 2px solid var(--ink); box-shadow: inset 0 0 0 1.5px var(--gold); }
+.darrow:disabled { opacity: .3; }
+.darrow:active:not(:disabled) { transform: scale(.92); }
+.dpips { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
+.dpip { position: relative; width: 44px; height: 9px; border-radius: 5px; background: #2a2333; border: 1.5px solid var(--ink); }
+.dpip.on.d0 { background: #7ad07a; } .dpip.on.d1 { background: #e6c45a; } .dpip.on.d2 { background: #e8902a; } .dpip.on.d3 { background: #d8503a; } .dpip.on.d4 { background: #9a3ad8; }
+.dpip.won::after { content: '✓'; position: absolute; left: 50%; top: -15px; transform: translateX(-50%); font-size: 11px; color: #7ad07a; }
+.diffhint { margin: 6px 0 0; font-size: 14px; line-height: 1.2; color: #d8d0e4; min-height: 34px; }
