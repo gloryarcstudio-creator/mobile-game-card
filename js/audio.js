@@ -250,6 +250,11 @@
     snuff(t) { noise(t, 0.3, 0.35, sfxBus, { type: 'lowpass', f: 2000, f2: 150 }); osc('sine', 600, t, 0.4, 0.12, sfxBus, { f2: 120 }); },
     turn(t) { osc('sine', mtof(81), t, 0.5, 0.08, sfxBus, { rev: 0.7 }); },
     step(t) { noise(t, 0.08, 0.18, sfxBus, { type: 'lowpass', f: 900 }); noise(t + 0.16, 0.08, 0.15, sfxBus, { type: 'lowpass', f: 800 }); },
+    // достижение: глухой удар штемпеля и звон колокольчиков
+    achieve(t) {
+      noise(t, 0.08, 0.35, sfxBus, { type: 'lowpass', f: 600 }); osc('sine', 120, t, 0.14, 0.3, sfxBus, { f2: 55 });
+      [84, 88, 91, 96].forEach((m, i) => osc('triangle', mtof(m), t + 0.12 + i * 0.07, 0.6, 0.1, sfxBus, { rev: 0.7 }));
+    },
     win(t) { [67, 72, 76, 79].forEach((m, i) => osc('triangle', mtof(m), t + i * 0.08, 0.5, 0.14, sfxBus, { rev: 0.5 })); },
     victory(t) {
       [60, 64, 67, 72, 76, 79, 84].forEach((m, i) => osc('triangle', mtof(m), t + i * 0.1, 0.9, 0.12, sfxBus, { rev: 0.6 }));

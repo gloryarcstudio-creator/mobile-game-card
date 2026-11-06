@@ -59,7 +59,7 @@
   const screen = $('#screen');
   const overlay = $('#overlay');
   /* ---------- Настройки и статистика (хранятся в браузере) ---------- */
-  const VERSION = '0.5';
+  const VERSION = '0.6';
   const SETTINGS_KEY = 'lastray.settings';
   const STATS_KEY = 'lastray.stats';
   const loadJSON = (k, def) => { try { return { ...def, ...JSON.parse(localStorage.getItem(k) || '{}') }; } catch (e) { return { ...def }; } };
@@ -69,7 +69,57 @@
   const SETTINGS = loadJSON(SETTINGS_KEY, { skipIntro: false, fast: false, snow: true, oneTap: false });
   const STATS_DEF = { runs: 0, wins: 0, losses: 0, best: 0, fights: 0, elites: 0, bosses: 0, cards: 0 };
   const STATS = loadJSON(STATS_KEY, STATS_DEF);
-  const saveStats = () => saveJSON(STATS_KEY, STATS);
+  const saveStats = () => { saveJSON(STATS_KEY, STATS); achCheck(); };
+
+  /* ---------- Достижения ---------- */
+  // c — счётчики и флаги, s — наборы (разные карты, талисманы, противники), got — когда получено,
+  // seenAt — когда панель открывали в последний раз (для пометки «новое»)
+  const ACH_KEY = 'lastray.ach';
+  const ACH_DEF = { c: {}, s: {}, got: {}, seenAt: 0 };
+  const ACH = loadJSON(ACH_KEY, ACH_DEF);
+  const ACH_LIST = window.Achievements.LIST;
+  const achProgress = (a) => {
+    if (a.src === 'stat') return STATS[a.key] || 0;
+    if (a.src === 's') return (ACH.s[a.key] || []).length;
+    if (a.src === 'has') return (ACH.s[a.key] || []).includes(a.item) ? 1 : 0;
+    return ACH.c[a.key] || 0;
+  };
+  const achDone = (a) => !!ACH.got[a.id];
+  const achQueue = [];
+  let achShowing = false;
+  // проверить цели, отметить выполненные и показать всплывашку (silent — без неё)
+  function achCheck(silent) {
+    for (const a of ACH_LIST) {
+      if (achDone(a) || achProgress(a) < a.goal) continue;
+      ACH.got[a.id] = Date.now();
+      if (!silent) achQueue.push(a);
+    }
+    saveJSON(ACH_KEY, ACH);
+    if (achQueue.length && !achShowing) achNextToast();
+  }
+  const ach = {
+    add(k, n = 1) { if (n > 0) { ACH.c[k] = (ACH.c[k] || 0) + n; achCheck(); } },
+    max(k, v) { if (v > (ACH.c[k] || 0)) { ACH.c[k] = v; achCheck(); } },
+    flag(k) { if (!ACH.c[k]) { ACH.c[k] = 1; achCheck(); } },
+    put(k, item) { const s = ACH.s[k] || (ACH.s[k] = []); if (!s.includes(item)) { s.push(item); achCheck(); } },
+  };
+  const achArt = (a) => (a.art === 'h' ? Art.hero() : a.art.startsWith('e:') ? Art.enemy(a.art.slice(2)) : Art.icon(a.art.slice(2)));
+  const achStars = (a) => (a.stars ? ` <i class="astars">${'★'.repeat(a.stars)}</i>` : '');
+  function achNextToast() {
+    if (!achQueue.length) { achShowing = false; return; }
+    achShowing = true;
+    // если открылось сразу много, показываем два и общий итог по остальным
+    if (achQueue.length > 3) { const rest = achQueue.splice(2); achQueue.push({ summary: rest.length }); }
+    const a = achQueue.shift();
+    const t = document.createElement('div');
+    t.className = 'achtoast';
+    t.innerHTML = a.summary
+      ? `<span class="aport collect">${ICO.medal}</span><span><small>Достижения получены</small><b>И ещё ${a.summary}</b></span>`
+      : `<span class="aport ${a.cat}">${achArt(a)}</span><span><small>Достижение получено</small><b>${a.name}${achStars(a)}</b></span>`;
+    app.appendChild(t);
+    SND.sfx('achieve');
+    setTimeout(() => { t.remove(); achNextToast(); }, SETTINGS.fast ? 1700 : 2600);
+  }
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, SETTINGS.fast ? ms * 0.5 : ms));
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -302,6 +352,7 @@
       <div class="menu">
         ${s ? `<button class="btn big" data-act="continue">Продолжить<small>${info}</small></button>` : ''}
         <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">Новая игра</button>
+        <button class="btn ghost achbtn" data-act="ach">${ICO.medal}<span>Достижения<small>${achCount()} из ${ACH_LIST.length}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
         <div class="menu-row"><button class="btn ghost" data-act="gloss">Справочник</button><button class="btn ghost" data-act="settings">Настройки</button></div>
       </div>
       <p class="savehint">${s ? 'Прогресс сохраняется после каждого уровня' : ''}</p>`;
@@ -348,6 +399,7 @@
     note: '<svg viewBox="0 0 40 40"><path d="M15 29 V9 l16 -4 v20" fill="none" stroke="#f3d27c" stroke-width="3"/><ellipse cx="11" cy="29" rx="5.5" ry="4.5" fill="#f3d27c"/><ellipse cx="27" cy="25" rx="5.5" ry="4.5" fill="#f3d27c"/></svg>',
     stats: '<svg viewBox="0 0 40 40"><path d="M8 32 h26" stroke="#17121f" stroke-width="3" stroke-linecap="round"/><rect x="10" y="18" width="5" height="13" fill="#f3d27c" stroke="#17121f" stroke-width="2"/><rect x="18" y="10" width="5" height="21" fill="#f3d27c" stroke="#17121f" stroke-width="2"/><rect x="26" y="22" width="5" height="9" fill="#f3d27c" stroke="#17121f" stroke-width="2"/></svg>',
     book: '<svg viewBox="0 0 40 40"><path d="M6 10 q7 -3 14 1 v22 q-7 -4 -14 -1z M34 10 q-7 -3 -14 1 v22 q7 -4 14 -1z" fill="#f3d27c" stroke="#17121f" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 16 h6 M10 21 h6 M24 16 h6 M24 21 h6" stroke="#8a6a2a" stroke-width="1.8"/></svg>',
+    medal: '<svg viewBox="0 0 40 40"><path d="M11 3 h7 l5 13 h-7z" fill="#c8423a" stroke="#17121f" stroke-width="2" stroke-linejoin="round"/><path d="M29 3 h-7 l-5 13 h7z" fill="#8a2a24" stroke="#17121f" stroke-width="2" stroke-linejoin="round"/><circle cx="20" cy="25" r="11" fill="#f3d27c" stroke="#17121f" stroke-width="2.2"/><circle cx="20" cy="25" r="7.5" fill="none" stroke="#b08a2a" stroke-width="1.5"/><path d="M14.5 21.5 h11 v7.5 h-11z" fill="#fff4d6" stroke="#17121f" stroke-width="1.4"/><path d="M14.5 21.5 l5.5 4 l5.5 -4" fill="none" stroke="#17121f" stroke-width="1.4"/></svg>',
     reset: '<svg viewBox="0 0 40 40"><path d="M31 20 a11 11 0 1 1 -4 -8.5" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/><path d="M28 5 l1 8 l-8 1" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
   const TOGGLES = [
@@ -372,6 +424,7 @@
       <div class="sribbon">Настройки</div>
       <button class="sclose" data-act="s-close" aria-label="Закрыть">✕</button>
       <div class="sicons">
+        <button data-act="s-ach"><span>${ICO.medal}</span>Достижения</button>
         <button data-act="s-gloss"><span>${ICO.book}</span>Справочник</button>
         <button data-act="s-stats"><span>${ICO.stats}</span>Статистика</button>
         <button data-act="s-reset"><span>${ICO.reset}</span>Сбросить</button>
@@ -414,10 +467,70 @@
       const act = b.dataset.act;
       if (act === 's-close') hideOverlay();
       if (act === 's-gloss') showGlossary(showSettings);
+      if (act === 's-ach') showAchievements(showSettings);
       if (act === 's-stats') showStats();
       if (act === 's-reset') askReset();
     };
     render();
+  }
+
+  /* ---------- Панель достижений ---------- */
+  const achCount = (cat) => ACH_LIST.filter((a) => (!cat || a.cat === cat) && achDone(a)).length;
+  const achHasNew = () => ACH_LIST.some((a) => ACH.got[a.id] > ACH.seenAt);
+  const fmt = (n) => n.toLocaleString('ru-RU');
+  // почтовый штемпель «Получено» с датой
+  function achStamp(ts) {
+    const d = new Date(ts);
+    const dd = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return `<svg class="astamp" viewBox="0 0 92 80"><g fill="none" stroke="currentColor">
+      <path d="M2 30 q5 -4 10 0 t10 0 t10 0 M2 40 q5 -4 10 0 t10 0 t10 0 M2 50 q5 -4 10 0 t10 0 t10 0" stroke-width="2"/>
+      <circle cx="54" cy="40" r="34" stroke-width="3"/><circle cx="54" cy="40" r="23" stroke-width="1.6"/></g>
+      <text font-size="10.5" letter-spacing="1"><textPath href="#ach-arc" startOffset="50%" text-anchor="middle">ПОЛУЧЕНО</textPath></text>
+      <text x="54" y="42" font-size="13" text-anchor="middle">${dd}</text>
+      <text x="54" y="53" font-size="8" text-anchor="middle">${d.getFullYear()}</text>
+      <text x="54" y="69" font-size="8" text-anchor="middle">★ ★ ★</text></svg>`;
+  }
+  function achRow(a, since) {
+    const done = achDone(a);
+    const p = Math.min(achProgress(a), a.goal);
+    const desc = a.desc.replace('{p}', `<b>${fmt(p)}/${fmt(a.goal)}</b>`);
+    const fresh = done && ACH.got[a.id] > since;
+    return `<div class="arow ${done ? 'done' : 'locked'}">
+      <div class="aport ${a.cat}">${achArt(a)}${fresh ? '<em class="anew">новое</em>' : ''}</div>
+      <div class="atext"><h3>${a.name}${achStars(a)}</h3><p>${desc}</p>
+        ${!done && a.goal > 1 ? `<div class="abar"><i style="width:${(p / a.goal) * 100}%"></i></div>` : ''}</div>
+      ${done ? achStamp(ACH.got[a.id]) : '<span class="aslot"></span>'}
+    </div>`;
+  }
+  function showAchievements(back) {
+    const since = ACH.seenAt;
+    ACH.seenAt = Date.now(); saveJSON(ACH_KEY, ACH);
+    let tab = 'path';
+    const total = ACH_LIST.length;
+    const got = achCount();
+    const close = () => { if (back) back(); else { hideOverlay(); if (screen.className === 'scr-title') goTitle(); } };
+    showOverlay(`<div class="achp">
+      <svg style="position:absolute;width:0;height:0"><defs><path id="ach-arc" d="M28.5 40 a25.5 25.5 0 0 1 51 0"/></defs></svg>
+      <div class="achhead">
+        <span class="achtag">${ICO.medal}Достижения</span>
+        <button class="sclose" data-act="a-close" aria-label="Закрыть">✕</button>
+        <div class="achbar"><i style="width:${(got / total) * 100}%"></i><b>${got}/${total}</b></div>
+      </div>
+      <div class="achlist"></div>
+      <div class="achtabs">${window.Achievements.CATS.map(([id, name]) => `<button data-tab="${id}"><span>${name}</span><small>${achCount(id)}/${ACH_LIST.filter((a) => a.cat === id).length}</small></button>`).join('')}</div>
+    </div>`, (e) => {
+      const b = e.target.closest('[data-act], [data-tab]');
+      if (!b) return;
+      if (b.dataset.tab) { tab = b.dataset.tab; renderList(); return; }
+      if (b.dataset.act === 'a-close') close();
+    });
+    const renderList = () => {
+      const list = overlay.querySelector('.achlist');
+      list.innerHTML = ACH_LIST.filter((a) => a.cat === tab).map((a) => achRow(a, since)).join('');
+      list.scrollTop = 0;
+      overlay.querySelectorAll('.achtabs button').forEach((t) => t.classList.toggle('on', t.dataset.tab === tab));
+    };
+    renderList();
   }
 
   function showStats() {
@@ -433,13 +546,14 @@
 
   function askReset() {
     showOverlay(`<div class="pause"><h2>Сбросить прогресс?</h2>
-      <p class="ovhint">Сохранённый забег и статистика будут удалены. Настройки останутся.</p>
+      <p class="ovhint">Сохранённый забег, статистика и достижения будут удалены. Настройки останутся.</p>
       <button class="btn" data-act="r-yes">Сбросить</button>
       <button class="btn ghost" data-act="r-no">Отмена</button></div>`, (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       if (b.dataset.act === 'r-no') { showSettings(); return; }
       clearSave();
+      Object.assign(ACH, { c: {}, s: {}, got: {}, seenAt: 0 });
       Object.assign(STATS, STATS_DEF); saveStats();
       hideOverlay();
       toast('Прогресс сброшен');
@@ -569,7 +683,11 @@
     else if (o.t === 'rest') goRest();
   }
 
-  function advance() { run.step++; STATS.best = Math.max(STATS.best, run.step + 1); saveStats(); SND.sfx('step'); goMap(); }
+  function advance() {
+    run.step++; STATS.best = Math.max(STATS.best, run.step + 1); saveStats();
+    ach.add('steps'); ach.max('maxgold', run.gold); ach.max('maxhp', run.maxHp);
+    SND.sfx('step'); goMap();
+  }
 
   /* ---------- API для событий ---------- */
   const evApi = {
@@ -615,17 +733,23 @@
 
   function addRelic(id) {
     run.relics.push(id);
+    ach.put('relics', id);
+    if (RELICS[id].tier === 'boss') ach.put('trophies', id);
     if (id === 'jar') { run.maxHp += 8; run.hp += 8; }
     if (id === 'moonstone') { run.maxHp -= 8; run.hp = Math.min(run.hp, run.maxHp); }
     if (id === 'whetstone') upgradeRandom(2, true);
-    if (id === 'goldquill') run.deck.forEach((c) => { if (canUpgrade(c)) c.up = true; });
+    if (id === 'goldquill') { const list = run.deck.filter(canUpgrade); list.forEach((c) => { c.up = true; }); achUpgraded(list.length); }
     SND.sfx('relic');
     toast(`Талисман: ${RELICS[id].name}`);
   }
 
+  // счётчик улучшений и число улучшенных карт в колоде — для достижений
+  function achUpgraded(n) { ach.add('upgrades', n); ach.max('updeck', run.deck.filter((c) => c.up).length); }
+
   function upgradeRandom(n, quiet) {
     const list = shuffle(run.deck.filter(canUpgrade)).slice(0, n);
     list.forEach((c) => { c.up = true; });
+    achUpgraded(list.length);
     if (list.length && !quiet) toast(`Улучшены: ${list.map(cardName).join(', ')}`);
     return list.length;
   }
@@ -636,7 +760,7 @@
     showDeck(list, 'Выбери карту для улучшения', (uid) => {
       hideOverlay();
       const c = uid != null && run.deck.find((d) => d.uid === uid);
-      if (c) { c.up = true; SND.sfx('relic'); toast(`Улучшена: ${cardName(c)}`); }
+      if (c) { c.up = true; achUpgraded(1); SND.sfx('relic'); toast(`Улучшена: ${cardName(c)}`); }
       done(!!c);
     }, 'up');
   }
@@ -661,13 +785,16 @@
       }).join('')}</div>
       ${heroBar(false)}`;
     screen.dataset.ev = ev.id;
+    ach.put('events', ev.id);
   }
 
   function eventOption(i) {
     const ev = EVENTS.find((e) => e.id === screen.dataset.ev);
     let fought = false;
     evApi.startFight = (id) => { fought = id; };
+    const gold0 = run.gold;
     const res = ev.options[i].act(run, evApi);
+    ach.add('spent', gold0 - run.gold);
     if (res === null) return; // опция сама ведёт дальше (например, удаление карты)
     if (fought) { save({ t: 'fight', enemy: fought }); toast(res); setTimeout(() => startCombat(fought, 'fight'), 600); return; }
     save({ t: 'next' });
@@ -704,20 +831,20 @@
     const pay = (item) => {
       if (item.sold) return false;
       if (run.gold < item.price) { SND.sfx('deny'); toast('Не хватает монет'); return false; }
-      run.gold -= item.price; item.sold = true; SND.sfx('coin'); return true;
+      run.gold -= item.price; item.sold = true; ach.add('spent', item.price); SND.sfx('coin'); return true;
     };
     screen.onShop = (act, i) => {
-      if (act === 'buy' && pay(shop.cards[i])) { run.deck.push(mk(shop.cards[i].id)); toast(`Куплено: ${CARDS[shop.cards[i].id].name}`); }
+      if (act === 'buy' && pay(shop.cards[i])) { ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(`Куплено: ${CARDS[shop.cards[i].id].name}`); }
       if (act === 'buyrelic' && shop.relic && pay(shop.relic)) addRelic(shop.relic.id);
       if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
       if (act === 'buyup' && !shop.up.sold) {
         if (run.gold < shop.up.price) { SND.sfx('deny'); toast('Не хватает монет'); return; }
-        upgradeFlow((ok) => { if (ok) { run.gold -= shop.up.price; shop.up.sold = true; } render(); });
+        upgradeFlow((ok) => { if (ok) { run.gold -= shop.up.price; shop.up.sold = true; ach.add('spent', shop.up.price); } render(); });
         return;
       }
       if (act === 'buyremove' && !shop.remove.sold) {
         if (run.gold < shop.remove.price) { SND.sfx('deny'); toast('Не хватает монет'); return; }
-        removeCardFlow((ok) => { if (ok) { run.gold -= shop.remove.price; shop.remove.sold = true; } render(); });
+        removeCardFlow((ok) => { if (ok) { run.gold -= shop.remove.price; shop.remove.sold = true; ach.add('spent', shop.remove.price); } render(); });
         return;
       }
       render();
@@ -734,6 +861,7 @@
       ${heroBar(false)}`;
   }
   function openChest() {
+    ach.add('chests');
     const free = freeRelics();
     let msg;
     if (free.length && Math.random() < 0.5) { const id = pick(free); addRelic(id); msg = `Внутри: ${RELICS[id].name}. ${RELICS[id].desc}`; }
@@ -798,7 +926,7 @@
     weak(n) { SND.sfx('debuff'); C.enemy.weak += n; floatText($('.enemy-fx'), 'Ослаблен', 'weakf'); },
     vuln(n) { SND.sfx('debuff'); C.enemy.vuln += n; floatText($('.enemy-fx'), 'Уязвим', 'weakf'); },
     chill(n) { SND.sfx('debuff'); C.enemy.str -= n; floatText($('.enemy-fx'), `Сила −${n}`, 'blockf'); },
-    stun() { SND.sfx('debuff'); C.enemy.stun = 1; floatText($('.enemy-fx'), 'Засыпает…', 'weakf'); },
+    stun() { SND.sfx('debuff'); C.enemy.stun = 1; floatText($('.enemy-fx'), 'Засыпает…', 'weakf'); if (C.tier === 'boss') ach.flag('stunboss'); },
     energy(n) { C.energy += n; floatText($('.hero-fx'), `+${n} энергии`, 'blockf'); },
     resolve(n) { C.str += n; SND.sfx('buff'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
     rush(n) { C.tmpStr += n; SND.sfx('buff'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
@@ -809,7 +937,10 @@
     async burstNow() { await burst(); },
     consumeFlame() { const n = C.flame; C.flame = 0; return n; },
     deliver(name, fn) { C.deliveries.push({ name, fn }); SND.sfx('card'); floatText($('.hero-fx'), `${name} в пути`, 'weakf'); },
-    charm(id, n) { C.charms[id] = (C.charms[id] || 0) + n; SND.sfx('relic'); floatText($('.hero-fx'), CARDS[id].name, 'weakf'); },
+    charm(id, n) {
+      C.charms[id] = (C.charms[id] || 0) + n; SND.sfx('relic'); floatText($('.hero-fx'), CARDS[id].name, 'weakf');
+      if (Object.keys(C.charms).length >= 3) ach.flag('charms3');
+    },
     // сжечь карты из руки по условию, вернуть их количество
     exhaustHand(pred) {
       const out = C.hand.filter((c) => pred(CARDS[c.id]));
@@ -851,7 +982,7 @@
       energy: maxEnergy(), block: 0, flame: hasRelic('feather') ? 1 : 0, pWeak: 0, turn: 0,
       str: 0, tmpStr: 0, thorns: hasRelic('pinecone') ? 3 : 0,
       charms: {}, deliveries: [], playedTurn: 0, playedTotal: 0,
-      firstAtk: false, shoe: false, hpLost: false, stolen: 0,
+      firstAtk: false, shoe: false, hpLost: false, stolen: 0, burstsTurn: 0,
     };
     selected = -1;
     SND.music(tier === 'boss' ? 'boss' : 'battle');
@@ -887,7 +1018,7 @@
   async function startPlayerTurn() {
     busy = true;
     C.turn++;
-    C.playedTurn = 0;
+    C.playedTurn = 0; C.burstsTurn = 0;
     // защита сгорает, но Горячий камень сохраняет её часть
     C.block = hasRelic('hotstone') ? Math.min(C.block, 6) : 0;
     if (C.turn === 1 && hasRelic('bell')) C.block += 6;
@@ -1012,6 +1143,9 @@
     else if (cd.exhaust) exhaustCard(c);
     else C.disc.push(c);
     C.playedTurn++; C.playedTotal++; STATS.cards++;
+    if (cd.rarity !== 'status') ach.put('played', c.id);
+    if (C.playedTurn >= 8) ach.flag('combo');
+    achCheck();
     // отклики чар и талисманов на розыгрыш
     if (cd.type === 'skill' && C.charms.inkpen && C.enemy.hp > 0) await hitEnemy(C.charms.inkpen);
     if (C.charms.rhythm && C.playedTurn % 3 === 0 && C.enemy.hp > 0) await api.flame(C.charms.rhythm);
@@ -1042,6 +1176,7 @@
     e.block -= absorbed;
     const real = dmg - absorbed;
     e.hp -= real;
+    ach.max('maxhit', dmg);
     const el = $('#enemy');
     el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
     SND.sfx(real > 0 ? 'hit' : 'clank', Math.min(1.4, 0.6 + real / 15));
@@ -1056,6 +1191,8 @@
     $('.enemy-zone').appendChild(fx);
     SND.sfx('burst');
     await sleep(380);
+    ach.add('bursts');
+    if (++C.burstsTurn >= 2) ach.flag('dblburst');
     let dmg = BURST_DMG + (hasRelic('flint') ? 5 : 0);
     if (C.enemy.vuln > 0) dmg = Math.floor(dmg * 1.5);
     await hitEnemy(dmg);
@@ -1119,7 +1256,7 @@
       e.burn--;
       renderCombat();
       await sleep(400);
-      if (e.hp <= 0) { await winCombat(); return; }
+      if (e.hp <= 0) { ach.flag('burnkill'); await winCombat(); return; }
     }
     const el = $('#enemy');
     if (e.stun > 0) {
@@ -1137,7 +1274,7 @@
             await hitHero(enemyDmg(it.v));
             if (run.hp <= 0) break;
             // Шипы Ивы ранят врага за каждый удар
-            if (C.thorns > 0) { await hitEnemy(C.thorns); if (e.hp <= 0) break; }
+            if (C.thorns > 0) { await hitEnemy(C.thorns); if (e.hp <= 0) { ach.flag('thornskill'); break; } }
           }
           if (it.k === 'steal' && run.hp > 0) {
             const g = Math.min(run.gold, it.gold);
@@ -1170,11 +1307,16 @@
     const el = $('#enemy');
     if (el) el.classList.add('dying');
     await sleep(800);
-    const { tier, stolen, hpLost } = C;
+    const { tier, stolen, hpLost, id, turn } = C;
     C = null;
     STATS.fights++;
     if (tier === 'elite') STATS.elites++;
     if (tier === 'boss') STATS.bosses++;
+    ach.put('beaten', id);
+    if (tier === 'boss') ach.put('bosses', id);
+    if (!hpLost) ach.flag('flawless');
+    if (!hpLost && tier === 'elite') ach.flag('flawlesselite');
+    if (turn === 1) ach.flag('oneturn');
     saveStats();
     run.fights++; run.lit++;
     if (stolen) { run.gold += stolen; toast(`Монеты возвращены: +${stolen}`); }
@@ -1239,7 +1381,9 @@
   /* ---------- Финалы ---------- */
   function goVictory() {
     clearSave();
-    STATS.wins++; STATS.best = MAX_STEPS; saveStats();
+    STATS.wins++; STATS.best = MAX_STEPS;
+    if (run.deck.length <= 15) ach.flag('light');
+    saveStats();
     SND.music('title'); SND.sfx('victory');
     screen.className = 'scr-end win';
     screen.innerHTML = `<div class="ribbon">${STORY.winRibbon}</div>
@@ -1308,6 +1452,7 @@
       case 'newgame': askNewGame(); break;
       case 'gloss': showGlossary(); break;
       case 'settings': showSettings(); break;
+      case 'ach': showAchievements(); break;
       case 'choose': chooseEncounter(+t.dataset.i); break;
       case 'next': advance(); break;
       case 'deck': showDeck(run.deck, `Колода · ${run.deck.length}`); break;
@@ -1330,5 +1475,6 @@
   // Для отладки и автотестов
   window.Game = { get run() { return run; }, get combat() { return C; }, newRun, goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat() };
 
+  achCheck(true);
   goTitle();
 })();
