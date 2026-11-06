@@ -120,10 +120,20 @@
       line: 'Съела луну и все фонари Сонного Брода.',
       pattern: [{ k: 'attack', v: 12 }, { k: 'snuff', v: 8 }, { k: 'attack', v: 5, hits: 3 }, { k: 'block', v: 15, then: { k: 'buff', v: 3 } }],
     },
+    magpie: {
+      name: 'Сорока-Перехватчица', hp: 75, tier: 'boss',
+      line: 'Ворует письма, блестяшки и чужие секреты.',
+      pattern: [{ k: 'attack', v: 9 }, { k: 'debuff', v: 2, then: { k: 'attack', v: 5 } }, { k: 'attack', v: 3, hits: 4 }, { k: 'block', v: 12, then: { k: 'buff', v: 2 } }],
+    },
+    clockmaker: {
+      name: 'Сумеречный Часовщик', hp: 140, tier: 'boss',
+      line: 'Подводит часы, чтобы ночь наступила раньше.',
+      pattern: [{ k: 'attack', v: 14 }, { k: 'block', v: 16 }, { k: 'snuff', v: 9 }, { k: 'attack', v: 4, hits: 4 }, { k: 'buff', v: 3, then: { k: 'block', v: 8 } }],
+    },
     shadowking: {
-      name: 'Король Теней', hp: 110, tier: 'boss',
+      name: 'Король Теней', hp: 190, tier: 'boss',
       line: 'Правит всем, что не успело до заката.',
-      pattern: [{ k: 'attack', v: 12 }, { k: 'snuff', v: 8 }, { k: 'attack', v: 5, hits: 3 }, { k: 'block', v: 15, then: { k: 'buff', v: 3 } }],
+      pattern: [{ k: 'attack', v: 16 }, { k: 'snuff', v: 10 }, { k: 'attack', v: 6, hits: 3 }, { k: 'block', v: 18, then: { k: 'buff', v: 3 } }],
     },
   };
 
@@ -133,6 +143,9 @@
     jar: { name: 'Банка светлячков', art: 'jar', desc: '+8 к максимуму HP.' },
     flint: { name: 'Огниво', art: 'flint', desc: 'Вспышка лампы наносит +5 урона.' },
     snowman: { name: 'Снеговик-талисман', art: 'snowman', desc: 'После победы восстановить 4 HP.' },
+    scarf: { name: 'Шарф с кисточками', art: 'cloak', desc: 'В первый ход боя +1 энергия.' },
+    envelope: { name: 'Конверт с маркой', art: 'envelope', desc: '+8 монет за каждую победу.' },
+    thimble: { name: 'Напёрсток', art: 'thimble', desc: 'В начале каждого хода 2 защиты.' },
   };
 
   /* События: выбор как в книжке. Каждая опция — {text, hint, act(run, api)} */

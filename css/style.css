@@ -161,6 +161,8 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
 /* ---------- Экран пути ---------- */
 .map-hint { position: absolute; top: 96px; width: 100%; text-align: center; font-family: var(--title); font-size: 22px; color: #e6edf8; text-shadow: 0 2px 6px #000; }
+.map-hint b { display: block; font-weight: normal; }
+.map-hint small { display: block; margin-top: 2px; font-family: var(--body); font-size: 15px; opacity: .9; }
 .encs { position: absolute; top: 150px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; }
 .enc {
   width: 124px; height: 300px; position: relative; display: flex; flex-direction: column; align-items: center;
@@ -219,7 +221,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .burnf { color: #ffb23e; font-size: 22px; }
 .weakf { color: #d6b0ff; font-size: 20px; }
 @keyframes floatup { to { transform: translate(-50%, -70px); opacity: 0; } }
-.nameplate { position: absolute; top: 352px; left: 50%; width: 230px; margin-left: -115px; text-align: center; }
+.nameplate { position: absolute; top: 352px; left: 50%; width: 300px; margin-left: -150px; text-align: center; }
 .ename { font-family: var(--title); font-size: 21px; color: #f6ecd2; text-shadow: 0 2px 4px #000; }
 .ename i { font-style: normal; font-size: 12px; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: #a0742a; vertical-align: middle; }
 .ehp { position: relative; height: 16px; margin-top: 4px; border-radius: 8px; background: #2a1a20; border: 2px solid var(--ink); }
@@ -325,3 +327,6 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .toast { position: absolute; left: 50%; top: 470px; z-index: 30; transform: translateX(-50%); max-width: 340px; padding: 8px 14px; border-radius: 10px; background: rgba(15, 18, 30, .95); border: 2px solid var(--gold); font-size: 16px; text-align: center; animation: toast 1.5s forwards; pointer-events: none; }
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
 .scr-end .page h1 { font-size: 32px; }
+
+.pendulum { transform-origin: 110px 152px; animation: swing 1.6s ease-in-out infinite alternate; }
+@keyframes swing { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }

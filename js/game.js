@@ -1,10 +1,16 @@
-/* Фитиль — игровая логика и отрисовка экранов. */
+/* Игровая логика и отрисовка экранов. */
 (function () {
   const { CARDS, ENEMIES, RELICS, EVENTS } = window.Data;
   const STORY = window.Story.story;
   const SKY = window.Story.sky;
   document.title = STORY.title;
-  const MAX_STEPS = 12;     // длина свечи: шагов до босса
+  // Путь делится на стадии, последний уровень каждой стадии — её босс
+  const STAGES = STORY.stages;
+  const MAX_STEPS = STAGES.reduce((a, g) => a + g.len, 0);
+  let acc = 0;
+  STAGES.forEach((g) => { g.start = acc; acc += g.len; g.end = acc - 1; });
+  const stageOf = (step) => STAGES.findIndex((g) => step <= g.end);
+  const isFinalStep = (step) => step === MAX_STEPS - 1;
   const HAND_SIZE = 5;
   const MAX_ENERGY = 3;
   const FLAME_BONUS = 2;    // +урон атак за каждый Огонёк
@@ -47,12 +53,16 @@
     })(0);
   })();
 
-  /* Небо меняется с каждым шагом: от первого кадра палитры к последнему */
+  /* Фон меняется после каждого уровня: палитра неба смешивается по ключевым кадрам,
+     а сцена (город или окраина) задаётся стадией */
   function setBg() {
-    const t = run ? Math.min(1, run.step / (MAX_STEPS - 1)) : 0;
-    const lamps = run && STORY.litLamps ? Math.min(4, run.lit) : 0;
-    const p = Art.mixSky(SKY.from, SKY.to, t);
-    $('#bg').innerHTML = Art.background(p, lamps);
+    const step = run ? run.step : 0;
+    const t = MAX_STEPS > 1 ? Math.min(1, step / (MAX_STEPS - 1)) : 0;
+    const g = STAGES[stageOf(step)] || STAGES[0];
+    const lamps = run && STORY.lamps ? STORY.lamps(run) : 0;
+    const approach = g.len > 1 ? (step - g.start) / (g.len - 1) : 1;
+    const p = Art.sampleSky(SKY, t);
+    $('#bg').innerHTML = Art.background(p, lamps, g.scene, approach);
     app.style.setProperty('--sky-top', p.skyTop);
     app.style.setProperty('--sky-mid', p.skyMid);
     app.style.setProperty('--sky-bot', p.skyBot);
@@ -90,13 +100,15 @@
   }
 
   function topBar() {
-    const left = MAX_STEPS - run.step;
-    const pct = Math.max(0, left / MAX_STEPS) * 100;
+    const si = stageOf(run.step);
+    const g = STAGES[si];
+    const left = g.end - run.step;
+    const pct = g.len > 1 ? Math.max(0, left / (g.len - 1)) * 100 : 0;
     return `<div class="topbar">
       <div class="gold">${Art.icon('coin')}<b>${run.gold}</b></div>
-      <div class="chapter"><div class="ch-title">${STORY.chapter}</div>
+      <div class="chapter"><div class="ch-title">${g.name}</div>
         <div class="candle"><div class="wax" style="width:${pct}%"></div><div class="wick" style="left:${pct}%">${Art.flame(0.9)}</div></div>
-        <div class="ch-sub">${STORY.countdown(left)}</div>
+        <div class="ch-sub">${STORY.countdown({ left, level: run.step + 1, total: MAX_STEPS, stage: si, final: isFinalStep(run.step) })}</div>
       </div>
       <div class="relics">${run.relics.map((r) => `<button class="relic" data-relic="${r}">${Art.icon(RELICS[r].art)}</button>`).join('')}</div>
     </div>`;
@@ -159,7 +171,7 @@
           <ul class="howto">
             <li><b>Огонёк.</b> Каждый даёт атакам +${FLAME_BONUS} урона.</li>
             <li><b>Вспышка.</b> На ${FLAME_MAX} Огоньках лампа бьёт врага на ${BURST_DMG}.</li>
-            <li>${STORY.countdownRule(MAX_STEPS)}</li>
+            <li>${STORY.pathRule(MAX_STEPS)}</li>
           </ul>
         </div>
       </div>
@@ -169,17 +181,23 @@
   /* ---------- Путь: выбор из трёх карт-встреч ---------- */
   function genChoices() {
     const s = run.step;
-    if (s >= MAX_STEPS - 1) return [{ t: 'boss', enemy: STORY.boss }];
-    const normals = s < 4 ? ['inkcat', 'laundress'] : ['inkcat', 'laundress', 'golem', 'golem'];
+    const si = stageOf(s);
+    const g = STAGES[si];
+    if (s === g.end) return [{ t: 'boss', enemy: g.boss }];
+    const k = s - g.start; // номер уровня внутри стадии
+    const normals = si === 0
+      ? (k < 8 ? ['inkcat', 'laundress'] : ['inkcat', 'laundress', 'golem', 'golem'])
+      : ['inkcat', 'laundress', 'golem', 'golem', 'laundress'];
+    const eliteOk = si > 0 || k >= 6;
     const fight = () => ({ t: 'fight', enemy: pick(normals) });
     if (s === 0) return [fight(), fight(), { t: 'event', ev: pick(EVENTS).id }];
-    if (s === MAX_STEPS - 2) return [{ t: 'rest' }, { t: 'shop' }, s > 3 ? { t: 'elite', enemy: 'owl' } : fight()];
+    if (s === g.end - 1) return [{ t: 'rest' }, { t: 'shop' }, eliteOk ? { t: 'elite', enemy: 'owl' } : fight()];
     const pool = [];
-    const weights = [['fight', 40], ['event', 20], ['shop', 12], ['chest', 10], ['rest', 12], ['elite', s >= 4 ? 12 : 0]];
+    const weights = [['fight', 40], ['event', 18], ['shop', 10], ['chest', 10], ['rest', 12], ['elite', eliteOk ? (si > 0 ? 16 : 10) : 0]];
     const total = weights.reduce((a, w) => a + w[1], 0);
     while (pool.length < 3) {
       let r = Math.random() * total; let t = 'fight';
-      for (const [k, w] of weights) { if ((r -= w) < 0) { t = k; break; } }
+      for (const [key, w] of weights) { if ((r -= w) < 0) { t = key; break; } }
       if (t !== 'fight' && t !== 'event' && pool.some((p) => p.t === t)) continue;
       if (t === 'fight') pool.push(fight());
       else if (t === 'elite') pool.push({ t: 'elite', enemy: 'owl' });
@@ -195,7 +213,7 @@
     if (o.t === 'fight' || o.t === 'elite' || o.t === 'boss') {
       const e = ENEMIES[o.enemy];
       title = e.name; art = `<div class="enc-char">${Art.enemy(o.enemy)}</div>`; text = e.line;
-      tag = o.t === 'boss' ? 'Босс' : o.t === 'elite' ? 'Элита' : 'Бой';
+      tag = o.t === 'boss' ? (isFinalStep(run.step) ? 'Финальный босс' : 'Босс стадии') : o.t === 'elite' ? 'Элита' : 'Бой';
     } else if (o.t === 'event') {
       const ev = EVENTS.find((e) => e.id === o.ev);
       title = ev.title; art = Art.icon(ev.art); text = 'Что-то происходит впереди…'; tag = 'Событие';
@@ -220,9 +238,17 @@
     if (!run.choices) run.choices = genChoices();
     screen.className = 'scr-map';
     screen.innerHTML = `${topBar()}
-      <div class="map-hint">${run.step === 0 ? 'Выбери, куда идти' : `Шаг ${run.step + 1}`}</div>
+      <div class="map-hint">${mapHint()}</div>
       <div class="encs n${run.choices.length}">${run.choices.map(encHTML).join('')}</div>
       ${heroBar(false)}`;
+  }
+
+  function mapHint() {
+    const si = stageOf(run.step);
+    const g = STAGES[si];
+    if (run.step === g.start && STORY.stageIntro) return `<b>${g.name}</b><small>${STORY.stageIntro[si] || ''}</small>`;
+    if (run.step === 0) return 'Выбери, куда идти';
+    return `Уровень ${run.step + 1}`;
   }
 
   function chooseEncounter(i) {
@@ -412,22 +438,22 @@
 
   function startCombat(enemyId, tier) {
     const e = ENEMIES[enemyId];
-    const scale = tier === 'boss' ? 1 : 1 + run.step * 0.08;
+    const scale = tier === 'boss' ? 1 : 1 + run.step * (MAX_STEPS > 20 ? 0.035 : 0.08);
     const hp = Math.round(e.hp * scale);
     C = {
       tier, id: enemyId,
-      enemy: { hp, max: hp, block: 0, str: tier === 'boss' ? 0 : Math.floor(run.step / 3), weak: 0, burn: 0, pi: 0 },
+      enemy: { hp, max: hp, block: 0, str: tier === 'boss' ? 0 : Math.floor(run.step / (MAX_STEPS > 20 ? 8 : 3)), weak: 0, burn: 0, pi: 0 },
       draw: shuffle(run.deck.map((c) => ({ ...c }))), hand: [], disc: [], exh: [],
       energy: MAX_ENERGY, block: 0, flame: hasRelic('feather') ? 1 : 0, pWeak: 0, turn: 0,
     };
     selected = -1;
     screen.className = 'scr-combat';
     screen.innerHTML = `
-      <div class="topbar slim">${run.relics.map((r) => `<button class="relic" data-relic="${r}">${Art.icon(RELICS[r].art)}</button>`).join('')}<div class="spacer"></div><div class="stepl">${tier === 'boss' ? 'Финал' : `Шаг ${run.step + 1}/${MAX_STEPS}`}</div></div>
+      <div class="topbar slim">${run.relics.map((r) => `<button class="relic" data-relic="${r}">${Art.icon(RELICS[r].art)}</button>`).join('')}<div class="spacer"></div><div class="stepl">${tier === 'boss' ? (isFinalStep(run.step) ? 'Финал' : 'Босс стадии') : `Уровень ${run.step + 1}/${MAX_STEPS}`}</div></div>
       <div class="enemy-zone">
         <div class="intent"></div>
         <div class="enemy ${e.tier}" id="enemy">${Art.enemy(enemyId)}<div class="enemy-fx"></div></div>
-        <div class="nameplate"><div class="ename">${e.name}${e.tier !== 'normal' ? `<i>${e.tier === 'boss' ? 'Босс' : 'Элита'}</i>` : ''}</div>
+        <div class="nameplate"><div class="ename">${e.name}${e.tier !== 'normal' ? `<i>${e.tier === 'boss' ? (isFinalStep(run.step) ? 'Финал' : 'Босс') : 'Элита'}</i>` : ''}</div>
           <div class="ehp"><div class="fill"></div><span></span><div class="eblk"></div></div>
           <div class="estatus"></div>
         </div>
@@ -453,7 +479,8 @@
     C.turn++;
     C.block = 0;
     if (C.turn === 1 && hasRelic('bell')) C.block += 6;
-    C.energy = MAX_ENERGY;
+    if (hasRelic('thimble')) C.block += 2;
+    C.energy = MAX_ENERGY + (C.turn === 1 && hasRelic('scarf') ? 1 : 0);
     drawCards(HAND_SIZE);
     busy = false;
     renderCombat(true);
@@ -624,16 +651,20 @@
     run.fights++; run.lit++;
     setBg();
     if (hasRelic('snowman')) evApi.heal(4);
-    if (tier === 'boss') { goVictory(); return; }
+    if (tier === 'boss' && isFinalStep(run.step)) { goVictory(); return; }
     goReward(tier);
   }
 
   /* ---------- Награда ---------- */
   function goReward(tier) {
-    const gold = tier === 'elite' ? rnd(30, 40) : rnd(12, 20);
+    const boss = tier === 'boss';
+    const gold = (boss ? rnd(50, 60) : tier === 'elite' ? rnd(30, 40) : rnd(12, 20)) + (hasRelic('envelope') ? 8 : 0);
     run.gold += gold;
-    if (tier === 'elite') evApi.giveRelic();
-    const rareChance = tier === 'elite' ? 0.5 : 0.2;
+    if (tier === 'elite' || boss) evApi.giveRelic();
+    // после босса стадии Ива переводит дух
+    const healed = boss ? Math.min(run.maxHp - run.hp, Math.round(run.maxHp * 0.5)) : 0;
+    run.hp += healed;
+    const rareChance = boss ? 0.7 : tier === 'elite' ? 0.5 : 0.2;
     const ids = [];
     while (ids.length < 3) {
       const r = Math.random() < rareChance ? 'rare' : 'common';
@@ -642,8 +673,8 @@
     }
     screen.className = 'scr-reward';
     screen.innerHTML = `${topBar()}
-      <div class="ribbon">Победа!</div>
-      <div class="loot">${Art.icon('coin')} +${gold} монет</div>
+      <div class="ribbon">${boss ? 'Босс повержен!' : 'Победа!'}</div>
+      <div class="loot">${Art.icon('coin')} +${gold} монет${healed ? ` · +${healed} HP` : ''}</div>
       <p class="pickhint">Возьми одну карту в колоду</p>
       <div class="reward-cards">${ids.map((id, i) => cardHTML(id, 'reward', `data-act="takecard" data-id="${id}" style="--d:${i * 120}ms"`)).join('')}</div>
       <button class="btn ghost" data-act="next">Пропустить</button>
@@ -669,7 +700,7 @@
         <div class="book-art dim">${Art.hero()}</div>
         <h1>${STORY.loseTitle}</h1>
         <p class="story">${STORY.loseText}</p>
-        <p class="stats">Пройдено шагов: ${run.step + 1} из ${MAX_STEPS} · Побед: ${run.fights}</p>
+        <p class="stats">Пройдено уровней: ${run.step + 1} из ${MAX_STEPS} · Побед: ${run.fights}</p>
       </div></div>
       <button class="btn big" data-act="start">Попробовать снова</button>`;
   }

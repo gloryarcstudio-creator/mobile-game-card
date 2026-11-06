@@ -22,8 +22,63 @@
     return out;
   }
 
+  /* Палитра в точке пути t (0..1) по списку ключевых кадров [[t, палитра], ...] */
+  function sampleSky(keys, t) {
+    if (keys.length === 1 || t <= keys[0][0]) return mixSky(keys[0][1], keys[0][1], 0);
+    for (let i = 1; i < keys.length; i++) {
+      const [t1, p1] = keys[i];
+      const [t0, p0] = keys[i - 1];
+      if (t <= t1) return mixSky(p0, p1, (t - t0) / (t1 - t0 || 1));
+    }
+    const last = keys[keys.length - 1][1];
+    return mixSky(last, last, 0);
+  }
+
+  /* Ёлка из трёх ярусов со снежными шапками */
+  function pine(x, y, h, fill, snow) {
+    const w = h * 0.55;
+    let g = `<rect x="${x - h * 0.04}" y="${y - h * 0.12}" width="${h * 0.08}" height="${h * 0.12}" fill="${fill}" stroke="${O}" stroke-width="2.5"/>`;
+    for (let i = 0; i < 3; i++) {
+      const top = y - h + i * h * 0.26, bot = y - h * 0.1 - (2 - i) * h * 0.2, ww = w * (0.5 + i * 0.25);
+      g += `<path d="M${x} ${top} L${x + ww / 2} ${bot} L${x - ww / 2} ${bot}z" fill="${fill}" stroke="${O}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      g += `<path d="M${x} ${top} L${x + ww * 0.2} ${top + (bot - top) * 0.4} Q${x} ${top + (bot - top) * 0.5} ${x - ww * 0.2} ${top + (bot - top) * 0.4}z" fill="${snow}"/>`;
+    }
+    return g;
+  }
+
+  /* Окраина: ёлки, дорога и дом адресата, который приближается с каждым шагом (approach 0..1) */
+  function outskirts(p, approach) {
+    const sc = 0.45 + approach * 0.85;
+    const hy = 512 + approach * 62;
+    const lit = p.lampGlow > 0.5;
+    const lamp = (x) => `<g transform="translate(${x},0)">
+        ${lit ? `<circle cx="0" cy="512" r="34" fill="url(#lampGlow)" opacity="${p.lampGlow}"/>` : ''}
+        <rect x="-2" y="515" width="4" height="80" fill="${p.ink}"/>
+        <path d="M-9 500 h18 l-3 16 h-12z" fill="${lit ? '#ffcf6b' : p.lampOff}" stroke="${p.ink}" stroke-width="2"/>
+        <path d="M-11 500 h22 l-11 -8z" fill="${p.ink}"/></g>`;
+    return `
+      ${pine(40, 520, 90, p.spires, p.roofHi)}${pine(352, 515, 80, p.spires, p.roofHi)}${pine(300, 522, 60, p.spires, p.roofHi)}
+      <!-- дом адресата -->
+      <g transform="translate(200 ${hy}) scale(${sc})">
+        <circle cx="0" cy="-40" r="70" fill="url(#winGlow)"/>
+        <rect x="-46" y="-70" width="92" height="70" fill="${p.wall}" stroke="${O}" stroke-width="3"/>
+        <path d="M-58 -64 L0 -118 L58 -64z" fill="${p.roof}" stroke="${O}" stroke-width="3"/>
+        <rect x="24" y="-128" width="10" height="34" fill="${p.ink}" stroke="${O}" stroke-width="3"/>
+        <rect x="-32" y="-52" width="22" height="20" fill="#ffcf6b" stroke="${O}" stroke-width="2.5"/>
+        <rect x="8" y="-44" width="22" height="44" fill="${p.door}" stroke="${O}" stroke-width="2.5"/>
+        <circle cx="26" cy="-22" r="2" fill="#e6c45a"/>
+      </g>
+      <!-- снег и дорога -->
+      <path d="M0 600 Q100 585 200 598 T400 592 V860 H0z" fill="url(#snowG)"/>
+      <path d="M0 600 Q100 585 200 598 T400 592" fill="none" stroke="${p.snowEdge}" stroke-width="3" opacity="0.7"/>
+      <path d="M150 860 Q190 700 ${200 - 10 * sc} ${hy} L${200 + 10 * sc} ${hy} Q210 700 250 860z" fill="${p.snowBot}" opacity="0.55"/>
+      ${lamp(110)}${lamp(290)}
+      ${pine(-6, 640, 190, p.wall, p.roofHi)}${pine(408, 650, 210, p.wall, p.roofHi)}${pine(70, 612, 110, p.wall2, p.roofHi)}${pine(334, 618, 120, p.wall2, p.roofHi)}
+    `;
+  }
+
   /* ---------- Фон: заснеженная улица, время суток задаёт палитра p ---------- */
-  function background(p, litLamps = 0) {
+  function background(p, litLamps = 0, scene = 'town', approach = 0) {
     const lampXs = [70, 170, 265, 345];
     let lamps = '';
     lampXs.forEach((x, i) => {
@@ -83,6 +138,7 @@
       <path d="M300 495 l10 -55 l10 55z" fill="${p.spires}"/>
       <path d="M330 500 l7 -30 l7 30z" fill="${p.spires}"/>
       <circle cx="210" cy="540" r="160" fill="url(#fog)"/>
+      ${scene === 'outskirts' ? outskirts(p, approach) : `
       <!-- дом слева -->
       <g>
         <circle cx="40" cy="585" r="70" fill="url(#winGlow)" opacity="${p.winGlow}"/>
@@ -110,6 +166,7 @@
         <path d="M130 585 l4 -18 l4 18z M150 588 l4 -20 l4 20z M170 590 l4 -18 l4 18z"/>
         <path d="M128 578 h52" fill="none"/>
       </g>
+      `}
     `, 'bg-svg');
   }
 
@@ -303,6 +360,74 @@
       <path d="M100 186 q10 -8 8 8 M140 186 q-10 -8 -8 8" ${sw(3)} fill="none"/>
     `, 'char boss'),
 
+    magpie: () => svg('0 0 220 230', `
+      <!-- хвост -->
+      <path d="M128 150 L206 196 L198 208 L120 168z" fill="#1d2a3a" ${sw(3.5)}/>
+      <path d="M134 156 L200 200" stroke="#3f8a8a" stroke-width="4" stroke-linecap="round"/>
+      <!-- тело -->
+      <path d="M60 110 Q50 170 92 196 Q140 210 152 160 Q160 120 128 96 Q92 80 60 110z" fill="#1a1a24" ${sw(4)}/>
+      <path d="M72 140 Q76 184 104 192 Q132 192 136 156 Q112 168 72 140z" fill="#f2f0ea" ${sw(3)}/>
+      <!-- крыло с отливом -->
+      <path d="M100 108 Q150 104 160 150 Q130 150 104 136z" fill="#22394a" ${sw(3.5)}/>
+      <path d="M112 116 Q140 118 150 142" stroke="#4fb0a8" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M108 130 Q130 134 142 150" stroke="#f2f0ea" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <!-- голова -->
+      <circle cx="76" cy="82" r="30" fill="#1a1a24" ${sw(4)}/>
+      <path d="M48 86 L18 94 L48 98z" fill="#4a4a58" ${sw(3)}/>
+      <circle cx="70" cy="78" r="9" fill="#f2f0ea" ${sw(2.5)}/>
+      <circle cx="68" cy="78" r="5" fill="${O}"/><circle cx="66" cy="76" r="1.8" fill="#fff"/>
+      <path d="M58 66 L82 70" ${sw(4)}/>
+      <!-- украденная фуражка почтальона -->
+      <path d="M52 60 Q76 36 104 56 L100 64 Q78 52 56 66z" fill="#3a5a8a" ${sw(3.5)}/>
+      <path d="M48 64 Q70 60 102 62 L104 68 Q72 66 46 70z" fill="#22304a" ${sw(3)}/>
+      <circle cx="78" cy="52" r="4" fill="#e6c45a" ${sw(1.5)}/>
+      <!-- лапы с пачкой писем -->
+      <path d="M90 196 l-6 18 M104 198 l2 18" ${sw(3.5)}/>
+      <g transform="rotate(-10 96 214)">
+        <rect x="70" y="202" width="52" height="22" rx="2" fill="#f2e6c9" ${sw(3)}/>
+        <rect x="74" y="196" width="44" height="10" rx="2" fill="#e8d8b8" ${sw(2.5)}/>
+        <path d="M96 196 v28 M70 213 h52" stroke="#c8423a" stroke-width="3"/>
+      </g>
+      <!-- блестяшки -->
+      <circle cx="170" cy="96" r="7" fill="#e6c45a" ${sw(2.5)}/><circle cx="186" cy="118" r="5" fill="#cfd6e6" ${sw(2)}/>
+      <path d="M176 76 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3z" fill="#fff3c4"/>
+    `, 'char boss'),
+
+    clockmaker: () => svg('0 0 220 240', `
+      <defs><radialGradient id="dialG"><stop offset="0.6" stop-color="#efe2c4"/><stop offset="1" stop-color="#c8b48a"/></radialGradient></defs>
+      <!-- длинное пальто -->
+      <path d="M70 112 Q54 180 52 232 H168 Q166 180 150 112 Q110 100 70 112z" fill="#3a2f4a" ${sw(4)}/>
+      <path d="M110 112 V232" ${sw(3)} opacity="0.6"/>
+      <!-- окошко с маятником -->
+      <rect x="92" y="150" width="36" height="58" rx="6" fill="#1e1a2c" ${sw(3)}/>
+      <g class="pendulum"><path d="M110 152 V190" stroke="#d8a94a" stroke-width="3"/><circle cx="110" cy="194" r="9" fill="#d8a94a" ${sw(2.5)}/></g>
+      <!-- руки-стрелки -->
+      <path d="M70 124 Q36 150 30 196" ${sw(5)} fill="none"/>
+      <path d="M150 124 Q186 140 196 110" ${sw(5)} fill="none"/>
+      <!-- большой ключ -->
+      <g transform="rotate(-30 198 96)">
+        <circle cx="198" cy="80" r="12" fill="none" stroke="#d8a94a" stroke-width="5"/>
+        <path d="M198 92 V128 M198 116 h10 M198 124 h8" stroke="#d8a94a" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <!-- голова-циферблат -->
+      <circle cx="110" cy="72" r="44" fill="#5a4a6a" ${sw(4)}/>
+      <circle cx="110" cy="72" r="36" fill="url(#dialG)" ${sw(3)}/>
+      <g stroke="${O}" stroke-width="3" stroke-linecap="round">
+        <path d="M110 40 v7 M110 97 v7 M78 72 h7 M135 72 h7 M87 49 l4 4 M133 49 l-4 4 M87 95 l4 -4 M133 95 l-4 -4"/>
+      </g>
+      <!-- стрелки почти на полночи -->
+      <path d="M110 72 L106 46" stroke="${O}" stroke-width="5" stroke-linecap="round"/>
+      <path d="M110 72 L98 52" stroke="#c8423a" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="110" cy="72" r="5" fill="${O}"/>
+      <!-- глаза в циферблате -->
+      <ellipse cx="96" cy="80" rx="5" ry="6" fill="${O}"/><ellipse cx="124" cy="80" rx="5" ry="6" fill="${O}"/>
+      <circle cx="97" cy="78" r="1.8" fill="#ffcf6b"/><circle cx="125" cy="78" r="1.8" fill="#ffcf6b"/>
+      <!-- цилиндр с шестерёнкой -->
+      <path d="M84 30 h52 v-26 h-52z" fill="#241e30" ${sw(3.5)}/>
+      <path d="M76 30 h68" ${sw(5)}/>
+      <circle cx="124" cy="16" r="7" fill="#d8a94a" ${sw(2)}/><circle cx="124" cy="16" r="2.5" fill="#241e30"/>
+    `, 'char boss'),
+
     shadowking: () => svg('0 0 240 240', `
       <defs>
         <radialGradient id="eyeGlow"><stop offset="0" stop-color="#ffb347" stop-opacity="0.9"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
@@ -396,6 +521,8 @@
     snowman: `<circle cx="50" cy="70" r="22" fill="#e6edf8" ${sw(4)}/><circle cx="50" cy="36" r="16" fill="#e6edf8" ${sw(4)}/><circle cx="44" cy="33" r="2.5" fill="${O}"/><circle cx="56" cy="33" r="2.5" fill="${O}"/><path d="M50 38 l14 4 l-14 2z" fill="#e8762c" ${sw(2)}/><path d="M30 24 h40 M36 24 v-14 h28 v14" fill="#22202a" ${sw(3)}/>`,
     coin: `<circle cx="50" cy="50" r="26" fill="#e6c45a" ${sw(4)}/><circle cx="50" cy="50" r="17" fill="none" stroke="#b08a2a" stroke-width="3"/>${flameShape(50, 34, 0.45, '#b08a2a', '#b08a2a')}`,
     heart: `<path d="M50 84 Q14 60 18 36 Q22 16 40 18 Q48 20 50 30 Q52 20 60 18 Q78 16 82 36 Q86 60 50 84z" fill="#d0463b" ${sw(4)}/><path d="M30 34 q4 -8 12 -6" stroke="#ff9a8a" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+    envelope: `<rect x="14" y="28" width="72" height="48" rx="4" fill="#f2e6c9" ${sw(4)}/><path d="M14 30 l36 26 l36 -26" fill="none" ${sw(3.5)}/><rect x="62" y="36" width="16" height="14" fill="#c8423a" ${sw(2)}/><circle cx="50" cy="58" r="6" fill="#c8423a" ${sw(2)}/>`,
+    thimble: `<path d="M28 84 Q28 30 50 22 Q72 30 72 84z" fill="#b8bcc8" ${sw(4)}/><path d="M26 84 h48" ${sw(6)}/><g fill="#7a8090"><circle cx="42" cy="44" r="3"/><circle cx="56" cy="44" r="3"/><circle cx="38" cy="58" r="3"/><circle cx="50" cy="58" r="3"/><circle cx="62" cy="58" r="3"/><circle cx="44" cy="70" r="3"/><circle cx="58" cy="70" r="3"/></g>`,
     scissors: `<circle cx="30" cy="70" r="12" fill="none" ${sw(4)}/><circle cx="70" cy="70" r="12" fill="none" ${sw(4)}/><path d="M38 62 L72 16 M62 62 L28 16" ${sw(5)}/>`,
   };
 
@@ -415,5 +542,5 @@
     return svg('0 0 40 40', intentIcons[kind] || intentIcons.attack, 'intent-ico');
   }
 
-  window.Art = { background, mixSky, hero, enemy: (id) => (enemiesArt[id] || enemiesArt.inkcat)(), icon, intentIcon, flame: (s = 1) => svg('0 0 100 100', flameShape(50, 44, s * 1.2), 'icon') };
+  window.Art = { background, mixSky, sampleSky, hero, enemy: (id) => (enemiesArt[id] || enemiesArt.inkcat)(), icon, intentIcon, flame: (s = 1) => svg('0 0 100 100', flameShape(50, 44, s * 1.2), 'icon') };
 })();

@@ -1,7 +1,7 @@
 /* Время суток и сюжет.
-   SKIES: палитры неба. У каждой есть from (первый шаг пути) и to (последний шаг),
-   игра плавно смешивает их по мере продвижения к боссу.
-   STORIES: тексты сюжета. Активный сюжет выбирается в ACTIVE_STORY
+   SKIES: палитры неба как ключевые кадры [доля пути 0..1, палитра].
+   После каждого уровня игра смешивает два соседних кадра, поэтому фон меняется понемногу.
+   STORIES: тексты сюжета и стадии пути. Активный сюжет задаёт ACTIVE_STORY
    (для просмотра других можно открыть игру с #night, #sunset, #day или #dawn в адресе). */
 (function () {
   const night = {
@@ -14,6 +14,33 @@
     lampOff: '#2a3044', lampGlow: 1, winGlow: 1,
   };
 
+  const afternoon = {
+    skyTop: '#6fa8dc', skyMid: '#bcd8ec', skyBot: '#f5e6c4',
+    sun: '#fff3c4', sunX: 120, sunY: 150, sunR: 36, stars: 0, moonHole: false,
+    hills: '#a8b8cc', spires: '#8a9ab4', fog: '#fff2d8',
+    snowTop: '#fdf6ee', snowBot: '#c8cfe2', snowEdge: '#ffffff',
+    roof: '#ffffff', roofHi: '#ffffff', wall: '#6a4a3a', wall2: '#5a5a72', ink: '#3a3040',
+    window: '#e8d8b0', door: '#a8553a', window2: '#c8d0e0', fence: '#7a5a48',
+    lampOff: '#6a6a7a', lampGlow: 0, winGlow: 0,
+  };
+  const sunsetTouch = {
+    skyTop: '#3a3266', skyMid: '#d0625a', skyBot: '#f4a35a',
+    sun: '#ff9a4a', sunX: 120, sunY: 500, sunR: 46, stars: 0.15, moonHole: false,
+    hills: '#6a4466', spires: '#553858', fog: '#ffb080',
+    snowTop: '#e8b0a8', snowBot: '#8a6a90', snowEdge: '#ffd6c8',
+    roof: '#e8c0c0', roofHi: '#f8d8d0', wall: '#48303e', wall2: '#3e2a3a', ink: '#241626',
+    window: '#ffb860', door: '#b0502e', window2: '#5a3a4a', fence: '#48303e',
+    lampOff: '#4a3a50', lampGlow: 0.7, winGlow: 0.6,
+  };
+  const deepNight = {
+    skyTop: '#0e1028', skyMid: '#22224a', skyBot: '#3a3060',
+    sun: '#ff7a4a', sunX: 120, sunY: 620, sunR: 0, stars: 1, moonHole: false,
+    hills: '#1e1c38', spires: '#18162e', fog: '#5a5a90',
+    snowTop: '#4a5080', snowBot: '#252a48', snowEdge: '#7a80b0',
+    roof: '#8a90b8', roofHi: '#a8acd0', wall: '#1c1a2c', wall2: '#181628', ink: '#100e20',
+    window: '#ff9d42', door: '#c0602a', window2: '#ff9d42', fence: '#2a2840',
+    lampOff: '#222238', lampGlow: 1, winGlow: 1,
+  };
   const goldenHour = {
     skyTop: '#4a3f7a', skyMid: '#e8836a', skyBot: '#f7c98a',
     sun: '#ffe08a', sunX: 120, sunY: 420, sunR: 44, stars: 0, moonHole: false,
@@ -51,34 +78,47 @@
   const predawn = { ...dusk, sunX: 280, sunY: 580, sun: '#ff9a6a', stars: 0.6, skyBot: '#c07a8a' };
 
   const SKIES = {
-    night: { from: night, to: night },
-    sunset: { from: goldenHour, to: dusk },
-    day: { from: day, to: day },
-    dawn: { from: predawn, to: morning },
+    night: [[0, night]],
+    // день → золотой час к боссу I стадии → солнце касается горизонта → сумерки → ночь к финалу
+    sunset: [[0, afternoon], [24 / 50, goldenHour], [25 / 50, sunsetTouch], [49 / 50, dusk], [1, deepNight]],
+    day: [[0, day]],
+    dawn: [[0, predawn], [1, morning]],
   };
 
+  const roman = ['I', 'II', 'III'];
   const STORIES = {
     night: {
-      sky: 'night', title: 'Фитиль', chapter: 'Глава I · Сонный Брод', heroName: 'Ива', boss: 'moth', litLamps: true,
+      sky: 'night', title: 'Фитиль', heroName: 'Ива',
+      stages: [{ name: 'Глава I · Сонный Брод', len: 12, boss: 'moth', scene: 'town' }],
+      lamps: (run) => Math.min(4, run.lit),
       intro: 'Однажды ночью Ночная Моль съела луну и погасила все фонари Сонного Брода. Ученица фонарщика Ива берёт старую лампу и отправляется в путь, пока не догорела последняя свеча.',
-      countdownRule: (n) => `<b>Свеча.</b> Через ${n} шагов придёт Моль.`,
-      countdown: (left) => (left > 0 ? `Свеча догорит через ${left}` : 'Свеча догорела'),
+      pathRule: (total) => `<b>Свеча.</b> Через ${total} шагов придёт Моль.`,
+      countdown: (c) => (c.left > 0 ? `Свеча догорит через ${c.left}` : 'Свеча догорела'),
       winRibbon: 'Победа!', winTitle: 'Луна вернулась',
       winText: 'Ночная Моль выронила луну, и та покатилась по крышам обратно на небо. В Сонном Броде снова зажглись фонари, а Ива стала настоящей фонарщицей.',
       loseTitle: 'Фитиль погас…',
       loseText: 'Темнота оказалась сильнее. Но где-то в Сонном Броде ещё тлеет уголёк, а значит, история может начаться заново.',
     },
     sunset: {
-      sky: 'sunset', title: 'Последний луч', chapter: 'Медовая Горка · закат', heroName: 'Ива', boss: 'shadowking', litLamps: false, heroBag: true,
-      intro: 'В Медовой Горке письма разносят до заката. Когда садится солнце, из щелей выползают Тени и съедают недоставленные слова. Почтальонка Ива получила последнее письмо дня, а адрес на нём на самом краю города. Солнце уже касается крыш.',
-      countdownRule: (n) => `<b>Солнце.</b> Через ${n} шагов стемнеет и придёт Король Теней.`,
-      countdown: (left) => (left > 0 ? `Солнце сядет через ${left}` : 'Солнце село'),
+      sky: 'sunset', title: 'Последний луч', heroName: 'Ива', heroBag: true,
+      stages: [
+        { name: 'Стадия I · Медовая Горка', len: 25, boss: 'magpie', scene: 'town' },
+        { name: 'Стадия II · Окраина', len: 25, boss: 'clockmaker', scene: 'outskirts' },
+        { name: 'Финал · Последний дом', len: 1, boss: 'shadowking', scene: 'outskirts' },
+      ],
+      // фонари в городе зажигаются один за другим, пока солнце опускается к крышам
+      lamps: (run) => Math.max(0, Math.min(4, Math.floor((run.step - 14) / 2))),
+      intro: 'В Медовой Горке письма разносят до заката. Когда садится солнце, из щелей выползают Тени и съедают недоставленные слова. Почтальонка Ива получила последнее письмо дня, а адрес на нём за самой окраиной. Путь долгий, а солнце уже клонится к крышам.',
+      pathRule: (total) => `<b>Путь.</b> ${total} уровень: две стадии по 25, в конце каждой босс, а на последнем ждёт Король Теней.`,
+      countdown: (c) => (c.final ? 'Солнце село. Король Теней здесь' : c.left > 0 ? `Уровень ${c.level} из ${c.total} · босс через ${c.left}` : `Уровень ${c.level} · босс стадии`),
+      stageIntro: ['Солнце ещё высоко. Пора в путь.', 'Солнце коснулось крыш. Дальше начинается окраина.', 'Стемнело. До двери адресата один шаг.'],
       winRibbon: 'Доставлено!', winTitle: 'Письмо дошло',
       winText: 'Ива постучала в последнюю дверь, когда погас последний луч. Король Теней рассыпался пылью, а в письме оказалось одно слово: «Спасибо». Завтра солнце снова встанет над Медовой Горкой.',
       loseTitle: 'Солнце село…',
       loseText: 'Тени забрали письмо. Но завтра будет новый закат, и Ива снова выйдет на маршрут.',
     },
   };
+  for (const st of Object.values(STORIES)) st.stages.forEach((g, i) => { g.roman = roman[i]; });
 
   const ACTIVE_STORY = 'sunset';
   const fromHash = (location.hash || '').slice(1);
