@@ -89,7 +89,8 @@
   const STORIES = {
     night: {
       sky: 'night', title: 'Фитиль', heroName: 'Ива',
-      stages: [{ name: 'Глава I · Сонный Брод', len: 12, boss: ['moth'], scene: 'town' }],
+      stages: [{ name: 'Глава I · Сонный Брод', len: 12, boss: ['moth'], scene: 'town',
+          early: ['inkcat', 'laundress', 'snowimp', 'sootmouse'], normals: ['inkcat', 'laundress', 'golem', 'icicle', 'scarfsnake', 'mailbox'], elites: ['owl', 'snowbrute'] }],
       lamps: (run) => Math.min(4, run.lit),
       intro: 'Однажды ночью Ночная Моль съела луну и погасила все фонари Сонного Брода. Ученица фонарщика Ива берёт старую лампу и отправляется в путь, пока не догорела последняя свеча.',
       pathRule: (total) => `<b>Свеча.</b> Через ${total} шагов придёт Моль.`,
@@ -102,9 +103,16 @@
     sunset: {
       sky: 'sunset', title: 'Последний луч', heroName: 'Ива', heroBag: true,
       stages: [
-        { name: 'Стадия I · Медовая Горка', len: 25, boss: ['magpie', 'waxgiant', 'vane'], scene: 'town' },
-        { name: 'Стадия II · Окраина', len: 25, boss: ['clockmaker', 'wolf', 'troll'], scene: 'outskirts' },
-        { name: 'Финал · Последний дом', len: 1, boss: ['shadowking', 'hollowpost', 'skywhale'], scene: 'outskirts' },
+        { name: 'Стадия I · Медовая Горка', len: 25, boss: ['magpie', 'waxgiant', 'vane'], scene: 'town',
+          // первые уровни стадии — враги попроще, дальше весь городской набор
+          early: ['inkcat', 'snowimp', 'pigeon', 'sootmouse', 'scarfsnake', 'icicle'],
+          normals: ['inkcat', 'snowimp', 'pigeon', 'sootmouse', 'scarfsnake', 'icicle', 'laundress', 'golem', 'mailbox'],
+          elites: ['owl', 'snowbrute'] },
+        { name: 'Стадия II · Окраина', len: 25, boss: ['clockmaker', 'wolf', 'troll'], scene: 'outskirts',
+          early: ['shadowthief', 'bat', 'wisp', 'frostfox', 'laundress'],
+          normals: ['shadowthief', 'bat', 'stump', 'frostfox', 'wisp', 'raven', 'laundress', 'golem'],
+          elites: ['icebear', 'lampghost', 'owl'] },
+        { name: 'Финал · Последний дом', len: 1, boss: ['shadowking', 'hollowpost', 'skywhale'], scene: 'outskirts', early: [], normals: [], elites: [] },
       ],
       // фонари в городе зажигаются один за другим, пока солнце опускается к крышам
       lamps: (run) => Math.max(0, Math.min(4, Math.floor((run.step - 14) / 2))),

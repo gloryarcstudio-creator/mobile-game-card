@@ -110,6 +110,84 @@
       line: 'Слеплен из огарков погасших свечей.',
       pattern: [{ k: 'block', v: 10 }, { k: 'attack', v: 11 }, { k: 'attack', v: 5 }],
     },
+    // ---- город (стадия I) ----
+    snowimp: {
+      name: 'Снежок-Хулиган', hp: 16, tier: 'normal',
+      line: 'Кидается снежками в каждого прохожего.',
+      pattern: [{ k: 'attack', v: 3, hits: 2 }, { k: 'attack', v: 5 }, { k: 'block', v: 4, then: { k: 'attack', v: 3 } }],
+    },
+    icicle: {
+      name: 'Сосулька-Ворчунья', hp: 22, tier: 'normal',
+      line: 'Висит над дверью и ворчит на всех, кто под ней проходит.',
+      pattern: [{ k: 'attack', v: 9 }, { k: 'block', v: 6 }, { k: 'attack', v: 4, then: { k: 'debuff', v: 1 } }],
+    },
+    pigeon: {
+      name: 'Голубь-Сплетник', hp: 18, tier: 'normal',
+      line: 'Знает, что написано в каждом письме. И всем рассказывает.',
+      pattern: [{ k: 'debuff', v: 1, then: { k: 'attack', v: 3 } }, { k: 'attack', v: 2, hits: 3 }, { k: 'block', v: 5 }],
+    },
+    scarfsnake: {
+      name: 'Шарфовый Змей', hp: 24, tier: 'normal',
+      line: 'Сбежал с бельевой верёвки и душит не хуже удава.',
+      pattern: [{ k: 'attack', v: 4, then: { k: 'debuff', v: 1 } }, { k: 'attack', v: 7 }, { k: 'block', v: 8 }],
+    },
+    sootmouse: {
+      name: 'Печная Мышь', hp: 14, tier: 'normal',
+      line: 'Живёт в трубе и таскает спички.',
+      pattern: [{ k: 'attack', v: 2, hits: 3 }, { k: 'attack', v: 6 }, { k: 'buff', v: 1 }],
+    },
+    mailbox: {
+      name: 'Ящик-Кусака', hp: 30, tier: 'normal',
+      line: 'Почтовый ящик, который больше не хочет отдавать письма.',
+      pattern: [{ k: 'block', v: 10 }, { k: 'attack', v: 12 }, { k: 'attack', v: 4, hits: 2 }],
+    },
+    // ---- окраина (стадия II) ----
+    shadowthief: {
+      name: 'Тень-Воришка', hp: 20, tier: 'normal',
+      line: 'Крадёт свет из фонарей и прячет в мешок.',
+      pattern: [{ k: 'snuff', v: 5 }, { k: 'attack', v: 4, hits: 2 }, { k: 'block', v: 6, then: { k: 'attack', v: 4 } }],
+    },
+    bat: {
+      name: 'Сумеречная Мышь', hp: 18, tier: 'normal',
+      line: 'Просыпается, как только солнце коснётся крыш.',
+      pattern: [{ k: 'attack', v: 3, hits: 3 }, { k: 'debuff', v: 1 }, { k: 'attack', v: 6 }],
+    },
+    stump: {
+      name: 'Пень-Шатун', hp: 36, tier: 'normal',
+      line: 'Днём притворяется пнём. В сумерках выходит на дорогу.',
+      pattern: [{ k: 'block', v: 12 }, { k: 'attack', v: 10 }, { k: 'buff', v: 2 }],
+    },
+    frostfox: {
+      name: 'Морозная Лиса', hp: 24, tier: 'normal',
+      line: 'Заметает следы и путает дорогу.',
+      pattern: [{ k: 'attack', v: 5, hits: 2 }, { k: 'debuff', v: 2 }, { k: 'attack', v: 9 }],
+    },
+    wisp: {
+      name: 'Голубой Морок', hp: 16, tier: 'normal',
+      line: 'Холодный огонь, который заманивает с дороги.',
+      pattern: [{ k: 'snuff', v: 4 }, { k: 'buff', v: 2, then: { k: 'block', v: 6 } }, { k: 'attack', v: 8 }],
+    },
+    raven: {
+      name: 'Ворон-Счетовод', hp: 26, tier: 'normal',
+      line: 'Подсчитывает, сколько минут осталось до темноты.',
+      pattern: [{ k: 'debuff', v: 2 }, { k: 'attack', v: 4, hits: 2 }, { k: 'block', v: 8 }, { k: 'attack', v: 10 }],
+    },
+    // ---- элита ----
+    snowbrute: {
+      name: 'Снеговик-Громила', hp: 50, tier: 'elite',
+      line: 'Его слепили дети, а он вырос и обиделся.',
+      pattern: [{ k: 'attack', v: 12 }, { k: 'block', v: 10, then: { k: 'buff', v: 2 } }, { k: 'attack', v: 4, hits: 3 }],
+    },
+    icebear: {
+      name: 'Ледяной Медведь', hp: 58, tier: 'elite',
+      line: 'Спал в сугробе, пока его не разбудили Тени.',
+      pattern: [{ k: 'attack', v: 14 }, { k: 'block', v: 14 }, { k: 'attack', v: 6, hits: 2 }, { k: 'buff', v: 3 }],
+    },
+    lampghost: {
+      name: 'Фонарный Призрак', hp: 46, tier: 'elite',
+      line: 'Старый фонарь, который так и не зажгли.',
+      pattern: [{ k: 'snuff', v: 8 }, { k: 'attack', v: 5, hits: 3 }, { k: 'debuff', v: 2, then: { k: 'block', v: 8 } }],
+    },
     owl: {
       name: 'Совиный сторож', hp: 48, tier: 'elite',
       line: 'Охраняет темноту. Никого не пропускает.',

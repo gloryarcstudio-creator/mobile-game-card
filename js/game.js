@@ -82,6 +82,8 @@
       choices: null,
       // боссы стадий выбираются случайно в начале забега
       bosses: STAGES.map((g) => pick(g.boss)),
+      // учёт встреч, чтобы враги не повторялись
+      seen: {}, offered: {}, recent: [], lastOffered: [],
     };
     setBg();
     goMap();
@@ -192,13 +194,14 @@
     const g = STAGES[si];
     if (s === g.end) return [{ t: 'boss', enemy: run.bosses[si] }];
     const k = s - g.start; // номер уровня внутри стадии
-    const normals = si === 0
-      ? (k < 8 ? ['inkcat', 'laundress'] : ['inkcat', 'laundress', 'golem', 'golem'])
-      : ['inkcat', 'laundress', 'golem', 'golem', 'laundress'];
+    const normals = k < 8 && g.early.length ? g.early : g.normals;
     const eliteOk = si > 0 || k >= 6;
-    const fight = () => ({ t: 'fight', enemy: pick(normals) });
-    if (s === 0) return [fight(), fight(), { t: 'event', ev: pick(EVENTS).id }];
-    if (s === g.end - 1) return [{ t: 'rest' }, { t: 'shop' }, eliteOk ? { t: 'elite', enemy: 'owl' } : fight()];
+    const used = [];
+    const fight = () => { const enemy = pickEnemy(normals, used); used.push(enemy); return { t: 'fight', enemy }; };
+    const elite = () => { const enemy = pickEnemy(g.elites, used); used.push(enemy); return { t: 'elite', enemy }; };
+    const done = (list) => { run.lastOffered = [...used]; used.forEach((id) => { run.offered[id] = (run.offered[id] || 0) + 1; }); return list; };
+    if (s === 0) return done([fight(), fight(), { t: 'event', ev: pick(EVENTS).id }]);
+    if (s === g.end - 1) return done([{ t: 'rest' }, { t: 'shop' }, eliteOk ? elite() : fight()]);
     const pool = [];
     const weights = [['fight', 40], ['event', 18], ['shop', 10], ['chest', 10], ['rest', 12], ['elite', eliteOk ? (si > 0 ? 16 : 10) : 0]];
     const total = weights.reduce((a, w) => a + w[1], 0);
@@ -207,12 +210,27 @@
       for (const [key, w] of weights) { if ((r -= w) < 0) { t = key; break; } }
       if (t !== 'fight' && t !== 'event' && pool.some((p) => p.t === t)) continue;
       if (t === 'fight') pool.push(fight());
-      else if (t === 'elite') pool.push({ t: 'elite', enemy: 'owl' });
+      else if (t === 'elite') pool.push(elite());
       else if (t === 'event') { const ev = pick(EVENTS.filter((e) => !pool.some((p) => p.ev === e.id))).id; pool.push({ t: 'event', ev }); }
       else pool.push({ t });
     }
     if (!pool.some((p) => p.t === 'fight' || p.t === 'elite')) pool[rnd(0, 2)] = fight();
-    return pool;
+    return done(pool);
+  }
+
+  /* Выбор врага без надоедливых повторов: недавние бои, враги с прошлого шага и уже
+     выложенные на этом шаге пропускаются, а остальные выпадают тем реже,
+     чем чаще уже встречались в этом забеге */
+  function pickEnemy(list, used) {
+    const avoid = [...run.recent, ...run.lastOffered];
+    let cands = list.filter((id) => !used.includes(id) && !avoid.includes(id));
+    if (!cands.length) cands = list.filter((id) => !used.includes(id) && !run.recent.includes(id));
+    if (!cands.length) cands = list.filter((id) => !used.includes(id));
+    if (!cands.length) cands = list;
+    const w = cands.map((id) => 1 / (1 + (run.seen[id] || 0) + 0.3 * (run.offered[id] || 0)));
+    let r = Math.random() * w.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < cands.length; i++) if ((r -= w[i]) < 0) return cands[i];
+    return cands[cands.length - 1];
   }
 
   function encHTML(o, i) {
@@ -448,6 +466,8 @@
 
   function startCombat(enemyId, tier) {
     const e = ENEMIES[enemyId];
+    run.seen[enemyId] = (run.seen[enemyId] || 0) + 1;
+    run.recent = [...run.recent, enemyId].slice(-4);
     const scale = tier === 'boss' ? 1 : 1 + run.step * (MAX_STEPS > 20 ? 0.035 : 0.08);
     const hp = Math.round(e.hp * scale);
     C = {

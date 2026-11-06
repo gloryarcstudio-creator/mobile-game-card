@@ -628,6 +628,318 @@
       <path d="M96 158 l-8 -4 M96 164 l-9 0 M144 158 l8 -4 M144 164 l9 0" ${sw(3)}/>
     `, 'char boss'),
 
+    /* ---------- Город (стадия I) ---------- */
+    snowimp: () => svg('0 0 200 220', `
+      <ellipse cx="100" cy="206" rx="56" ry="8" fill="#000" opacity="0.15"/>
+      <!-- руки-веточки -->
+      <path d="M52 132 L18 110 M30 118 L22 100 M148 132 L182 104" ${sw(4)}/>
+      <circle cx="184" cy="100" r="13" fill="#eef4fb" ${sw(3)}/>
+      <!-- тело-снежок -->
+      <circle cx="100" cy="140" r="60" fill="#eef4fb" ${sw(4)}/>
+      <path d="M50 160 Q100 206 150 160 Q140 196 100 200 Q60 196 50 160z" fill="#c8d6ea"/>
+      <!-- рожки-льдинки -->
+      <path d="M66 92 l-8 -26 l18 16z M134 92 l8 -26 l-18 16z" fill="#bfe3f7" ${sw(3)}/>
+      <!-- лицо -->
+      <path d="M70 116 l20 8 M130 116 l-20 8" ${sw(4)}/>
+      <circle cx="82" cy="132" r="7" fill="${O}"/><circle cx="118" cy="132" r="7" fill="${O}"/>
+      <circle cx="84" cy="130" r="2" fill="#fff"/><circle cx="120" cy="130" r="2" fill="#fff"/>
+      <path d="M78 156 Q100 176 124 154 Q100 164 78 156z" fill="#5a2a3a" ${sw(3)}/>
+      <rect x="96" y="158" width="8" height="7" fill="#fff" ${sw(1.5)}/>
+    `, 'char'),
+
+    icicle: () => svg('0 0 200 220', `
+      <!-- кусок сугроба с крыши -->
+      <path d="M30 40 Q100 10 170 40 L170 58 Q100 70 30 58z" fill="#eef4fb" ${sw(4)}/>
+      <!-- сосулька -->
+      <path d="M58 56 Q100 66 142 56 L104 214 Q100 220 96 214z" fill="#bfe3f7" ${sw(4)}/>
+      <path d="M76 64 L98 196" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+      <path d="M124 62 L112 150" stroke="#8ec6e6" stroke-width="5" stroke-linecap="round"/>
+      <!-- маленькие сосульки -->
+      <path d="M40 56 l6 30 l6 -30z M150 56 l6 24 l6 -24z" fill="#bfe3f7" ${sw(2.5)}/>
+      <!-- сердитое лицо -->
+      <path d="M78 92 l18 8 M122 92 l-18 8" ${sw(4)}/>
+      <ellipse cx="88" cy="108" rx="5" ry="6" fill="${O}"/><ellipse cx="112" cy="108" rx="5" ry="6" fill="${O}"/>
+      <path d="M88 134 Q100 126 112 134" ${sw(3.5)} fill="none"/>
+      <!-- капля -->
+      <path d="M100 218 q4 8 0 12 q-4 -4 0 -12z" fill="#9fd8ff" ${sw(1.5)}/>
+    `, 'char'),
+
+    pigeon: () => svg('0 0 200 220', `
+      <ellipse cx="100" cy="208" rx="60" ry="8" fill="#000" opacity="0.15"/>
+      <!-- хвост -->
+      <path d="M150 150 L192 170 L184 186 L146 172z" fill="#6a7286" ${sw(3.5)}/>
+      <!-- тело -->
+      <ellipse cx="104" cy="148" rx="62" ry="50" fill="#8a93a6" ${sw(4)}/>
+      <path d="M86 152 Q120 140 152 158 Q130 188 96 182z" fill="#737c90" ${sw(3)}/>
+      <path d="M100 160 Q124 154 144 164 M98 172 Q118 166 136 174" ${sw(2)} fill="none" opacity="0.6"/>
+      <!-- шея с переливом -->
+      <path d="M58 132 Q56 96 74 84 Q100 80 108 104 Q104 130 86 140z" fill="#5fa08a" ${sw(3.5)}/>
+      <path d="M70 120 Q84 112 100 118" stroke="#8a6ab0" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <!-- голова -->
+      <circle cx="80" cy="74" r="26" fill="#9aa3b6" ${sw(4)}/>
+      <path d="M56 78 L36 84 L56 88z" fill="#4a4550" ${sw(3)}/>
+      <circle cx="72" cy="70" r="7" fill="#ff9a3c" ${sw(2.5)}/><circle cx="72" cy="70" r="3" fill="${O}"/>
+      <!-- лапки -->
+      <path d="M90 196 v12 l-8 4 M90 208 l8 4 M118 194 v14 l-8 4 M118 208 l8 4" stroke="#d8655a" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <!-- сплетня -->
+      <path d="M118 30 h60 q8 0 8 8 v22 q0 8 -8 8 h-40 l-12 12 l2 -12 h-10 q-8 0 -8 -8 v-22 q0 -8 8 -8z" fill="#f2e6c9" ${sw(3)}/>
+      <circle cx="134" cy="49" r="3.5" fill="${O}"/><circle cx="148" cy="49" r="3.5" fill="${O}"/><circle cx="162" cy="49" r="3.5" fill="${O}"/>
+    `, 'char'),
+
+    scarfsnake: () => svg('0 0 200 220', `
+      <ellipse cx="100" cy="206" rx="70" ry="8" fill="#000" opacity="0.15"/>
+      <defs><pattern id="knit" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="12" fill="#c8423a"/><rect y="12" width="24" height="12" fill="#f2e6c9"/></pattern></defs>
+      <!-- вязаное тело -->
+      <path d="M40 200 Q20 160 60 150 Q110 140 120 112 Q130 80 96 76 Q72 76 70 96" fill="none" stroke="${O}" stroke-width="36" stroke-linecap="round"/>
+      <path d="M40 200 Q20 160 60 150 Q110 140 120 112 Q130 80 96 76 Q72 76 70 96" fill="none" stroke="url(#knit)" stroke-width="28" stroke-linecap="round"/>
+      <!-- кисточки хвоста -->
+      <path d="M36 196 l-14 16 M42 200 l-4 20 M48 198 l6 18" stroke="#c8423a" stroke-width="4" stroke-linecap="round"/>
+      <!-- голова -->
+      <ellipse cx="74" cy="92" rx="34" ry="28" fill="#c8423a" ${sw(4)}/>
+      <path d="M44 86 h60 M44 100 h60" stroke="#f2e6c9" stroke-width="6" opacity="0.8"/>
+      <!-- глаза-пуговицы -->
+      <circle cx="62" cy="84" r="8" fill="#3a2a22" ${sw(2.5)}/><circle cx="88" cy="84" r="8" fill="#3a2a22" ${sw(2.5)}/>
+      <g fill="#f2e6c9"><circle cx="60" cy="82" r="1.5"/><circle cx="64" cy="86" r="1.5"/><circle cx="86" cy="82" r="1.5"/><circle cx="90" cy="86" r="1.5"/></g>
+      <!-- язык -->
+      <path d="M74 118 v16 l-6 6 M74 134 l6 6" stroke="#d8655a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    `, 'char'),
+
+    sootmouse: () => svg('0 0 200 220', `
+      <!-- облако сажи -->
+      <g fill="#3a3640" opacity="0.5"><circle cx="40" cy="190" r="18"/><circle cx="160" cy="196" r="16"/><circle cx="64" cy="204" r="12"/></g>
+      <!-- хвост -->
+      <path d="M140 178 Q190 170 180 130 Q176 116 166 122" stroke="${O}" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M140 178 Q190 170 180 130 Q176 116 166 122" stroke="#6a5a6a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- тело -->
+      <ellipse cx="100" cy="160" rx="50" ry="44" fill="#4a4550" ${sw(4)}/>
+      <ellipse cx="100" cy="170" rx="28" ry="26" fill="#6a6470"/>
+      <!-- уши -->
+      <circle cx="58" cy="78" r="26" fill="#4a4550" ${sw(4)}/><circle cx="58" cy="78" r="14" fill="#d88a9a"/>
+      <circle cx="142" cy="78" r="26" fill="#4a4550" ${sw(4)}/><circle cx="142" cy="78" r="14" fill="#d88a9a"/>
+      <!-- голова -->
+      <ellipse cx="100" cy="108" rx="40" ry="34" fill="#55505c" ${sw(4)}/>
+      <ellipse cx="84" cy="102" rx="7" ry="8" fill="#ffcf6b" ${sw(2)}/><ellipse cx="116" cy="102" rx="7" ry="8" fill="#ffcf6b" ${sw(2)}/>
+      <ellipse cx="84" cy="103" rx="2.5" ry="5" fill="${O}"/><ellipse cx="116" cy="103" rx="2.5" ry="5" fill="${O}"/>
+      <circle cx="100" cy="124" r="6" fill="#d88a9a" ${sw(2)}/>
+      <path d="M86 126 l-22 -4 M86 130 l-22 4 M114 126 l22 -4 M114 130 l22 4" ${sw(1.5)}/>
+      <!-- спичка -->
+      <path d="M140 170 L172 130" stroke="#d8b878" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="174" cy="128" r="5" fill="#c8423a" ${sw(2)}/>
+      <path d="M174 122 q-6 -10 0 -18 q6 8 0 18z" fill="#ffb23e" ${sw(1.5)}/>
+    `, 'char'),
+
+    mailbox: () => svg('0 0 200 220', `
+      <!-- столб -->
+      <rect x="90" y="150" width="20" height="66" fill="#5a4636" ${sw(3.5)}/>
+      <!-- ящик -->
+      <path d="M42 70 Q42 40 100 40 Q158 40 158 70 V156 H42z" fill="#2f5d9a" ${sw(4)}/>
+      <path d="M42 70 Q42 40 100 40 Q158 40 158 70" fill="none" stroke="#5a88c8" stroke-width="6" transform="translate(0 6)"/>
+      <!-- флажок -->
+      <path d="M158 80 h20 v-24 h-14" fill="none" ${sw(3.5)}/><rect x="164" y="56" width="16" height="12" fill="#c8423a" ${sw(2.5)}/>
+      <!-- глаза на крышке -->
+      <circle cx="78" cy="72" r="11" fill="#fff" ${sw(3)}/><circle cx="122" cy="72" r="11" fill="#fff" ${sw(3)}/>
+      <circle cx="80" cy="74" r="5" fill="${O}"/><circle cx="120" cy="74" r="5" fill="${O}"/>
+      <path d="M64 56 l24 8 M136 56 l-24 8" ${sw(4)}/>
+      <!-- щель-пасть с зубами -->
+      <rect x="56" y="100" width="88" height="30" rx="6" fill="#1a1428" ${sw(3.5)}/>
+      <path d="M58 102 l8 10 l8 -10 l8 10 l8 -10 l8 10 l8 -10 l8 10 l8 -10 l8 10 l8 -10 M58 128 l8 -9 l8 9 l8 -9 l8 9 l8 -9 l8 9 l8 -9 l8 9 l8 -9 l8 9" fill="#f2efe6" ${sw(1.5)}/>
+      <!-- письмо-язык -->
+      <g transform="rotate(12 100 136)"><rect x="82" y="124" width="36" height="26" rx="2" fill="#f2e6c9" ${sw(2.5)}/><path d="M82 124 l18 13 l18 -13" fill="none" ${sw(2)}/></g>
+    `, 'char'),
+
+    /* ---------- Окраина (стадия II) ---------- */
+    shadowthief: () => svg('0 0 200 220', `
+      <ellipse cx="100" cy="208" rx="50" ry="7" fill="#000" opacity="0.25"/>
+      <!-- мешок с украденным светом -->
+      <defs><radialGradient id="sackGlow"><stop offset="0" stop-color="#ffd27a" stop-opacity="0.8"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="150" cy="96" r="44" fill="url(#sackGlow)"/>
+      <path d="M126 112 Q118 66 150 60 Q182 66 174 112 Q150 124 126 112z" fill="#8a6a4a" ${sw(3.5)}/>
+      <path d="M140 64 Q150 52 160 64" ${sw(3)} fill="none"/>
+      <path d="M140 100 q10 -14 20 0" stroke="#ffd27a" stroke-width="3" fill="none"/>
+      <!-- тень -->
+      <path d="M50 206 Q38 140 66 104 Q100 70 132 104 Q150 140 146 206 Q134 194 124 208 Q112 192 100 208 Q86 192 74 208 Q62 194 50 206z" fill="#1e1a33" ${sw(4)}/>
+      <path d="M130 116 Q146 112 150 96" stroke="#1e1a33" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <path d="M130 116 Q146 112 150 96" ${sw(3)} fill="none" opacity="0.4"/>
+      <!-- глаза -->
+      <ellipse cx="84" cy="126" rx="9" ry="5" fill="#f2f0ff" transform="rotate(12 84 126)"/>
+      <ellipse cx="112" cy="126" rx="9" ry="5" fill="#f2f0ff" transform="rotate(-12 112 126)"/>
+      <path d="M86 152 Q98 160 110 152" stroke="#f2f0ff" stroke-width="3" fill="none" stroke-linecap="round"/>
+    `, 'char'),
+
+    bat: () => svg('0 0 220 200', `
+      <!-- крылья -->
+      <path d="M110 100 Q70 40 10 60 Q30 76 26 96 Q44 90 52 108 Q70 98 82 116z" fill="#4a3a6a" ${sw(4)}/>
+      <path d="M110 100 Q150 40 210 60 Q190 76 194 96 Q176 90 168 108 Q150 98 138 116z" fill="#4a3a6a" ${sw(4)}/>
+      <path d="M26 96 L72 80 M52 108 L84 90 M194 96 L148 80 M168 108 L136 90" stroke="#6a5a90" stroke-width="3"/>
+      <!-- тело -->
+      <ellipse cx="110" cy="122" rx="32" ry="40" fill="#3a2e54" ${sw(4)}/>
+      <!-- уши -->
+      <path d="M86 92 L80 52 L102 82z M134 92 L140 52 L118 82z" fill="#3a2e54" ${sw(3.5)}/>
+      <path d="M86 84 L84 62 L96 80z M134 84 L136 62 L124 80z" fill="#d88a9a"/>
+      <!-- глаза и клыки -->
+      <ellipse cx="98" cy="108" rx="8" ry="9" fill="#ffcf6b" ${sw(2.5)}/><ellipse cx="122" cy="108" rx="8" ry="9" fill="#ffcf6b" ${sw(2.5)}/>
+      <ellipse cx="98" cy="110" rx="3" ry="5" fill="${O}"/><ellipse cx="122" cy="110" rx="3" ry="5" fill="${O}"/>
+      <path d="M98 130 Q110 138 122 130" ${sw(3)} fill="none"/>
+      <path d="M102 132 l3 8 l3 -7 M112 133 l3 7 l3 -8" fill="#fff" ${sw(1.5)}/>
+      <!-- лапки -->
+      <path d="M100 160 l-4 12 M120 160 l4 12" ${sw(3.5)}/>
+    `, 'char'),
+
+    stump: () => svg('0 0 200 220', `
+      <ellipse cx="100" cy="208" rx="70" ry="8" fill="#000" opacity="0.2"/>
+      <!-- корни-ноги -->
+      <path d="M50 190 Q36 206 22 206 M76 196 Q72 212 60 216 M124 196 Q130 212 142 216 M150 190 Q164 206 178 204" ${sw(8)} stroke="#5a4030"/>
+      <path d="M50 190 Q36 206 22 206 M76 196 Q72 212 60 216 M124 196 Q130 212 142 216 M150 190 Q164 206 178 204" ${sw(2.5)} fill="none" opacity="0.5"/>
+      <!-- ствол -->
+      <path d="M44 196 Q38 120 50 76 H150 Q162 120 156 196z" fill="#6a4a34" ${sw(4)}/>
+      <path d="M64 100 Q60 150 66 190 M136 96 Q142 150 134 190 M100 120 v60" stroke="#4a3424" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- спил со снегом и кольцами -->
+      <ellipse cx="100" cy="76" rx="50" ry="16" fill="#c8a07a" ${sw(4)}/>
+      <ellipse cx="100" cy="76" rx="30" ry="9" fill="none" stroke="#9a7458" stroke-width="2.5"/>
+      <path d="M52 74 Q70 56 100 58 Q132 56 150 72 Q130 66 116 70 Q100 62 86 70 Q66 64 52 74z" fill="#eef4fb" ${sw(3)}/>
+      <!-- грибы -->
+      <path d="M150 128 q14 -10 22 4 z" fill="#c8423a" ${sw(2.5)}/><path d="M160 130 v8" ${sw(3)}/>
+      <!-- лицо в коре -->
+      <path d="M72 116 l18 6 M128 116 l-18 6" ${sw(4)}/>
+      <ellipse cx="82" cy="132" rx="7" ry="9" fill="#1a1020"/><ellipse cx="118" cy="132" rx="7" ry="9" fill="#1a1020"/>
+      <circle cx="82" cy="132" r="2.5" fill="#9be7a0"/><circle cx="118" cy="132" r="2.5" fill="#9be7a0"/>
+      <path d="M82 160 Q100 150 118 160 Q100 170 82 160z" fill="#1a1020" ${sw(2.5)}/>
+      <!-- руки-ветки -->
+      <path d="M46 120 L14 96 M26 106 L18 86 M154 120 L186 100 M174 108 L186 90" ${sw(5)} stroke="#5a4030"/>
+    `, 'char'),
+
+    frostfox: () => svg('0 0 210 210', `
+      <ellipse cx="100" cy="198" rx="64" ry="8" fill="#000" opacity="0.15"/>
+      <!-- хвост с кристаллами -->
+      <path d="M130 180 Q200 190 196 130 Q190 100 166 110 Q180 140 140 156z" fill="#e8f2fb" ${sw(4)}/>
+      <path d="M176 120 l6 -12 l4 12z M188 142 l10 -6 l-2 12z" fill="#9fd8ff" ${sw(2)}/>
+      <!-- тело -->
+      <path d="M60 196 Q50 140 76 116 Q100 100 124 116 Q148 140 140 196z" fill="#d8e8f6" ${sw(4)}/>
+      <path d="M84 196 Q86 150 100 132 Q114 150 116 196z" fill="#ffffff" ${sw(2.5)}/>
+      <!-- голова -->
+      <path d="M58 70 L66 24 L88 54 Q100 50 112 54 L134 24 L142 70 Q148 96 100 120 Q52 96 58 70z" fill="#e8f2fb" ${sw(4)}/>
+      <path d="M66 32 L82 54 M134 32 L118 54" stroke="#9fb8d8" stroke-width="5" stroke-linecap="round"/>
+      <path d="M76 86 Q100 80 124 86 Q114 110 100 116 Q86 110 76 86z" fill="#ffffff"/>
+      <circle cx="100" cy="108" r="6" fill="${O}"/>
+      <!-- хитрые глаза -->
+      <path d="M72 76 Q82 70 92 78 Q82 82 72 76z" fill="#5ab8e0" ${sw(2.5)}/>
+      <path d="M128 76 Q118 70 108 78 Q118 82 128 76z" fill="#5ab8e0" ${sw(2.5)}/>
+      <path d="M86 112 Q100 120 114 110" ${sw(2.5)} fill="none"/>
+    `, 'char'),
+
+    wisp: () => svg('0 0 200 220', `
+      <defs><radialGradient id="wispG"><stop offset="0" stop-color="#e8fbff"/><stop offset="0.5" stop-color="#7ad6ff"/><stop offset="1" stop-color="#3a7ad0"/></radialGradient>
+        <radialGradient id="wispGlow"><stop offset="0" stop-color="#7ad6ff" stop-opacity="0.6"/><stop offset="1" stop-color="#7ad6ff" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="100" cy="110" r="96" fill="url(#wispGlow)"/>
+      <!-- хвост-пламя -->
+      <path d="M100 30 Q150 60 146 110 Q144 150 112 170 Q130 190 104 214 Q108 192 90 180 Q50 160 54 110 Q56 70 100 30z" fill="url(#wispG)" ${sw(4)}/>
+      <path d="M100 52 Q132 80 128 110" stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <!-- пустые глаза -->
+      <ellipse cx="84" cy="112" rx="9" ry="13" fill="#1a2a4a"/><ellipse cx="116" cy="112" rx="9" ry="13" fill="#1a2a4a"/>
+      <path d="M90 144 Q100 150 110 144" stroke="#1a2a4a" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- искры -->
+      <g fill="#e8fbff"><circle cx="40" cy="70" r="3"/><circle cx="164" cy="56" r="2.5"/><circle cx="170" cy="150" r="3"/><circle cx="34" cy="160" r="2"/></g>
+    `, 'char'),
+
+    raven: () => svg('0 0 210 220', `
+      <ellipse cx="100" cy="208" rx="56" ry="8" fill="#000" opacity="0.2"/>
+      <!-- хвост -->
+      <path d="M120 176 L170 210 L150 214 L112 186z" fill="#1a1a24" ${sw(3.5)}/>
+      <!-- тело -->
+      <path d="M50 130 Q50 80 92 70 Q136 66 146 112 Q152 170 112 192 Q70 200 56 170 Q48 150 50 130z" fill="#22222e" ${sw(4)}/>
+      <path d="M104 100 Q140 104 144 150 Q120 150 100 132z" fill="#2e2e40" ${sw(3)}/>
+      <path d="M112 112 Q132 120 136 140" stroke="#5a6a9a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- голова -->
+      <circle cx="80" cy="74" r="30" fill="#22222e" ${sw(4)}/>
+      <path d="M52 78 L14 92 L52 94z" fill="#3a3a48" ${sw(3)}/>
+      <!-- очки -->
+      <circle cx="74" cy="70" r="11" fill="#cfe6ff" fill-opacity="0.35" ${sw(3)}/>
+      <circle cx="96" cy="70" r="9" fill="#cfe6ff" fill-opacity="0.35" ${sw(3)}/>
+      <path d="M85 70 h2" ${sw(3)}/>
+      <circle cx="74" cy="70" r="3.5" fill="#ffcf6b"/><circle cx="96" cy="70" r="3" fill="#ffcf6b"/>
+      <!-- счёты -->
+      <g transform="rotate(-8 60 160)">
+        <rect x="24" y="136" width="70" height="50" rx="4" fill="#8a5a32" ${sw(3)}/>
+        <rect x="30" y="142" width="58" height="38" fill="#3a2a22"/>
+        <path d="M30 152 h58 M30 162 h58 M30 172 h58" stroke="#d8b878" stroke-width="1.5"/>
+        <g fill="#e6c45a" ${sw(1)}><circle cx="38" cy="152" r="3.5"/><circle cx="46" cy="152" r="3.5"/><circle cx="74" cy="152" r="3.5"/><circle cx="54" cy="162" r="3.5"/><circle cx="80" cy="162" r="3.5"/><circle cx="38" cy="172" r="3.5"/><circle cx="62" cy="172" r="3.5"/><circle cx="70" cy="172" r="3.5"/></g>
+      </g>
+      <!-- лапы -->
+      <path d="M92 192 l-6 12 M104 192 l4 12" ${sw(3.5)}/>
+    `, 'char'),
+
+    /* ---------- Элита ---------- */
+    snowbrute: () => svg('0 0 220 240', `
+      <ellipse cx="110" cy="230" rx="76" ry="8" fill="#000" opacity="0.15"/>
+      <!-- нижний ком -->
+      <circle cx="110" cy="176" r="58" fill="#eef4fb" ${sw(4)}/>
+      <path d="M56 190 Q110 236 164 190 Q154 226 110 232 Q66 226 56 190z" fill="#c8d6ea"/>
+      <!-- руки-палки с варежками -->
+      <path d="M66 112 L20 70 M154 112 L198 64" ${sw(6)} stroke="#6a4a34"/>
+      <circle cx="18" cy="66" r="15" fill="#c8423a" ${sw(3.5)}/><circle cx="200" cy="60" r="15" fill="#c8423a" ${sw(3.5)}/>
+      <path d="M10 56 l6 6 M192 50 l6 6" ${sw(3)}/>
+      <!-- верхний ком -->
+      <circle cx="110" cy="96" r="46" fill="#eef4fb" ${sw(4)}/>
+      <!-- шарф -->
+      <path d="M66 126 Q110 146 154 126 L156 140 Q110 162 64 140z" fill="#2f5d9a" ${sw(3.5)}/>
+      <path d="M128 140 l10 34 l-16 2z" fill="#2f5d9a" ${sw(3)}/>
+      <!-- ведро-шлем -->
+      <path d="M72 66 L80 22 H140 L148 66z" fill="#7b8794" ${sw(4)}/>
+      <path d="M68 66 H152" ${sw(6)}/>
+      <path d="M86 30 Q110 40 134 30" stroke="#9aa6b6" stroke-width="4" fill="none"/>
+      <!-- угольные глаза и нос -->
+      <path d="M84 80 l20 8 M136 80 l-20 8" ${sw(5)}/>
+      <circle cx="94" cy="96" r="6" fill="${O}"/><circle cx="126" cy="96" r="6" fill="${O}"/>
+      <path d="M108 104 L148 112 L108 116z" fill="#e8762c" ${sw(3)}/>
+      <g fill="${O}"><circle cx="92" cy="122" r="3"/><circle cx="102" cy="126" r="3"/><circle cx="114" cy="126" r="3"/><circle cx="124" cy="122" r="3"/></g>
+      <g fill="${O}"><circle cx="110" cy="166" r="5"/><circle cx="110" cy="190" r="5"/></g>
+    `, 'char'),
+
+    icebear: () => svg('0 0 220 240', `
+      <ellipse cx="110" cy="230" rx="80" ry="8" fill="#000" opacity="0.18"/>
+      <!-- тело -->
+      <path d="M40 228 Q26 150 64 112 Q110 84 156 112 Q194 150 180 228z" fill="#dce8f4" ${sw(4)}/>
+      <path d="M76 228 Q80 160 110 140 Q140 160 144 228z" fill="#f2f8ff" ${sw(2.5)}/>
+      <!-- ледяные кристаллы на спине -->
+      <path d="M60 122 l-10 -30 l22 18z M160 122 l10 -30 l-22 18z M84 104 l-2 -26 l14 20z M136 104 l2 -26 l-14 20z" fill="#9fd8ff" ${sw(2.5)}/>
+      <!-- лапы с когтями -->
+      <path d="M52 150 Q22 170 30 204" stroke="#dce8f4" stroke-width="26" stroke-linecap="round" fill="none"/>
+      <path d="M168 150 Q198 170 190 204" stroke="#dce8f4" stroke-width="26" stroke-linecap="round" fill="none"/>
+      <path d="M52 150 Q22 170 30 204 M168 150 Q198 170 190 204" ${sw(3)} fill="none" opacity="0.5"/>
+      <path d="M20 210 l-4 10 M30 214 l0 10 M40 210 l4 10 M180 210 l-4 10 M190 214 l0 10 M200 210 l4 10" ${sw(3.5)}/>
+      <!-- голова -->
+      <circle cx="74" cy="56" r="16" fill="#dce8f4" ${sw(4)}/><circle cx="146" cy="56" r="16" fill="#dce8f4" ${sw(4)}/>
+      <ellipse cx="110" cy="84" rx="48" ry="40" fill="#e8f2fb" ${sw(4)}/>
+      <path d="M84 70 l18 8 M136 70 l-18 8" ${sw(4.5)}/>
+      <circle cx="92" cy="84" r="5" fill="${O}"/><circle cx="128" cy="84" r="5" fill="${O}"/>
+      <ellipse cx="110" cy="104" rx="20" ry="14" fill="#f8fbff" ${sw(3)}/>
+      <ellipse cx="110" cy="98" rx="8" ry="5" fill="${O}"/>
+      <path d="M100 112 l4 6 l6 -4 l6 4 l4 -6" fill="#fff" ${sw(2)}/>
+      <!-- дыхание -->
+      <g fill="#cfe6ff" opacity="0.6"><circle cx="146" cy="118" r="7"/><circle cx="160" cy="112" r="5"/></g>
+    `, 'char'),
+
+    lampghost: () => svg('0 0 200 240', `
+      <defs><radialGradient id="lgGlow"><stop offset="0" stop-color="#b8f3ff" stop-opacity="0.7"/><stop offset="1" stop-color="#b8f3ff" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="100" cy="96" r="80" fill="url(#lgGlow)"/>
+      <!-- призрачный шлейф вместо столба -->
+      <path d="M78 150 Q60 196 74 236 Q90 220 100 238 Q110 220 126 236 Q140 196 122 150z" fill="#b8c8e0" fill-opacity="0.75" ${sw(3.5)}/>
+      <!-- фонарь -->
+      <path d="M100 18 v14" ${sw(4)}/>
+      <path d="M62 36 h76 l-10 16 h-56z" fill="#2a3044" ${sw(3.5)}/>
+      <path d="M68 52 h64 l-6 92 h-52z" fill="#3a4a6a" ${sw(3.5)}/>
+      <path d="M74 58 h52 l-5 80 h-42z" fill="#b8f3ff" fill-opacity="0.85"/>
+      <path d="M100 52 v92" ${sw(2.5)}/>
+      <path d="M58 144 h84 l-8 12 h-68z" fill="#2a3044" ${sw(3.5)}/>
+      <!-- лицо в стекле -->
+      <ellipse cx="88" cy="90" rx="7" ry="11" fill="#1a2a4a"/><ellipse cx="112" cy="90" rx="7" ry="11" fill="#1a2a4a"/>
+      <path d="M86 118 Q100 110 114 118 Q100 128 86 118z" fill="#1a2a4a"/>
+      <!-- холодный огонёк -->
+      <path d="M100 136 q-6 -8 0 -16 q6 8 0 16z" fill="#7ad6ff"/>
+      <!-- руки-ленты -->
+      <path d="M68 100 Q36 96 24 120 M132 100 Q164 96 176 120" stroke="#b8c8e0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.8"/>
+    `, 'char ghosty'),
+
     hedgehog: () => svg('0 0 200 220', `
       <path d="M30 170 Q20 90 90 70 Q170 60 176 150 Q178 182 150 190 H50 Q32 188 30 170z" fill="#5a4636" ${sw(4)}/>
       <g fill="#3e2f25" ${sw(2.5)}><path d="M44 110 l-14 -16 l22 4z"/><path d="M62 86 l-6 -22 l18 12z"/><path d="M92 74 l4 -24 l12 20z"/><path d="M128 76 l14 -18 l4 22z"/><path d="M158 100 l20 -10 l-6 22z"/><path d="M172 140 l20 2 l-16 14z"/></g>
