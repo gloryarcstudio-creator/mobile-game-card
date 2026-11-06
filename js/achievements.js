@@ -3,7 +3,7 @@
      stat — счётчик общей статистики (STATS), c — свой счётчик или флаг достижений,
      s — сколько разных предметов собрано в наборе, has — есть ли предмет item в наборе.
    desc: {p} заменяется на «прогресс/цель».
-   art: 'h' — Ива, 'e:<id>' — противник, 'i:<id>' — иконка. */
+   art: 'h' — Ива, 'c:<герой>' — герой из CLASSES, 'e:<id>' — противник, 'i:<id>' — иконка. */
 (function () {
   const { CARDS, RELICS, EVENTS } = window.Data;
   const STORY = window.Story.story;
@@ -12,7 +12,7 @@
   const foes = new Set();
   STORY.stages.forEach((g) => [...g.boss, ...g.early, ...g.normals, ...g.elites].forEach((id) => foes.add(id)));
   const playable = Object.keys(CARDS).filter((k) => CARDS[k].rarity !== 'status').length;
-  const relics = Object.keys(RELICS).length;
+  const relics = Object.keys(RELICS).filter((k) => RELICS[k].tier !== 'class').length;
   const trophies = Object.keys(RELICS).filter((k) => RELICS[k].tier === 'boss').length;
 
   const CATS = [
@@ -31,6 +31,12 @@
   add('path', 'runs10', 'Снова на маршрут', 'Начать {p} забегов.', 'stat', 'runs', 10, 'i:lantern');
   tiers('path', 'road', 'Долгая дорога', 'Пройти {p} уровней.', 'c', 'steps', [100, 400, 1000], ['i:rhythm', 'i:compass', 'i:sled']);
   tiers('path', 'win', 'Письмо доставлено', 'Доставить письмо {p} раз.', 'stat', 'wins', [1, 3, 10], ['i:lastword', 'i:parcel', 'i:redseal']);
+  const hero = (id, name, desc) => add('path', `hero-${id}`, name, desc, 'has', 'winsCls', 1, `c:${id}`, id);
+  hero('lamp', 'Свет до порога', 'Доставить письмо за фонарщицу Иву.');
+  hero('courier', 'Быстрее заката', 'Доставить письмо за скорохода Тишу.');
+  hero('guard', 'Несокрушимая', 'Доставить письмо за сторожиху Марфу.');
+  hero('stoker', 'С огоньком', 'Доставить письмо за трубочиста Фому.');
+  add('path', 'allheroes', 'Вся почта Горки', 'Доставить письмо каждым героем: {p}.', 's', 'winsCls', Object.keys(window.Data.CLASSES).length, 'i:horn');
   add('path', 'events', 'Любопытная', 'Побывать во всех событиях пути: {p}.', 's', 'events', EVENTS.length, 'i:well');
   tiers('path', 'chest', 'Будильник', 'Разбудить {p} сундуков-сонь.', 'c', 'chests', [10, 40], ['i:chest', 'i:bell']);
   const boss = (id, name, desc) => add('path', `boss-${id}`, name, desc, 'has', 'bosses', 1, `e:${id}`, id);

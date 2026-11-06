@@ -3,6 +3,7 @@
   /* Карта: {name, cost, upCost?, type, rarity, art, exhaust?, retain?, desc(g, u, c), play(g, u, c)}
      type: atk (атака) | skill (навык) | charm (чары: действуют до конца боя) | status (помеха от врагов)
      rarity: start | common | rare | status
+     cls — карта героя: выпадает в наградах и лавке только этому герою (см. CLASSES)
      u — карта улучшена у костра (цифры в описании и розыгрыше берутся через u ? улучшено : обычно)
      c — экземпляр карты в бою (для карт, которые растут, пока лежат в колоде)
      g — интерфейс боя из game.js: attack(n, hits), block(n), flame(n), draw(n), heal(n), burn(n),
@@ -259,6 +260,72 @@
       play: async (g) => g.charm('rhythm', 1),
     },
 
+    // ---------- карты героев: выпадают только своему герою ----------
+    // Ива, фонарщица: Огоньки и Вспышки
+    firefly: {
+      name: 'Светлячок', cost: 0, type: 'skill', rarity: 'common', art: 'firefly', cls: 'lamp', exhaust: true,
+      desc: (g, u) => `+1 Огонёк.${u ? ' Взять 1 карту.' : ''}`,
+      play: async (g, u) => { await g.flame(1); if (u) g.draw(1); },
+    },
+    lampglass: {
+      name: 'Ламповое стекло', cost: 1, type: 'skill', rarity: 'common', art: 'lampglass', cls: 'lamp',
+      desc: (g, u) => `Получить ${u ? 5 : 3} защиты и ещё ${u ? 3 : 2} за каждый Огонёк${g.state ? ` (${(u ? 5 : 3) + (u ? 3 : 2) * g.state.flame})` : ''}.`,
+      play: async (g, u) => g.block((u ? 5 : 3) + (u ? 3 : 2) * g.state.flame),
+    },
+    beam: {
+      name: 'Ослепительный луч', cost: 2, type: 'atk', rarity: 'rare', art: 'beam', cls: 'lamp',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 14 : 10)} урона. Вспышка лампы, Огоньки не тратятся.`,
+      play: async (g, u) => { await g.attack(u ? 14 : 10); if (!g.enemyDead) await g.burstNow(); },
+    },
+    // Тиша, скороход: Доставка, Серия и длинные ходы
+    urgent: {
+      name: 'Срочно!', cost: 0, type: 'atk', rarity: 'common', art: 'urgent', cls: 'courier',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 5 : 3)} урона. Взять 1 карту.`,
+      play: async (g, u) => { await g.attack(u ? 5 : 3); g.draw(1); },
+    },
+    express: {
+      name: 'Экспресс', cost: 1, type: 'skill', rarity: 'common', art: 'express', cls: 'courier',
+      desc: (g, u) => `Получить ${u ? 7 : 4} защиты. Доставка: +1 энергия и 2 карты.`,
+      play: async (g, u) => { g.block(u ? 7 : 4); g.deliver('Экспресс', async (d) => { d.energy(1); d.draw(2); }); },
+    },
+    rushmail: {
+      name: 'Срочная почта', cost: 1, type: 'skill', rarity: 'rare', art: 'rushmail', cls: 'courier',
+      desc: (g, u) => `Серия: +1 энергия за каждые 2 карты до этой в этот ход${g.state ? ` (+${Math.floor(g.played / 2)})` : ''}. Взять ${u ? 3 : 2} карты.`,
+      play: async (g, u) => { const n = Math.floor(g.played / 2); if (n) g.energy(n); g.draw(u ? 3 : 2); },
+    },
+    // Марфа, сторожиха моста: защита, Шипы и мороз
+    icewall: {
+      name: 'Ледяная стена', cost: 2, type: 'skill', rarity: 'common', art: 'icewall', cls: 'guard',
+      desc: (g, u) => `Получить ${u ? 17 : 13} защиты. Враг теряет ${u ? 2 : 1} Силы.`,
+      play: async (g, u) => { g.block(u ? 17 : 13); g.chill(u ? 2 : 1); },
+    },
+    hedge: {
+      name: 'Колючая изгородь', cost: 1, type: 'skill', rarity: 'common', art: 'hedge', cls: 'guard',
+      desc: (g, u) => `Шипы ${u ? 3 : 2}. Получить защиту, равную двойным Шипам${g.state ? ` (${(g.state.thorns + (u ? 3 : 2)) * 2})` : ''}.`,
+      play: async (g, u) => { g.thorns(u ? 3 : 2); g.block(g.state.thorns * 2); },
+    },
+    standfast: {
+      name: 'Стоять до утра', cost: 2, upCost: 1, type: 'charm', rarity: 'rare', art: 'standfast', cls: 'guard',
+      desc: () => 'Защита больше не сгорает в начале хода.',
+      play: async (g) => g.charm('standfast', 1),
+    },
+    // Фома, трубочист: Поджог
+    flue: {
+      name: 'Дымоход', cost: 1, type: 'skill', rarity: 'common', art: 'flue', cls: 'stoker',
+      desc: (g, u) => `Поджог ${u ? 5 : 3}. Получить защиту, равную Поджогу врага.`,
+      play: async (g, u) => { g.burn(u ? 5 : 3); g.block(g.state.enemy.burn); },
+    },
+    poker: {
+      name: 'Кочерга', cost: 1, type: 'atk', rarity: 'common', art: 'poker', cls: 'stoker',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 8 : 6)} урона. По горящему врагу дважды.`,
+      play: async (g, u) => g.attack(u ? 8 : 6, g.state.enemy.burn > 0 ? 2 : 1),
+    },
+    fan: {
+      name: 'Раздуть угли', cost: 1, upCost: 0, type: 'skill', rarity: 'rare', art: 'fan', cls: 'stoker', exhaust: true,
+      desc: (g) => `Удвоить Поджог врага${g.state ? ` (${g.state.enemy.burn} → ${g.state.enemy.burn * 2})` : ''}.`,
+      play: async (g) => { if (g.state.enemy.burn > 0) g.burn(g.state.enemy.burn); },
+    },
+
     // ---------- помехи: враги подкидывают их в колоду на время боя ----------
     blot: {
       name: 'Клякса', cost: 1, type: 'status', rarity: 'status', art: 'blot', exhaust: true,
@@ -436,7 +503,8 @@
     },
   };
 
-  /* Талисманы. tier: common | rare | boss.
+  /* Талисманы. tier: common | rare | boss | class.
+     class — особенность героя: есть у него с начала забега и больше нигде не выпадает.
      Обычные и редкие дают элиты, сундуки, события и лавка; талисманы босса выбираются
      один из трёх после победы над боссом стадии: они сильные, но у многих есть цена. */
   const RELICS = {
@@ -467,6 +535,11 @@
     musicbox: { tier: 'rare', name: 'Музыкальная шкатулка', art: 'musicbox', desc: 'Каждый третий ход +2 энергии.' },
     ribbon: { tier: 'rare', name: 'Лента для писем', art: 'ribbon', desc: 'В конце хода самая дорогая карта остаётся в руке.' },
     horn: { tier: 'rare', name: 'Почтовый рожок', art: 'horn', desc: 'Каждая Доставка срабатывает дважды.' },
+    // особенности героев
+    ivalamp: { tier: 'class', name: 'Фонарь Ивы', art: 'lantern', desc: 'После каждой Вспышки в лампе остаётся 1 Огонёк.' },
+    wingboots: { tier: 'class', name: 'Крылатые ботинки', art: 'wingboots', desc: 'Каждая четвёртая карта за ход: +1 энергия и 1 карта.' },
+    ironshutter: { tier: 'class', name: 'Окованный ставень', art: 'ironshutter', desc: 'Когда защита целиком принимает удар врага, он получает 4 урона.' },
+    sootbroom: { tier: 'class', name: 'Закопчённая метла', art: 'sootbroom', desc: 'Каждый удар ваших атак добавляет врагу Поджог 1.' },
     // талисманы босса
     hourglass: { tier: 'boss', name: 'Песочные часы', art: 'hourglass', desc: '+1 энергия каждый ход. В руку на 1 карту меньше.' },
     bottomless: { tier: 'boss', name: 'Бездонная сумка', art: 'bottomless', desc: '+1 энергия каждый ход. Костёр больше не лечит.' },
@@ -541,7 +614,7 @@
     },
     {
       id: 'icemirror', title: 'Ледяное зеркало', art: 'frostglass',
-      text: 'В замёрзшей луже отражается не Ива, а её колода карт. Отражение протягивает руку.',
+      text: 'В замёрзшей луже отражается не путник, а его колода карт. Отражение протягивает руку.',
       options: [
         { text: 'Коснуться отражения', hint: '−7 HP, копия карты', act: (r, a) => { a.damage(7); a.duplicatePrompt(); return null; } },
         { text: 'Разбить лёд', hint: '+20 монет', act: (r) => { r.gold += 20; return 'Лёд треснул, и из него посыпались монетки.'; } },
@@ -550,5 +623,39 @@
     },
   ];
 
-  window.Data = { CARDS, ENEMIES, RELICS, EVENTS };
+  /* Герои. Каждый начинает со своей колодой и особенностью (талисман tier: 'class').
+     favored — общие карты под его билд: в наградах и лавке они выпадают чаще.
+     f — героиня (для окончаний в тексте), who/whom — как назвать героя в сюжете. */
+  const CLASSES = {
+    lamp: {
+      name: 'Ива', role: 'Фонарщица', f: true, who: 'фонарщица Ива', whom: 'фонарщице Иве', look: 'lamp',
+      hp: 36, gold: 20, relic: 'ivalamp', build: 'Огоньки и Вспышки',
+      about: 'Копит Огоньки и чаще всех зажигает Вспышки лампы.',
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'kindle', 'spark', 'firefly'],
+      favored: ['kindle', 'spark', 'oil', 'mirror', 'palm', 'flashpoint', 'drafts', 'eveninglamp', 'rhythm', 'sparks'],
+    },
+    courier: {
+      name: 'Тиша', role: 'Скороход', f: false, who: 'скороход Тиша', whom: 'скороходу Тише', look: 'courier',
+      hp: 32, gold: 35, relic: 'wingboots', build: 'Доставка и длинные ходы',
+      about: 'Играет много дешёвых карт за ход и шлёт Доставки на следующий.',
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'urgent', 'telegram', 'wind'],
+      favored: ['wind', 'parcel', 'telegram', 'surprise', 'flurry', 'finale', 'breath', 'compass', 'inkpen', 'blotter', 'spark', 'cocoa'],
+    },
+    guard: {
+      name: 'Марфа', role: 'Сторожиха моста', f: true, who: 'сторожиха моста Марфа', whom: 'сторожихе моста Марфе', look: 'guard',
+      hp: 44, gold: 15, relic: 'ironshutter', build: 'Защита, Шипы и мороз',
+      about: 'Держит удар за ударом и отвечает врагу его же силой.',
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'guard', 'snowkick'],
+      favored: ['cloak', 'wax', 'snowkick', 'payback', 'prickly', 'frostlace', 'umbrella', 'mittens', 'drift', 'pockethog', 'lullaby'],
+    },
+    stoker: {
+      name: 'Фома', role: 'Трубочист', f: false, who: 'трубочист Фома', whom: 'трубочисту Фоме', look: 'stoker',
+      hp: 38, gold: 20, relic: 'sootbroom', build: 'Поджог и частые удары',
+      about: 'Разжигает врага каждым ударом и даёт огню сделать остальное.',
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'ember', 'poker'],
+      favored: ['ember', 'blaze', 'hearth', 'sparks', 'flurry', 'whistle', 'cocoa', 'stubborn', 'stamp', 'redseal'],
+    },
+  };
+
+  window.Data = { CARDS, ENEMIES, RELICS, EVENTS, CLASSES };
 })();

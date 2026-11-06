@@ -170,55 +170,111 @@
     `, 'bg-svg');
   }
 
-  /* ---------- Героиня: Ива, ученица фонарщика ---------- */
-  function hero() {
+  /* ---------- Герои: Ива-фонарщица, скороход Тиша, сторожиха Марфа, трубочист Фома ---------- */
+  // один силуэт, разные цвета, головной убор и предмет в руке
+  const LOOKS = {
+    lamp: { hood: '#d79a35', cloak: '#2f5d62', fold: '#3f7a80', scarf: '#c98a2b', hair: '#8a3f28', prop: 'lantern', freckles: true },
+    courier: { hood: '#3d63a8', cloak: '#26304e', fold: '#3a4a74', scarf: '#efe2c4', hair: '#e0b050', prop: 'letters', wings: true },
+    guard: { hood: '#8a5a3a', cloak: '#4a5a36', fold: '#5e7246', scarf: '#a33a3a', hair: '#3a2a3a', prop: 'shield', fur: true },
+    stoker: { hat: true, cloak: '#3a3440', fold: '#4c4656', scarf: '#e8702a', hair: '#3a2a20', prop: 'brush', soot: true },
+  };
+  const PROPS = {
+    lantern: `
+      <path d="M130 150 Q148 156 150 146" ${sw(4)} fill="CLOAK"/>
+      <path d="M152 136 v10" ${sw(3)}/>
+      <path d="M140 148 h24 l-3 6 h-18z" fill="#3a3240" ${sw(3)}/>
+      <rect x="141" y="154" width="22" height="26" rx="3" fill="#ffd36e" ${sw(3)}/>
+      <path d="M152 154 v26 M141 167 h22" ${sw(2)}/>
+      <path d="M152 161 q-5 7 0 13 q5 -6 0 -13z" fill="#ff8a2a"/>
+      <path d="M139 180 h26 l-4 6 h-18z" fill="#3a3240" ${sw(3)}/>`,
+    letters: `
+      <path d="M130 150 Q146 158 150 150" ${sw(4)} fill="CLOAK"/>
+      <g transform="rotate(-14 154 158)">
+        <rect x="136" y="138" width="38" height="25" rx="2" fill="#e6d8b8" ${sw(3)}/>
+        <rect x="133" y="146" width="38" height="25" rx="2" fill="#f2e6c9" ${sw(3)}/>
+        <path d="M133 148 l19 12 l19 -12" fill="none" ${sw(2.2)}/>
+        <path d="M150 138 v34 M133 160 h38" stroke="#c8423a" stroke-width="2.5"/>
+        <circle cx="150" cy="160" r="3.5" fill="#c8423a" ${sw(1.5)}/>
+      </g>`,
+    shield: `
+      <path d="M130 150 Q144 160 146 152" ${sw(4)} fill="CLOAK"/>
+      <circle cx="150" cy="176" r="31" fill="#8a5a32" ${sw(4)}/>
+      <path d="M124 162 h52 M120 176 h60 M124 190 h52" stroke="#5a3a1e" stroke-width="2.5"/>
+      <circle cx="150" cy="176" r="27" fill="none" stroke="#9aa0ac" stroke-width="5"/>
+      <circle cx="150" cy="176" r="31" fill="none" ${sw(3)}/>
+      <circle cx="150" cy="176" r="6" fill="#c9ccd8" ${sw(2.5)}/>
+      <g fill="#c9ccd8" ${sw(1.5)}><circle cx="150" cy="150" r="2.6"/><circle cx="150" cy="202" r="2.6"/><circle cx="124" cy="176" r="2.6"/><circle cx="176" cy="176" r="2.6"/></g>`,
+    brush: `
+      <path d="M148 226 L162 52" stroke="${O}" stroke-width="8" stroke-linecap="round"/>
+      <path d="M148 226 L162 52" stroke="#7a5a3a" stroke-width="4" stroke-linecap="round"/>
+      <g transform="translate(163 40)">
+        <circle r="17" fill="#2a2430" ${sw(3)}/>
+        <path d="M0 -24 v8 M0 16 v8 M-24 0 h8 M16 0 h8 M-17 -17 l6 6 M11 11 l6 6 M17 -17 l-6 6 M-11 11 l-6 6" ${sw(4)}/>
+        <circle r="6" fill="#4c4656" ${sw(2)}/>
+      </g>
+      <path d="M130 150 Q146 158 154 148" ${sw(4)} fill="CLOAK"/>
+      <circle cx="155" cy="146" r="6" fill="#f3cda6" ${sw(3)}/>`,
+  };
+
+  function hero(lookId = 'lamp') {
+    const L = LOOKS[lookId] || LOOKS.lamp;
     const bag = window.Story && window.Story.story.heroBag ? `
-      <!-- сумка почтальонки -->
+      <!-- сумка почтальона -->
       <path d="M72 132 Q100 170 128 212" stroke="#5a3a22" stroke-width="6" fill="none" stroke-linecap="round"/>
       <path d="M72 132 Q100 170 128 212" ${sw(1.5)} fill="none" opacity="0.6"/>
       <path d="M44 186 h44 v34 q0 6 -6 6 h-32 q-6 0 -6 -6z" fill="#8a5a32" ${sw(3.5)}/>
       <rect x="52" y="174" width="30" height="20" rx="2" fill="#f2e6c9" ${sw(2.5)} transform="rotate(-8 67 184)"/>
       <path d="M42 186 h48 v12 q-24 8 -48 0z" fill="#a06a3a" ${sw(3)}/>
       <circle cx="66" cy="198" r="3.5" fill="#d8a94a" ${sw(1.5)}/>` : '';
+    // головной убор: капюшон (у Тиши с крылышками, у Марфы с меховой опушкой) или цилиндр трубочиста
+    const head = L.hat ? `
+      <path d="M62 84 Q58 122 72 130 L128 130 Q142 122 138 84z" fill="${L.hair}" ${sw(4)}/>` : `
+      <path d="M52 108 Q48 40 100 34 Q152 40 148 108 Q146 128 132 132 L68 132 Q54 128 52 108z" fill="${L.hood}" ${sw(4)}/>
+      ${L.wings ? `<path d="M54 80 q-26 -16 -34 2 q12 -2 12 8 q10 -4 12 6 q6 -4 10 2z" fill="#f4f1ea" ${sw(3)}/><path d="M146 80 q26 -16 34 2 q-12 -2 -12 8 q-10 -4 -12 6 q-6 -4 -10 2z" fill="#f4f1ea" ${sw(3)}/>` : ''}
+      ${L.fur ? '' : `<path d="M100 34 Q104 18 116 14" ${sw(4)} fill="none"/><circle cx="118" cy="13" r="5" fill="${L.hood}" ${sw(3)}/>`}`;
+    const fur = L.fur ? `
+      <path d="M60 116 Q54 62 100 56 Q146 62 140 116" fill="none" stroke="${O}" stroke-width="15" stroke-linecap="round"/>
+      <path d="M60 116 Q54 62 100 56 Q146 62 140 116" fill="none" stroke="#f2ead8" stroke-width="9" stroke-linecap="round"/>
+      <path d="M134 118 q10 14 4 30 q-4 8 2 16" fill="none" stroke="${O}" stroke-width="10" stroke-linecap="round"/>
+      <path d="M134 118 q10 14 4 30 q-4 8 2 16" fill="none" stroke="${L.hair}" stroke-width="6" stroke-linecap="round"/>` : '';
+    const hat = L.hat ? `
+      <path d="M72 66 L75 16 Q100 9 125 16 L128 66z" fill="#2a2430" ${sw(4)}/>
+      <path d="M74 50 h52 v9 h-52z" fill="${L.scarf}" ${sw(2.5)}/>
+      <ellipse cx="100" cy="66" rx="45" ry="9" fill="#1e1a24" ${sw(4)}/>
+      <path d="M86 24 q4 -4 10 -3" stroke="#4c4656" stroke-width="3" fill="none" stroke-linecap="round"/>` : '';
     return svg('0 0 200 240', `
       <defs>
         <radialGradient id="hl"><stop offset="0" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#ffb84a" stop-opacity="0.6"/><stop offset="1" stop-color="#ffb84a" stop-opacity="0"/></radialGradient>
       </defs>
-      <circle cx="152" cy="168" r="48" fill="url(#hl)"/>
+      ${L.prop === 'lantern' ? '<circle cx="152" cy="168" r="48" fill="url(#hl)"/>' : ''}
       <!-- плащ -->
-      <path d="M58 236 Q52 160 70 128 L130 128 Q150 165 144 236z" fill="#2f5d62" ${sw(4)}/>
+      <path d="M58 236 Q52 160 70 128 L130 128 Q150 165 144 236z" fill="${L.cloak}" ${sw(4)}/>
       <path d="M100 132 L100 236" ${sw(3)} fill="none" opacity="0.5"/>
-      <path d="M70 140 Q66 190 74 236" stroke="#3f7a80" stroke-width="5" fill="none"/>
+      <path d="M70 140 Q66 190 74 236" stroke="${L.fold}" stroke-width="5" fill="none"/>
       <!-- шарф -->
-      <path d="M66 126 Q100 146 134 126 L136 140 Q100 160 64 140z" fill="#c98a2b" ${sw(4)}/>
-      <path d="M118 140 l8 34 l-14 2z" fill="#c98a2b" ${sw(3.5)}/>
-      <!-- капюшон -->
-      <path d="M52 108 Q48 40 100 34 Q152 40 148 108 Q146 128 132 132 L68 132 Q54 128 52 108z" fill="#d79a35" ${sw(4)}/>
-      <path d="M100 34 Q104 18 116 14" ${sw(4)} fill="none"/>
-      <circle cx="118" cy="13" r="5" fill="#d79a35" ${sw(3)}/>
+      <path d="M66 126 Q100 146 134 126 L136 140 Q100 160 64 140z" fill="${L.scarf}" ${sw(4)}/>
+      <path d="M118 140 l8 34 l-14 2z" fill="${L.scarf}" ${sw(3.5)}/>
+      ${head}
       <!-- лицо -->
       <ellipse cx="100" cy="94" rx="34" ry="32" fill="#f3cda6" ${sw(4)}/>
+      ${fur}
       <!-- чёлка -->
-      <path d="M66 86 Q70 58 100 58 Q132 58 134 86 Q124 72 112 76 Q104 66 94 76 Q80 70 66 86z" fill="#8a3f28" ${sw(3.5)}/>
+      <path d="M66 86 Q70 58 100 58 Q132 58 134 86 Q124 72 112 76 Q104 66 94 76 Q80 70 66 86z" fill="${L.hair}" ${sw(3.5)}/>
+      ${hat}
       <!-- глаза -->
       <ellipse cx="87" cy="96" rx="6.5" ry="8.5" fill="${O}"/>
       <ellipse cx="113" cy="96" rx="6.5" ry="8.5" fill="${O}"/>
       <circle cx="89" cy="93" r="2.4" fill="#fff"/>
       <circle cx="115" cy="93" r="2.4" fill="#fff"/>
-      <!-- веснушки и щёки -->
+      <!-- щёки -->
       <circle cx="78" cy="108" r="5" fill="#e79a8a" opacity="0.6"/>
       <circle cx="122" cy="108" r="5" fill="#e79a8a" opacity="0.6"/>
-      <g fill="#b0603e"><circle cx="82" cy="105" r="1.2"/><circle cx="86" cy="108" r="1.2"/><circle cx="118" cy="105" r="1.2"/><circle cx="114" cy="108" r="1.2"/></g>
+      ${L.freckles ? '<g fill="#b0603e"><circle cx="82" cy="105" r="1.2"/><circle cx="86" cy="108" r="1.2"/><circle cx="118" cy="105" r="1.2"/><circle cx="114" cy="108" r="1.2"/></g>' : ''}
+      ${L.soot ? '<ellipse cx="121" cy="112" rx="7" ry="3.5" fill="#3a3440" opacity="0.55"/><ellipse cx="80" cy="84" rx="5" ry="2.5" fill="#3a3440" opacity="0.4"/>' : ''}
       <path d="M94 114 Q100 119 106 114" ${sw(3)} fill="none"/>
       ${bag}
-      <!-- рука и фонарь -->
-      <path d="M130 150 Q148 156 150 146" ${sw(4)} fill="#2f5d62"/>
-      <path d="M152 136 v10" ${sw(3)}/>
-      <path d="M140 148 h24 l-3 6 h-18z" fill="#3a3240" ${sw(3)}/>
-      <rect x="141" y="154" width="22" height="26" rx="3" fill="#ffd36e" ${sw(3)}/>
-      <path d="M152 154 v26 M141 167 h22" ${sw(2)}/>
-      <path d="M152 161 q-5 7 0 13 q5 -6 0 -13z" fill="#ff8a2a"/>
-      <path d="M139 180 h26 l-4 6 h-18z" fill="#3a3240" ${sw(3)}/>
+      <!-- рука и предмет -->
+      ${PROPS[L.prop].replace(/CLOAK/g, L.cloak)}
     `, 'char hero');
   }
 
@@ -1058,6 +1114,22 @@
     bellows: `<path d="M20 30 q-8 20 0 40 l40 -10 v-20z" fill="#8a5a32" ${sw(4)}/><path d="M24 36 l34 8 M22 50 h36 M24 64 l34 -8" stroke="#5a3a1e" stroke-width="3"/><path d="M20 30 l-12 -8 M20 70 l-12 8" ${sw(5)}/><path d="M60 44 h22 l4 6 l-4 6 h-22z" fill="#9aa0ac" ${sw(3.5)}/>${flameShape(90, 30, 0.6, '#e8502a', '#ffb23e')}<path d="M70 70 q8 4 16 0 M74 80 q6 2 12 0" stroke="#e8eef6" stroke-width="3" fill="none" stroke-linecap="round"/>`,
     moonstone: `<path d="M50 10 l30 24 l-8 44 l-22 14 l-22 -14 l-8 -44z" fill="#cfd8f0" ${sw(4)}/><path d="M20 34 l30 10 l30 -10 M50 44 v48" fill="none" stroke="#9aa8c8" stroke-width="3"/><path d="M58 58 A12 12 0 1 1 52 36 A9 9 0 1 0 58 58z" fill="#fff3c4" ${sw(2)}/><circle cx="50" cy="50" r="42" fill="#d6e2ff" opacity=".15"/>`,
     goldquill: `<path d="M18 88 Q26 30 88 10 Q74 62 24 84z" fill="#e6c45a" ${sw(4)}/><path d="M14 92 L80 18" ${sw(3)}/><path d="M40 56 l14 8 M50 42 l14 6 M62 30 l12 4" stroke="#b08a2a" stroke-width="3" stroke-linecap="round"/><path d="M80 52 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3z" fill="#fff3c4" ${sw(2)}/>`,
+    // ---- карты и особенности героев ----
+    firefly: `<path d="M40 50 q-22 -22 -30 -4 q2 14 26 10z M60 50 q22 -22 30 -4 q-2 14 -26 10z" fill="#cfe6ff" fill-opacity=".85" ${sw(3)}/><ellipse cx="50" cy="56" rx="10" ry="16" fill="#3a3240" ${sw(3.5)}/><ellipse cx="50" cy="70" rx="9" ry="9" fill="#ffe38a" ${sw(3)}/><circle cx="50" cy="70" r="16" fill="#ffe38a" opacity=".3"/><path d="M44 40 q-4 -10 -10 -12 M56 40 q4 -10 10 -12" fill="none" ${sw(2.5)}/><circle cx="50" cy="40" r="7" fill="#3a3240" ${sw(3)}/>`,
+    lampglass: `<path d="M34 16 h32 l-4 10 q14 14 14 34 q0 24 -26 28 q-26 -4 -26 -28 q0 -20 14 -34z" fill="#cfe6ff" fill-opacity=".55" ${sw(4)}/><path d="M42 36 q-8 12 -6 30" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>${flameShape(52, 48, 0.8)}<path d="M32 88 h36" ${sw(5)}/>`,
+    beam: `<path d="M8 92 L54 46 L64 56 Z" fill="#ffe38a" ${sw(3)}/><path d="M14 92 L58 50" stroke="#fff6d0" stroke-width="3"/><circle cx="66" cy="34" r="20" fill="#ffd36e" ${sw(4)}/><circle cx="66" cy="34" r="30" fill="#ffd36e" opacity=".25"/><path d="M66 4 v8 M96 34 h-8 M87 13 l-6 6 M45 13 l6 6 M87 55 l-6 -6" ${sw(4)}/>`,
+    urgent: `<rect x="10" y="30" width="62" height="42" rx="4" fill="#f2e6c9" ${sw(4)}/><path d="M10 32 l31 22 l31 -22" fill="none" ${sw(3.5)}/><path d="M76 24 l14 -6 M78 44 h16 M76 62 l14 6" ${sw(4)}/><path d="M28 62 h26" stroke="#c8423a" stroke-width="5" stroke-linecap="round"/><path d="M62 10 l-10 18 h10 l-8 16" fill="none" stroke="#ffd36e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
+    express: `<path d="M18 40 l32 -14 l32 14 v36 l-32 14 l-32 -14z" fill="#b8865a" ${sw(4)}/><path d="M18 40 l32 14 l32 -14 M50 54 v36" fill="none" ${sw(3.5)}/><path d="M16 46 q-12 -10 -10 -26 q8 10 18 10 M84 46 q12 -10 10 -26 q-8 10 -18 10" fill="#f4f1ea" ${sw(3)}/><path d="M34 33 l32 14" stroke="#c8423a" stroke-width="4"/>`,
+    rushmail: `<path d="M14 62 h50 l-6 10 l6 10 h-50 l6 -10z" fill="#f2e6c9" ${sw(3.5)}/><path d="M24 72 h6 M36 72 h2 M44 72 h10" ${sw(4)}/><path d="M30 20 h50 l-6 10 l6 10 h-50 l6 -10z" fill="#efe2c4" ${sw(3.5)}/><path d="M42 30 h4 M52 30 h12" ${sw(4)}/><path d="M78 50 l12 -4 l-6 10 l12 -2" fill="none" stroke="#ffd36e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
+    icewall: `<path d="M10 88 V40 l14 -18 l16 14 l12 -20 l16 18 l12 -14 l10 20 v48z" fill="#9fd0f0" fill-opacity=".85" ${sw(4)}/><path d="M10 60 h80 M10 74 h80 M30 40 v20 M60 36 v24 M44 60 v14 M74 60 v14 M24 74 v14 M58 74 v14" stroke="#e6f6ff" stroke-width="3"/><path d="M10 88 h80" ${sw(5)}/>`,
+    hedge: `<path d="M8 90 q4 -40 20 -44 q6 -20 22 -16 q16 -10 26 8 q18 2 16 52z" fill="#3a7a4a" ${sw(4)}/><g fill="#cfe6ff" ${sw(2.5)}><path d="M24 48 l-6 -14 l12 8z"/><path d="M48 30 l2 -16 l8 14z"/><path d="M76 38 l10 -12 l-2 16z"/><path d="M90 66 l8 -4 l-6 10z"/><path d="M10 66 l-6 -6 l10 0z"/></g><path d="M8 90 h84" ${sw(5)}/><path d="M30 64 q8 -6 14 2 M56 56 q8 -6 14 2" stroke="#2a5a36" stroke-width="3" fill="none"/>`,
+    standfast: `<path d="M66 14 A34 34 0 1 0 84 70 A28 28 0 1 1 66 14z" fill="#f4e6a8" ${sw(4)}/><path d="M22 54 h44 v30 q0 10 -22 14 q-22 -4 -22 -14z" fill="#5b6f8f" ${sw(4)}/><path d="M22 66 h44 M44 54 v44" ${sw(3)}/><g fill="#c9ccd8" ${sw(1.5)}><circle cx="30" cy="60" r="2.5"/><circle cx="58" cy="60" r="2.5"/><circle cx="30" cy="78" r="2.5"/><circle cx="58" cy="78" r="2.5"/></g>`,
+    flue: `<path d="M30 90 V44 h40 v46z" fill="#a8553a" ${sw(4)}/><path d="M26 36 h48 v10 h-48z" fill="#8a4430" ${sw(4)}/><path d="M30 58 h40 M30 74 h40 M50 46 v12 M40 58 v16 M60 58 v16 M50 74 v16" stroke="#6a3222" stroke-width="2.5"/><path d="M44 30 q-10 -10 0 -18 q8 -6 0 -10 M58 30 q-6 -8 2 -14" fill="none" stroke="#7a7488" stroke-width="5" stroke-linecap="round"/>${flameShape(50, 62, 0.55, '#e8502a', '#ffb23e')}`,
+    poker: `<path d="M18 88 L70 26" ${sw(7)}/><path d="M18 88 L70 26" stroke="#5a5a6e" stroke-width="3"/><path d="M66 30 l10 -18 l8 6 l-10 10 l8 6" fill="none" ${sw(5)}/><path d="M66 30 l10 -18 l8 6 l-10 10 l8 6" fill="none" stroke="#ff7a3a" stroke-width="2"/><path d="M12 80 l14 14" ${sw(8)}/><path d="M12 80 l14 14" stroke="#6b4a32" stroke-width="4"/><circle cx="84" cy="14" r="10" fill="#ffb23e" opacity=".45"/>`,
+    fan: `<path d="M20 60 q-8 20 0 40 l40 -10 v-20z" fill="#8a5a32" ${sw(4)} transform="translate(-6 -30)"/><path d="M54 50 l14 0" ${sw(5)}/>${flameShape(80, 34, 0.85, '#e8502a', '#ffb23e')}<path d="M58 30 q8 -2 12 4 M58 64 q8 2 12 -4" fill="none" stroke="#cfe6ff" stroke-width="3" stroke-linecap="round"/>`,
+    wingboots: `<path d="M30 30 h22 v34 l24 8 q8 4 6 14 h-52z" fill="#8a4a2a" ${sw(4)}/><path d="M30 86 h52" ${sw(6)}/><path d="M30 44 q-18 -18 -24 -4 q8 0 8 8 q-8 2 -6 10 q10 -6 22 0" fill="#f4f1ea" ${sw(3)}/><path d="M36 40 h12 M36 50 h12" stroke="#d8a94a" stroke-width="3"/>`,
+    ironshutter: `<path d="M22 14 h56 v72 h-56z" fill="#8a5a32" ${sw(4)}/><path d="M22 32 h56 M22 50 h56 M22 68 h56" stroke="#5a3a1e" stroke-width="3"/><path d="M22 24 h56 M22 76 h56" stroke="#9aa0ac" stroke-width="7"/><path d="M22 24 h56 M22 76 h56" ${sw(1.5)}/><g fill="#c9ccd8" ${sw(1.5)}><circle cx="30" cy="24" r="3"/><circle cx="70" cy="24" r="3"/><circle cx="30" cy="76" r="3"/><circle cx="70" cy="76" r="3"/></g>`,
+    sootbroom: `<path d="M74 10 L40 66" ${sw(7)}/><path d="M74 10 L40 66" stroke="#b07a4a" stroke-width="3"/><path d="M40 60 l-28 22 l6 8 l14 -6 l-2 10 l12 -10 l2 8 l8 -14z" fill="#c9a46a" ${sw(3.5)}/><path d="M18 84 l6 6 M28 82 l2 8 M36 76 l4 6" stroke="#3a3440" stroke-width="3" stroke-linecap="round"/><path d="M36 64 l10 6" ${sw(5)}/><path d="M36 64 l10 6" stroke="#e8702a" stroke-width="2"/><circle cx="20" cy="70" r="4" fill="#ff8a3a" opacity=".8"/><circle cx="30" cy="92" r="3" fill="#ff8a3a" opacity=".7"/>`,
   };
 
   function icon(name) {
