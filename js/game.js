@@ -58,7 +58,20 @@
   const app = $('#app');
   const screen = $('#screen');
   const overlay = $('#overlay');
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  /* ---------- Настройки и статистика (хранятся в браузере) ---------- */
+  const VERSION = '0.5';
+  const SETTINGS_KEY = 'lastray.settings';
+  const STATS_KEY = 'lastray.stats';
+  const loadJSON = (k, def) => { try { return { ...def, ...JSON.parse(localStorage.getItem(k) || '{}') }; } catch (e) { return { ...def }; } };
+  const saveJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* хранилище недоступно */ } };
+  // skipIntro — сразу в путь без вступления, fast — быстрые анимации,
+  // snow — снегопад (выключение экономит заряд), oneTap — карта разыгрывается с одного касания
+  const SETTINGS = loadJSON(SETTINGS_KEY, { skipIntro: false, fast: false, snow: true, oneTap: false });
+  const STATS_DEF = { runs: 0, wins: 0, losses: 0, best: 0, fights: 0, elites: 0, bosses: 0, cards: 0 };
+  const STATS = loadJSON(STATS_KEY, STATS_DEF);
+  const saveStats = () => saveJSON(STATS_KEY, STATS);
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, SETTINGS.fast ? ms * 0.5 : ms));
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const shuffle = (arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
@@ -78,12 +91,15 @@
   fit();
 
   /* ---------- Снег ---------- */
-  (function snow() {
+  // снегопад можно выключить в настройках: тогда анимация останавливается совсем
+  const snow = (function () {
     const cv = $('#snow'); const ctx = cv.getContext('2d');
     cv.width = 400; cv.height = 860;
     const flakes = Array.from({ length: 70 }, () => ({ x: Math.random() * 400, y: Math.random() * 860, r: 0.8 + Math.random() * 2.2, v: 0.3 + Math.random() * 0.9, d: Math.random() * 6 }));
-    (function tick(t) {
+    let running = false;
+    function tick(t) {
       ctx.clearRect(0, 0, 400, 860);
+      if (!SETTINGS.snow) { running = false; return; }
       ctx.fillStyle = 'rgba(235,242,255,0.85)';
       for (const f of flakes) {
         f.y += f.v; f.x += Math.sin(t / 1400 + f.d) * 0.35;
@@ -91,7 +107,10 @@
         ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 7); ctx.fill();
       }
       requestAnimationFrame(tick);
-    })(0);
+    }
+    const start = () => { if (!running) { running = true; requestAnimationFrame(tick); } };
+    if (SETTINGS.snow) start();
+    return { start };
   })();
 
   /* Фон меняется после каждого уровня: палитра неба смешивается по ключевым кадрам,
@@ -116,6 +135,7 @@
   let selected = -1;
 
   function newRun() {
+    STATS.runs++; saveStats();
     run = {
       hp: 36, maxHp: 36, gold: 20, step: 0, lit: 0, relics: [], fights: 0,
       deck: [...Array(4).fill('strike'), ...Array(4).fill('guard'), 'kindle', 'spark'].map((id) => mk(id)),
@@ -263,9 +283,9 @@
   // какая пьеса звучит на пути: город, окраина или финальная ночь
   const mapTrack = () => ['stage1', 'stage2', 'night'][Math.min(2, run ? stageOf(run.step) : 0)];
 
-  function showGlossary() {
+  function showGlossary(back) {
     showOverlay(`<h2>Справочник</h2><dl class="gloss">${GLOSS.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
-      <button class="btn" data-act="close">Закрыть</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
+      <button class="btn" data-act="close">${back ? 'Назад' : 'Закрыть'}</button>`, (e) => { if (e.target.closest('[data-act="close"]')) { if (back) back(); else hideOverlay(); } });
   }
 
   /* ---------- Главное меню ---------- */
@@ -282,14 +302,15 @@
       <div class="menu">
         ${s ? `<button class="btn big" data-act="continue">Продолжить<small>${info}</small></button>` : ''}
         <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">Новая игра</button>
-        <button class="btn ghost" data-act="gloss">Справочник</button>
+        <div class="menu-row"><button class="btn ghost" data-act="gloss">Справочник</button><button class="btn ghost" data-act="settings">Настройки</button></div>
       </div>
       <p class="savehint">${s ? 'Прогресс сохраняется после каждого уровня' : ''}</p>`;
   }
 
   function askNewGame() {
     const s = loadSave();
-    if (!s) { goIntro(); return; }
+    const begin = () => (SETTINGS.skipIntro ? newRun() : goIntro());
+    if (!s) { begin(); return; }
     showOverlay(`<div class="pause"><h2>Начать заново?</h2>
       <p class="ovhint">Сохранённый забег на уровне ${s.run.step + 1} из ${MAX_STEPS} будет потерян.</p>
       <button class="btn" data-act="c-yes">Начать заново</button>
@@ -297,7 +318,7 @@
       const b = e.target.closest('[data-act]');
       if (!b) return;
       hideOverlay();
-      if (b.dataset.act === 'c-yes') { clearSave(); goIntro(); }
+      if (b.dataset.act === 'c-yes') { clearSave(); begin(); }
     });
   }
 
@@ -307,15 +328,122 @@
       <p class="ovhint">${C ? 'Прогресс сохранён до начала этого боя. Если выйти, бой начнётся заново.' : 'Прогресс сохранён. Можно выйти и вернуться позже.'}</p>
       <button class="btn" data-act="p-resume">Вернуться в игру</button>
       <button class="btn ghost" data-act="p-gloss">Справочник</button>
+      <button class="btn ghost" data-act="p-settings">Настройки</button>
       <button class="btn ghost" data-act="p-title">Главное меню</button></div>`, (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       if (b.dataset.act === 'p-resume') hideOverlay();
       if (b.dataset.act === 'p-gloss') showGlossary();
+      if (b.dataset.act === 'p-settings') showSettings();
       if (b.dataset.act === 'p-title') {
         if (C && busy) { toast('Дождись конца хода'); return; }
         goTitle();
       }
+    });
+  }
+
+  /* ---------- Настройки ---------- */
+  const ICO = {
+    gear: '<svg viewBox="0 0 40 40"><path d="M17 4 h6 l1 5 l4 2 l4 -3 l4 4 l-3 4 l2 4 l5 1 v6 l-5 1 l-2 4 l3 4 l-4 4 l-4 -3 l-4 2 l-1 5 h-6 l-1 -5 l-4 -2 l-4 3 l-4 -4 l3 -4 l-2 -4 l-5 -1 v-6 l5 -1 l2 -4 l-3 -4 l4 -4 l4 3 l4 -2z" fill="#f3d27c" stroke="#17121f" stroke-width="2" stroke-linejoin="round" transform="translate(20 20) scale(.82) translate(-20 -20)"/><circle cx="20" cy="20" r="5.5" fill="#262d45" stroke="#17121f" stroke-width="2"/></svg>',
+    note: '<svg viewBox="0 0 40 40"><path d="M15 29 V9 l16 -4 v20" fill="none" stroke="#f3d27c" stroke-width="3"/><ellipse cx="11" cy="29" rx="5.5" ry="4.5" fill="#f3d27c"/><ellipse cx="27" cy="25" rx="5.5" ry="4.5" fill="#f3d27c"/></svg>',
+    stats: '<svg viewBox="0 0 40 40"><path d="M8 32 h26" stroke="#17121f" stroke-width="3" stroke-linecap="round"/><rect x="10" y="18" width="5" height="13" fill="#f3d27c" stroke="#17121f" stroke-width="2"/><rect x="18" y="10" width="5" height="21" fill="#f3d27c" stroke="#17121f" stroke-width="2"/><rect x="26" y="22" width="5" height="9" fill="#f3d27c" stroke="#17121f" stroke-width="2"/></svg>',
+    book: '<svg viewBox="0 0 40 40"><path d="M6 10 q7 -3 14 1 v22 q-7 -4 -14 -1z M34 10 q-7 -3 -14 1 v22 q7 -4 14 -1z" fill="#f3d27c" stroke="#17121f" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 16 h6 M10 21 h6 M24 16 h6 M24 21 h6" stroke="#8a6a2a" stroke-width="1.8"/></svg>',
+    reset: '<svg viewBox="0 0 40 40"><path d="M31 20 a11 11 0 1 1 -4 -8.5" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/><path d="M28 5 l1 8 l-8 1" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+  const TOGGLES = [
+    ['skipIntro', 'Вступление', 'Показывать', 'Пропускать', false],
+    ['fast', 'Анимации', 'Обычные', 'Быстрые', false],
+    ['snow', 'Снегопад', 'Идёт', 'Нет', true],
+    ['oneTap', 'Розыгрыш карты', 'В 2 касания', 'В 1 касание', false],
+  ];
+
+  function settingsHTML() {
+    const p = SND.prefs;
+    const slider = (kind, label, icon, v) => `<div class="srow"><span class="sico">${icon}</span><label for="vol-${kind}">${label}</label>
+      <input type="range" id="vol-${kind}" data-vol="${kind}" min="0" max="100" step="5" value="${Math.round(v * 100)}" style="--p:${Math.round(v * 100)}%"><b class="sval">${Math.round(v * 100)}</b></div>`;
+    // переключатель: первый вариант — значение, при котором настройка «выключена» (или включена для snow)
+    const toggle = ([key, label, a, b, onIsFirst]) => {
+      const first = onIsFirst ? SETTINGS[key] : !SETTINGS[key];
+      return `<div class="trow"><span class="tlabel">${label}</span>
+        <button class="radio ${first ? 'on' : ''}" data-set="${key}" data-val="${onIsFirst ? 1 : 0}"><i></i>${a}</button>
+        <button class="radio ${first ? '' : 'on'}" data-set="${key}" data-val="${onIsFirst ? 0 : 1}"><i></i>${b}</button></div>`;
+    };
+    return `<div class="settings">
+      <div class="sribbon">Настройки</div>
+      <button class="sclose" data-act="s-close" aria-label="Закрыть">✕</button>
+      <div class="sicons">
+        <button data-act="s-gloss"><span>${ICO.book}</span>Справочник</button>
+        <button data-act="s-stats"><span>${ICO.stats}</span>Статистика</button>
+        <button data-act="s-reset"><span>${ICO.reset}</span>Сбросить</button>
+      </div>
+      <div class="sline"></div>
+      ${slider('sfx', 'Звуки', Art.soundIcon('all'), p.sfxVol)}
+      ${slider('music', 'Музыка', ICO.note, p.musicVol)}
+      <div class="sline"></div>
+      ${TOGGLES.map(toggle).join('')}
+      <div class="sline"></div>
+      <p class="sfoot"><span>Версия ${VERSION}</span><span>Сохранение в этом браузере</span></p>
+    </div>`;
+  }
+
+  function showSettings() {
+    const render = () => {
+      showOverlay(settingsHTML(), onClick);
+      overlay.querySelectorAll('input[data-vol]').forEach((inp) => {
+        inp.addEventListener('input', () => {
+          const v = +inp.value / 100;
+          inp.style.setProperty('--p', `${inp.value}%`);
+          inp.nextElementSibling.textContent = inp.value;
+          SND.setVolume(inp.dataset.vol, v);
+        });
+        // звук-образец, чтобы услышать громкость
+        inp.addEventListener('change', () => { if (inp.dataset.vol === 'sfx') SND.sfx('coin'); });
+      });
+    };
+    const onClick = (e) => {
+      const b = e.target.closest('[data-act], [data-set]');
+      if (!b) return;
+      if (b.dataset.set) {
+        SETTINGS[b.dataset.set] = b.dataset.val === '1';
+        saveJSON(SETTINGS_KEY, SETTINGS);
+        if (b.dataset.set === 'snow' && SETTINGS.snow) snow.start();
+        app.classList.toggle('fast', SETTINGS.fast);
+        render();
+        return;
+      }
+      const act = b.dataset.act;
+      if (act === 's-close') hideOverlay();
+      if (act === 's-gloss') showGlossary(showSettings);
+      if (act === 's-stats') showStats();
+      if (act === 's-reset') askReset();
+    };
+    render();
+  }
+
+  function showStats() {
+    const rows = [
+      ['Забегов начато', STATS.runs], ['Писем доставлено', STATS.wins], ['Поражений', STATS.losses],
+      ['Лучший уровень', STATS.best ? `${STATS.best} из ${MAX_STEPS}` : '—'], ['Побед в боях', STATS.fights],
+      ['Побеждено элит', STATS.elites], ['Побеждено боссов', STATS.bosses], ['Сыграно карт', STATS.cards],
+    ];
+    showOverlay(`<div class="settings small"><div class="sribbon">Статистика</div>
+      <dl class="statlist">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+      <button class="btn" data-act="back">Назад</button></div>`, (e) => { if (e.target.closest('[data-act="back"]')) showSettings(); });
+  }
+
+  function askReset() {
+    showOverlay(`<div class="pause"><h2>Сбросить прогресс?</h2>
+      <p class="ovhint">Сохранённый забег и статистика будут удалены. Настройки останутся.</p>
+      <button class="btn" data-act="r-yes">Сбросить</button>
+      <button class="btn ghost" data-act="r-no">Отмена</button></div>`, (e) => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      if (b.dataset.act === 'r-no') { showSettings(); return; }
+      clearSave();
+      Object.assign(STATS, STATS_DEF); saveStats();
+      hideOverlay();
+      toast('Прогресс сброшен');
+      goTitle();
     });
   }
 
@@ -441,7 +569,7 @@
     else if (o.t === 'rest') goRest();
   }
 
-  function advance() { run.step++; SND.sfx('step'); goMap(); }
+  function advance() { run.step++; STATS.best = Math.max(STATS.best, run.step + 1); saveStats(); SND.sfx('step'); goMap(); }
 
   /* ---------- API для событий ---------- */
   const evApi = {
@@ -883,7 +1011,7 @@
     if (cd.type === 'charm') C.exh.push(c);
     else if (cd.exhaust) exhaustCard(c);
     else C.disc.push(c);
-    C.playedTurn++; C.playedTotal++;
+    C.playedTurn++; C.playedTotal++; STATS.cards++;
     // отклики чар и талисманов на розыгрыш
     if (cd.type === 'skill' && C.charms.inkpen && C.enemy.hp > 0) await hitEnemy(C.charms.inkpen);
     if (C.charms.rhythm && C.playedTurn % 3 === 0 && C.enemy.hp > 0) await api.flame(C.charms.rhythm);
@@ -1044,6 +1172,10 @@
     await sleep(800);
     const { tier, stolen, hpLost } = C;
     C = null;
+    STATS.fights++;
+    if (tier === 'elite') STATS.elites++;
+    if (tier === 'boss') STATS.bosses++;
+    saveStats();
     run.fights++; run.lit++;
     if (stolen) { run.gold += stolen; toast(`Монеты возвращены: +${stolen}`); }
     if (hasRelic('piggy') && !hpLost) { run.gold += 15; toast('Копилка: +15 монет'); }
@@ -1107,6 +1239,7 @@
   /* ---------- Финалы ---------- */
   function goVictory() {
     clearSave();
+    STATS.wins++; STATS.best = MAX_STEPS; saveStats();
     SND.music('title'); SND.sfx('victory');
     screen.className = 'scr-end win';
     screen.innerHTML = `<div class="ribbon">${STORY.winRibbon}</div>
@@ -1121,6 +1254,7 @@
   function goDefeat() {
     C = null;
     clearSave();
+    STATS.losses++; saveStats();
     SND.music(null); SND.sfx('defeat');
     screen.className = 'scr-end lose';
     screen.innerHTML = `<div class="book"><div class="page">
@@ -1133,22 +1267,12 @@
   }
 
   /* ---------- Обработка нажатий ---------- */
-  /* Звук включается по первому касанию; кнопка в углу переключает режимы */
-  const sndBtn = $('#snd');
-  function renderSndBtn() {
-    const p = SND.prefs;
-    sndBtn.innerHTML = Art.soundIcon(p.music ? 'all' : p.sfx ? 'sfx' : 'off');
-    sndBtn.setAttribute('aria-label', p.music ? 'Музыка и звуки включены' : p.sfx ? 'Только звуки' : 'Звук выключен');
-  }
-  renderSndBtn();
+  /* Звук включается по первому касанию; шестерёнка в углу открывает настройки */
   window.addEventListener('pointerdown', () => SND.unlock(), { capture: true });
-  sndBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    SND.unlock();
-    const p = SND.cycle();
-    renderSndBtn();
-    toast(p.music ? 'Музыка и звуки включены' : p.sfx ? 'Музыка выключена, звуки остались' : 'Звук выключен');
-  });
+  app.classList.toggle('fast', SETTINGS.fast);
+  const gearBtn = $('#gear');
+  gearBtn.innerHTML = ICO.gear;
+  gearBtn.addEventListener('click', (e) => { e.stopPropagation(); SND.unlock(); SND.sfx('click'); showSettings(); });
 
   const menuBtn = $('#menu');
   menuBtn.innerHTML = '<svg viewBox="0 0 40 40"><path d="M10 12 h20 M10 20 h20 M10 28 h20" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/></svg>';
@@ -1156,7 +1280,7 @@
 
   app.addEventListener('click', (e) => {
     SND.unlock();
-    if (overlay.contains(e.target)) { SND.sfx('click'); return; }
+    if (overlay.contains(e.target)) { if (!e.target.matches('input')) SND.sfx('click'); return; }
     const relic = e.target.closest('[data-relic]');
     if (relic) { const r = RELICS[relic.dataset.relic]; toast(`${r.name}: ${r.desc}`); return; }
     const tipEl = e.target.closest('[data-tip]');
@@ -1167,7 +1291,7 @@
       if (busy) return;
       if (t && t.dataset.hi != null) {
         const i = +t.dataset.hi;
-        if (selected === i) playCard(i);
+        if (selected === i || SETTINGS.oneTap) playCard(i);
         else { selected = i; SND.sfx('draw'); renderHand(false); }
         return;
       }
@@ -1183,6 +1307,7 @@
       case 'continue': continueRun(); break;
       case 'newgame': askNewGame(); break;
       case 'gloss': showGlossary(); break;
+      case 'settings': showSettings(); break;
       case 'choose': chooseEncounter(+t.dataset.i); break;
       case 'next': advance(); break;
       case 'deck': showDeck(run.deck, `Колода · ${run.deck.length}`); break;

@@ -4,8 +4,14 @@
    Звук включается после первого касания экрана (так требуют браузеры). */
 (function () {
   const KEY = 'last-ray-audio';
-  let prefs = { music: true, sfx: true };
-  try { prefs = { ...prefs, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { /* хранилище недоступно */ }
+  // громкость музыки и звуков 0..1; ноль значит «выключено»
+  let prefs = { musicVol: 1, sfxVol: 1 };
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || '{}');
+    prefs.musicVol = typeof s.musicVol === 'number' ? s.musicVol : s.music === false ? 0 : 1;
+    prefs.sfxVol = typeof s.sfxVol === 'number' ? s.sfxVol : s.sfx === false ? 0 : 1;
+  } catch (e) { /* хранилище недоступно */ }
+  const MUSIC_GAIN = 0.5, SFX_GAIN = 0.55;
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) { /* хранилище недоступно */ } };
 
   let ctx = null, master, musicBus, sfxBus, reverbIn, noiseBuf;
@@ -20,8 +26,8 @@
     comp.threshold.value = -16; comp.ratio.value = 4;
     comp.connect(ctx.destination);
     master = ctx.createGain(); master.gain.value = 0.9; master.connect(comp);
-    musicBus = ctx.createGain(); musicBus.gain.value = prefs.music ? 0.5 : 0; musicBus.connect(master);
-    sfxBus = ctx.createGain(); sfxBus.gain.value = prefs.sfx ? 0.55 : 0; sfxBus.connect(master);
+    musicBus = ctx.createGain(); musicBus.gain.value = MUSIC_GAIN * prefs.musicVol; musicBus.connect(master);
+    sfxBus = ctx.createGain(); sfxBus.gain.value = SFX_GAIN * prefs.sfxVol; sfxBus.connect(master);
     // реверберация из сгенерированного импульса: «зимний воздух»
     const conv = ctx.createConvolver();
     const len = ctx.sampleRate * 2.2;
@@ -253,7 +259,7 @@
   };
 
   function sfx(name, v) {
-    if (!ctx || !prefs.sfx || !SFX[name]) return;
+    if (!ctx || !prefs.sfxVol || !SFX[name]) return;
     SFX[name](ctx.currentTime + 0.005, v);
   }
 
@@ -265,18 +271,16 @@
   function apply() {
     if (!ctx) return;
     const t = ctx.currentTime;
-    musicBus.gain.setTargetAtTime(prefs.music ? 0.5 : 0, t, 0.1);
-    sfxBus.gain.setTargetAtTime(prefs.sfx ? 0.55 : 0, t, 0.05);
+    musicBus.gain.setTargetAtTime(MUSIC_GAIN * prefs.musicVol, t, 0.1);
+    sfxBus.gain.setTargetAtTime(SFX_GAIN * prefs.sfxVol, t, 0.05);
   }
 
-  /* Кнопка звука: всё включено → только звуки → тишина → снова всё */
-  function cycle() {
-    if (prefs.music && prefs.sfx) prefs = { music: false, sfx: true };
-    else if (prefs.sfx) prefs = { music: false, sfx: false };
-    else prefs = { music: true, sfx: true };
+  /* Громкость из настроек: kind — 'music' или 'sfx', v — от 0 до 1 */
+  function setVolume(kind, v) {
+    prefs[kind === 'music' ? 'musicVol' : 'sfxVol'] = Math.max(0, Math.min(1, v));
     save(); apply();
-    return prefs;
   }
 
-  window.Sound = { unlock, music, sfx, cycle, get prefs() { return { ...prefs }; }, _probe: () => ctx && { ctx, master } };
+  const publicPrefs = () => ({ ...prefs, music: prefs.musicVol > 0, sfx: prefs.sfxVol > 0 });
+  window.Sound = { unlock, music, sfx, setVolume, get prefs() { return publicPrefs(); }, _probe: () => ctx && { ctx, master } };
 })();
