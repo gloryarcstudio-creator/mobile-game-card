@@ -2,14 +2,14 @@
 (function () {
   /* Карта: {name, cost, upCost?, type, rarity, art, exhaust?, retain?, desc(g, u, c), play(g, u, c)}
      type: atk (атака) | skill (навык) | charm (чары: действуют до конца боя) | status (помеха от врагов)
-     rarity: start | common | rare | status
+     rarity: start | common | uncommon | rare | status (обычная, необычная, редкая)
      cls — карта героя: выпадает в наградах и лавке только этому герою (см. CLASSES)
      u — карта улучшена у костра (цифры в описании и розыгрыше берутся через u ? улучшено : обычно)
      c — экземпляр карты в бою (для карт, которые растут, пока лежат в колоде)
      g — интерфейс боя из game.js: attack(n, hits), block(n), flame(n), draw(n), heal(n), burn(n),
          weak(n), vuln(n), energy(n), resolve(n), rush(n), thorns(n), chill(n), stun(), deliver(fn),
          gold(n), burstNow(), exhaustHand(pred), charm(id, n), doubleBlock(), maxHp(n), consumeFlame(),
-         played, blockNow, enemyDead, state, dmgText(n) */
+         copyLast(), recall(n), autoplay(n), played, blockNow, enemyDead, lastCard, state, dmgText(n) */
   const CARDS = {
     // ---------- стартовые ----------
     strike: {
@@ -85,7 +85,7 @@
       play: async (g, u) => { await g.attack(u ? 7 : 5); g.block(u ? 7 : 5); },
     },
     payback: {
-      name: 'Ответный удар', cost: 1, upCost: 0, type: 'atk', rarity: 'common', art: 'payback',
+      name: 'Ответный удар', cost: 1, upCost: 0, type: 'atk', rarity: 'uncommon', art: 'payback',
       desc: (g) => `Нанести урон, равный вашей защите${g.state ? ` (${g.dmgText(g.blockNow)})` : ''}.`,
       play: async (g) => g.attack(g.blockNow),
     },
@@ -95,14 +95,77 @@
       play: async (g, u) => { await g.attack(u ? 6 : 4); g.gold(u ? 8 : 5); },
     },
     snowball: {
-      name: 'Снежный ком', cost: 1, type: 'atk', rarity: 'common', art: 'snowball',
+      name: 'Снежный ком', cost: 1, type: 'atk', rarity: 'uncommon', art: 'snowball',
       desc: (g, u, c) => `Нанести ${g.dmgText((u ? 7 : 5) + ((c && c.grow) || 0))} урона. В этом бою урон растёт на ${u ? 4 : 3}.`,
       play: async (g, u, c) => { await g.attack((u ? 7 : 5) + (c.grow || 0)); c.grow = (c.grow || 0) + (u ? 4 : 3); },
     },
     flurry: {
-      name: 'Вьюга', cost: 1, type: 'atk', rarity: 'common', art: 'flurry',
+      name: 'Вьюга', cost: 1, type: 'atk', rarity: 'uncommon', art: 'flurry',
       desc: (g, u) => `Серия: ${g.dmgText(3 + (u ? 4 : 3) * g.played)} урона, +${u ? 4 : 3} за каждую карту до неё в этот ход.`,
       play: async (g, u) => g.attack(3 + (u ? 4 : 3) * g.played),
+    },
+
+    icethrow: {
+      name: 'Сосулька', cost: 1, type: 'atk', rarity: 'common', art: 'icethrow',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 9 : 6)} урона. Враг теряет 1 Силы.`,
+      play: async (g, u) => { await g.attack(u ? 9 : 6); if (!g.enemyDead) g.chill(1); },
+    },
+    heavybag: {
+      name: 'Тяжёлая сумка', cost: 2, type: 'atk', rarity: 'common', art: 'heavybag',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 13 : 10)} урона. Получить ${u ? 8 : 6} защиты.`,
+      play: async (g, u) => { await g.attack(u ? 13 : 10); g.block(u ? 8 : 6); },
+    },
+    sbiten: {
+      name: 'Глоток сбитня', cost: 0, type: 'skill', rarity: 'common', art: 'sbiten', exhaust: true,
+      desc: (g, u) => `Восстановить ${u ? 5 : 3} HP. Взять 1 карту.`,
+      play: async (g, u) => { g.heal(u ? 5 : 3); g.draw(1); },
+    },
+    sledram: {
+      name: 'Санный разгон', cost: 1, type: 'atk', rarity: 'common', art: 'sledram',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 8 : 5)} урона. Доставка: +1 энергия.`,
+      play: async (g, u) => { await g.attack(u ? 8 : 5); g.deliver('Сани', async (d) => d.energy(1)); },
+    },
+    hornblow: {
+      name: 'Сигнал рожка', cost: 1, type: 'skill', rarity: 'common', art: 'hornblow',
+      desc: (g, u) => `Получить ${u ? 7 : 5} защиты. +${u ? 3 : 2} Решимость до конца хода.`,
+      play: async (g, u) => { g.block(u ? 7 : 5); g.rush(u ? 3 : 2); },
+    },
+    patch: {
+      name: 'Заплатка', cost: 1, type: 'skill', rarity: 'common', art: 'patch',
+      desc: (g, u) => `Получить ${u ? 9 : 6} защиты. Сжечь помехи в руке.`,
+      play: async (g, u) => { g.block(u ? 9 : 6); g.exhaustHand((c) => c.type === 'status'); },
+    },
+
+    // ---------- необычные ----------
+    snowstorm: {
+      name: 'Снежная буря', cost: 2, type: 'atk', rarity: 'uncommon', art: 'snowstorm',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 3 : 2)} урона 5 раз. Враг Ослаблен на 1 ход.`,
+      play: async (g, u) => { await g.attack(u ? 3 : 2, 5); if (!g.enemyDead) g.weak(1); },
+    },
+    icelantern: {
+      name: 'Ледяной фонарь', cost: 1, type: 'skill', rarity: 'uncommon', art: 'icelantern',
+      desc: (g, u) => `Враг Уязвим ${u ? 2 : 1}. Взять 1 карту. +1 Огонёк.`,
+      play: async (g, u) => { g.vuln(u ? 2 : 1); g.draw(1); await g.flame(1); },
+    },
+    cancel: {
+      name: 'Гашение марки', cost: 1, type: 'atk', rarity: 'uncommon', art: 'cancel',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 8 : 6)} урона. По Уязвимому врагу дважды.`,
+      play: async (g, u) => g.attack(u ? 8 : 6, g.state.enemy.vuln > 0 ? 2 : 1),
+    },
+    carbon: {
+      name: 'Копирка', cost: 1, upCost: 0, type: 'skill', rarity: 'uncommon', art: 'carbon',
+      desc: (g) => `Повторить предыдущую карту этого хода${g.state ? ` (${g.lastCard || 'пока нечего'})` : ''}.`,
+      play: async (g) => g.copyLast(),
+    },
+    nightshift: {
+      name: 'Ночная смена', cost: 1, type: 'charm', rarity: 'uncommon', art: 'nightshift',
+      desc: (g, u) => `В конце хода ${u ? 4 : 3} защиты за каждую неистраченную энергию.`,
+      play: async (g, u) => g.charm('nightshift', u ? 4 : 3),
+    },
+    kindling: {
+      name: 'Растопка', cost: 1, type: 'skill', rarity: 'uncommon', art: 'kindling',
+      desc: (g, u) => `Поджог ${u ? 6 : 4}. Взять 1 карту.`,
+      play: async (g, u) => { g.burn(u ? 6 : 4); g.draw(1); },
     },
 
     // ---------- обычные: новые механики ----------
@@ -112,12 +175,12 @@
       play: async (g, u) => { await g.attack(u ? 8 : 6); g.vuln(u ? 2 : 1); },
     },
     redseal: {
-      name: 'Красная печать', cost: 1, type: 'skill', rarity: 'common', art: 'redseal',
+      name: 'Красная печать', cost: 1, type: 'skill', rarity: 'uncommon', art: 'redseal',
       desc: (g, u) => `Враг Уязвим ${u ? 3 : 2}. Взять 1 карту.`,
       play: async (g, u) => { g.vuln(u ? 3 : 2); g.draw(1); },
     },
     whistle: {
-      name: 'Свисток', cost: 0, type: 'skill', rarity: 'common', art: 'whistle', exhaust: true,
+      name: 'Свисток', cost: 0, type: 'skill', rarity: 'uncommon', art: 'whistle', exhaust: true,
       desc: (g, u) => `+${u ? 2 : 1} Решимость до конца боя.`,
       play: async (g, u) => g.resolve(u ? 2 : 1),
     },
@@ -127,12 +190,12 @@
       play: async (g, u) => g.rush(u ? 3 : 2),
     },
     prickly: {
-      name: 'Колючий шарф', cost: 1, type: 'skill', rarity: 'common', art: 'prickly',
+      name: 'Колючий шарф', cost: 1, type: 'skill', rarity: 'uncommon', art: 'prickly',
       desc: (g, u) => `Получить ${u ? 6 : 4} защиты. Шипы ${u ? 3 : 2}.`,
       play: async (g, u) => { g.block(u ? 6 : 4); g.thorns(u ? 3 : 2); },
     },
     frostlace: {
-      name: 'Морозный узор', cost: 1, type: 'skill', rarity: 'common', art: 'frostlace',
+      name: 'Морозный узор', cost: 1, type: 'skill', rarity: 'uncommon', art: 'frostlace',
       desc: (g, u) => `Враг теряет ${u ? 3 : 2} Силы. Получить ${u ? 6 : 4} защиты.`,
       play: async (g, u) => { g.chill(u ? 3 : 2); g.block(u ? 6 : 4); },
     },
@@ -147,7 +210,7 @@
       play: async (g, u) => g.deliver('Телеграмма', async (d) => d.draw(u ? 3 : 2)),
     },
     surprise: {
-      name: 'Бандероль с сюрпризом', cost: 1, type: 'atk', rarity: 'common', art: 'surprise',
+      name: 'Бандероль с сюрпризом', cost: 1, type: 'atk', rarity: 'uncommon', art: 'surprise',
       desc: (g, u) => `Доставка: нанести ${g.dmgText(u ? 20 : 14)} урона.`,
       play: async (g, u) => g.deliver('Бандероль', async (d) => d.attack(u ? 20 : 14)),
     },
@@ -162,12 +225,12 @@
       play: async (g, u) => { const n = g.exhaustHand((c) => c.type === 'status'); g.draw((u ? 2 : 1) + n); },
     },
     mittens: {
-      name: 'Варежки', cost: 1, type: 'charm', rarity: 'common', art: 'mittens',
+      name: 'Варежки', cost: 1, type: 'charm', rarity: 'uncommon', art: 'mittens',
       desc: (g, u) => `В начале каждого хода ${u ? 5 : 3} защиты.`,
       play: async (g, u) => g.charm('mittens', u ? 5 : 3),
     },
     inkpen: {
-      name: 'Перо и чернила', cost: 1, type: 'charm', rarity: 'common', art: 'inkpen',
+      name: 'Перо и чернила', cost: 1, type: 'charm', rarity: 'uncommon', art: 'inkpen',
       desc: (g, u) => `Каждый ваш Навык наносит врагу ${u ? 3 : 2} урона.`,
       play: async (g, u) => g.charm('inkpen', u ? 3 : 2),
     },
@@ -179,12 +242,12 @@
       play: async (g, u) => { const n = g.consumeFlame(); if (n > 0) await g.attack((u ? 9 : 7) * n); },
     },
     shadow: {
-      name: 'Тень-хитрость', cost: 1, type: 'skill', rarity: 'rare', art: 'shadow',
+      name: 'Тень-хитрость', cost: 1, type: 'skill', rarity: 'uncommon', art: 'shadow',
       desc: (g, u) => `Враг Ослаблен на ${u ? 3 : 2} хода. Взять ${u ? 2 : 1} карт${u ? 'ы' : 'у'}.`,
       play: async (g, u) => { g.weak(u ? 3 : 2); g.draw(u ? 2 : 1); },
     },
     blaze: {
-      name: 'Пожар', cost: 2, type: 'skill', rarity: 'rare', art: 'blaze',
+      name: 'Пожар', cost: 2, type: 'skill', rarity: 'uncommon', art: 'blaze',
       desc: (g, u) => `Поджог ${u ? 11 : 8}. +1 Огонёк.`,
       play: async (g, u) => { g.burn(u ? 11 : 8); await g.flame(1); },
     },
@@ -204,7 +267,7 @@
       play: async (g, u) => { await g.attack(u ? 14 : 10); if (g.enemyDead) g.maxHp(u ? 4 : 3); },
     },
     secret: {
-      name: 'Тайное письмо', cost: 1, type: 'atk', rarity: 'rare', art: 'secret', retain: true,
+      name: 'Тайное письмо', cost: 1, type: 'atk', rarity: 'uncommon', art: 'secret', retain: true,
       desc: (g, u, c) => `Нанести ${g.dmgText((u ? 11 : 8) + ((c && c.grow) || 0))} урона. Каждый ход в руке: +${u ? 5 : 4} урона.`,
       play: async (g, u, c) => g.attack((u ? 11 : 8) + (c.grow || 0)),
       onRetain: (c, u) => { c.grow = (c.grow || 0) + (u ? 5 : 4); },
@@ -220,12 +283,12 @@
       play: async (g, u) => { await g.burstNow(); if (u) await g.flame(1); },
     },
     drift: {
-      name: 'Сугроб', cost: 1, upCost: 0, type: 'skill', rarity: 'rare', art: 'drift',
+      name: 'Сугроб', cost: 1, upCost: 0, type: 'skill', rarity: 'uncommon', art: 'drift',
       desc: (g) => `Удвоить защиту${g.state ? ` (${g.blockNow} → ${g.blockNow * 2})` : ''}.`,
       play: async (g) => g.doubleBlock(),
     },
     pockethog: {
-      name: 'Ёжик в кармане', cost: 1, type: 'skill', rarity: 'rare', art: 'pockethog', exhaust: true,
+      name: 'Ёжик в кармане', cost: 1, type: 'skill', rarity: 'uncommon', art: 'pockethog', exhaust: true,
       desc: (g, u) => `Шипы ${u ? 7 : 5} до конца боя.`,
       play: async (g, u) => g.thorns(u ? 7 : 5),
     },
@@ -255,9 +318,40 @@
       play: async (g, u) => g.charm('hearth', u ? 4 : 3),
     },
     rhythm: {
-      name: 'Ритм шагов', cost: 1, upCost: 0, type: 'charm', rarity: 'rare', art: 'rhythm',
+      name: 'Ритм шагов', cost: 1, upCost: 0, type: 'charm', rarity: 'uncommon', art: 'rhythm',
       desc: () => 'Каждая третья карта за ход: +1 Огонёк.',
       play: async (g) => g.charm('rhythm', 1),
+    },
+
+    avalanche: {
+      name: 'Лавина', cost: 2, type: 'atk', rarity: 'rare', art: 'avalanche',
+      desc: (g, u) => `Нанести по ${u ? 3 : 2} урона за каждую карту в сбросе${g.state ? ` (${g.dmgText((u ? 3 : 2) * g.state.disc.length)})` : ''}.`,
+      play: async (g, u) => g.attack((u ? 3 : 2) * g.state.disc.length),
+    },
+    moneyorder: {
+      name: 'Денежный перевод', cost: 0, type: 'skill', rarity: 'rare', art: 'moneyorder', exhaust: true,
+      desc: (g, u) => `Доставка: +1 энергия, 2 карты и ${u ? 25 : 15} монет.`,
+      play: async (g, u) => g.deliver('Перевод', async (d) => { d.energy(1); d.draw(2); d.gold(u ? 25 : 15); }),
+    },
+    aurora: {
+      name: 'Северное сияние', cost: 3, upCost: 2, type: 'charm', rarity: 'rare', art: 'aurora',
+      desc: () => 'В начале каждого хода +1 энергия.',
+      play: async (g) => g.charm('aurora', 1),
+    },
+    returnaddr: {
+      name: 'Обратный адрес', cost: 1, type: 'skill', rarity: 'rare', art: 'returnaddr',
+      desc: (g, u) => `Вернуть в руку ${u ? 3 : 2} последние карты из сброса.`,
+      play: async (g, u) => g.recall(u ? 3 : 2),
+    },
+    frostbite: {
+      name: 'Обморожение', cost: 1, upCost: 0, type: 'skill', rarity: 'rare', art: 'frostbite', exhaust: true,
+      desc: () => 'Враг Уязвим 2, Ослаблен на 2 хода и теряет 2 Силы.',
+      play: async (g) => { g.vuln(2); g.weak(2); g.chill(2); },
+    },
+    poste: {
+      name: 'До востребования', cost: 1, type: 'skill', rarity: 'rare', art: 'poste',
+      desc: (g, u) => `Доставка: бесплатно разыграть ${u ? 3 : 2} верхние карты колоды.`,
+      play: async (g, u) => g.deliver('До востребования', async (d) => d.autoplay(u ? 3 : 2)),
     },
 
     // ---------- карты героев: выпадают только своему герою ----------
@@ -351,7 +445,17 @@
              {k:'debuff', v} (Слабость игроку) | {k:'snuff', v} (гасит Огоньки + атака)
              {k:'curse', card, n} (подкинуть помехи в колоду) | {k:'steal', v, gold} (атака + кража монет)
              {k:'heal', v} | {k:'spikes', v} (враг получает Шипы)
-     thorns: N — враг колючий с начала боя: каждый удар по нему ранит Иву на N */
+             {k:'sap', v} (−v энергии в ваш следующий ход) | {k:'mist', v} (туман: до следующего хода врага удары по нему не больше v)
+             {k:'boom', v} (взрыв: удар на v, после него враг исчезает) | {k:'bury', v} (в следующий ход на v карт меньше)
+             {k:'frail', v} (Хрупкость на v ходов: ваша защита слабее на 25%)
+             у атаки leech: true — враг лечится на весь прошедший урон
+     Особые приёмы (пассивно, весь бой):
+     thorns: N — колючий: каждый удар по нему ранит вас на N
+     nest: N — матрёшка: N раз раскрывается и выпускает новую, поменьше
+     boil: true — кипит: каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5)
+     tally: N — кукушка: каждая N-я карта за ход бьёт вас на 3
+     plating: true — латы: защита врага не сгорает в начале его хода
+     alarm: N — колотушка: каждый ваш Навык даёт врагу N защиты */
   const ENEMIES = {
     inkcat: {
       name: 'Чернильный кот', hp: 20, tier: 'normal',
@@ -399,6 +503,22 @@
       line: 'Почтовый ящик, который больше не хочет отдавать письма.',
       pattern: [{ k: 'block', v: 10 }, { k: 'attack', v: 12 }, { k: 'curse', card: 'dread', n: 1, then: { k: 'attack', v: 4, hits: 2 } }],
     },
+    // ---- новые: город ----
+    matryoshka: {
+      name: 'Матрёшка-Шкатулка', hp: 18, tier: 'normal', nest: 2,
+      line: 'Внутри одной сердитой матрёшки прячется ещё одна. И ещё.',
+      pattern: [{ k: 'attack', v: 5 }, { k: 'block', v: 5, then: { k: 'attack', v: 3 } }, { k: 'attack', v: 2, hits: 3 }],
+    },
+    samovar: {
+      name: 'Самовар-Кипяток', hp: 26, tier: 'normal', boil: true,
+      line: 'Чем сильнее его стукнешь, тем сильнее он кипит.',
+      pattern: [{ k: 'attack', v: 6 }, { k: 'attack', v: 3, hits: 2 }, { k: 'block', v: 8, then: { k: 'heal', v: 4 } }],
+    },
+    cuckoo: {
+      name: 'Кукушка из ходиков', hp: 20, tier: 'normal', tally: 4,
+      line: 'Считает каждое ваше движение и кукует невпопад.',
+      pattern: [{ k: 'attack', v: 5 }, { k: 'sap', v: 1, then: { k: 'attack', v: 3 } }, { k: 'attack', v: 2, hits: 3 }],
+    },
     // ---- окраина (стадия II) ----
     shadowthief: {
       name: 'Тень-Воришка', hp: 20, tier: 'normal',
@@ -430,6 +550,22 @@
       line: 'Подсчитывает, сколько минут осталось до темноты.',
       pattern: [{ k: 'debuff', v: 2 }, { k: 'attack', v: 4, hits: 2 }, { k: 'curse', card: 'blot', n: 2, then: { k: 'block', v: 8 } }, { k: 'attack', v: 10 }],
     },
+    // ---- новые: окраина ----
+    mist: {
+      name: 'Туманница', hp: 24, tier: 'normal',
+      line: 'Кутается в туман, и удары вязнут в нём, как в вате.',
+      pattern: [{ k: 'mist', v: 5, then: { k: 'block', v: 5 } }, { k: 'attack', v: 7 }, { k: 'debuff', v: 1, then: { k: 'attack', v: 4 } }, { k: 'attack', v: 3, hits: 2 }],
+    },
+    ghoul: {
+      name: 'Ледяной Упырь', hp: 28, tier: 'normal',
+      line: 'Пьёт чужое тепло и от этого только крепнет.',
+      pattern: [{ k: 'attack', v: 7, leech: true }, { k: 'block', v: 7, then: { k: 'buff', v: 1 } }, { k: 'attack', v: 4, hits: 2, leech: true }],
+    },
+    firecracker: {
+      name: 'Шутиха', hp: 22, tier: 'normal',
+      line: 'Сбежавший праздничный фейерверк. Фитиль уже шипит.',
+      pattern: [{ k: 'attack', v: 3, hits: 2 }, { k: 'block', v: 6, then: { k: 'attack', v: 3 } }, { k: 'boom', v: 16 }],
+    },
     // ---- элита ----
     snowbrute: {
       name: 'Снеговик-Громила', hp: 50, tier: 'elite',
@@ -450,6 +586,21 @@
       name: 'Совиный сторож', hp: 48, tier: 'elite',
       line: 'Охраняет темноту. Никого не пропускает.',
       pattern: [{ k: 'attack', v: 8 }, { k: 'buff', v: 2 }, { k: 'attack', v: 3, hits: 3 }, { k: 'block', v: 8 }],
+    },
+    iceknight: {
+      name: 'Ледяной Рыцарь', hp: 44, tier: 'elite', plating: true,
+      line: 'Его латы намерзали всю зиму, слой за слоем.',
+      pattern: [{ k: 'block', v: 9 }, { k: 'attack', v: 10 }, { k: 'block', v: 7, then: { k: 'attack', v: 5 } }, { k: 'attack', v: 4, hits: 2 }],
+    },
+    blizzard: {
+      name: 'Метелица', hp: 50, tier: 'elite',
+      line: 'Заметает дороги, руки и мысли.',
+      pattern: [{ k: 'attack', v: 5, hits: 2 }, { k: 'bury', v: 2, then: { k: 'curse', card: 'icy', n: 2 } }, { k: 'attack', v: 12 }, { k: 'frail', v: 2, then: { k: 'block', v: 10 } }],
+    },
+    watchman: {
+      name: 'Сторож с колотушкой', hp: 52, tier: 'elite', alarm: 3,
+      line: 'Стучит в колотушку на каждый шорох. Хитрости он не любит.',
+      pattern: [{ k: 'attack', v: 11 }, { k: 'debuff', v: 2, then: { k: 'attack', v: 5 } }, { k: 'buff', v: 2, then: { k: 'block', v: 10 } }, { k: 'attack', v: 4, hits: 3 }],
     },
     moth: {
       name: 'Ночная Моль', hp: 110, tier: 'boss',
@@ -503,9 +654,9 @@
     },
   };
 
-  /* Талисманы. tier: common | rare | boss | class.
+  /* Талисманы. tier: common | uncommon | rare | boss | class (обычный, необычный, редкий, трофей босса, особенность героя).
      class — особенность героя: есть у него с начала забега и больше нигде не выпадает.
-     Обычные и редкие дают элиты, сундуки, события и лавка; талисманы босса выбираются
+     Обычные, необычные и редкие дают элиты, сундуки, события и лавка (редкие реже); талисманы босса выбираются
      один из трёх после победы над боссом стадии: они сильные, но у многих есть цена. */
   const RELICS = {
     bell: { tier: 'common', name: 'Медный колокольчик', art: 'bell', desc: 'В начале боя получить 6 защиты.' },
@@ -516,17 +667,33 @@
     scarf: { tier: 'common', name: 'Шарф с кисточками', art: 'cloak', desc: 'В первый ход боя +1 энергия.' },
     envelope: { tier: 'common', name: 'Конверт с маркой', art: 'envelope', desc: '+8 монет за каждую победу.' },
     thimble: { tier: 'common', name: 'Напёрсток', art: 'thimble', desc: 'В начале каждого хода 2 защиты.' },
-    magnifier: { tier: 'common', name: 'Лупа', art: 'magnifier', desc: 'Первая атака в бою делает врага Уязвимым на 2 хода.' },
-    kettle: { tier: 'common', name: 'Походный чайник', art: 'kettle', desc: 'Отдых у костра лечит на 10 HP больше.' },
+    mug: { tier: 'common', name: 'Глиняная кружка', art: 'mug', desc: 'В начале боя восстановить 3 HP.' },
+    pencil: { tier: 'common', name: 'Огрызок карандаша', art: 'pencil', desc: 'Первая атака каждого хода: +3 урона каждому удару.' },
+    bookmark: { tier: 'common', name: 'Закладка с кисточкой', art: 'bookmark', desc: 'В начале боя одна случайная карта колоды улучшается до конца боя.' },
+    cocoatin: { tier: 'common', name: 'Жестянка какао', art: 'cocoatin', desc: 'Отдых у костра также даёт +2 к максимуму HP.' },
+    stamppad: { tier: 'common', name: 'Штемпельная подушка', art: 'stamppad', desc: 'Ваша Уязвимость держится на 1 ход дольше.' },
+    snowglobe: { tier: 'uncommon', name: 'Снежный шар', art: 'snowglobe', desc: 'Каждая Вспышка лампы Ослабляет врага на 1 ход.' },
+    oilcan: { tier: 'uncommon', name: 'Маслёнка', art: 'oilcan', desc: 'Каждая Доставка даёт 4 защиты.' },
+    candybox: { tier: 'uncommon', name: 'Коробка леденцов', art: 'candybox', desc: 'После победы над элитой восстановить 10 HP.' },
+    vanefeather: { tier: 'uncommon', name: 'Перо флюгера', art: 'vanefeather', desc: 'Если в конце хода рука пуста, в следующий ход +1 энергия.' },
+    stokerglove: { tier: 'uncommon', name: 'Рукавица истопника', art: 'stokerglove', desc: 'Каждый раз, когда Поджог ранит врага, получить 2 защиты.' },
+    luckystamp: { tier: 'uncommon', name: 'Счастливая марка', art: 'luckystamp', desc: 'Монет за победы на 20% больше.' },
+    magnifier: { tier: 'uncommon', name: 'Лупа', art: 'magnifier', desc: 'Первая атака в бою делает врага Уязвимым на 2 хода.' },
+    kettle: { tier: 'uncommon', name: 'Походный чайник', art: 'kettle', desc: 'Отдых у костра лечит на 10 HP больше.' },
     whetstone: { tier: 'common', name: 'Точильный камень', art: 'whetstone', desc: 'Сразу улучшает 2 случайные карты колоды.' },
-    inkwell: { tier: 'common', name: 'Чернильница', art: 'inkwell', desc: 'В начале боя враг Ослаблен на 2 хода.' },
+    inkwell: { tier: 'uncommon', name: 'Чернильница', art: 'inkwell', desc: 'В начале боя враг Ослаблен на 2 хода.' },
     pinecone: { tier: 'common', name: 'Еловая шишка', art: 'pinecone', desc: 'В начале боя Шипы 3.' },
     coupon: { tier: 'common', name: 'Купон Игольника', art: 'coupon', desc: 'В лавке всё на 25% дешевле.' },
     stub: { tier: 'common', name: 'Огарок', art: 'stub', desc: 'Каждая Вспышка лампы лечит 2 HP.' },
-    sled: { tier: 'common', name: 'Санки', art: 'sled', desc: 'В первый ход боя взять 2 лишние карты.' },
-    piggy: { tier: 'common', name: 'Копилка', art: 'piggy', desc: 'Победа без потери HP: +15 монет.' },
-    frostglass: { tier: 'common', name: 'Морозное стекло', art: 'frostglass', desc: 'Враги начинают бой с −2 Силы.' },
+    sled: { tier: 'uncommon', name: 'Санки', art: 'sled', desc: 'В первый ход боя взять 2 лишние карты.' },
+    piggy: { tier: 'uncommon', name: 'Копилка', art: 'piggy', desc: 'Победа без потери HP: +15 монет.' },
+    frostglass: { tier: 'uncommon', name: 'Морозное стекло', art: 'frostglass', desc: 'Враги начинают бой с −2 Силы.' },
     matchbox: { tier: 'common', name: 'Коробок спичек', art: 'matchbox', desc: 'Каждый ваш Поджог на 2 сильнее.' },
+    mirrorshard: { tier: 'rare', name: 'Осколок зеркала', art: 'mirrorshard', desc: 'Первая карта каждого хода срабатывает дважды.' },
+    eternaloil: { tier: 'rare', name: 'Неугасимое масло', art: 'eternaloil', desc: 'Враги не могут гасить ваши Огоньки. В начале боя +1 Огонёк.' },
+    medal: { tier: 'rare', name: 'Медаль почтальона', art: 'medal', desc: 'Если за прошлый ход сыграно 6 карт или больше, +1 энергия.' },
+    thermos: { tier: 'rare', name: 'Термос', art: 'thermos', desc: 'После боя, если HP меньше половины, восстановить 12 HP.' },
+    northstar: { tier: 'rare', name: 'Полярная звезда', art: 'northstar', desc: 'В первый ход боя +2 энергии и 2 лишние карты.' },
     stampbook: { tier: 'rare', name: 'Альбом марок', art: 'stampbook', desc: 'Каждая шестая карта, сыгранная в бою, даёт +1 энергию.' },
     hotstone: { tier: 'rare', name: 'Горячий камень', art: 'hotstone', desc: 'В начале хода до 6 защиты не сгорает.' },
     clover: { tier: 'rare', name: 'Сушёный клевер', art: 'clover', desc: 'После боя на выбор на одну карту больше.' },
@@ -632,28 +799,28 @@
       hp: 36, gold: 20, relic: 'ivalamp', build: 'Огоньки и Вспышки',
       about: 'Копит Огоньки и чаще всех зажигает Вспышки лампы.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'kindle', 'spark', 'firefly'],
-      favored: ['kindle', 'spark', 'oil', 'mirror', 'palm', 'flashpoint', 'drafts', 'eveninglamp', 'rhythm', 'sparks'],
+      favored: ['kindle', 'spark', 'oil', 'mirror', 'palm', 'flashpoint', 'drafts', 'eveninglamp', 'rhythm', 'sparks', 'icelantern', 'snowstorm'],
     },
     courier: {
       name: 'Тиша', role: 'Скороход', f: false, who: 'скороход Тиша', whom: 'скороходу Тише', look: 'courier',
       hp: 32, gold: 35, relic: 'wingboots', build: 'Доставка и серии',
       about: 'Играет много дешёвых карт за ход и шлёт Доставки на следующий.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'urgent', 'telegram', 'wind'],
-      favored: ['wind', 'parcel', 'telegram', 'surprise', 'flurry', 'finale', 'breath', 'compass', 'inkpen', 'blotter', 'spark', 'cocoa'],
+      favored: ['wind', 'parcel', 'telegram', 'surprise', 'flurry', 'finale', 'breath', 'compass', 'inkpen', 'blotter', 'spark', 'cocoa', 'sledram', 'carbon', 'poste', 'moneyorder', 'avalanche'],
     },
     guard: {
       name: 'Марфа', role: 'Сторожиха моста', f: true, who: 'сторожиха моста Марфа', whom: 'сторожихе моста Марфе', look: 'guard',
       hp: 44, gold: 15, relic: 'ironshutter', build: 'Защита, Шипы и мороз',
       about: 'Держит удар за ударом и отвечает врагу его же силой.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'guard', 'snowkick'],
-      favored: ['cloak', 'wax', 'snowkick', 'payback', 'prickly', 'frostlace', 'umbrella', 'mittens', 'drift', 'pockethog', 'lullaby'],
+      favored: ['cloak', 'wax', 'snowkick', 'payback', 'prickly', 'frostlace', 'umbrella', 'mittens', 'drift', 'pockethog', 'lullaby', 'icethrow', 'heavybag', 'patch', 'nightshift', 'frostbite'],
     },
     stoker: {
       name: 'Фома', role: 'Трубочист', f: false, who: 'трубочист Фома', whom: 'трубочисту Фоме', look: 'stoker',
       hp: 38, gold: 20, relic: 'sootbroom', build: 'Поджог и частые удары',
       about: 'Разжигает врага каждым ударом и даёт огню сделать остальное.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'ember', 'poker'],
-      favored: ['ember', 'blaze', 'hearth', 'sparks', 'flurry', 'whistle', 'cocoa', 'stubborn', 'stamp', 'redseal'],
+      favored: ['ember', 'blaze', 'hearth', 'sparks', 'flurry', 'whistle', 'cocoa', 'stubborn', 'stamp', 'redseal', 'kindling', 'snowstorm', 'hornblow', 'cancel'],
     },
   };
 

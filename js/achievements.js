@@ -72,6 +72,7 @@
   add('fight', 'thornskill', 'Сам напросился', 'Добить противника Шипами.', 'c', 'thornskill', 1, 'i:pinecone');
   add('fight', 'stunboss', 'Колыбельная', 'Усыпить босса.', 'c', 'stunboss', 1, 'i:lullaby');
   add('fight', 'charms3', 'Заколдованный вечер', 'Наложить трое разных Чар в одном бою.', 'c', 'charms3', 1, 'i:hearth');
+  add('fight', 'defuse', 'Фитиль потушен', 'Победить Шутиху, пока она не взорвалась.', 'c', 'defuse', 1, 'e:firecracker');
 
   /* ---------- Коллекция ---------- */
   tiers('collect', 'spend', 'Звонкая монета', 'Потратить {p} монет.', 'c', 'spent', [300, 1000, 2500], ['i:coin', 'i:luckycoin', 'e:hedgehog']);
@@ -81,6 +82,8 @@
   tiers('collect', 'card', 'Полная сумка', 'Сыграть {p} разных карт.', 's', 'played', [15, 30, playable], ['i:envelope', 'i:secret', 'i:stampbook']);
   tiers('collect', 'foe', 'Знаток окрестностей', 'Победить {p} разных противников.', 's', 'beaten', [10, 20, foes.size], ['e:pigeon', 'e:raven', 'e:wisp']);
   tiers('collect', 'trophy', 'Трофеи', 'Взять {p} разных талисманов босса.', 's', 'trophies', [3, trophies], ['i:hourglass', 'i:crown']);
+  const rares = Object.keys(CARDS).filter((k) => CARDS[k].rarity === 'rare' && !CARDS[k].cls).length;
+  tiers('collect', 'rare', 'Редкая находка', 'Сыграть {p} разных редких карт.', 's', 'rareplayed', [5, rares], ['i:aurora', 'i:avalanche']);
   add('collect', 'rich', 'Копилка полна', 'Накопить {p} монет за один забег.', 'c', 'maxgold', 300, 'i:piggy');
   add('collect', 'hp', 'Крепкое здоровье', 'Поднять максимум HP до {p}.', 'c', 'maxhp', 50, 'i:heart');
   add('collect', 'updeck', 'Мастерица', 'Собрать колоду, в которой {p} улучшенных карт.', 'c', 'updeck', 15, 'i:mittens');

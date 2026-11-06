@@ -996,6 +996,242 @@
       <path d="M68 100 Q36 96 24 120 M132 100 Q164 96 176 120" stroke="#b8c8e0" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.8"/>
     `, 'char ghosty'),
 
+    /* ---------- Новые: город ---------- */
+    matryoshka: () => svg('0 0 200 220', `
+      <ellipse cx="100" cy="210" rx="56" ry="8" fill="#000" opacity="0.15"/>
+      <!-- тело -->
+      <path d="M100 18 Q62 18 60 62 Q40 92 42 150 Q44 206 100 208 Q156 206 158 150 Q160 92 140 62 Q138 18 100 18z" fill="#c8423a" ${sw(4)}/>
+      <path d="M62 96 Q52 130 58 176" stroke="#e8746a" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.7"/>
+      <!-- платок и лицо -->
+      <ellipse cx="100" cy="66" rx="35" ry="33" fill="#f2c94c" ${sw(3.5)}/>
+      <ellipse cx="100" cy="68" rx="26" ry="25" fill="#f8dcc0" ${sw(3)}/>
+      <path d="M76 54 Q100 32 124 54 Q112 46 100 47 Q88 46 76 54z" fill="#5a3020" ${sw(2)}/>
+      <path d="M83 62 l12 5 M117 62 l-12 5" ${sw(3.5)}/>
+      <circle cx="90" cy="72" r="4" fill="${O}"/><circle cx="110" cy="72" r="4" fill="${O}"/>
+      <circle cx="82" cy="82" r="5.5" fill="#e8746a" opacity="0.7"/><circle cx="118" cy="82" r="5.5" fill="#e8746a" opacity="0.7"/>
+      <path d="M92 87 Q100 82 108 87" ${sw(3)} fill="none"/>
+      <!-- шов, по которому она раскрывается -->
+      <path d="M48 116 Q100 128 152 116" fill="none" ${sw(5)}/>
+      <path d="M48 116 Q100 128 152 116" fill="none" stroke="#e6c45a" stroke-width="2.5"/>
+      <!-- фартук с цветком -->
+      <path d="M72 128 Q100 136 128 128 Q138 170 126 198 Q100 204 74 198 Q62 170 72 128z" fill="#f2e6c9" ${sw(3)}/>
+      <path d="M100 176 q-14 4 -18 14 M100 176 q14 4 18 14" stroke="#3a7a4a" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <g fill="#c8423a" ${sw(2.5)}><circle cx="100" cy="148" r="8"/><circle cx="88" cy="158" r="8"/><circle cx="112" cy="158" r="8"/><circle cx="93" cy="171" r="8"/><circle cx="107" cy="171" r="8"/></g>
+      <circle cx="100" cy="161" r="6" fill="#e6c45a" ${sw(2)}/>
+    `, 'char'),
+
+    samovar: () => svg('0 0 200 230', `
+      <ellipse cx="100" cy="220" rx="62" ry="8" fill="#000" opacity="0.15"/>
+      <!-- пар -->
+      <path d="M92 26 q-12 -10 0 -20 M108 24 q-10 -10 2 -18" stroke="#e8eef6" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.85"/>
+      <!-- ручки -->
+      <path d="M50 86 q-26 4 -22 30 q4 14 22 10" fill="none" ${sw(7)}/>
+      <path d="M150 86 q26 4 22 30 q-4 14 -22 10" fill="none" ${sw(7)}/>
+      <path d="M50 86 q-26 4 -22 30 q4 14 22 10 M150 86 q26 4 22 30 q-4 14 -22 10" fill="none" stroke="#b07a2a" stroke-width="3"/>
+      <!-- труба и крышка -->
+      <rect x="88" y="28" width="24" height="22" fill="#b07a2a" ${sw(3.5)}/>
+      <path d="M64 66 Q100 40 136 66z" fill="#d8a94a" ${sw(4)}/>
+      <!-- тело -->
+      <path d="M58 64 h84 q22 52 8 110 q-4 10 -14 12 h-72 q-10 -2 -14 -12 q-14 -58 8 -110z" fill="#d8a94a" ${sw(4)}/>
+      <path d="M70 76 q-12 42 0 92" stroke="#ffe8a0" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.8"/>
+      <path d="M62 82 h76" stroke="#b07a2a" stroke-width="4"/>
+      <!-- кран -->
+      <path d="M150 138 h22 v10 h-8 v12 h-8 v-12 h-6z" fill="#b07a2a" ${sw(3)}/>
+      <path d="M168 166 q4 8 0 12 q-4 -4 0 -12z" fill="#9fd8ff" ${sw(1.5)}/>
+      <!-- поддон и ножки -->
+      <path d="M62 184 h76 l10 14 h-96z" fill="#b07a2a" ${sw(4)}/>
+      <path d="M58 198 l-6 14 M142 198 l6 14 M100 198 v14" ${sw(5)}/>
+      <!-- сердитое лицо -->
+      <path d="M72 104 l20 8 M128 104 l-20 8" ${sw(4)}/>
+      <ellipse cx="84" cy="120" rx="6" ry="7" fill="${O}"/><ellipse cx="116" cy="120" rx="6" ry="7" fill="${O}"/>
+      <circle cx="86" cy="118" r="2" fill="#fff"/><circle cx="118" cy="118" r="2" fill="#fff"/>
+      <circle cx="70" cy="138" r="8" fill="#e8502a" opacity="0.45"/><circle cx="130" cy="138" r="8" fill="#e8502a" opacity="0.45"/>
+      <path d="M80 144 Q100 162 120 144 Q100 152 80 144z" fill="#5a2a1a" ${sw(3)}/>
+    `, 'char'),
+
+    cuckoo: () => svg('0 0 200 230', `
+      <!-- гири-шишки на цепочках -->
+      <path d="M78 150 v38 M122 150 v52" stroke="#6a5a4a" stroke-width="3" stroke-dasharray="4 3"/>
+      <path d="M70 188 h16 l2 16 q-10 10 -20 0z" fill="#8a5a32" ${sw(3)}/>
+      <path d="M114 202 h16 l2 14 q-10 10 -20 0z" fill="#8a5a32" ${sw(3)}/>
+      <!-- маятник -->
+      <path d="M100 150 v32" ${sw(3)}/>
+      <circle cx="100" cy="190" r="10" fill="#e6c45a" ${sw(3)}/>
+      <!-- крыша и домик -->
+      <path d="M36 80 L100 22 L164 80z" fill="#6b3a1e" ${sw(4)}/>
+      <path d="M52 74 L100 32 L148 74" fill="none" stroke="#8a5a32" stroke-width="5"/>
+      <rect x="54" y="76" width="92" height="76" fill="#a06a3a" ${sw(4)}/>
+      <path d="M54 92 h92" stroke="#8a5a32" stroke-width="3"/>
+      <!-- циферблат -->
+      <circle cx="100" cy="124" r="22" fill="#f2e6c9" ${sw(3.5)}/>
+      <g fill="${O}"><circle cx="100" cy="107" r="2"/><circle cx="117" cy="124" r="2"/><circle cx="100" cy="141" r="2"/><circle cx="83" cy="124" r="2"/></g>
+      <path d="M100 124 v-14 M100 124 l10 6" ${sw(3)}/>
+      <!-- дверца и кукушка -->
+      <rect x="86" y="46" width="28" height="28" rx="3" fill="#3a2418" ${sw(3)}/>
+      <path d="M86 46 l-12 6 v26 l12 -4z" fill="#8a5a32" ${sw(2.5)}/>
+      <circle cx="100" cy="58" r="13" fill="#7a8aa0" ${sw(3)}/>
+      <path d="M108 54 l22 -4 l-20 8 l20 4 l-22 0z" fill="#e8a42a" ${sw(2.5)}/>
+      <path d="M92 48 l12 5" ${sw(3)}/>
+      <circle cx="101" cy="56" r="3.5" fill="${O}"/>
+      <path d="M140 34 q8 -8 16 -4 M146 46 q10 -4 16 2" stroke="#fff3c4" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    `, 'char'),
+
+    /* ---------- Новые: окраина ---------- */
+    mist: () => svg('0 0 200 240', `
+      <defs><radialGradient id="mistG"><stop offset="0" stop-color="#e8ecf8" stop-opacity="0.75"/><stop offset="1" stop-color="#e8ecf8" stop-opacity="0"/></radialGradient></defs>
+      <ellipse cx="100" cy="140" rx="98" ry="92" fill="url(#mistG)"/>
+      <!-- руки-завитки -->
+      <path d="M66 122 Q30 122 26 98 Q24 82 38 84 Q48 88 42 98" stroke="${O}" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <path d="M134 122 Q170 122 174 98 Q176 82 162 84 Q152 88 158 98" stroke="${O}" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <path d="M66 122 Q30 122 26 98 Q24 82 38 84 Q48 88 42 98 M134 122 Q170 122 174 98 Q176 82 162 84 Q152 88 158 98" stroke="#c8cde6" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <!-- шлейф -->
+      <path d="M50 230 Q40 170 64 122 Q78 94 100 92 Q122 94 136 122 Q160 170 150 230 Q136 214 124 232 Q112 214 100 232 Q88 214 76 232 Q64 214 50 230z" fill="#c8cde6" fill-opacity="0.9" ${sw(4)}/>
+      <path d="M64 152 Q100 168 136 152 M58 188 Q100 206 142 188" stroke="#eef2fc" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.8"/>
+      <!-- волосы-туман -->
+      <path d="M62 78 Q60 28 100 24 Q140 28 138 78 Q150 106 170 114 Q140 122 130 98 L70 98 Q60 122 30 114 Q50 106 62 78z" fill="#9aa2c8" ${sw(4)}/>
+      <!-- сонное лицо -->
+      <ellipse cx="100" cy="74" rx="28" ry="30" fill="#eef0fa" ${sw(3.5)}/>
+      <path d="M83 72 q7 6 14 0 M103 72 q7 6 14 0" ${sw(3)} fill="none"/>
+      <path d="M84 62 q6 -4 12 0 M104 62 q6 -4 12 0" stroke="#7a80a8" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="100" cy="90" rx="4.5" ry="5.5" fill="#5a5a80"/>
+      <circle cx="80" cy="82" r="5" fill="#c8b0e0" opacity="0.6"/><circle cx="120" cy="82" r="5" fill="#c8b0e0" opacity="0.6"/>
+    `, 'char ghosty'),
+
+    ghoul: () => svg('0 0 200 230', `
+      <ellipse cx="100" cy="220" rx="64" ry="8" fill="#000" opacity="0.18"/>
+      <!-- длинные руки -->
+      <path d="M60 122 Q22 150 28 198 M140 122 Q178 150 172 198" stroke="${O}" stroke-width="24" fill="none" stroke-linecap="round"/>
+      <path d="M60 122 Q22 150 28 198 M140 122 Q178 150 172 198" stroke="#7fa8c8" stroke-width="16" fill="none" stroke-linecap="round"/>
+      <path d="M18 200 l-5 14 M28 204 l0 14 M38 200 l5 14 M162 200 l-5 14 M172 204 l0 14 M182 200 l5 14" ${sw(4)}/>
+      <!-- тело -->
+      <path d="M54 214 Q40 142 62 106 Q100 78 138 106 Q160 142 146 214z" fill="#8ab4d4" ${sw(4)}/>
+      <path d="M80 214 Q84 152 100 136 Q116 152 120 214z" fill="#b8d8ee"/>
+      <path d="M84 164 q16 7 32 0 M86 182 q14 7 28 0" stroke="#5a84a8" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- ледяные шипы на спине -->
+      <path d="M66 108 l-12 -32 l22 18z M134 108 l12 -32 l-22 18z" fill="#d8f0ff" ${sw(2.5)}/>
+      <!-- голова -->
+      <ellipse cx="100" cy="92" rx="40" ry="34" fill="#9cc4e0" ${sw(4)}/>
+      <path d="M90 60 l6 -24 l8 22z" fill="#d8f0ff" ${sw(2.5)}/>
+      <path d="M72 80 l20 9 M128 80 l-20 9" ${sw(4)}/>
+      <ellipse cx="84" cy="96" rx="7" ry="6" fill="#ff5a5a" ${sw(2.5)}/><ellipse cx="116" cy="96" rx="7" ry="6" fill="#ff5a5a" ${sw(2.5)}/>
+      <circle cx="84" cy="96" r="2.5" fill="#fff3c4"/><circle cx="116" cy="96" r="2.5" fill="#fff3c4"/>
+      <path d="M74 112 Q100 130 126 112 Q100 120 74 112z" fill="#2a3450" ${sw(3)}/>
+      <path d="M82 114 l3 9 l3 -8 M94 117 l3 10 l3 -10 M106 117 l3 10 l3 -9 M118 114 l2 8 l3 -9" fill="#eef8ff" ${sw(1.5)}/>
+      <!-- украденное тепло -->
+      <g opacity="0.8"><path d="M150 54 q-10 -8 -6 -16 q4 -6 10 0 q6 -6 10 0 q4 8 -6 16 l-4 4z" fill="#ff8a6a" ${sw(2)}/></g>
+    `, 'char'),
+
+    firecracker: () => svg('0 0 200 230', `
+      <ellipse cx="100" cy="220" rx="54" ry="8" fill="#000" opacity="0.15"/>
+      <!-- фитиль с искрами -->
+      <path d="M100 40 Q114 26 104 10" fill="none" ${sw(5)}/>
+      <path d="M100 40 Q114 26 104 10" fill="none" stroke="#8a6a4a" stroke-width="2"/>
+      <circle cx="104" cy="10" r="9" fill="#ffe38a" opacity="0.6"/>
+      <path d="M104 10 l-12 -6 M104 10 l14 -8 M104 10 l2 -10 M104 10 l-14 6 M104 10 l16 4" stroke="#ffd36e" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="104" cy="10" r="5" fill="#fff3c4"/>
+      <!-- бумажный колпак -->
+      <path d="M62 72 L100 34 L138 72z" fill="#f2e6c9" ${sw(4)}/>
+      <path d="M80 54 l14 18 M100 34 l8 38" stroke="#5b8fd0" stroke-width="4"/>
+      <!-- ножки -->
+      <path d="M82 190 v20 h-12 M118 190 v20 h12" fill="none" ${sw(5)}/>
+      <!-- корпус -->
+      <rect x="60" y="70" width="80" height="122" rx="8" fill="#c8423a" ${sw(4)}/>
+      <path d="M60 94 h80 M60 166 h80" stroke="${O}" stroke-width="11"/>
+      <path d="M60 94 h80 M60 166 h80" stroke="#e6c45a" stroke-width="6"/>
+      <path d="M72 78 v106" stroke="#e8746a" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+      <path d="M124 176 l3 6 l6 2 l-6 2 l-3 6 l-3 -6 l-6 -2 l6 -2z M78 104 l2 4 l4 1 l-4 1 l-2 4 l-2 -4 l-4 -1 l4 -1z" fill="#fff3c4" ${sw(1.5)}/>
+      <!-- озорное лицо -->
+      <path d="M78 112 l16 8 M122 112 l-16 8" ${sw(4)}/>
+      <circle cx="88" cy="128" r="6" fill="${O}"/><circle cx="112" cy="128" r="6" fill="${O}"/>
+      <circle cx="90" cy="126" r="2" fill="#fff"/><circle cx="114" cy="126" r="2" fill="#fff"/>
+      <path d="M78 142 Q100 164 122 142 Q100 150 78 142z" fill="#5a1a1a" ${sw(3)}/>
+      <path d="M88 145 l3 6 l3 -5 M104 147 l3 5 l3 -6" fill="#fff" ${sw(1.5)}/>
+      <!-- руки -->
+      <path d="M60 130 l-24 -14 M140 130 l24 -16" ${sw(5)}/>
+    `, 'char'),
+
+    /* ---------- Новая элита ---------- */
+    iceknight: () => svg('0 0 220 240', `
+      <ellipse cx="110" cy="230" rx="78" ry="8" fill="#000" opacity="0.18"/>
+      <!-- меч-сосулька -->
+      <path d="M182 36 l10 -4 l-4 132 l-6 8 l-6 -8z" fill="#cfeaff" ${sw(3.5)}/>
+      <path d="M182 40 l-2 120" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M168 166 h32" ${sw(7)}/><path d="M184 172 v22" stroke="#6b4a32" stroke-width="8" stroke-linecap="round"/><path d="M184 172 v22" ${sw(2)}/>
+      <!-- латы -->
+      <path d="M58 228 Q50 150 68 116 H152 Q170 150 162 228z" fill="#9cc8e8" ${sw(4)}/>
+      <path d="M66 142 h88 M62 170 h96 M60 200 h100" ${sw(3)}/>
+      <path d="M68 134 h84 M64 162 h92 M62 192 h96" stroke="#d8f0ff" stroke-width="3" opacity="0.8"/>
+      <path d="M110 116 v112" stroke="#7aa8cc" stroke-width="4"/>
+      <!-- наплечники -->
+      <path d="M44 134 q8 -32 40 -22 v26 q-24 -6 -40 -4z" fill="#b8dcf4" ${sw(4)}/>
+      <path d="M176 134 q-8 -32 -40 -22 v26 q24 -6 40 -4z" fill="#b8dcf4" ${sw(4)}/>
+      <!-- шлем -->
+      <path d="M100 38 l10 -30 l10 30z" fill="#e8f6ff" ${sw(3)}/>
+      <path d="M72 112 Q66 42 110 36 Q154 42 148 112z" fill="#b8dcf4" ${sw(4)}/>
+      <path d="M80 72 h60 v16 h-60z" fill="#1a2a4a" ${sw(3)}/>
+      <ellipse cx="97" cy="80" rx="7" ry="4" fill="#7ad6ff"/><ellipse cx="123" cy="80" rx="7" ry="4" fill="#7ad6ff"/>
+      <path d="M84 96 h52 M88 104 h44" stroke="#7aa8cc" stroke-width="3" stroke-linecap="round"/>
+      <!-- щит со снежинкой -->
+      <path d="M18 136 h56 v42 q0 26 -28 38 q-28 -12 -28 -38z" fill="#7fb4dc" ${sw(4)}/>
+      <path d="M46 146 v56 M28 160 l36 28 M28 188 l36 -28" stroke="#e8f6ff" stroke-width="4" stroke-linecap="round"/>
+    `, 'char'),
+
+    blizzard: () => svg('0 0 220 240', `
+      <!-- вихрь-юбка -->
+      <path d="M28 232 Q60 152 92 132 Q110 122 128 132 Q160 152 192 232 Q162 214 142 234 Q122 212 110 236 Q98 212 78 234 Q58 214 28 232z" fill="#e6eef8" ${sw(4)}/>
+      <path d="M60 204 Q110 172 160 204 M78 170 Q110 152 142 170" stroke="#9fc3e8" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- руки со снежинками -->
+      <path d="M92 116 Q62 92 42 64 M128 116 Q158 92 178 64" stroke="${O}" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <path d="M92 116 Q62 92 42 64 M128 116 Q158 92 178 64" stroke="#e6eef8" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <g transform="translate(-12 -14)">${flake(46, 60, 14)}</g>
+      <g transform="translate(12 -14)">${flake(174, 60, 14)}</g>
+      ${flake(30, 140, 8)}${flake(190, 150, 9)}
+      <!-- платье -->
+      <path d="M88 134 Q90 100 110 96 Q130 100 132 134z" fill="#5b8fd0" ${sw(3.5)}/>
+      <!-- волосы-позёмка -->
+      <path d="M80 72 Q76 30 110 26 Q144 30 140 72 Q152 100 182 112 Q148 116 136 92 L84 92 Q72 116 38 112 Q68 100 80 72z" fill="#f4f8ff" ${sw(4)}/>
+      <!-- лицо -->
+      <ellipse cx="110" cy="66" rx="22" ry="24" fill="#dfe8f6" ${sw(3)}/>
+      <path d="M95 60 l11 4 M125 60 l-11 4" ${sw(3)}/>
+      <circle cx="101" cy="68" r="3.5" fill="#2a5aa0"/><circle cx="119" cy="68" r="3.5" fill="#2a5aa0"/>
+      <path d="M103 80 q7 3 14 0" ${sw(2.5)} fill="none"/>
+      <!-- ледяная корона -->
+      <path d="M90 42 l6 -22 l6 14 l8 -24 l8 24 l6 -14 l6 22z" fill="#bfe3f7" ${sw(3)}/>
+    `, 'char'),
+
+    watchman: () => svg('0 0 220 240', `
+      <ellipse cx="110" cy="230" rx="78" ry="8" fill="#000" opacity="0.18"/>
+      <!-- тулуп -->
+      <path d="M50 228 Q44 142 74 114 Q110 98 146 114 Q176 142 170 228z" fill="#7a5032" ${sw(4)}/>
+      <path d="M104 116 Q98 172 104 228 M116 116 Q122 172 116 228" stroke="#e8d8b8" stroke-width="10" fill="none"/>
+      <path d="M110 116 V228" ${sw(3)}/>
+      <path d="M52 172 h116" stroke="${O}" stroke-width="15"/><path d="M52 172 h116" stroke="#c8423a" stroke-width="9"/>
+      <!-- левая рука в рукавице -->
+      <path d="M66 130 Q44 160 50 190" stroke="${O}" stroke-width="24" fill="none" stroke-linecap="round"/>
+      <path d="M66 130 Q44 160 50 190" stroke="#7a5032" stroke-width="16" fill="none" stroke-linecap="round"/>
+      <circle cx="50" cy="196" r="13" fill="#3a5a3a" ${sw(3.5)}/>
+      <!-- правая рука с колотушкой -->
+      <path d="M152 128 Q182 114 186 78" stroke="${O}" stroke-width="24" fill="none" stroke-linecap="round"/>
+      <path d="M152 128 Q182 114 186 78" stroke="#7a5032" stroke-width="16" fill="none" stroke-linecap="round"/>
+      <circle cx="186" cy="74" r="12" fill="#3a5a3a" ${sw(3.5)}/>
+      <path d="M186 64 v-26" stroke="${O}" stroke-width="9" stroke-linecap="round"/><path d="M186 64 v-26" stroke="#8a5a32" stroke-width="5" stroke-linecap="round"/>
+      <rect x="172" y="10" width="30" height="30" rx="4" fill="#c98a5a" ${sw(3.5)}/>
+      <path d="M172 20 q-12 -2 -16 8" fill="none" ${sw(2)}/>
+      <circle cx="156" cy="32" r="7" fill="#6b4a32" ${sw(2.5)}/>
+      <path d="M140 14 l-8 -6 M138 28 h-10 M210 18 l6 -6" stroke="#fff3c4" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- воротник -->
+      <path d="M70 118 Q110 138 150 118 Q146 102 110 104 Q74 102 70 118z" fill="#e8d8b8" ${sw(3.5)}/>
+      <!-- голова -->
+      <ellipse cx="110" cy="86" rx="30" ry="28" fill="#f0c8a0" ${sw(3.5)}/>
+      <path d="M90 74 l14 5 M130 74 l-14 5" ${sw(4)}/>
+      <circle cx="98" cy="84" r="3.5" fill="${O}"/><circle cx="122" cy="84" r="3.5" fill="${O}"/>
+      <circle cx="110" cy="92" r="6" fill="#e8907a" ${sw(2)}/>
+      <path d="M84 100 Q98 92 110 98 Q122 92 136 100 Q124 110 110 104 Q96 110 84 100z" fill="#d8d0c0" ${sw(2.5)}/>
+      <!-- меховая шапка -->
+      <path d="M78 70 Q76 26 110 22 Q144 26 142 70z" fill="#5a3a2a" ${sw(4)}/>
+      <path d="M74 72 Q110 58 146 72 L146 82 Q110 68 74 82z" fill="#e8d8b8" ${sw(3.5)}/>
+    `, 'char'),
+
     hedgehog: () => svg('0 0 200 220', `
       <path d="M30 170 Q20 90 90 70 Q170 60 176 150 Q178 182 150 190 H50 Q32 188 30 170z" fill="#5a4636" ${sw(4)}/>
       <g fill="#3e2f25" ${sw(2.5)}><path d="M44 110 l-14 -16 l22 4z"/><path d="M62 86 l-6 -22 l18 12z"/><path d="M92 74 l4 -24 l12 20z"/><path d="M128 76 l14 -18 l4 22z"/><path d="M158 100 l20 -10 l-6 22z"/><path d="M172 140 l20 2 l-16 14z"/></g>
@@ -1018,6 +1254,11 @@
     <path d="M${x} ${y + 26 * s} q${-20 * s} ${-8 * s} ${-14 * s} ${-28 * s} q${4 * s} ${-12 * s} ${10 * s} ${-22 * s} q${2 * s} ${12 * s} ${8 * s} ${14 * s} q${2 * s} ${-12 * s} ${10 * s} ${-18 * s} q${14 * s} ${22 * s} ${6 * s} ${38 * s} q${-6 * s} ${12 * s} ${-20 * s} ${16 * s}z" fill="${c1}" ${sw(3)}/>
     <path d="M${x} ${y + 22 * s} q${-8 * s} ${-6 * s} ${-4 * s} ${-16 * s} q${4 * s} ${4 * s} ${6 * s} ${6 * s} q${2 * s} ${-6 * s} ${4 * s} ${-10 * s} q${8 * s} ${12 * s} ${-6 * s} ${20 * s}z" fill="${c2}"/>`;
 
+  // снежинка из трёх перекладин
+  const flake = (x, y, r) => {
+    const d = `M${x} ${y - r} v${2 * r} M${x - 0.87 * r} ${y - 0.5 * r} l${1.73 * r} ${r} M${x - 0.87 * r} ${y + 0.5 * r} l${1.73 * r} ${-r}`;
+    return `<path d="${d}" ${sw(Math.max(3, r / 3.2))}/><path d="${d}" stroke="#eef4fc" stroke-width="${Math.max(1.4, r / 7)}" stroke-linecap="round"/>`;
+  };
   const icons = {
     strike: `<path d="M30 80 L70 30" ${sw(7)}/><path d="M64 22 h16 l-3 8 h-10z" fill="#3a3240" ${sw(3)}/><rect x="62" y="30" width="18" height="20" rx="3" fill="#ffd36e" ${sw(3)} transform="rotate(38 71 40)"/><path d="M18 46 l14 6 M22 30 l12 12 M38 20 l4 14" stroke="#fff3c4" stroke-width="4" stroke-linecap="round"/>`,
     guard: `<path d="M24 22 h52 v44 q0 18 -26 26 q-26 -8 -26 -26z" fill="#5b6f8f" ${sw(4)}/><path d="M24 40 h52 M24 58 h52 M50 22 v68" ${sw(3)}/><circle cx="40" cy="31" r="3" fill="${O}"/><circle cx="60" cy="31" r="3" fill="${O}"/>`,
@@ -1130,6 +1371,42 @@
     wingboots: `<path d="M30 30 h22 v34 l24 8 q8 4 6 14 h-52z" fill="#8a4a2a" ${sw(4)}/><path d="M30 86 h52" ${sw(6)}/><path d="M30 44 q-18 -18 -24 -4 q8 0 8 8 q-8 2 -6 10 q10 -6 22 0" fill="#f4f1ea" ${sw(3)}/><path d="M36 40 h12 M36 50 h12" stroke="#d8a94a" stroke-width="3"/>`,
     ironshutter: `<path d="M22 14 h56 v72 h-56z" fill="#8a5a32" ${sw(4)}/><path d="M22 32 h56 M22 50 h56 M22 68 h56" stroke="#5a3a1e" stroke-width="3"/><path d="M22 24 h56 M22 76 h56" stroke="#9aa0ac" stroke-width="7"/><path d="M22 24 h56 M22 76 h56" ${sw(1.5)}/><g fill="#c9ccd8" ${sw(1.5)}><circle cx="30" cy="24" r="3"/><circle cx="70" cy="24" r="3"/><circle cx="30" cy="76" r="3"/><circle cx="70" cy="76" r="3"/></g>`,
     sootbroom: `<path d="M74 10 L40 66" ${sw(7)}/><path d="M74 10 L40 66" stroke="#b07a4a" stroke-width="3"/><path d="M40 60 l-28 22 l6 8 l14 -6 l-2 10 l12 -10 l2 8 l8 -14z" fill="#c9a46a" ${sw(3.5)}/><path d="M18 84 l6 6 M28 82 l2 8 M36 76 l4 6" stroke="#3a3440" stroke-width="3" stroke-linecap="round"/><path d="M36 64 l10 6" ${sw(5)}/><path d="M36 64 l10 6" stroke="#e8702a" stroke-width="2"/><circle cx="20" cy="70" r="4" fill="#ff8a3a" opacity=".8"/><circle cx="30" cy="92" r="3" fill="#ff8a3a" opacity=".7"/>`,
+    // ---------- новые карты ----------
+    icethrow: `<path d="M14 56 h18 M8 74 h16 M24 92 h14" stroke="#cfe6ff" stroke-width="4" stroke-linecap="round"/><path d="M22 84 L72 28 l16 -10 l-8 18 L32 92z" fill="#bfe3f7" ${sw(4)}/><path d="M32 78 L74 32" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M60 52 l10 2 M48 66 l8 2" stroke="#8ec6e6" stroke-width="3" stroke-linecap="round"/>`,
+    heavybag: `<path d="M30 46 Q50 6 70 46" fill="none" ${sw(6)}/><path d="M30 46 Q50 6 70 46" fill="none" stroke="#a06a3a" stroke-width="2.5"/><path d="M28 46 l8 -12 h16 l-4 12 M50 46 l10 -14 h14 l-6 14" fill="#f2e6c9" ${sw(2.5)}/><path d="M18 46 h64 l4 38 q0 6 -6 6 h-60 q-6 0 -6 -6z" fill="#8a5a32" ${sw(4)}/><path d="M16 52 h68 v16 h-68z" fill="#a06a3a" ${sw(3)}/><rect x="43" y="56" width="14" height="12" rx="2" fill="#e6c45a" ${sw(2.5)}/><path d="M24 78 h52" stroke="#6b4428" stroke-width="3"/>`,
+    sbiten: `<path d="M40 24 q-6 -8 0 -14 M54 24 q-6 -8 0 -16" stroke="#e8eef6" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M70 52 q16 0 14 14 q-2 10 -12 8" fill="none" ${sw(4)}/><path d="M32 40 q-6 -8 4 -10 h30 q10 2 4 10 q16 14 10 32 q-4 16 -30 16 q-26 0 -30 -16 q-6 -18 12 -32z" fill="#c98a5a" ${sw(4)}/><path d="M28 58 h44" stroke="#8a4a2a" stroke-width="4"/><path d="M50 64 q6 8 0 12 q-6 -4 0 -12z" fill="#ffcf6b" ${sw(2)}/>`,
+    sledram: `<path d="M6 38 h22 M4 52 h14 M10 84 h18" stroke="#cfe6ff" stroke-width="4" stroke-linecap="round"/><path d="M22 52 h50 l-4 14 h-46z" fill="#c8423a" ${sw(4)}/><path d="M32 66 v10 M62 66 v10" ${sw(4)}/><path d="M16 76 h62 q12 0 14 -14" fill="none" ${sw(5)}/><path d="M80 14 l-12 16 h9 l-7 14 l16 -20 h-9 l7 -10z" fill="#ffd36e" ${sw(2.5)}/>`,
+    hornblow: `<path d="M12 44 h12 l50 -22 v56 l-50 -22 h-12z" fill="#e6c45a" ${sw(4)}/><path d="M74 22 q12 28 0 56" fill="#d8a94a" ${sw(4)}/><path d="M24 44 v12" ${sw(3)}/><path d="M84 36 q6 14 0 28 M92 28 q10 22 0 44" stroke="#fff3c4" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M40 52 q4 16 -4 28" stroke="#c8423a" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="36" cy="82" r="4" fill="#c8423a" ${sw(2)}/>`,
+    patch: `<path d="M12 24 l70 -8 l6 68 l-70 8z" fill="#3f6a8a" ${sw(4)}/><path d="M20 36 l56 -6 M22 56 l56 -6 M24 76 l56 -6" stroke="#4f7a9a" stroke-width="3"/><rect x="34" y="34" width="34" height="32" fill="#c8a24a" ${sw(3.5)} transform="rotate(-6 51 50)"/><path d="M34 33 l3 5 M45 32 l1 5 M57 31 l0 5 M67 30 l-1 5 M70 41 l-5 1 M71 53 l-5 0 M71 63 l-5 0 M38 68 l2 -5 M50 67 l0 -5 M62 66 l-1 -5 M32 44 l5 1 M33 57 l5 0" stroke="#f2e6c9" stroke-width="3" stroke-linecap="round"/><path d="M66 86 L92 60" ${sw(3)}/><circle cx="90" cy="62" r="3" fill="none" ${sw(2)}/>`,
+    snowstorm: `<path d="M8 36 q30 -22 58 -4 q14 10 2 18" fill="none" ${sw(7)}/><path d="M8 36 q30 -22 58 -4 q14 10 2 18" fill="none" stroke="#cfe6ff" stroke-width="3"/><path d="M16 70 q32 -18 62 0 q12 8 0 14" fill="none" ${sw(7)}/><path d="M16 70 q32 -18 62 0 q12 8 0 14" fill="none" stroke="#cfe6ff" stroke-width="3"/>${flake(80, 22, 10)}${flake(28, 54, 8)}${flake(86, 58, 7)}${flake(46, 90, 6)}`,
+    icelantern: `<path d="M50 8 v10" ${sw(3)}/><path d="M30 20 h40 l-5 9 h-30z" fill="#3a4a6a" ${sw(3)}/><rect x="33" y="29" width="34" height="42" rx="4" fill="#9fe0ff" ${sw(3.5)}/>${flameShape(50, 44, 0.5, '#7ad6ff', '#e8faff')}<path d="M28 71 h44 l-6 9 h-32z" fill="#3a4a6a" ${sw(3)}/><circle cx="50" cy="50" r="34" fill="#9fe0ff" opacity=".18"/>${flake(82, 22, 9)}${flake(18, 82, 7)}`,
+    cancel: `<path d="M20 20 h52 v60 h-52z" fill="#f2e6c9" ${sw(4)}/><g fill="#262d45"><circle cx="20" cy="30" r="3"/><circle cx="20" cy="44" r="3"/><circle cx="20" cy="58" r="3"/><circle cx="20" cy="72" r="3"/><circle cx="72" cy="30" r="3"/><circle cx="72" cy="44" r="3"/><circle cx="72" cy="58" r="3"/><circle cx="72" cy="72" r="3"/></g><rect x="30" y="30" width="32" height="38" fill="#5b8fd0" ${sw(2.5)}/>${flameShape(46, 42, 0.45)}<circle cx="70" cy="66" r="18" fill="none" stroke="#2a2440" stroke-width="4"/><path d="M8 46 q8 -7 16 0 t16 0 t16 0 t16 0 t16 0 M8 58 q8 -7 16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#2a2440" stroke-width="4" stroke-linecap="round"/>`,
+    carbon: `<path d="M34 12 h48 v66 h-48z" fill="#2c3550" ${sw(4)}/><path d="M40 24 h30 M40 36 h30 M40 48 h22" stroke="#4a5a90" stroke-width="3" stroke-linecap="round"/><path d="M16 24 h48 v66 h-48z" fill="#f2e6c9" ${sw(4)}/><path d="M24 40 h30 M24 52 h30 M24 64 h22" stroke="#8a7a60" stroke-width="3" stroke-linecap="round"/><path d="M70 90 q18 -2 18 -22" fill="none" ${sw(5)}/><path d="M80 70 l8 -9 l8 10" fill="none" ${sw(5)}/><path d="M70 90 q18 -2 18 -22" fill="none" stroke="#e6c45a" stroke-width="2"/>`,
+    nightshift: `<path d="M62 10 A30 30 0 1 0 86 60 A24 24 0 1 1 62 10z" fill="#f4e6a8" ${sw(4)}/><g fill="#fff3c4"><circle cx="86" cy="18" r="3"/><circle cx="20" cy="22" r="2.5"/></g><path d="M12 48 h40 v20 q0 14 -20 22 q-20 -8 -20 -22z" fill="#5b8fd0" ${sw(4)}/><path d="M32 54 v28 M18 64 h28" stroke="#cfe6ff" stroke-width="3"/>`,
+    kindling: `<path d="M14 74 L80 52 M18 86 L86 64 M20 62 L76 40" stroke="${O}" stroke-width="14" stroke-linecap="round"/><path d="M14 74 L80 52 M18 86 L86 64 M20 62 L76 40" stroke="#8a5a32" stroke-width="8" stroke-linecap="round"/><path d="M42 50 l8 30" stroke="${O}" stroke-width="9"/><path d="M42 50 l8 30" stroke="#c8423a" stroke-width="5"/>${flameShape(72, 24, 0.75, '#e8502a', '#ffb23e')}`,
+    avalanche: `<path d="M8 90 L52 18 L92 90z" fill="#6f7f9b" ${sw(4)}/><path d="M38 42 L52 18 L66 42 q-7 6 -14 0 q-7 6 -14 0z" fill="#eef4fc" ${sw(3)}/><path d="M12 54 l10 6 M18 40 l12 8 M8 68 l10 4" stroke="#cfe6ff" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="74" r="13" fill="#eef4fc" ${sw(3.5)}/><circle cx="58" cy="80" r="9" fill="#eef4fc" ${sw(3)}/><circle cx="78" cy="72" r="7" fill="#eef4fc" ${sw(3)}/><path d="M26 70 q6 -6 12 0" stroke="#b8cbe6" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    moneyorder: `<rect x="10" y="30" width="62" height="44" rx="4" fill="#efe2c4" ${sw(4)}/><path d="M10 32 l31 22 l31 -22" fill="none" ${sw(3.5)}/><circle cx="72" cy="68" r="18" fill="#e6c45a" ${sw(4)}/><circle cx="72" cy="68" r="11" fill="none" stroke="#b08a2a" stroke-width="3"/><path d="M58 14 h28 M78 6 l9 8 l-9 8" fill="none" ${sw(7)}/><path d="M58 14 h28 M78 6 l9 8 l-9 8" fill="none" stroke="#5ac06a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+    aurora: `<circle cx="50" cy="50" r="40" fill="#1a1d3a" ${sw(4)}/><path d="M16 46 q14 -26 34 -10 q16 14 34 -12" fill="none" stroke="#7af0b0" stroke-width="9" stroke-linecap="round" opacity=".9"/><path d="M14 60 q16 -18 34 -4 q16 12 36 -10" fill="none" stroke="#c88aff" stroke-width="6" stroke-linecap="round" opacity=".85"/><g fill="#fff3c4"><circle cx="30" cy="24" r="2.5"/><circle cx="66" cy="20" r="2"/><circle cx="76" cy="40" r="2"/></g><path d="M12 66 Q50 54 88 66 A40 40 0 0 1 12 66z" fill="#dfe8f6" ${sw(3)}/>`,
+    returnaddr: `<rect x="22" y="38" width="64" height="46" rx="4" fill="#f2e6c9" ${sw(4)}/><path d="M22 40 l32 22 l32 -22" fill="none" ${sw(3.5)}/><path d="M76 30 Q52 2 22 22" fill="none" ${sw(7)}/><path d="M12 12 l10 12 l14 -6" fill="none" ${sw(7)}/><path d="M76 30 Q52 2 22 22 M12 12 l10 12 l14 -6" fill="none" stroke="#e6c45a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 72 h22" stroke="#8a7a60" stroke-width="3" stroke-linecap="round"/>`,
+    frostbite: `<circle cx="50" cy="50" r="36" fill="#2c4a6a" ${sw(4)}/><path d="M50 14 l5 10 l-10 0z M50 86 l5 -10 l-10 0z M14 50 l10 5 l0 -10z M86 50 l-10 5 l0 -10z" fill="#bfe3f7" ${sw(2)}/>${flake(50, 50, 24)}<circle cx="50" cy="50" r="6" fill="#bfe3f7" ${sw(2.5)}/>`,
+    poste: `<path d="M18 52 h60 v34 h-60z" fill="#d8c59c" ${sw(4)}/><path d="M24 42 h60 v34 h-60z" fill="#efe2c4" ${sw(4)}/><path d="M30 30 h60 v34 h-60z" fill="#f2e6c9" ${sw(4)}/><path d="M30 32 l30 20 l30 -20" fill="none" ${sw(3)}/><path d="M24 36 Q16 24 20 14" fill="none" ${sw(2.5)}/><path d="M8 16 l14 -8 l8 14 l-14 8z" fill="#c8423a" ${sw(3)}/><circle cx="14" cy="16" r="2.5" fill="${O}"/>`,
+    // ---------- новые талисманы ----------
+    mug: `<path d="M36 26 q-4 -8 0 -14 M50 26 q-4 -8 0 -16" stroke="#e8eef6" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M68 44 q18 0 16 14 q-2 12 -16 10" fill="none" ${sw(5)}/><path d="M24 34 h44 v40 q0 12 -12 12 h-20 q-12 0 -12 -12z" fill="#b8865a" ${sw(4)}/><path d="M24 44 h44" stroke="#8a5a32" stroke-width="4"/><path d="M46 74 q-12 -7 -10 -14 q2 -7 10 -2 q8 -5 10 2 q2 7 -10 14z" fill="#d0463b" ${sw(2)}/>`,
+    pencil: `<path d="M24 74 L64 34 l14 14 L38 88z" fill="#e6c45a" ${sw(4)}/><path d="M64 34 l8 -8 l14 14 l-8 8z" fill="#e8908a" ${sw(3.5)}/><path d="M24 74 l14 14 l-24 10z" fill="#f2d8b0" ${sw(3.5)}/><path d="M17 92 l-4 6 l6 -3z" fill="${O}"/><path d="M42 58 l14 14" stroke="#c8a24a" stroke-width="3"/><path d="M80 82 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3z" fill="#fff3c4" ${sw(2)}/>`,
+    bookmark: `<path d="M12 30 q19 -8 38 0 q19 -8 38 0 v54 q-19 -8 -38 0 q-19 -8 -38 0z" fill="#f2e6c9" ${sw(4)}/><path d="M50 30 v54" ${sw(3)}/><path d="M20 44 h22 M20 56 h22 M58 44 h22" stroke="#8a7a60" stroke-width="2.5" stroke-linecap="round"/><path d="M60 22 h14 v44 l-7 -6 l-7 6z" fill="#c8423a" ${sw(3)}/><path d="M67 62 q2 14 -4 24" fill="none" stroke="#e6c45a" stroke-width="4" stroke-linecap="round"/><circle cx="62" cy="88" r="5" fill="#e6c45a" ${sw(2.5)}/>`,
+    cocoatin: `<path d="M26 26 h48 v60 h-48z" fill="#c8423a" ${sw(4)}/><ellipse cx="50" cy="26" rx="24" ry="7" fill="#d8a94a" ${sw(4)}/><path d="M26 42 h48 v26 h-48z" fill="#f2e6c9" ${sw(3)}/><ellipse cx="50" cy="55" rx="9" ry="7" fill="#6b3a1e" ${sw(2.5)}/><path d="M50 49 q-3 6 0 12" stroke="#a0603a" stroke-width="2" fill="none"/><path d="M26 86 q24 8 48 0" fill="none" ${sw(4)}/><path d="M82 26 q-6 -4 -4 -8 q2 -3 4 0 q2 -3 4 0 q2 4 -4 8z" fill="#d0463b" ${sw(1.5)}/>`,
+    stamppad: `<path d="M40 14 h20 v10 h-20z" fill="#a06a3a" ${sw(3.5)}/><path d="M45 24 h10 v14 h-10z" fill="#8a5a32" ${sw(3)}/><path d="M30 38 h40 v10 h-40z" fill="#a06a3a" ${sw(3.5)}/><path d="M30 48 h40 v5 h-40z" fill="#c8423a" ${sw(2.5)}/><path d="M10 62 h80 v24 h-80z" fill="#3a3240" ${sw(4)}/><path d="M16 62 h68 v9 h-68z" fill="#c8423a" ${sw(3)}/><path d="M24 66 h20" stroke="#e8746a" stroke-width="2.5" stroke-linecap="round"/>`,
+    snowglobe: `<circle cx="50" cy="42" r="32" fill="#bfe3f7" fill-opacity=".75" ${sw(4)}/><path d="M22 58 q28 -10 56 0 v4 q-28 10 -56 0z" fill="#eef4fc" ${sw(2)}/><path d="M42 58 v-12 l8 -8 l8 8 v12z" fill="#a06a3a" ${sw(2.5)}/><rect x="47" y="50" width="6" height="8" fill="#ffd36e"/><g fill="#ffffff"><circle cx="34" cy="28" r="2.5"/><circle cx="62" cy="24" r="2"/><circle cx="68" cy="40" r="2.5"/><circle cx="30" cy="44" r="2"/></g><path d="M30 22 q8 -8 18 -10" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M24 72 h52 l6 16 h-64z" fill="#6b4a32" ${sw(4)}/>`,
+    oilcan: `<path d="M94 38 q4 8 0 12 q-4 -4 0 -12z" fill="#ffcf6b" ${sw(2)}/><path d="M62 58 l26 -24 l5 5 l-24 26" fill="#7b8794" ${sw(3)}/><path d="M22 54 q-16 -2 -14 12 q2 10 14 8" fill="none" ${sw(5)}/><path d="M22 50 h40 v34 q0 4 -4 4 h-32 q-4 0 -4 -4z" fill="#7b8794" ${sw(4)}/><path d="M28 50 l6 -12 h16 l6 12" fill="#5a6070" ${sw(3.5)}/><path d="M28 60 v20" stroke="#a8b4c4" stroke-width="4" stroke-linecap="round"/>`,
+    candybox: `<path d="M14 50 h72 v36 h-72z" fill="#d85a8a" ${sw(4)}/><path d="M50 50 v36" stroke="#f2e6c9" stroke-width="6"/><path d="M50 50 v36" ${sw(1.5)}/><path d="M14 50 l10 -12 h52 l10 12z" fill="#e88aaa" ${sw(4)}/><path d="M24 34 l-8 -6 v12z M44 34 l8 -6 v12z" fill="#e6c45a" ${sw(2.5)}/><ellipse cx="34" cy="34" rx="11" ry="7" fill="#e6c45a" ${sw(3)}/><path d="M56 26 l-8 -6 v12z M78 26 l8 -6 v12z" fill="#f2e6c9" ${sw(2.5)}/><ellipse cx="67" cy="26" rx="12" ry="7" fill="#f2e6c9" ${sw(3)}/><path d="M60 22 l4 9 M68 20 l4 10" stroke="#c8423a" stroke-width="3"/>`,
+    vanefeather: `<path d="M20 86 Q26 34 82 14 Q76 62 24 84z" fill="#d8a94a" ${sw(3.5)}/><path d="M16 92 L76 22" ${sw(2.5)}/><path d="M32 68 l12 -2 M42 56 l13 -4 M52 44 l13 -6" stroke="#8a5a32" stroke-width="2.5" stroke-linecap="round"/><path d="M60 72 h26 M66 84 h18 M8 30 h20" stroke="#cfe6ff" stroke-width="4" stroke-linecap="round"/>`,
+    stokerglove: `<path d="M26 80 V46 q0 -8 7 -8 q7 0 7 8 V30 q0 -8 7 -8 q7 0 7 8 v-4 q0 -8 7 -8 q7 0 7 8 v12 q0 -6 6 -6 q6 0 6 6 v28 q0 16 -14 18z" fill="#8a5a32" ${sw(4)}/><path d="M40 46 v14 M54 30 v26" stroke="#6b4428" stroke-width="3" stroke-linecap="round"/><path d="M22 76 h50 v16 h-50z" fill="#5a3a2a" ${sw(3.5)}/><g fill="#2a2440" opacity=".55"><circle cx="46" cy="66" r="4"/><circle cx="60" cy="58" r="3"/></g>${flameShape(80, 60, 0.45, '#e8502a', '#ffb23e')}`,
+    luckystamp: `<path d="M20 14 h60 v72 h-60z" fill="#f2e6c9" ${sw(4)}/><g fill="#262d45"><circle cx="20" cy="26" r="3"/><circle cx="20" cy="42" r="3"/><circle cx="20" cy="58" r="3"/><circle cx="20" cy="74" r="3"/><circle cx="80" cy="26" r="3"/><circle cx="80" cy="42" r="3"/><circle cx="80" cy="58" r="3"/><circle cx="80" cy="74" r="3"/></g><rect x="30" y="24" width="40" height="44" fill="#3a7a4a" ${sw(3)}/><g fill="#8ad08a" ${sw(2)}><circle cx="44" cy="40" r="7"/><circle cx="56" cy="40" r="7"/><circle cx="44" cy="52" r="7"/><circle cx="56" cy="52" r="7"/></g><path d="M50 52 q4 10 10 14" ${sw(3)} fill="none"/><path d="M30 78 h40" stroke="#c8423a" stroke-width="4" stroke-linecap="round"/>`,
+    mirrorshard: `<path d="M30 12 L80 30 L58 90 L16 64z" fill="#9fc3e8" ${sw(4)}/><path d="M34 22 L72 34 L54 82 Z" fill="#cfe6ff" opacity=".7"/><path d="M36 34 l22 7 M32 46 l14 4" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M84 56 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3z" fill="#fff3c4" ${sw(2)}/><path d="M12 20 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2z" fill="#fff3c4" ${sw(1.5)}/>`,
+    eternaloil: `<circle cx="50" cy="58" r="30" fill="#ffd36e" opacity=".22"/><path d="M38 30 h24 v10 q14 8 14 26 v18 q0 6 -6 6 h-40 q-6 0 -6 -6 v-18 q0 -18 14 -26z" fill="#e6c45a" fill-opacity=".9" ${sw(4)}/><rect x="40" y="16" width="20" height="14" rx="2" fill="#6b4a32" ${sw(3)}/>${flameShape(50, 56, 0.55)}<path d="M30 60 q0 -10 6 -16" stroke="#fff3c4" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    medal: `<path d="M30 6 h16 l10 34 h-16z" fill="#c8423a" ${sw(3.5)}/><path d="M70 6 h-16 l-10 34 h16z" fill="#2f5d9a" ${sw(3.5)}/><circle cx="50" cy="64" r="26" fill="#e6c45a" ${sw(4)}/><circle cx="50" cy="64" r="18" fill="none" stroke="#b08a2a" stroke-width="3"/><path d="M39 57 h22 v15 h-22z M39 57 l11 8 l11 -8" fill="none" stroke="#8a6a2a" stroke-width="3" stroke-linejoin="round"/>`,
+    thermos: `<path d="M42 16 q-4 -6 0 -10 M56 16 q-4 -6 0 -10" stroke="#e8eef6" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M28 18 h44 v12 h-44z" fill="#c8423a" ${sw(3.5)}/><rect x="32" y="28" width="36" height="64" rx="8" fill="#2f5d62" ${sw(4)}/><path d="M32 46 h36 M32 74 h36" stroke="#f2e6c9" stroke-width="5"/><path d="M32 46 h36 M32 74 h36" stroke="${O}" stroke-width="1.2"/><path d="M40 52 v18" stroke="#5a8a8e" stroke-width="4" stroke-linecap="round"/>`,
+    northstar: `<circle cx="50" cy="48" r="34" fill="#fff3c4" opacity=".18"/><path d="M50 6 l8 32 l32 10 l-32 10 l-8 32 l-8 -32 l-32 -10 l32 -10z" fill="#fff3c4" ${sw(3.5)}/><path d="M50 26 l4 18 l18 4 l-18 4 l-4 18 l-4 -18 l-18 -4 l18 -4z" fill="#ffe38a"/><path d="M8 94 q42 -20 84 0" fill="#dfe8f6" ${sw(3)}/>`,
   };
 
   function icon(name) {
@@ -1147,8 +1424,14 @@
     steal: `<circle cx="16" cy="22" r="11" fill="#e6c45a" ${sw(2.5)}/><circle cx="16" cy="22" r="6" fill="none" stroke="#b08a2a" stroke-width="2"/><path d="M24 14 l12 -10 M28 4 h8 v8" fill="none" stroke="#ff9a8a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`,
     heal: `<path d="M20 36 Q4 24 6 14 Q8 4 16 6 Q19 7 20 11 Q21 7 24 6 Q32 4 34 14 Q36 24 20 36z" fill="#5ac06a" ${sw(2.5)}/><path d="M20 13 v14 M13 20 h14" stroke="#fff" stroke-width="3.5"/>`,
     spikes: `<path d="M4 34 l6 -24 l6 24 l4 -30 l4 30 l6 -24 l6 24z" fill="#cfe6ff" ${sw(2.5)}/>`,
+    sap: `<circle cx="20" cy="20" r="14" fill="#4fc7c0" ${sw(3)}/><path d="M22 8 l-8 14 h6 l-4 12 l10 -16 h-6 l4 -10z" fill="#fff" ${sw(1.5)}/><path d="M7 33 L33 7" stroke="#d0463b" stroke-width="4" stroke-linecap="round"/>`,
+    mist: `<path d="M8 26 q-5 -10 6 -12 q2 -8 12 -6 q8 -4 12 4 q8 2 3 14z" fill="#c8cde6" ${sw(2.5)}/><path d="M5 32 h28 M10 37 h18" stroke="#c8cde6" stroke-width="3" stroke-linecap="round"/>`,
+    boom: `<path d="M20 2 l4 10 l10 -6 l-4 11 l10 3 l-10 4 l6 10 l-11 -4 l-3 10 l-4 -10 l-10 5 l4 -10 l-10 -4 l10 -3 l-5 -10 l10 5z" fill="#ffb23e" ${sw(2.5)}/><circle cx="20" cy="20" r="5" fill="#fff3c4"/>`,
+    bury: `<rect x="10" y="12" width="20" height="25" rx="3" fill="#2c3550" ${sw(2.5)}/><path d="M6 16 q4 -9 10 -4 q4 -7 10 -2 q6 -4 9 2 q3 6 -4 7 h-22 q-6 0 -3 -3z" fill="#eef4fc" ${sw(2)}/>`,
+    frail: `<path d="M8 8 h24 v14 q0 10 -12 14 q-12 -4 -12 -14z" fill="#5b8fd0" ${sw(3)}/><path d="M21 8 l-5 10 l7 4 l-5 13" fill="none" stroke="#f2e6c9" stroke-width="2.5" stroke-linejoin="round"/>`,
     sleep: `<path d="M30 6 A14 14 0 1 0 36 26 A11 11 0 1 1 30 6z" fill="#f4e6a8" ${sw(2.5)}/><path d="M4 8 h8 l-8 9 h8" fill="none" stroke="#cfe6ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`,
   };
+  intentIcons.leech = `${intentIcons.attack}<path d="M31 21 q6 8 0 12 q-6 -4 0 -12z" fill="#d0463b" ${sw(2)}/>`;
   function intentIcon(kind) {
     return svg('0 0 40 40', intentIcons[kind] || intentIcons.attack, 'intent-ico');
   }

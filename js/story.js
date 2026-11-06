@@ -105,13 +105,13 @@
       stages: [
         { name: 'Стадия I · Медовая Горка', len: 25, boss: ['magpie', 'waxgiant', 'vane'], scene: 'town',
           // первые уровни стадии — враги попроще, дальше весь городской набор
-          early: ['inkcat', 'snowimp', 'pigeon', 'sootmouse', 'scarfsnake', 'icicle'],
-          normals: ['inkcat', 'snowimp', 'pigeon', 'sootmouse', 'scarfsnake', 'icicle', 'laundress', 'golem', 'mailbox'],
-          elites: ['owl', 'snowbrute'] },
+          early: ['inkcat', 'snowimp', 'pigeon', 'sootmouse', 'scarfsnake', 'icicle', 'matryoshka', 'samovar'],
+          normals: ['inkcat', 'snowimp', 'pigeon', 'sootmouse', 'scarfsnake', 'icicle', 'laundress', 'golem', 'mailbox', 'matryoshka', 'samovar', 'cuckoo'],
+          elites: ['owl', 'snowbrute', 'iceknight'] },
         { name: 'Стадия II · Окраина', len: 25, boss: ['clockmaker', 'wolf', 'troll'], scene: 'outskirts',
-          early: ['shadowthief', 'bat', 'wisp', 'frostfox', 'laundress'],
-          normals: ['shadowthief', 'bat', 'stump', 'frostfox', 'wisp', 'raven', 'laundress', 'golem'],
-          elites: ['icebear', 'lampghost', 'owl'] },
+          early: ['shadowthief', 'bat', 'wisp', 'frostfox', 'laundress', 'mist', 'ghoul'],
+          normals: ['shadowthief', 'bat', 'stump', 'frostfox', 'wisp', 'raven', 'laundress', 'golem', 'mist', 'ghoul', 'firecracker'],
+          elites: ['icebear', 'lampghost', 'owl', 'blizzard', 'watchman'] },
         { name: 'Финал · Последний дом', len: 1, boss: ['shadowking', 'hollowpost', 'skywhale'], scene: 'outskirts', early: [], normals: [], elites: [] },
       ],
       // фонари в городе зажигаются один за другим, пока солнце опускается к крышам
