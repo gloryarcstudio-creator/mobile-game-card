@@ -222,7 +222,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .weakf { color: #d6b0ff; font-size: 20px; }
 @keyframes floatup { to { transform: translate(-50%, -70px); opacity: 0; } }
 .nameplate { position: absolute; top: 352px; left: 50%; width: 300px; margin-left: -150px; text-align: center; }
-.ename { font-family: var(--title); font-size: 21px; color: #f6ecd2; text-shadow: 0 2px 4px #000; }
+.ename { display: inline-block; padding: 0 12px; border-radius: 12px; background: rgba(20, 24, 38, .55); font-family: var(--title); font-size: 21px; color: #f6ecd2; text-shadow: 0 2px 4px #000; }
 .ename i { font-style: normal; font-size: 12px; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: #a0742a; vertical-align: middle; }
 .ehp { position: relative; height: 16px; margin-top: 4px; border-radius: 8px; background: #2a1a20; border: 2px solid var(--ink); }
 .ehp .fill { height: 100%; border-radius: 6px; background: linear-gradient(#ff6a5a, #b82d28); transition: width .3s; }
@@ -330,3 +330,10 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
 .pendulum { transform-origin: 110px 152px; animation: swing 1.6s ease-in-out infinite alternate; }
 @keyframes swing { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+
+.enemy.boss > svg { filter: drop-shadow(0 0 10px rgba(210, 200, 255, .35)) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
+
+/* Кнопка звука */
+#snd { position: absolute; right: 8px; top: 68px; z-index: 12; width: 38px; height: 38px; padding: 4px; border-radius: 50%; background: rgba(20, 24, 38, .75); border: 2px solid var(--gold); }
+#snd:active { transform: scale(.92); }
+.scr-combat ~ #snd { top: 54px; }

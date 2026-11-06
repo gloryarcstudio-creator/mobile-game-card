@@ -6,6 +6,7 @@
   document.title = STORY.title;
   // Путь делится на стадии, последний уровень каждой стадии — её босс
   const STAGES = STORY.stages;
+  const SND = window.Sound;
   const MAX_STEPS = STAGES.reduce((a, g) => a + g.len, 0);
   let acc = 0;
   STAGES.forEach((g) => { g.start = acc; acc += g.len; g.end = acc - 1; });
@@ -79,6 +80,8 @@
       hp: 36, maxHp: 36, gold: 20, step: 0, lit: 0, relics: [], fights: 0,
       deck: [...Array(4).fill('strike'), ...Array(4).fill('guard'), 'kindle', 'spark'].map(mk),
       choices: null,
+      // боссы стадий выбираются случайно в начале забега
+      bosses: STAGES.map((g) => pick(g.boss)),
     };
     setBg();
     goMap();
@@ -159,8 +162,12 @@
   }
 
   /* ---------- Титульный экран ---------- */
+  // какая пьеса звучит на пути: город, окраина или финальная ночь
+  const mapTrack = () => ['stage1', 'stage2', 'night'][Math.min(2, run ? stageOf(run.step) : 0)];
+
   function goTitle() {
     run = null; C = null; setBg();
+    SND.music('title');
     screen.className = 'scr-title';
     screen.innerHTML = `
       <div class="book">
@@ -183,7 +190,7 @@
     const s = run.step;
     const si = stageOf(s);
     const g = STAGES[si];
-    if (s === g.end) return [{ t: 'boss', enemy: g.boss }];
+    if (s === g.end) return [{ t: 'boss', enemy: run.bosses[si] }];
     const k = s - g.start; // номер уровня внутри стадии
     const normals = si === 0
       ? (k < 8 ? ['inkcat', 'laundress'] : ['inkcat', 'laundress', 'golem', 'golem'])
@@ -235,6 +242,7 @@
   function goMap() {
     C = null; busy = false;
     setBg();
+    SND.music(mapTrack());
     if (!run.choices) run.choices = genChoices();
     screen.className = 'scr-map';
     screen.innerHTML = `${topBar()}
@@ -261,7 +269,7 @@
     else if (o.t === 'rest') goRest();
   }
 
-  function advance() { run.step++; goMap(); }
+  function advance() { run.step++; SND.sfx('step'); goMap(); }
 
   /* ---------- API для событий ---------- */
   const evApi = {
@@ -281,6 +289,7 @@
   function addRelic(id) {
     run.relics.push(id);
     if (id === 'jar') { run.maxHp += 8; run.hp += 8; }
+    SND.sfx('relic');
     toast(`Талисман: ${RELICS[id].name}`);
   }
 
@@ -341,15 +350,15 @@
     };
     const pay = (item) => {
       if (item.sold) return false;
-      if (run.gold < item.price) { toast('Не хватает монет'); return false; }
-      run.gold -= item.price; item.sold = true; return true;
+      if (run.gold < item.price) { SND.sfx('deny'); toast('Не хватает монет'); return false; }
+      run.gold -= item.price; item.sold = true; SND.sfx('coin'); return true;
     };
     screen.onShop = (act, i) => {
       if (act === 'buy' && pay(shop.cards[i])) { run.deck.push(mk(shop.cards[i].id)); toast(`Куплено: ${CARDS[shop.cards[i].id].name}`); }
       if (act === 'buyrelic' && shop.relic && pay(shop.relic)) addRelic(shop.relic.id);
-      if (act === 'buytea' && pay(shop.tea)) evApi.heal(12);
+      if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
       if (act === 'buyremove' && !shop.remove.sold) {
-        if (run.gold < shop.remove.price) { toast('Не хватает монет'); return; }
+        if (run.gold < shop.remove.price) { SND.sfx('deny'); toast('Не хватает монет'); return; }
         removeCardFlow((ok) => { if (ok) { run.gold -= shop.remove.price; shop.remove.sold = true; } render(); });
         return;
       }
@@ -370,7 +379,7 @@
     const free = Object.keys(RELICS).filter((r) => !hasRelic(r));
     let msg;
     if (free.length && Math.random() < 0.5) { const id = pick(free); addRelic(id); msg = `Внутри: ${RELICS[id].name}. ${RELICS[id].desc}`; }
-    else { const g = rnd(28, 45); run.gold += g; msg = `Внутри ${g} монет.`; }
+    else { const g = rnd(28, 45); run.gold += g; SND.sfx('coin'); msg = `Внутри ${g} монет.`; }
     $('.chest').classList.add('open');
     $('.chest-wrap p').textContent = msg;
     $('.row2').innerHTML = `<button class="btn" data-act="next">Дальше</button>`;
@@ -407,9 +416,10 @@
         if (hits > 1) await sleep(140);
       }
     },
-    block(n) { C.block += n; floatText($('.hero-fx'), `+${n}`, 'blockf'); },
+    block(n) { C.block += n; SND.sfx('block'); floatText($('.hero-fx'), `+${n}`, 'blockf'); },
     async flame(n) {
       C.flame += n;
+      SND.sfx('flame');
       renderCombat();
       while (C.flame >= FLAME_MAX && C.enemy.hp > 0) {
         C.flame -= FLAME_MAX;
@@ -417,9 +427,9 @@
       }
     },
     draw(n) { drawCards(n); },
-    heal(n) { const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
-    burn(n) { C.enemy.burn += n; floatText($('.enemy-fx'), `Поджог ${n}`, 'burnf'); },
-    weak(n) { C.enemy.weak += n; floatText($('.enemy-fx'), 'Ослаблен', 'weakf'); },
+    heal(n) { SND.sfx('heal'); const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
+    burn(n) { SND.sfx('flame'); C.enemy.burn += n; floatText($('.enemy-fx'), `Поджог ${n}`, 'burnf'); },
+    weak(n) { SND.sfx('debuff'); C.enemy.weak += n; floatText($('.enemy-fx'), 'Ослаблен', 'weakf'); },
     energy(n) { C.energy += n; },
     consumeFlame() { const n = C.flame; C.flame = 0; return n; },
   };
@@ -447,6 +457,7 @@
       energy: MAX_ENERGY, block: 0, flame: hasRelic('feather') ? 1 : 0, pWeak: 0, turn: 0,
     };
     selected = -1;
+    SND.music(tier === 'boss' ? 'boss' : 'battle');
     screen.className = 'scr-combat';
     screen.innerHTML = `
       <div class="topbar slim">${run.relics.map((r) => `<button class="relic" data-relic="${r}">${Art.icon(RELICS[r].art)}</button>`).join('')}<div class="spacer"></div><div class="stepl">${tier === 'boss' ? (isFinalStep(run.step) ? 'Финал' : 'Босс стадии') : `Уровень ${run.step + 1}/${MAX_STEPS}`}</div></div>
@@ -482,6 +493,7 @@
     if (hasRelic('thimble')) C.block += 2;
     C.energy = MAX_ENERGY + (C.turn === 1 && hasRelic('scarf') ? 1 : 0);
     drawCards(HAND_SIZE);
+    SND.sfx(C.turn === 1 ? 'draw' : 'turn');
     busy = false;
     renderCombat(true);
   }
@@ -537,9 +549,10 @@
   async function playCard(i) {
     const c = C.hand[i];
     const cd = CARDS[c.id];
-    if (cd.cost > C.energy) { toast('Не хватает энергии'); return; }
+    if (cd.cost > C.energy) { SND.sfx('deny'); toast('Не хватает энергии'); return; }
     busy = true; selected = -1;
     const el = $(`.hand [data-hi="${i}"]`);
+    SND.sfx('card');
     if (el) { el.classList.add('fly'); await sleep(220); }
     C.energy -= cd.cost;
     C.hand.splice(i, 1);
@@ -573,6 +586,7 @@
     e.hp -= real;
     const el = $('#enemy');
     el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
+    SND.sfx(real > 0 ? 'hit' : 'clank', Math.min(1.4, 0.6 + real / 15));
     floatText($('.enemy-fx'), real > 0 ? `-${real}` : 'Блок', real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
     await sleep(260);
@@ -582,6 +596,7 @@
     const fx = document.createElement('div');
     fx.className = 'burst'; fx.innerHTML = `${Art.flame(1.4)}<span>Вспышка!</span>`;
     $('.enemy-zone').appendChild(fx);
+    SND.sfx('burst');
     await sleep(380);
     await hitEnemy(BURST_DMG + (hasRelic('flint') ? 5 : 0));
     setTimeout(() => fx.remove(), 500);
@@ -595,6 +610,7 @@
     run.hp = Math.max(0, run.hp - real);
     const p = $('#heroPortrait');
     if (p) { p.classList.remove('hurt'); void p.offsetWidth; p.classList.add('hurt'); }
+    SND.sfx(real > 0 ? 'hurt' : 'clank');
     if (real > 0) { app.classList.remove('redflash'); void app.offsetWidth; app.classList.add('redflash'); }
     floatText($('.hero-fx'), real > 0 ? `-${real}` : 'Блок', real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
@@ -621,16 +637,17 @@
     const el = $('#enemy');
     for (const it of currentIntents()) {
       if (it.k === 'attack' || it.k === 'snuff') {
-        if (it.k === 'snuff') { C.flame = 0; floatText($('.hero-fx'), 'Огоньки погасли', 'weakf'); }
+        if (it.k === 'snuff') { C.flame = 0; SND.sfx('snuff'); floatText($('.hero-fx'), 'Огоньки погасли', 'weakf'); }
         for (let h = 0; h < (it.hits || 1); h++) {
           el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
+          SND.sfx('enemy');
           await sleep(180);
           await hitHero(enemyDmg(it.v));
           if (run.hp <= 0) break;
         }
       } else if (it.k === 'block') { e.block += it.v; floatText($('.enemy-fx'), `+${it.v}`, 'blockf'); }
-      else if (it.k === 'buff') { e.str += it.v; floatText($('.enemy-fx'), `Сила +${it.v}`, 'burnf'); }
-      else if (it.k === 'debuff') { C.pWeak += it.v; floatText($('.hero-fx'), 'Слабость', 'weakf'); }
+      else if (it.k === 'buff') { e.str += it.v; SND.sfx('buff'); floatText($('.enemy-fx'), `Сила +${it.v}`, 'burnf'); }
+      else if (it.k === 'debuff') { C.pWeak += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), 'Слабость', 'weakf'); }
       renderCombat();
       await sleep(300);
       if (run.hp <= 0) break;
@@ -660,6 +677,8 @@
     const boss = tier === 'boss';
     const gold = (boss ? rnd(50, 60) : tier === 'elite' ? rnd(30, 40) : rnd(12, 20)) + (hasRelic('envelope') ? 8 : 0);
     run.gold += gold;
+    SND.sfx('win');
+    SND.music(mapTrack());
     if (tier === 'elite' || boss) evApi.giveRelic();
     // после босса стадии Ива переводит дух
     const healed = boss ? Math.min(run.maxHp - run.hp, Math.round(run.maxHp * 0.5)) : 0;
@@ -683,6 +702,7 @@
 
   /* ---------- Финалы ---------- */
   function goVictory() {
+    SND.music('title'); SND.sfx('victory');
     screen.className = 'scr-end win';
     screen.innerHTML = `<div class="ribbon">${STORY.winRibbon}</div>
       <div class="book"><div class="page">
@@ -695,6 +715,7 @@
   }
   function goDefeat() {
     C = null;
+    SND.music(null); SND.sfx('defeat');
     screen.className = 'scr-end lose';
     screen.innerHTML = `<div class="book"><div class="page">
         <div class="book-art dim">${Art.hero()}</div>
@@ -706,8 +727,26 @@
   }
 
   /* ---------- Обработка нажатий ---------- */
+  /* Звук включается по первому касанию; кнопка в углу переключает режимы */
+  const sndBtn = $('#snd');
+  function renderSndBtn() {
+    const p = SND.prefs;
+    sndBtn.innerHTML = Art.soundIcon(p.music ? 'all' : p.sfx ? 'sfx' : 'off');
+    sndBtn.setAttribute('aria-label', p.music ? 'Музыка и звуки включены' : p.sfx ? 'Только звуки' : 'Звук выключен');
+  }
+  renderSndBtn();
+  window.addEventListener('pointerdown', () => SND.unlock(), { capture: true });
+  sndBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    SND.unlock();
+    const p = SND.cycle();
+    renderSndBtn();
+    toast(p.music ? 'Музыка и звуки включены' : p.sfx ? 'Музыка выключена, звуки остались' : 'Звук выключен');
+  });
+
   app.addEventListener('click', (e) => {
-    if (overlay.contains(e.target)) return;
+    SND.unlock();
+    if (overlay.contains(e.target)) { SND.sfx('click'); return; }
     const relic = e.target.closest('[data-relic]');
     if (relic) { const r = RELICS[relic.dataset.relic]; toast(`${r.name}: ${r.desc}`); return; }
     const t = e.target.closest('[data-act], [data-hi]');
@@ -717,7 +756,7 @@
       if (t && t.dataset.hi != null) {
         const i = +t.dataset.hi;
         if (selected === i) playCard(i);
-        else { selected = i; renderHand(false); }
+        else { selected = i; SND.sfx('draw'); renderHand(false); }
         return;
       }
       if (e.target.closest('#enemy') && selected >= 0) { playCard(selected); return; }
@@ -725,6 +764,7 @@
     }
     if (!t) return;
     const act = t.dataset.act;
+    if (!['buy', 'buyrelic', 'buytea', 'buyremove', 'takecard'].includes(act)) SND.sfx('click');
     switch (act) {
       case 'start': newRun(); break;
       case 'title': goTitle(); break;
@@ -738,7 +778,7 @@
       case 'openchest': openChest(); break;
       case 'rest-heal': evApi.heal(Math.round(run.maxHp * 0.3)); advance(); break;
       case 'rest-burn': removeCardFlow((ok) => { if (ok) advance(); }); break;
-      case 'takecard': run.deck.push(mk(t.dataset.id)); toast(`В колоду: ${CARDS[t.dataset.id].name}`); advance(); break;
+      case 'takecard': SND.sfx('card'); run.deck.push(mk(t.dataset.id)); toast(`В колоду: ${CARDS[t.dataset.id].name}`); advance(); break;
       case 'buy': case 'buyrelic': case 'buytea': case 'buyremove': screen.onShop(act, +t.dataset.i); break;
     }
   });

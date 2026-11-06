@@ -130,6 +130,36 @@
       line: 'Подводит часы, чтобы ночь наступила раньше.',
       pattern: [{ k: 'attack', v: 14 }, { k: 'block', v: 16 }, { k: 'snuff', v: 9 }, { k: 'attack', v: 4, hits: 4 }, { k: 'buff', v: 3, then: { k: 'block', v: 8 } }],
     },
+    waxgiant: {
+      name: 'Сургучный Великан', hp: 90, tier: 'boss',
+      line: 'Слеплен из сургуча с тысячи писем и запечатывает всех навсегда.',
+      pattern: [{ k: 'block', v: 14 }, { k: 'attack', v: 11 }, { k: 'attack', v: 6, then: { k: 'block', v: 6 } }, { k: 'buff', v: 2, then: { k: 'attack', v: 5 } }],
+    },
+    vane: {
+      name: 'Флюгер-Петух', hp: 68, tier: 'boss',
+      line: 'Крутится на крыше ратуши и сдувает почтальонов с пути.',
+      pattern: [{ k: 'attack', v: 3, hits: 3 }, { k: 'debuff', v: 2 }, { k: 'attack', v: 4, hits: 3 }, { k: 'block', v: 8, then: { k: 'attack', v: 6 } }],
+    },
+    wolf: {
+      name: 'Сумеречный Волк', hp: 130, tier: 'boss',
+      line: 'В его шерсти застряли первые звёзды.',
+      pattern: [{ k: 'attack', v: 7, hits: 2 }, { k: 'buff', v: 2 }, { k: 'attack', v: 18 }, { k: 'snuff', v: 8 }],
+    },
+    troll: {
+      name: 'Мостовой Тролль', hp: 160, tier: 'boss',
+      line: 'Берёт плату за мост. Больше всего любит чужие письма.',
+      pattern: [{ k: 'block', v: 18 }, { k: 'attack', v: 16 }, { k: 'debuff', v: 2, then: { k: 'attack', v: 8 } }, { k: 'block', v: 12, then: { k: 'buff', v: 3 } }],
+    },
+    hollowpost: {
+      name: 'Пустой Почтальон', hp: 175, tier: 'boss',
+      line: 'Пальто почтальона, который так и не дошёл до адресата.',
+      pattern: [{ k: 'debuff', v: 3, then: { k: 'attack', v: 8 } }, { k: 'attack', v: 5, hits: 4 }, { k: 'snuff', v: 12 }, { k: 'block', v: 16, then: { k: 'buff', v: 3 } }],
+    },
+    skywhale: {
+      name: 'Ночной Кит', hp: 220, tier: 'boss',
+      line: 'Плывёт по ночному небу и глотает звёзды.',
+      pattern: [{ k: 'block', v: 20 }, { k: 'attack', v: 22 }, { k: 'attack', v: 6, hits: 3 }, { k: 'buff', v: 4, then: { k: 'block', v: 10 } }],
+    },
     shadowking: {
       name: 'Король Теней', hp: 190, tier: 'boss',
       line: 'Правит всем, что не успело до заката.',
