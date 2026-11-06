@@ -9,31 +9,57 @@
     return `<svg class="${cls}" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
   }
 
-  /* ---------- Фон: ночная заснеженная улица ---------- */
-  function background(litLamps = 0) {
+  /* ---------- Цвет: смешивание палитр неба ---------- */
+  const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+  const mixC = (a, b, t) => '#' + hex(a).map((v, i) => Math.round(v + (hex(b)[i] - v) * t).toString(16).padStart(2, '0')).join('');
+  /* Палитра неба между двумя ключевыми кадрами: числа смешиваются линейно, цвета по каналам */
+  function mixSky(from, to, t) {
+    const out = {};
+    for (const k of Object.keys(from)) {
+      const a = from[k], b = to[k] === undefined ? a : to[k];
+      out[k] = typeof a === 'number' ? a + (b - a) * t : typeof a === 'string' && a[0] === '#' ? mixC(a, b, t) : (t < 0.5 ? a : b);
+    }
+    return out;
+  }
+
+  /* ---------- Фон: заснеженная улица, время суток задаёт палитра p ---------- */
+  function background(p, litLamps = 0) {
     const lampXs = [70, 170, 265, 345];
     let lamps = '';
     lampXs.forEach((x, i) => {
       const lit = i < litLamps;
       lamps += `
         <g transform="translate(${x},0)">
-          ${lit ? `<circle cx="0" cy="512" r="34" fill="url(#lampGlow)"/>` : ''}
-          <rect x="-2" y="515" width="4" height="70" fill="#141826"/>
-          <path d="M-9 500 h18 l-3 16 h-12z" fill="${lit ? '#ffcf6b' : '#2a3044'}" stroke="#141826" stroke-width="2"/>
-          <path d="M-11 500 h22 l-11 -8z" fill="#141826"/>
+          ${lit ? `<circle cx="0" cy="512" r="34" fill="url(#lampGlow)" opacity="${p.lampGlow}"/>` : ''}
+          <rect x="-2" y="515" width="4" height="70" fill="${p.ink}"/>
+          <path d="M-9 500 h18 l-3 16 h-12z" fill="${lit ? '#ffcf6b' : p.lampOff}" stroke="${p.ink}" stroke-width="2"/>
+          <path d="M-11 500 h22 l-11 -8z" fill="${p.ink}"/>
         </g>`;
     });
+    let stars = '';
+    if (p.stars > 0.02) {
+      const pts = [[30, 60], [80, 130], [140, 40], [190, 160], [240, 80], [350, 50], [380, 190], [60, 250], [210, 260], [330, 280], [120, 330], [290, 360]];
+      stars = pts.map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${i % 3 ? 1.4 : 2.2}" fill="#fff6dc" opacity="${(p.stars * (0.5 + (i % 4) / 6)).toFixed(2)}"/>`).join('');
+    }
+    const sun = p.sunR > 0 ? `
+      <circle cx="${p.sunX}" cy="${p.sunY}" r="${p.sunR * 3.2}" fill="url(#sunGlow)"/>
+      <circle cx="${p.sunX}" cy="${p.sunY}" r="${p.sunR}" fill="${p.sun}"/>` : '';
+    const moonHole = p.moonHole ? `<circle cx="300" cy="120" r="38" fill="none" stroke="#5d6a8f" stroke-width="2" stroke-dasharray="4 7" opacity="0.6"/>` : '';
     return svg('0 0 400 860', `
       <defs>
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#232a42"/>
-          <stop offset="0.6" stop-color="#3a4566"/>
-          <stop offset="1" stop-color="#4b5878"/>
+          <stop offset="0" stop-color="${p.skyTop}"/>
+          <stop offset="0.6" stop-color="${p.skyMid}"/>
+          <stop offset="1" stop-color="${p.skyBot}"/>
         </linearGradient>
         <linearGradient id="snowG" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#7d8db0"/>
-          <stop offset="1" stop-color="#4c5a7c"/>
+          <stop offset="0" stop-color="${p.snowTop}"/>
+          <stop offset="1" stop-color="${p.snowBot}"/>
         </linearGradient>
+        <radialGradient id="sunGlow">
+          <stop offset="0" stop-color="${p.sun}" stop-opacity="0.55"/>
+          <stop offset="1" stop-color="${p.sun}" stop-opacity="0"/>
+        </radialGradient>
         <radialGradient id="lampGlow">
           <stop offset="0" stop-color="#ffd27a" stop-opacity="0.75"/>
           <stop offset="1" stop-color="#ffd27a" stop-opacity="0"/>
@@ -43,43 +69,44 @@
           <stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/>
         </radialGradient>
         <radialGradient id="fog" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stop-color="#9fb0d0" stop-opacity="0.35"/>
-          <stop offset="1" stop-color="#9fb0d0" stop-opacity="0"/>
+          <stop offset="0" stop-color="${p.fog}" stop-opacity="0.35"/>
+          <stop offset="1" stop-color="${p.fog}" stop-opacity="0"/>
         </radialGradient>
       </defs>
       <rect width="400" height="860" fill="url(#sky)"/>
-      <!-- пустое место от украденной луны -->
-      <circle cx="300" cy="120" r="38" fill="none" stroke="#5d6a8f" stroke-width="2" stroke-dasharray="4 7" opacity="0.6"/>
+      ${stars}
+      ${moonHole}
+      ${sun}
       <!-- дальние холмы и шпили -->
-      <path d="M0 520 Q80 470 160 505 T320 490 T400 500 V600 H0z" fill="#33405e"/>
-      <path d="M118 505 l8 -40 l8 40z M126 465 v-12 M121 457 h10" fill="#2a3450" stroke="#2a3450" stroke-width="2"/>
-      <path d="M300 495 l10 -55 l10 55z" fill="#2a3450"/>
-      <path d="M330 500 l7 -30 l7 30z" fill="#2a3450"/>
+      <path d="M0 520 Q80 470 160 505 T320 490 T400 500 V600 H0z" fill="${p.hills}"/>
+      <path d="M118 505 l8 -40 l8 40z M126 465 v-12 M121 457 h10" fill="${p.spires}" stroke="${p.spires}" stroke-width="2"/>
+      <path d="M300 495 l10 -55 l10 55z" fill="${p.spires}"/>
+      <path d="M330 500 l7 -30 l7 30z" fill="${p.spires}"/>
       <circle cx="210" cy="540" r="160" fill="url(#fog)"/>
       <!-- дом слева -->
       <g>
-        <circle cx="40" cy="585" r="70" fill="url(#winGlow)"/>
-        <rect x="-10" y="520" width="120" height="100" fill="#2b2733" stroke="#17121f" stroke-width="3"/>
-        <path d="M-20 530 L50 455 L125 530z" fill="#c9d4ea" stroke="#17121f" stroke-width="3"/>
-        <path d="M-20 530 L50 455 L125 530 L118 538 Q60 528 -12 540z" fill="#e6edf8"/>
-        <rect x="68" y="440" width="12" height="40" fill="#22202a" stroke="#17121f" stroke-width="3"/>
-        <rect x="10" y="555" width="26" height="24" fill="#ff9d42" stroke="#17121f" stroke-width="3"/>
+        <circle cx="40" cy="585" r="70" fill="url(#winGlow)" opacity="${p.winGlow}"/>
+        <rect x="-10" y="520" width="120" height="100" fill="${p.wall}" stroke="#17121f" stroke-width="3"/>
+        <path d="M-20 530 L50 455 L125 530z" fill="${p.roof}" stroke="#17121f" stroke-width="3"/>
+        <path d="M-20 530 L50 455 L125 530 L118 538 Q60 528 -12 540z" fill="${p.roofHi}"/>
+        <rect x="68" y="440" width="12" height="40" fill="${p.ink}" stroke="#17121f" stroke-width="3"/>
+        <rect x="10" y="555" width="26" height="24" fill="${p.window}" stroke="#17121f" stroke-width="3"/>
         <path d="M23 555 v24 M10 567 h26" stroke="#17121f" stroke-width="2"/>
-        <rect x="70" y="570" width="22" height="50" fill="#e07a2c" stroke="#17121f" stroke-width="3"/>
+        <rect x="70" y="570" width="22" height="50" fill="${p.door}" stroke="#17121f" stroke-width="3"/>
       </g>
-      <!-- дом справа, окна погашены -->
+      <!-- дом справа -->
       <g>
-        <rect x="300" y="540" width="110" height="80" fill="#252431" stroke="#17121f" stroke-width="3"/>
-        <path d="M290 548 L350 490 L415 548z" fill="#c9d4ea" stroke="#17121f" stroke-width="3"/>
-        <rect x="320" y="565" width="20" height="20" fill="#1b1a24" stroke="#17121f" stroke-width="2"/>
-        <rect x="360" y="565" width="20" height="20" fill="#1b1a24" stroke="#17121f" stroke-width="2"/>
+        <rect x="300" y="540" width="110" height="80" fill="${p.wall2}" stroke="#17121f" stroke-width="3"/>
+        <path d="M290 548 L350 490 L415 548z" fill="${p.roof}" stroke="#17121f" stroke-width="3"/>
+        <rect x="320" y="565" width="20" height="20" fill="${p.window2}" stroke="#17121f" stroke-width="2"/>
+        <rect x="360" y="565" width="20" height="20" fill="${p.window2}" stroke="#17121f" stroke-width="2"/>
       </g>
       ${lamps}
       <!-- снег на земле -->
       <path d="M0 600 Q100 585 200 598 T400 592 V860 H0z" fill="url(#snowG)"/>
-      <path d="M0 600 Q100 585 200 598 T400 592" fill="none" stroke="#a9b8d6" stroke-width="3" opacity="0.7"/>
+      <path d="M0 600 Q100 585 200 598 T400 592" fill="none" stroke="${p.snowEdge}" stroke-width="3" opacity="0.7"/>
       <!-- забор -->
-      <g stroke="#17121f" stroke-width="2.5" fill="#3b3640">
+      <g stroke="#17121f" stroke-width="2.5" fill="${p.fence}">
         <path d="M130 585 l4 -18 l4 18z M150 588 l4 -20 l4 20z M170 590 l4 -18 l4 18z"/>
         <path d="M128 578 h52" fill="none"/>
       </g>
@@ -88,6 +115,14 @@
 
   /* ---------- Героиня: Ива, ученица фонарщика ---------- */
   function hero() {
+    const bag = window.Story && window.Story.story.heroBag ? `
+      <!-- сумка почтальонки -->
+      <path d="M72 132 Q100 170 128 212" stroke="#5a3a22" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M72 132 Q100 170 128 212" ${sw(1.5)} fill="none" opacity="0.6"/>
+      <path d="M44 186 h44 v34 q0 6 -6 6 h-32 q-6 0 -6 -6z" fill="#8a5a32" ${sw(3.5)}/>
+      <rect x="52" y="174" width="30" height="20" rx="2" fill="#f2e6c9" ${sw(2.5)} transform="rotate(-8 67 184)"/>
+      <path d="M42 186 h48 v12 q-24 8 -48 0z" fill="#a06a3a" ${sw(3)}/>
+      <circle cx="66" cy="198" r="3.5" fill="#d8a94a" ${sw(1.5)}/>` : '';
     return svg('0 0 200 240', `
       <defs>
         <radialGradient id="hl"><stop offset="0" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#ffb84a" stop-opacity="0.6"/><stop offset="1" stop-color="#ffb84a" stop-opacity="0"/></radialGradient>
@@ -118,6 +153,7 @@
       <circle cx="122" cy="108" r="5" fill="#e79a8a" opacity="0.6"/>
       <g fill="#b0603e"><circle cx="82" cy="105" r="1.2"/><circle cx="86" cy="108" r="1.2"/><circle cx="118" cy="105" r="1.2"/><circle cx="114" cy="108" r="1.2"/></g>
       <path d="M94 114 Q100 119 106 114" ${sw(3)} fill="none"/>
+      ${bag}
       <!-- рука и фонарь -->
       <path d="M130 150 Q148 156 150 146" ${sw(4)} fill="#2f5d62"/>
       <path d="M152 136 v10" ${sw(3)}/>
@@ -267,6 +303,47 @@
       <path d="M100 186 q10 -8 8 8 M140 186 q-10 -8 -8 8" ${sw(3)} fill="none"/>
     `, 'char boss'),
 
+    shadowking: () => svg('0 0 240 240', `
+      <defs>
+        <radialGradient id="eyeGlow"><stop offset="0" stop-color="#ffb347" stop-opacity="0.9"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+        <linearGradient id="capeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2448"/><stop offset="1" stop-color="#15122a"/></linearGradient>
+      </defs>
+      <!-- клочья тени у земли -->
+      <g fill="#15122a" opacity="0.55">
+        <path d="M30 220 q20 -24 40 -4 q-10 18 -40 4z"/><path d="M170 222 q24 -26 44 -2 q-14 16 -44 2z"/>
+      </g>
+      <!-- летающие письма -->
+      <g ${sw(2.5)} opacity="0.85">
+        <g transform="rotate(-18 36 92)"><rect x="18" y="80" width="36" height="24" rx="2" fill="#f2e6c9"/><path d="M18 80 l18 13 l18 -13" fill="none"/></g>
+        <g transform="rotate(14 206 70)"><rect x="190" y="58" width="32" height="22" rx="2" fill="#f2e6c9"/><path d="M190 58 l16 12 l16 -12" fill="none"/></g>
+      </g>
+      <!-- плащ -->
+      <path d="M120 70 Q60 90 50 150 Q42 196 40 226 Q56 212 66 228 Q78 210 90 230 Q104 212 120 232 Q136 212 150 230 Q162 210 174 228 Q184 212 200 226 Q198 196 190 150 Q180 90 120 70z" fill="url(#capeG)" ${sw(4)}/>
+      <path d="M120 96 Q92 130 96 222 M120 96 Q148 130 144 222" stroke="#3d3566" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <!-- воротник -->
+      <path d="M78 98 L92 70 L120 92 L148 70 L162 98 Q120 118 78 98z" fill="#3a2f5e" ${sw(3.5)}/>
+      <!-- голова -->
+      <ellipse cx="120" cy="70" rx="30" ry="32" fill="#1a1630" ${sw(4)}/>
+      <!-- корона -->
+      <path d="M92 48 L90 18 L104 36 L112 8 L120 32 L128 8 L136 36 L150 18 L148 48 Q120 40 92 48z" fill="#b8862e" ${sw(3.5)}/>
+      <circle cx="120" cy="40" r="4" fill="#7a3a8a" ${sw(2)}/>
+      <!-- глаза -->
+      <circle cx="107" cy="68" r="14" fill="url(#eyeGlow)"/><circle cx="133" cy="68" r="14" fill="url(#eyeGlow)"/>
+      <path d="M98 64 L114 70 L100 74z" fill="#ffcf6b"/>
+      <path d="M142 64 L126 70 L140 74z" fill="#ffcf6b"/>
+      <!-- ухмылка -->
+      <path d="M104 86 Q120 98 136 86 Q120 92 104 86z" fill="#f3e0c0" ${sw(2.5)}/>
+      <!-- руки с когтями держат письмо -->
+      <path d="M70 140 Q86 158 102 160" ${sw(4)} fill="none"/>
+      <path d="M170 140 Q154 158 138 160" ${sw(4)} fill="none"/>
+      <g transform="rotate(-6 120 162)">
+        <rect x="96" y="148" width="48" height="32" rx="3" fill="#f2e6c9" ${sw(3)}/>
+        <path d="M96 148 l24 18 l24 -18" fill="none" ${sw(2.5)}/>
+        <circle cx="120" cy="168" r="5" fill="#c8423a" ${sw(2)}/>
+      </g>
+      <path d="M96 158 l-8 -4 M96 164 l-9 0 M144 158 l8 -4 M144 164 l9 0" ${sw(3)}/>
+    `, 'char boss'),
+
     hedgehog: () => svg('0 0 200 220', `
       <path d="M30 170 Q20 90 90 70 Q170 60 176 150 Q178 182 150 190 H50 Q32 188 30 170z" fill="#5a4636" ${sw(4)}/>
       <g fill="#3e2f25" ${sw(2.5)}><path d="M44 110 l-14 -16 l22 4z"/><path d="M62 86 l-6 -22 l18 12z"/><path d="M92 74 l4 -24 l12 20z"/><path d="M128 76 l14 -18 l4 22z"/><path d="M158 100 l20 -10 l-6 22z"/><path d="M172 140 l20 2 l-16 14z"/></g>
@@ -338,5 +415,5 @@
     return svg('0 0 40 40', intentIcons[kind] || intentIcons.attack, 'intent-ico');
   }
 
-  window.Art = { background, hero, enemy: (id) => (enemiesArt[id] || enemiesArt.inkcat)(), icon, intentIcon, flame: (s = 1) => svg('0 0 100 100', flameShape(50, 44, s * 1.2), 'icon') };
+  window.Art = { background, mixSky, hero, enemy: (id) => (enemiesArt[id] || enemiesArt.inkcat)(), icon, intentIcon, flame: (s = 1) => svg('0 0 100 100', flameShape(50, 44, s * 1.2), 'icon') };
 })();

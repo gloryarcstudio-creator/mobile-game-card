@@ -1,6 +1,9 @@
 /* Фитиль — игровая логика и отрисовка экранов. */
 (function () {
   const { CARDS, ENEMIES, RELICS, EVENTS } = window.Data;
+  const STORY = window.Story.story;
+  const SKY = window.Story.sky;
+  document.title = STORY.title;
   const MAX_STEPS = 12;     // длина свечи: шагов до босса
   const HAND_SIZE = 5;
   const MAX_ENERGY = 3;
@@ -44,7 +47,16 @@
     })(0);
   })();
 
-  function setBg() { $('#bg').innerHTML = Art.background(run ? Math.min(4, run.lit) : 0); }
+  /* Небо меняется с каждым шагом: от первого кадра палитры к последнему */
+  function setBg() {
+    const t = run ? Math.min(1, run.step / (MAX_STEPS - 1)) : 0;
+    const lamps = run && STORY.litLamps ? Math.min(4, run.lit) : 0;
+    const p = Art.mixSky(SKY.from, SKY.to, t);
+    $('#bg').innerHTML = Art.background(p, lamps);
+    app.style.setProperty('--sky-top', p.skyTop);
+    app.style.setProperty('--sky-mid', p.skyMid);
+    app.style.setProperty('--sky-bot', p.skyBot);
+  }
 
   /* ---------- Состояние забега ---------- */
   let run = null;   // прогресс забега
@@ -82,9 +94,9 @@
     const pct = Math.max(0, left / MAX_STEPS) * 100;
     return `<div class="topbar">
       <div class="gold">${Art.icon('coin')}<b>${run.gold}</b></div>
-      <div class="chapter"><div class="ch-title">Глава I · Сонный Брод</div>
+      <div class="chapter"><div class="ch-title">${STORY.chapter}</div>
         <div class="candle"><div class="wax" style="width:${pct}%"></div><div class="wick" style="left:${pct}%">${Art.flame(0.9)}</div></div>
-        <div class="ch-sub">${left > 0 ? `Свеча догорит через ${left}` : 'Свеча догорела'}</div>
+        <div class="ch-sub">${STORY.countdown(left)}</div>
       </div>
       <div class="relics">${run.relics.map((r) => `<button class="relic" data-relic="${r}">${Art.icon(RELICS[r].art)}</button>`).join('')}</div>
     </div>`;
@@ -100,7 +112,7 @@
           ${inCombat && C.block > 0 ? `<div class="hblk">${Art.intentIcon('block')}<b>${C.block}</b></div>` : ''}</div>
         <div class="hb-row">
           ${inCombat ? `<div class="lamp" title="Огоньки">${[0, 1, 2].map((i) => `<i class="pip ${i < flame ? 'on' : ''}">${Art.flame(1)}</i>`).join('')}</div>
-            ${C.pWeak > 0 ? `<div class="status weak">Слабость ${C.pWeak}</div>` : ''}` : `<div class="hero-name">Ива</div>`}
+            ${C.pWeak > 0 ? `<div class="status weak">Слабость ${C.pWeak}</div>` : ''}` : `<div class="hero-name">${STORY.heroName}</div>`}
         </div>
       </div>
       ${inCombat ? `<div class="energy"><b>${C.energy}</b><small>/${MAX_ENERGY}</small></div>
@@ -142,12 +154,12 @@
       <div class="book">
         <div class="page">
           <div class="book-art">${Art.hero()}</div>
-          <h1>Фитиль</h1>
-          <p class="story">Однажды ночью Ночная Моль съела луну и погасила все фонари Сонного Брода. Ученица фонарщика Ива берёт старую лампу и отправляется в путь, пока не догорела последняя свеча.</p>
+          <h1>${STORY.title}</h1>
+          <p class="story">${STORY.intro}</p>
           <ul class="howto">
             <li><b>Огонёк.</b> Каждый даёт атакам +${FLAME_BONUS} урона.</li>
             <li><b>Вспышка.</b> На ${FLAME_MAX} Огоньках лампа бьёт врага на ${BURST_DMG}.</li>
-            <li><b>Свеча.</b> Через ${MAX_STEPS} шагов придёт Моль.</li>
+            <li>${STORY.countdownRule(MAX_STEPS)}</li>
           </ul>
         </div>
       </div>
@@ -157,7 +169,7 @@
   /* ---------- Путь: выбор из трёх карт-встреч ---------- */
   function genChoices() {
     const s = run.step;
-    if (s >= MAX_STEPS - 1) return [{ t: 'boss', enemy: 'moth' }];
+    if (s >= MAX_STEPS - 1) return [{ t: 'boss', enemy: STORY.boss }];
     const normals = s < 4 ? ['inkcat', 'laundress'] : ['inkcat', 'laundress', 'golem', 'golem'];
     const fight = () => ({ t: 'fight', enemy: pick(normals) });
     if (s === 0) return [fight(), fight(), { t: 'event', ev: pick(EVENTS).id }];
@@ -186,7 +198,7 @@
       tag = o.t === 'boss' ? 'Босс' : o.t === 'elite' ? 'Элита' : 'Бой';
     } else if (o.t === 'event') {
       const ev = EVENTS.find((e) => e.id === o.ev);
-      title = ev.title; art = Art.icon(ev.art); text = 'Что-то происходит в темноте…'; tag = 'Событие';
+      title = ev.title; art = Art.icon(ev.art); text = 'Что-то происходит впереди…'; tag = 'Событие';
     } else if (o.t === 'shop') {
       title = 'Лавка Игольника'; art = `<div class="enc-char">${Art.enemy('hedgehog')}</div>`; text = 'Ёж торгует всем, что нашёл в сугробах.'; tag = 'Лавка';
     } else if (o.t === 'chest') {
@@ -204,6 +216,7 @@
 
   function goMap() {
     C = null; busy = false;
+    setBg();
     if (!run.choices) run.choices = genChoices();
     screen.className = 'scr-map';
     screen.innerHTML = `${topBar()}
@@ -640,11 +653,11 @@
   /* ---------- Финалы ---------- */
   function goVictory() {
     screen.className = 'scr-end win';
-    screen.innerHTML = `<div class="ribbon">Победа!</div>
+    screen.innerHTML = `<div class="ribbon">${STORY.winRibbon}</div>
       <div class="book"><div class="page">
         <div class="book-art moon">${Art.hero()}</div>
-        <h1>Луна вернулась</h1>
-        <p class="story">Ночная Моль выронила луну, и та покатилась по крышам обратно на небо. В Сонном Броде снова зажглись фонари, а Ива стала настоящей фонарщицей.</p>
+        <h1>${STORY.winTitle}</h1>
+        <p class="story">${STORY.winText}</p>
         <p class="stats">Побед: ${run.fights} · Карт в колоде: ${run.deck.length} · Талисманов: ${run.relics.length}</p>
       </div></div>
       <button class="btn big" data-act="title">Новая история</button>`;
@@ -654,8 +667,8 @@
     screen.className = 'scr-end lose';
     screen.innerHTML = `<div class="book"><div class="page">
         <div class="book-art dim">${Art.hero()}</div>
-        <h1>Фитиль погас…</h1>
-        <p class="story">Темнота оказалась сильнее. Но где-то в Сонном Броде ещё тлеет уголёк, а значит, история может начаться заново.</p>
+        <h1>${STORY.loseTitle}</h1>
+        <p class="story">${STORY.loseText}</p>
         <p class="stats">Пройдено шагов: ${run.step + 1} из ${MAX_STEPS} · Побед: ${run.fights}</p>
       </div></div>
       <button class="btn big" data-act="start">Попробовать снова</button>`;
@@ -700,7 +713,7 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, startCombat: (id, t = 'fight') => startCombat(id, t) };
+  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t) };
 
   goTitle();
 })();

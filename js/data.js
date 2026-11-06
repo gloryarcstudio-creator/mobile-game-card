@@ -120,6 +120,11 @@
       line: 'Съела луну и все фонари Сонного Брода.',
       pattern: [{ k: 'attack', v: 12 }, { k: 'snuff', v: 8 }, { k: 'attack', v: 5, hits: 3 }, { k: 'block', v: 15, then: { k: 'buff', v: 3 } }],
     },
+    shadowking: {
+      name: 'Король Теней', hp: 110, tier: 'boss',
+      line: 'Правит всем, что не успело до заката.',
+      pattern: [{ k: 'attack', v: 12 }, { k: 'snuff', v: 8 }, { k: 'attack', v: 5, hits: 3 }, { k: 'block', v: 15, then: { k: 'buff', v: 3 } }],
+    },
   };
 
   const RELICS = {
