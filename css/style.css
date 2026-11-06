@@ -238,7 +238,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 @keyframes burst { 0% { transform: scale(.3); opacity: 0; } 30% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1.4) translateY(-30px); opacity: 0; } }
 
 /* ---------- Книга (титул / финал) ---------- */
-.scr-title, .scr-end { display: flex; flex-direction: column; align-items: center; }
+.scr-title, .scr-end, .scr-intro { display: flex; flex-direction: column; align-items: center; }
 .book { margin-top: 60px; width: 340px; padding: 12px; border-radius: 10px; background: #3a2320; border: 3px solid var(--ink); box-shadow: 0 20px 40px rgba(0, 0, 0, .6); transform: rotate(-1deg); animation: rise .6s; }
 .page { padding: 16px 18px 18px; border-radius: 6px; color: var(--ink); background: linear-gradient(100deg, #d7c59f, var(--paper) 12%, var(--paper) 88%, #d7c59f); border: 2px solid var(--ink); }
 .book-art { height: 220px; border-radius: 6px; border: 3px solid var(--ink); background: radial-gradient(circle at 70% 70%, #ffcf6b55, transparent 50%), linear-gradient(var(--sky-top, #2a3350), var(--sky-mid, #3a4566) 70%, var(--sky-bot, #4b5878)); padding-top: 6px; }
@@ -248,7 +248,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .story { margin: 0; font-size: 17px; line-height: 1.25; }
 .howto { margin: 10px 0 0; padding: 0 0 0 18px; font-size: 15px; line-height: 1.25; }
 .stats { margin: 10px 0 0; font-size: 15px; text-align: center; color: #5a2a26; }
-.scr-title .btn.big, .scr-end .btn.big { margin-top: 26px; }
+.scr-intro .btn.big, .scr-end .btn.big { margin-top: 26px; }
 .ribbon {
   margin: 70px auto 0; width: fit-content; min-width: 240px; padding: 6px 34px; white-space: nowrap; text-align: center; position: relative;
   font-family: var(--title); font-size: 34px; color: #fff4d6; text-shadow: 0 3px 0 var(--ink);
@@ -369,10 +369,10 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .it.slp b { color: #f4e6a8; font-size: 16px; }
 
 /* ---------- Справочник ---------- */
-#help { position: absolute; right: 8px; top: 112px; z-index: 12; width: 38px; height: 38px; border-radius: 50%; background: rgba(20, 24, 38, .75); border: 2px solid var(--gold); font-family: var(--title); font-size: 22px; line-height: 1; color: var(--gold-hi); }
-#help:active { transform: scale(.92); }
-.scr-combat ~ #help { top: 98px; }
-.scr-title ~ #help { top: 14px; }
+#menu { position: absolute; right: 8px; top: 112px; z-index: 12; width: 38px; height: 38px; padding: 2px; border-radius: 50%; background: rgba(20, 24, 38, .75); border: 2px solid var(--gold); }
+#menu:active { transform: scale(.92); }
+.scr-combat ~ #menu { top: 98px; }
+.scr-title ~ #menu, .scr-intro ~ #menu, .scr-end ~ #menu { display: none; }
 .gloss { margin: 0 6px 20px; text-align: left; }
 .gloss dt { font-family: var(--title); font-size: 17px; color: var(--gold-hi); margin-top: 10px; }
 .gloss dd { margin: 2px 0 0; font-size: 15px; line-height: 1.2; opacity: .92; }
@@ -396,3 +396,21 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .brelic:active { transform: scale(.97); }
 .reward-cards.n4 { gap: 6px; }
 .reward-cards.n4 .card.reward { --w: 92px; }
+
+/* ---------- Главное меню и пауза ---------- */
+.logo { margin-top: 64px; text-align: center; animation: rise .6s backwards; }
+.logo small { display: block; font-size: 18px; letter-spacing: .3em; color: #fff4d6; text-shadow: 0 2px 4px rgba(0, 0, 0, .6); }
+.logo h1 { margin: 2px 0 0; font-family: var(--title); font-size: 52px; font-weight: normal; line-height: 1; color: #fff4d6; text-shadow: 0 4px 0 var(--ink), 0 0 26px rgba(255, 170, 90, .85); }
+.title-hero { width: 230px; height: 270px; margin-top: 8px; filter: drop-shadow(0 10px 16px rgba(0, 0, 0, .45)); animation: rise .6s .1s backwards; }
+.menu { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 14px; }
+.menu .btn { width: 270px; }
+.menu .btn.big { font-size: 28px; padding: 10px 20px; }
+.btn small { display: block; margin-top: 2px; font-family: var(--body); font-size: 14px; opacity: .9; }
+.savehint { margin: 14px 0 0; font-size: 14px; color: #fff4d6; text-shadow: 0 2px 4px #000; opacity: .85; }
+.pause { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 150px; }
+.pause h2 { margin-bottom: 0; }
+.pause .ovhint { max-width: 300px; margin: 0 0 8px; line-height: 1.25; }
+.pause .btn { width: 260px; }
+.endbtns { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.endbtns .btn.ghost { font-size: 17px; padding: 7px 20px; }
+.scr-title ~ #snd { top: 12px; }

@@ -96,11 +96,11 @@
 
   /* Фон меняется после каждого уровня: палитра неба смешивается по ключевым кадрам,
      а сцена (город или окраина) задаётся стадией */
-  function setBg() {
+  function setBg(titleT) {
     const step = run ? run.step : 0;
-    const t = MAX_STEPS > 1 ? Math.min(1, step / (MAX_STEPS - 1)) : 0;
+    const t = titleT != null ? titleT : MAX_STEPS > 1 ? Math.min(1, step / (MAX_STEPS - 1)) : 0;
     const g = STAGES[stageOf(step)] || STAGES[0];
-    const lamps = run && STORY.lamps ? STORY.lamps(run) : 0;
+    const lamps = titleT != null ? 2 : run && STORY.lamps ? STORY.lamps(run) : 0;
     const approach = g.len > 1 ? (step - g.start) / (g.len - 1) : 1;
     const p = Art.sampleSky(SKY, t);
     $('#bg').innerHTML = Art.background(p, lamps, g.scene, approach);
@@ -129,6 +129,41 @@
     goMap();
   }
   const hasRelic = (id) => run.relics.includes(id);
+
+  /* ---------- Сохранение ----------
+     Забег сохраняется в браузере после каждого шага. pending — где игрок остановился
+     внутри шага: бой, событие, лавка, награда... Бой при продолжении начинается заново. */
+  const STORY_ID = Object.keys(window.Story.STORIES).find((k) => window.Story.STORIES[k] === STORY) || 'main';
+  const SAVE_KEY = `lastray.save.${STORY_ID}`;
+  function save(pending = null) {
+    if (!run) return;
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 1, run, pending, at: Date.now() })); } catch (e) { /* хранилище недоступно */ }
+  }
+  function loadSave() {
+    try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.v === 1 && s.run && Array.isArray(s.run.deck) ? s : null; } catch (e) { return null; }
+  }
+  function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* пусто */ } }
+
+  function continueRun() {
+    const s = loadSave();
+    if (!s) { goTitle(); return; }
+    run = s.run; C = null;
+    uidSeq = Math.max(uidSeq, ...run.deck.map((c) => c.uid + 1));
+    setBg();
+    SND.music(mapTrack());
+    const p = s.pending;
+    const ev = p && p.t === 'event' && EVENTS.find((e) => e.id === p.ev);
+    if (!p) goMap();
+    else if (p.t === 'fight' || p.t === 'elite' || p.t === 'boss') startCombat(p.enemy, p.t);
+    else if (ev) goEvent(ev);
+    else if (p.t === 'shop') goShop(p.shop);
+    else if (p.t === 'chest') goChest();
+    else if (p.t === 'rest') goRest();
+    else if (p.t === 'next') advance();
+    else if (p.t === 'reward') renderReward(p.r);
+    else if (p.t === 'bossrelic') goBossRelic(p.opts);
+    else goMap();
+  }
 
   /* ---------- Общие куски интерфейса ---------- */
   const TYPE_LABEL = { atk: 'Атака', skill: 'Навык', charm: 'Чары', status: 'Помеха' };
@@ -233,10 +268,61 @@
       <button class="btn" data-act="close">Закрыть</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
   }
 
+  /* ---------- Главное меню ---------- */
   function goTitle() {
-    run = null; C = null; setBg();
+    run = null; C = null; busy = false; setBg(0.45);
+    hideOverlay();
     SND.music('title');
+    const s = loadSave();
+    const info = s && `Уровень ${s.run.step + 1} из ${MAX_STEPS} · ${s.run.hp}/${s.run.maxHp} HP`;
     screen.className = 'scr-title';
+    screen.innerHTML = `
+      <div class="logo"><small>почтовая сказка</small><h1>${STORY.title}</h1></div>
+      <div class="title-hero">${Art.hero()}</div>
+      <div class="menu">
+        ${s ? `<button class="btn big" data-act="continue">Продолжить<small>${info}</small></button>` : ''}
+        <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">Новая игра</button>
+        <button class="btn ghost" data-act="gloss">Справочник</button>
+      </div>
+      <p class="savehint">${s ? 'Прогресс сохраняется после каждого уровня' : ''}</p>`;
+  }
+
+  function askNewGame() {
+    const s = loadSave();
+    if (!s) { goIntro(); return; }
+    showOverlay(`<div class="pause"><h2>Начать заново?</h2>
+      <p class="ovhint">Сохранённый забег на уровне ${s.run.step + 1} из ${MAX_STEPS} будет потерян.</p>
+      <button class="btn" data-act="c-yes">Начать заново</button>
+      <button class="btn ghost" data-act="c-no">Отмена</button></div>`, (e) => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      hideOverlay();
+      if (b.dataset.act === 'c-yes') { clearSave(); goIntro(); }
+    });
+  }
+
+  /* Пауза во время забега: справочник и выход в главное меню */
+  function showPause() {
+    showOverlay(`<div class="pause"><h2>Пауза</h2>
+      <p class="ovhint">${C ? 'Прогресс сохранён до начала этого боя. Если выйти, бой начнётся заново.' : 'Прогресс сохранён. Можно выйти и вернуться позже.'}</p>
+      <button class="btn" data-act="p-resume">Вернуться в игру</button>
+      <button class="btn ghost" data-act="p-gloss">Справочник</button>
+      <button class="btn ghost" data-act="p-title">Главное меню</button></div>`, (e) => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      if (b.dataset.act === 'p-resume') hideOverlay();
+      if (b.dataset.act === 'p-gloss') showGlossary();
+      if (b.dataset.act === 'p-title') {
+        if (C && busy) { toast('Дождись конца хода'); return; }
+        goTitle();
+      }
+    });
+  }
+
+  /* ---------- Вступление перед новым забегом ---------- */
+  function goIntro() {
+    run = null; C = null; setBg();
+    screen.className = 'scr-intro';
     screen.innerHTML = `
       <div class="book">
         <div class="page">
@@ -245,12 +331,12 @@
           <p class="story">${STORY.intro}</p>
           <ul class="howto">
             <li><b>Огонёк.</b> Каждый даёт атакам +${FLAME_BONUS} урона. На ${FLAME_MAX} Огоньках лампа бьёт врага на ${BURST_DMG}.</li>
-            <li><b>Знак «?»</b> в углу открывает справочник по картам и статусам.</li>
+            <li><b>Меню</b> в углу: пауза, справочник и выход. Прогресс сохраняется сам.</li>
             <li>${STORY.pathRule(MAX_STEPS)}</li>
           </ul>
         </div>
       </div>
-      <button class="btn big" data-act="start">Начать</button>`;
+      <button class="btn big" data-act="start">В путь</button>`;
   }
 
   /* ---------- Путь: выбор из трёх карт-встреч ---------- */
@@ -328,6 +414,7 @@
     setBg();
     SND.music(mapTrack());
     if (!run.choices) run.choices = genChoices();
+    save();
     screen.className = 'scr-map';
     screen.innerHTML = `${topBar()}
       <div class="map-hint">${mapHint()}</div>
@@ -346,6 +433,7 @@
   function chooseEncounter(i) {
     const o = run.choices[i];
     run.choices = null;
+    save(o);
     if (o.t === 'fight' || o.t === 'elite' || o.t === 'boss') startCombat(o.enemy, o.t);
     else if (o.t === 'event') goEvent(EVENTS.find((e) => e.id === o.ev));
     else if (o.t === 'shop') goShop();
@@ -453,7 +541,8 @@
     evApi.startFight = (id) => { fought = id; };
     const res = ev.options[i].act(run, evApi);
     if (res === null) return; // опция сама ведёт дальше (например, удаление карты)
-    if (fought) { toast(res); setTimeout(() => startCombat(fought, 'fight'), 600); return; }
+    if (fought) { save({ t: 'fight', enemy: fought }); toast(res); setTimeout(() => startCombat(fought, 'fight'), 600); return; }
+    save({ t: 'next' });
     $('.scrolls').innerHTML = `<button class="scroll" data-act="next">Дальше</button>`;
     $('.ev-box p').textContent = res;
     $('.topbar').outerHTML = topBar();
@@ -461,16 +550,17 @@
   }
 
   /* ---------- Лавка ---------- */
-  function goShop() {
+  function goShop(saved) {
     const commons = Object.keys(CARDS).filter((k) => CARDS[k].rarity === 'common');
     const rares = Object.keys(CARDS).filter((k) => CARDS[k].rarity === 'rare');
     const disc = (n) => Math.round(n * (hasRelic('coupon') ? 0.75 : 1));
     const cards = shuffle([...commons]).slice(0, 2).concat([pick(rares)]).map((id) => ({ id, price: disc(CARDS[id].rarity === 'rare' ? 70 : 38 + rnd(-4, 6)), sold: false }));
     const fr = freeRelics();
     const rid = fr.length ? pick(fr) : null;
-    const shop = { cards, relic: rid ? { id: rid, price: disc(RELICS[rid].tier === 'rare' ? 115 : 90), sold: false } : null, tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false } };
+    const shop = saved || { cards, relic: rid ? { id: rid, price: disc(RELICS[rid].tier === 'rare' ? 115 : 90), sold: false } : null, tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false } };
     screen.className = 'scr-shop';
     const render = () => {
+      save({ t: 'shop', shop });
       screen.innerHTML = `${topBar()}
         <div class="shopkeeper">${Art.enemy('hedgehog')}<div class="bubble">Всё по-честному! Почти.</div></div>
         <div class="shop-cards">${shop.cards.map((c, i) => `<div class="ware ${c.sold ? 'sold' : ''}">${cardHTML(c.id, 'shopcard', `data-act="buy" data-i="${i}"`)}<div class="price ${run.gold < c.price ? 'poor' : ''}">${Art.icon('coin')}${c.price}</div></div>`).join('')}</div>
@@ -520,6 +610,7 @@
     let msg;
     if (free.length && Math.random() < 0.5) { const id = pick(free); addRelic(id); msg = `Внутри: ${RELICS[id].name}. ${RELICS[id].desc}`; }
     else { const g = rnd(28, 45); run.gold += g; SND.sfx('coin'); msg = `Внутри ${g} монет.`; }
+    save({ t: 'next' });
     $('.chest').classList.add('open');
     $('.chest-wrap p').textContent = msg;
     $('.row2').innerHTML = `<button class="btn" data-act="next">Дальше</button>`;
@@ -964,11 +1055,11 @@
   }
 
   /* ---------- Трофей босса: один из трёх талисманов босса ---------- */
-  function goBossRelic() {
-    SND.sfx('win');
-    SND.music(mapTrack());
-    const opts = shuffle(Object.keys(RELICS).filter((r) => RELICS[r].tier === 'boss' && !hasRelic(r))).slice(0, 3);
+  function goBossRelic(saved) {
+    if (!saved) { SND.sfx('win'); SND.music(mapTrack()); }
+    const opts = saved || shuffle(Object.keys(RELICS).filter((r) => RELICS[r].tier === 'boss' && !hasRelic(r))).slice(0, 3);
     if (!opts.length) { goReward('boss'); return; }
+    save({ t: 'bossrelic', opts });
     screen.className = 'scr-bossrelic';
     screen.innerHTML = `${topBar()}
       <div class="ribbon">Трофей босса</div>
@@ -996,6 +1087,13 @@
       const id = pick(Object.keys(CARDS).filter((k) => CARDS[k].rarity === r));
       if (!ids.includes(id)) ids.push(id);
     }
+    const rw = { boss, gold, healed, ids };
+    save({ t: 'reward', r: rw });
+    renderReward(rw);
+  }
+
+  function renderReward({ boss, gold, healed, ids }) {
+    const count = ids.length;
     screen.className = 'scr-reward';
     screen.innerHTML = `${topBar()}
       <div class="ribbon">${boss ? 'Босс повержен!' : 'Победа!'}</div>
@@ -1008,6 +1106,7 @@
 
   /* ---------- Финалы ---------- */
   function goVictory() {
+    clearSave();
     SND.music('title'); SND.sfx('victory');
     screen.className = 'scr-end win';
     screen.innerHTML = `<div class="ribbon">${STORY.winRibbon}</div>
@@ -1017,10 +1116,11 @@
         <p class="story">${STORY.winText}</p>
         <p class="stats">Побед: ${run.fights} · Карт в колоде: ${run.deck.length} · Талисманов: ${run.relics.length}</p>
       </div></div>
-      <button class="btn big" data-act="title">Новая история</button>`;
+      <button class="btn big" data-act="title">В главное меню</button>`;
   }
   function goDefeat() {
     C = null;
+    clearSave();
     SND.music(null); SND.sfx('defeat');
     screen.className = 'scr-end lose';
     screen.innerHTML = `<div class="book"><div class="page">
@@ -1029,7 +1129,7 @@
         <p class="story">${STORY.loseText}</p>
         <p class="stats">Пройдено уровней: ${run.step + 1} из ${MAX_STEPS} · Побед: ${run.fights}</p>
       </div></div>
-      <button class="btn big" data-act="start">Попробовать снова</button>`;
+      <div class="endbtns"><button class="btn big" data-act="start">Попробовать снова</button><button class="btn ghost" data-act="title">Главное меню</button></div>`;
   }
 
   /* ---------- Обработка нажатий ---------- */
@@ -1050,7 +1150,9 @@
     toast(p.music ? 'Музыка и звуки включены' : p.sfx ? 'Музыка выключена, звуки остались' : 'Звук выключен');
   });
 
-  $('#help').addEventListener('click', (e) => { e.stopPropagation(); SND.unlock(); SND.sfx('click'); showGlossary(); });
+  const menuBtn = $('#menu');
+  menuBtn.innerHTML = '<svg viewBox="0 0 40 40"><path d="M10 12 h20 M10 20 h20 M10 28 h20" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/></svg>';
+  menuBtn.addEventListener('click', (e) => { e.stopPropagation(); SND.unlock(); SND.sfx('click'); if (run) showPause(); else showGlossary(); });
 
   app.addEventListener('click', (e) => {
     SND.unlock();
@@ -1078,6 +1180,9 @@
     switch (act) {
       case 'start': newRun(); break;
       case 'title': goTitle(); break;
+      case 'continue': continueRun(); break;
+      case 'newgame': askNewGame(); break;
+      case 'gloss': showGlossary(); break;
       case 'choose': chooseEncounter(+t.dataset.i); break;
       case 'next': advance(); break;
       case 'deck': showDeck(run.deck, `Колода · ${run.deck.length}`); break;
