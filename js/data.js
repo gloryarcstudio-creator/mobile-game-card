@@ -604,6 +604,16 @@
       name: 'Недоставленное письмо', cost: null, type: 'status', rarity: 'status', art: 'dread',
       desc: () => 'Нельзя разыграть. В конце хода в руке: −2 HP.',
     },
+    // помехи мрачных героев в финале
+    ash: {
+      name: 'Зола', cost: null, type: 'status', rarity: 'status', art: 'ash',
+      desc: () => 'Нельзя разыграть. В конце хода в руке: −3 HP.',
+    },
+    stale: {
+      name: 'Чёрствый пряник', cost: 2, type: 'status', rarity: 'status', art: 'stale', exhaust: true,
+      desc: () => 'Ничего не делает.',
+      play: async () => {},
+    },
   };
 
   /* Враги: шаблон намерений повторяется по кругу.
@@ -817,6 +827,47 @@
       name: 'Король Теней', hp: 190, tier: 'boss',
       line: 'Правит всем, что не успело до заката.',
       pattern: [{ k: 'attack', v: 16 }, { k: 'snuff', v: 10 }, { k: 'attack', v: 6, hits: 3 }, { k: 'curse', card: 'dread', n: 2, then: { k: 'block', v: 18 } }, { k: 'buff', v: 3, then: { k: 'attack', v: 8 } }],
+    },
+    // ---- мрачные версии героев: финальный босс, если героя обидели в пути (js/lore.js) ----
+    dk_lamp: {
+      name: 'Погасшая Ива', hp: 185, tier: 'boss', dark: 'lamp',
+      line: 'Решила, что без света не будет и страха.',
+      pattern: [{ k: 'snuff', v: 10 }, { k: 'attack', v: 4, hits: 4 }, { k: 'curse', card: 'dread', n: 2, then: { k: 'block', v: 14 } }, { k: 'buff', v: 3, then: { k: 'attack', v: 9 } }],
+    },
+    dk_courier: {
+      name: 'Тиша Без Адреса', hp: 170, tier: 'boss', dark: 'courier',
+      line: 'Бежит без дороги и без адреса.',
+      pattern: [{ k: 'attack', v: 3, hits: 5 }, { k: 'steal', v: 10, gold: 20 }, { k: 'sap', v: 1, then: { k: 'attack', v: 6, hits: 2 } }, { k: 'debuff', v: 2, then: { k: 'attack', v: 12 } }],
+    },
+    dk_guard: {
+      name: 'Запертая Марфа', hp: 200, tier: 'boss', dark: 'guard', plating: true,
+      line: 'Закрыла мост навсегда и для всех.',
+      pattern: [{ k: 'block', v: 16 }, { k: 'attack', v: 12 }, { k: 'spikes', v: 3, then: { k: 'block', v: 8 } }, { k: 'frail', v: 2, then: { k: 'attack', v: 7, hits: 2 } }],
+    },
+    dk_stoker: {
+      name: 'Пепельный Фома', hp: 190, tier: 'boss', dark: 'stoker', boil: true,
+      line: 'Его огонь больше никого не греет.',
+      pattern: [{ k: 'attack', v: 4, hits: 3 }, { k: 'curse', card: 'ash', n: 2, then: { k: 'attack', v: 6 } }, { k: 'attack', v: 14 }, { k: 'buff', v: 2, then: { k: 'block', v: 12 } }],
+    },
+    dk_baker: {
+      name: 'Чёрствая Груня', hp: 200, tier: 'boss', dark: 'baker',
+      line: 'Больше никого не кормит.',
+      pattern: [{ k: 'block', v: 14, then: { k: 'heal', v: 10 } }, { k: 'curse', card: 'stale', n: 3, then: { k: 'attack', v: 6 } }, { k: 'attack', v: 13 }, { k: 'buff', v: 2, then: { k: 'attack', v: 4, hits: 3 } }],
+    },
+    dk_grinder: {
+      name: 'Зазубренный Савва', hp: 190, tier: 'boss', dark: 'grinder',
+      line: 'Перестал чинить и стал резать.',
+      pattern: [{ k: 'buff', v: 4, then: { k: 'block', v: 10 } }, { k: 'attack', v: 20 }, { k: 'frail', v: 2, then: { k: 'attack', v: 5, hits: 2 } }, { k: 'buff', v: 2, then: { k: 'attack', v: 9 } }],
+    },
+    dk_shepherd: {
+      name: 'Волчья Луша', hp: 185, tier: 'boss', dark: 'shepherd',
+      line: 'Её пёс стал тенью и кусает всё злее.',
+      pattern: [{ k: 'attack', v: 4, hits: 2, then: { k: 'buff', v: 1 } }, { k: 'debuff', v: 2, then: { k: 'attack', v: 8 } }, { k: 'attack', v: 3, hits: 4 }, { k: 'block', v: 10, then: { k: 'buff', v: 2 } }],
+    },
+    dk_herbalist: {
+      name: 'Горькая Ульяна', hp: 210, tier: 'boss', dark: 'herbalist',
+      line: 'Лечит теперь только себя.',
+      pattern: [{ k: 'attack', v: 9, leech: true }, { k: 'debuff', v: 2, then: { k: 'heal', v: 12 } }, { k: 'attack', v: 5, hits: 3, leech: true }, { k: 'curse', card: 'dread', n: 1, then: { k: 'block', v: 12 } }, { k: 'buff', v: 3, then: { k: 'attack', v: 10, leech: true } }],
     },
   };
 

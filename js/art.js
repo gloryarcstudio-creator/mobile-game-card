@@ -1542,6 +1542,9 @@
     sunstone: `<circle cx="50" cy="50" r="44" fill="#ffd36e" opacity=".25"/><path d="M50 4 v12 M50 84 v12 M4 50 h12 M84 50 h12 M18 18 l8 8 M74 74 l8 8 M82 18 l-8 8 M18 82 l8 -8" stroke="#ffb23e" stroke-width="5" stroke-linecap="round"/><path d="M50 20 l24 14 v32 l-24 14 l-24 -14 v-32z" fill="#ff9a2a" ${sw(4)}/><path d="M26 34 l24 12 l24 -12 M50 46 v34" fill="none" stroke="#ffe38a" stroke-width="3"/><path d="M36 32 l12 -7" stroke="#fffbe6" stroke-width="3.5" stroke-linecap="round"/>`,
     lastcandle: `<circle cx="50" cy="28" r="26" fill="#ffd36e" opacity=".3"/>${flameShape(50, 12, 0.7)}<path d="M50 30 v8" ${sw(3)}/><rect x="39" y="38" width="22" height="48" rx="2" fill="#f2e6c9" ${sw(4)}/><path d="M39 44 q4 10 8 2 q3 8 6 0 q4 6 8 -4" fill="#fff8e6" ${sw(2.5)}/><path d="M46 52 v26" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><path d="M22 86 h56 l-6 9 h-44z" fill="#c98a2b" ${sw(3.5)}/>`,
     magicbag: `<g fill="#ffe38a">${star4(30, 20, 7)}${star4(66, 14, 9)}${star4(84, 34, 6)}</g><path d="M30 46 Q50 22 70 46" fill="none" ${sw(6)}/><path d="M30 46 Q50 22 70 46" fill="none" stroke="#c98a2b" stroke-width="2.5"/><path d="M16 46 h68 l4 38 q0 6 -6 6 h-64 q-6 0 -6 -6z" fill="#5a3a7a" ${sw(4)}/><path d="M14 52 h72 v16 h-72z" fill="#6e4a94" ${sw(3)}/><rect x="43" y="56" width="14" height="12" rx="2" fill="#e6c45a" ${sw(2.5)}/><g fill="#ffe38a"><circle cx="28" cy="78" r="2"/><circle cx="70" cy="80" r="2.5"/><circle cx="52" cy="84" r="1.8"/></g>`,
+    // помехи мрачных героев: Зола и Чёрствый пряник
+    ash: `<path d="M14 80 q8 -30 24 -26 q4 -22 22 -18 q18 -8 26 12 q12 8 4 32z" fill="#4a4652" ${sw(4)}/><path d="M30 70 q10 -6 18 0 M54 60 q8 -4 14 2" stroke="#6e6a78" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="40" cy="62" r="4" fill="#ff8a3a"/><circle cx="64" cy="70" r="3" fill="#ffb84a"/><circle cx="52" cy="48" r="2.5" fill="#ff8a3a"/><path d="M36 30 q-4 -10 4 -18 M60 26 q6 -8 0 -16" stroke="#8a8494" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>`,
+    stale: `<path d="M50 14 q12 0 12 12 q0 8 -6 10 h18 q8 0 8 8 q0 8 -8 8 h-12 l8 26 q2 8 -6 8 q-6 0 -8 -6 l-6 -16 l-6 16 q-2 6 -8 6 q-8 0 -6 -8 l8 -26 h-12 q-8 0 -8 -8 q0 -8 8 -8 h18 q-6 -2 -6 -10 q0 -12 12 -12z" fill="#8a6a4a" ${sw(4)}/><circle cx="45" cy="25" r="2.5" fill="${O}"/><circle cx="55" cy="25" r="2.5" fill="${O}"/><path d="M44 32 q6 -4 12 0" stroke="${O}" stroke-width="2.5" fill="none"/><path d="M30 50 l8 -4 M62 46 l8 4 M42 60 l6 6 M58 64 l-4 6" stroke="#5a4232" stroke-width="3" stroke-linecap="round"/><circle cx="80" cy="20" r="3" fill="#9fc3a0"/><circle cx="24" cy="76" r="2.5" fill="#9fc3a0"/>`,
   };
 
   function icon(name) {
@@ -1580,6 +1583,33 @@
     const body = mode === 'off' ? spk + x : mode === 'sfx' ? spk + `<path d="M25 18 q3 4 0 8" fill="none" stroke="#f3d27c" stroke-width="2.5" stroke-linecap="round"/>` + note(true) : spk + waves;
     return svg('0 0 40 40', body, 'snd-ico');
   }
+
+  /* Мрачные версии героев (финальные боссы): тот же рисунок героя в синей тени,
+     со светящимися глазами, хмурым ртом и теневой короной Короля Теней */
+  function darkHero(look) {
+    const L = LOOKS[look] || LOOKS.lamp;
+    const body = hero(look).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+    const id = `dk-${look}`;
+    const glow = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r * 2.2}" fill="url(#${id}-g)"/><ellipse cx="${x}" cy="${y}" rx="${r * 0.65}" ry="${r}" fill="#f2e6ff"/>`;
+    return svg('0 0 200 270', `
+      <defs>
+        <filter id="${id}-f" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.22 0.18 0.1 0 0.02  0.14 0.18 0.16 0 0.03  0.3 0.3 0.42 0 0.1  0 0 0 1 0"/></filter>
+        <radialGradient id="${id}-g"><stop offset="0" stop-color="#e2c8ff"/><stop offset="0.45" stop-color="#9a6ae0" stop-opacity=".75"/><stop offset="1" stop-color="#9a6ae0" stop-opacity="0"/></radialGradient>
+      </defs>
+      <ellipse cx="100" cy="262" rx="76" ry="9" fill="#0e0a1c" opacity=".75"/>
+      <path d="M44 262 q-18 -34 4 -66 q-2 30 16 46 M156 262 q18 -34 -4 -66 q2 30 -16 46" fill="#1e1838" opacity=".9"/>
+      <g transform="translate(0 26)">
+        <g filter="url(#${id}-f)">${body}
+          <ellipse cx="100" cy="115" rx="9" ry="4.5" fill="${L.beard ? L.hair : '#f3cda6'}"/>
+          <path d="M93 118 Q100 112 107 118" ${sw(3)} fill="none"/>
+        </g>
+        ${glow(87, 96, 6)}${glow(113, 96, 6)}
+        ${L.dog ? `${glow(153, 178, 2.6)}${glow(167, 178, 2.6)}` : ''}
+        <path d="M68 ${L.hat ? -2 : 30} l8 -22 l10 15 l14 -24 l14 24 l10 -15 l8 22 q-32 9 -64 0z" fill="#1e1838" stroke="#0b0816" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="100" cy="${L.hat ? -14 : 18}" r="4" fill="#c9a0ff"/>
+      </g>`);
+  }
+  Object.keys(LOOKS).forEach((look) => { enemiesArt[`dk_${look}`] = () => darkHero(look); });
 
   window.Art = { soundIcon, background, mixSky, sampleSky, hero, enemy: (id) => (enemiesArt[id] || enemiesArt.inkcat)(), icon, intentIcon, flame: (s = 1) => svg('0 0 100 100', flameShape(50, 44, s * 1.2), 'icon'), dog: (o = {}) => svg('-34 -34 68 68', dogHead(0, 0, 1, o), 'icon') };
 })();

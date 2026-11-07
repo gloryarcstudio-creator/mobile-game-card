@@ -2,6 +2,7 @@
 (function () {
   const { CARDS, ENEMIES, RELICS, EVENTS, CLASSES, DIFFICULTIES } = window.Data;
   const STORY = window.Story.story;
+  const LORE = window.Lore;
   const SKY = window.Story.sky;
   document.title = STORY.title;
   // Путь делится на стадии, последний уровень каждой стадии — её босс
@@ -69,6 +70,7 @@
     ['Талисманы босса', 'После босса стадии можно выбрать один из трёх сильных талисманов. У многих есть цена.'],
     ['Редкость', 'Карты и талисманы бывают пяти редкостей: обычные (серый камень), необычные (зелёный), редкие (синий), эпические (фиолетовый) и легендарные (золотой). Чем сильнее противник, тем чаще после него выпадают редкие. Легендарную карту можно взять в колоду только одну.'],
     ['Приёмы врагов', 'У многих врагов есть свои хитрости: матрёшки раскрываются, самовар закипает, туман глушит удары, шутиха взрывается. Приёмы видны значками под именем врага, нажмите на значок, чтобы прочитать.'],
+    ['Разговоры', 'Некоторые враги заговаривают с героем до боя: кого-то можно уговорить, прогнать или разозлить, а побеждённые иногда просят пощады. В пути встречаются другие герои. Друзья помогут в финале, а обиженный герой может уйти в Тень и стать финальным боссом.'],
     ['Герои', 'У каждого героя своя колода, особенность, карты и талисманы, которые выпадают только ему. Общие карты под его билд в наградах и лавке встречаются чаще.'],
   ];
   // пояснение по русскому термину (GL) и список для справочника (GLOSS) — на языке игры
@@ -109,7 +111,7 @@
   // snow — снегопад (выключение экономит заряд), oneTap — карта разыгрывается с одного касания
   // cls — последний выбранный герой
   // diff — последний выбранный уровень сложности (0..4, по умолчанию «Обычный маршрут»)
-  const SETTINGS = loadJSON(SETTINGS_KEY, { skipIntro: false, fast: false, snow: true, oneTap: false, cls: 'lamp', diff: 1 });
+  const SETTINGS = loadJSON(SETTINGS_KEY, { skipIntro: false, fast: false, snow: true, oneTap: false, lines: true, cls: 'lamp', diff: 1 });
   if (!CLASSES[SETTINGS.cls]) SETTINGS.cls = 'lamp';
   if (!DIFFICULTIES[SETTINGS.diff]) SETTINGS.diff = 1;
   const STATS_DEF = { runs: 0, wins: 0, losses: 0, best: 0, fights: 0, elites: 0, bosses: 0, cards: 0 };
@@ -267,6 +269,10 @@
       bosses: STAGES.map((g) => pick(g.boss)),
       // учёт встреч, чтобы враги не повторялись
       seen: {}, offered: {}, recent: [], lastOffered: [],
+      // встречи и отношения (js/lore.js): rel — отношение героев, fallen — ушедшие в Тень,
+      // tone — сколько раз решили миром, разозлили врага и прошли мимо чужой беды
+      rel: {}, fallen: [], met: [], meetLog: [], secrets: [], grudge: {}, tone: { peace: 0, anger: 0, pass: 0 },
+      meetPlan: planMeetings(cls),
     };
     setBg();
     goMap();
@@ -294,6 +300,7 @@
     // сохранения до появления героев — это забег Ивы
     if (!run.cls) { run.cls = 'lamp'; if (!run.relics.includes('ivalamp')) run.relics.unshift('ivalamp'); }
     uidSeq = Math.max(uidSeq, ...run.deck.map((c) => c.uid + 1));
+    ensureLore();
     setBg();
     SND.music(mapTrack());
     const p = s.pending;
@@ -307,6 +314,10 @@
     else if (p.t === 'next') advance();
     else if (p.t === 'reward') renderReward(p.r);
     else if (p.t === 'bossrelic') goBossRelic(p.opts);
+    else if (p.t === 'meet') goMeet(p.hero);
+    else if (p.t === 'talk') goTalk(p.enemy, p.tier);
+    else if (p.t === 'after') goAfter(p.tier, p.enemy);
+    else if (p.t === 'afterdone') afterNext(p.tier);
     else goMap();
   }
 
@@ -494,6 +505,7 @@
     ['fast', 'Анимации', 'Обычные', 'Быстрые', false],
     ['snow', 'Снегопад', 'Идёт', 'Нет', true],
     ['oneTap', 'Розыгрыш карты', 'В 2 касания', 'В 1 касание', false],
+    ['lines', 'Реплики врагов', 'Показывать', 'Скрывать', true],
   ].map(([key, ...words]) => [key, ...words.slice(0, 3).map((w) => tr(w)), words[3]]);
 
   function settingsHTML() {
@@ -792,6 +804,13 @@
     const s = run.step;
     const si = stageOf(s);
     const g = STAGES[si];
+    // перед финальным боссом обязательно лавка, потом костёр (run.finalPrep: shop → rest → done)
+    if (isFinalStep(s)) {
+      const fp = run.finalPrep || 'shop';
+      if (fp === 'shop') return [{ t: 'shop', last: true }];
+      if (fp === 'rest') return [{ t: 'rest', last: true }];
+      return [{ t: 'boss', enemy: finalBoss() }];
+    }
     if (s === g.end) return [{ t: 'boss', enemy: run.bosses[si] }];
     const k = s - g.start; // номер уровня внутри стадии
     const normals = k < 8 && g.early.length ? g.early : g.normals;
@@ -815,7 +834,46 @@
       else pool.push({ t });
     }
     if (!pool.some((p) => p.t === 'fight' || p.t === 'elite')) pool[rnd(0, 2)] = fight();
+    // встреча с другим героем занимает место события, лавки или привала (если их нет — последнего боя)
+    const mh = run.meetPlan && run.meetPlan[s];
+    if (mh && !(run.met || []).includes(mh)) {
+      let i = pool.findIndex((p) => p.t !== 'fight' && p.t !== 'elite');
+      if (i < 0) i = pool.length - 1;
+      pool[i] = { t: 'meet', hero: mh };
+    }
     return done(pool);
+  }
+
+  /* Встречи с другими героями (js/lore.js): по две на стадию, на случайных уровнях,
+     но не в начале стадии и не на развилке перед боссом. Себя герой не встречает. */
+  function planMeetings(cls) {
+    const plan = {};
+    if (STAGES.length < 3) return plan; // только в основном сюжете
+    [0, 1].forEach((si) => {
+      const g = STAGES[si];
+      const heroes = shuffle(Object.keys(LORE.MEET).filter((h) => h !== cls && LORE.MEET[h].stage === si)).slice(0, 2);
+      const part = Math.floor((g.len - 6) / 2);
+      heroes.forEach((h, i) => { const a = g.start + 3 + i * part; plan[rnd(a, a + part - 2)] = h; });
+    });
+    return plan;
+  }
+
+  /* Финальный босс зависит от пути (подробно — в js/lore.js и документе с лором):
+     обиженный герой выходит мрачной версией себя; кто дважды прошёл мимо чужой беды,
+     встретит Пустого Почтальона; кто чаще решал миром, чем злил, — Ночного Кита; иначе — Король Теней */
+  function finalBoss() {
+    if (run.final) return run.final;
+    let id = run.bosses[STAGES.length - 1];
+    if (STAGES.length > 2) {
+      const fallen = (run.fallen || []).filter((h) => h !== run.cls && ENEMIES[`dk_${h}`]);
+      const t = run.tone || {};
+      if (fallen.length) id = `dk_${fallen[fallen.length - 1]}`;
+      else if ((t.pass || 0) >= 2) id = 'hollowpost';
+      else if ((t.peace || 0) >= 3 && t.peace > (t.anger || 0)) id = 'skywhale';
+      else id = 'shadowking';
+    }
+    run.final = id;
+    return id;
   }
 
   /* Выбор врага без надоедливых повторов: недавние бои, враги с прошлого шага и уже
@@ -842,12 +900,17 @@
     } else if (o.t === 'event') {
       const ev = EVENTS.find((e) => e.id === o.ev);
       title = ev.title; art = Art.icon(ev.art); text = tr('Что-то происходит впереди…'); tag = tr('Событие');
+    } else if (o.t === 'meet') {
+      const h = CLASSES[o.hero];
+      title = tr(LORE.MEET[o.hero].title); art = `<div class="enc-char">${heroArt(o.hero)}</div>`; text = h.who.charAt(0).toUpperCase() + h.who.slice(1); tag = tr('Встреча');
     } else if (o.t === 'shop') {
-      title = tr('Лавка Игольника'); art = `<div class="enc-char">${Art.enemy('hedgehog')}</div>`; text = tr('Ёж торгует всем, что нашёл в сугробах.'); tag = tr('Лавка');
+      title = tr(o.last ? 'Лавка у последней двери' : 'Лавка Игольника'); art = `<div class="enc-char">${Art.enemy('hedgehog')}</div>`;
+      text = tr(o.last ? 'Ёж Игольник догнал тебя со своим прилавком.' : 'Ёж торгует всем, что нашёл в сугробах.'); tag = tr('Лавка');
     } else if (o.t === 'chest') {
       title = tr('Сундук-соня'); art = Art.icon('chest'); text = tr('Сундук храпит. Внутри что-то звенит.'); tag = tr('Сундук');
     } else if (o.t === 'rest') {
-      title = tr('Костёр'); art = Art.icon('fire'); text = tr('Тёплый огонь. Можно передохнуть.'); tag = tr('Привал');
+      title = tr(o.last ? 'Последний костёр' : 'Костёр'); art = Art.icon('fire');
+      text = tr(o.last ? 'Последний привал перед дверью адресата.' : 'Тёплый огонь. Можно передохнуть.'); tag = tr('Привал');
     }
     return `<button class="enc t-${o.t}" data-act="choose" data-i="${i}" style="--d:${i * 90}ms">
       <div class="enc-title">${title}</div>
@@ -859,6 +922,7 @@
 
   function goMap() {
     C = null; busy = false;
+    run.fmod = null; // уговоры и дразнилки из разговора действуют только на один бой
     setBg();
     SND.music(mapTrack());
     if (!run.choices) run.choices = genChoices();
@@ -883,7 +947,8 @@
     const o = run.choices[i];
     run.choices = null;
     save(o);
-    if (o.t === 'fight' || o.t === 'elite' || o.t === 'boss') startCombat(o.enemy, o.t);
+    if (o.t === 'fight' || o.t === 'elite' || o.t === 'boss') { if (!preFight(o)) startCombat(o.enemy, o.t); }
+    else if (o.t === 'meet') goMeet(o.hero);
     else if (o.t === 'event') goEvent(EVENTS.find((e) => e.id === o.ev));
     else if (o.t === 'shop') goShop();
     else if (o.t === 'chest') goChest();
@@ -891,6 +956,13 @@
   }
 
   function advance() {
+    // на последнем уровне сначала лавка, потом костёр, и только потом финальный босс
+    if (isFinalStep(run.step) && run.finalPrep !== 'done') {
+      run.finalPrep = (run.finalPrep || 'shop') === 'shop' ? 'rest' : 'done';
+      run.choices = null;
+      SND.sfx('step'); goMap();
+      return;
+    }
     run.step++; STATS.best = Math.max(STATS.best, run.step + 1); saveStats();
     ach.add('steps'); ach.max('maxgold', run.gold); ach.max('maxhp', run.maxHp);
     SND.sfx('step'); goMap();
@@ -1029,6 +1101,264 @@
     $('.herobar').outerHTML = heroBar(false);
   }
 
+  /* ---------- Разговоры, встречи и пощада (тексты и отношения — js/lore.js) ---------- */
+  const SAY = LORE.SAY;
+  const mainStory = () => STAGES.length > 2;
+  // поля лора у старых сохранений
+  function ensureLore() {
+    run.rel = run.rel || {}; run.fallen = run.fallen || []; run.met = run.met || []; run.meetLog = run.meetLog || [];
+    run.secrets = run.secrets || []; run.grudge = run.grudge || {}; run.tone = run.tone || { peace: 0, anger: 0, pass: 0 };
+    run.meetPlan = run.meetPlan || {};
+  }
+  // отношение врага к герою забега: like / fear / hate; обида за «забрать всё» — grudge
+  function attOf(id) {
+    if (!mainStory()) return null;
+    const a = LORE.ATT[id] || {};
+    const k = ['like', 'fear', 'hate'].find((x) => a[x] === run.cls) || null;
+    return k || (run.grudge && run.grudge[id] ? 'grudge' : null);
+  }
+  const secretOf = (id) => { const sc = LORE.SECRET[run.cls]; return sc && sc.enemy === id && !(run.secrets || []).includes(id) ? sc : null; };
+  const lineOf = (id, key) => { const v = SAY[id] && SAY[id][key]; return Array.isArray(v) ? pick(v) : v || null; };
+  const quote = (t) => tr('«{t}»', { t: tr(t) });
+  const calmPrice = (tier) => (tier === 'boss' ? 40 : tier === 'elite' ? 25 : 15);
+  const bribePrice = () => 12 + Math.floor(run.step / 2);
+  // монеты за победу (без множителей разговора)
+  const goldFor = (tier) => Math.round((tier === 'boss' ? rnd(50, 60) : tier === 'elite' ? rnd(30, 40) : rnd(12, 20)) * DIFF().gold * (hasRelic('luckystamp') ? 1.2 : 1)) + (hasRelic('envelope') ? 8 : 0);
+  // друзья забега: герои, которым помогли, и те, кто вернулся из Тени
+  const friendsOf = () => Object.keys(run.rel || {}).filter((h) => h !== run.cls && run.rel[h] >= 2 && !(run.fallen || []).includes(h) && LORE.FRIEND[h]);
+
+  // заговорит ли враг до боя: тайна, финал и обида — всегда, отношение к герою — часто, остальные — изредка
+  function preFight(o) {
+    if (!mainStory() || !SAY[o.enemy]) return false;
+    const att = attOf(o.enemy);
+    const show = (o.t === 'boss' && isFinalStep(run.step)) || secretOf(o.enemy)
+      || (att && Math.random() < (o.t === 'boss' || att === 'grudge' ? 1 : 0.6))
+      || (!att && o.t === 'fight' && Math.random() < 0.15);
+    if (!show) return false;
+    goTalk(o.enemy, o.t);
+    return true;
+  }
+
+  function talkOptions(id, tier, att) {
+    const e = ENEMIES[id];
+    const ops = [{ k: 'fight', text: 'В бой', hint: tr('Обычный бой') }];
+    const sc = secretOf(id);
+    if (sc) ops.push({ k: 'secret', text: sc.text, hint: tr(sc.hint), can: !(sc.effect.gold < 0) || run.gold >= -sc.effect.gold, secret: true });
+    if (e.dark) ops.push({ k: 'forgive', text: LORE.FORGIVE.text, hint: tr(LORE.FORGIVE.hint), can: run.maxHp > 12 });
+    if (att === 'like') ops.push(tier === 'boss' ? { k: 'heart', text: 'Поговорить по душам', hint: tr('Босс Ослаблен на 2 хода') }
+      : { k: 'peace', text: 'Договориться миром', hint: tr(tier === 'elite' ? 'Без боя, талисман' : 'Без боя, монеты и +6 HP') });
+    if (att === 'fear' && tier !== 'boss') ops.push({ k: 'scare', text: 'Прогнать', hint: tr('Без боя, половина монет') });
+    if (att === 'hate' || att === 'grudge') {
+      ops.push({ k: 'calm', text: 'Успокоить', hint: tr('−{n} монет, враг не злится', { n: calmPrice(tier) }), can: run.gold >= calmPrice(tier) });
+      ops.push({ k: 'sass', text: 'Ответить дерзко', hint: tr('Сила врага +3, монет вдвое больше') });
+    } else ops.push({ k: 'taunt', text: 'Подразнить', hint: tr('Сила врага +2, монет в полтора раза больше') });
+    if (!att && !sc && tier === 'fight') ops.push({ k: 'bribe', text: 'Откупиться', hint: tr('−{n} монет, без боя', { n: bribePrice() }), can: run.gold >= bribePrice() });
+    return ops;
+  }
+
+  // разговор до боя: враг говорит, герой выбирает ответ
+  function goTalk(id, tier) {
+    ensureLore();
+    save({ t: 'talk', enemy: id, tier });
+    const e = ENEMIES[id];
+    const att = attOf(id);
+    const line = e.dark ? LORE.DARK[e.dark].intro : att && att !== 'grudge' ? lineOf(id, att) : att === 'grudge' ? LORE.GRUDGE : (lineOf(id, 'start') || LORE.CHALLENGE);
+    const opts = talkOptions(id, tier, att);
+    screen.className = 'scr-talk';
+    screen.dataset.enemy = id; screen.dataset.tier = tier;
+    screen.innerHTML = `${topBar()}
+      <div class="talk-art tk-${e.tier}">${Art.enemy(id)}</div>
+      <div class="ev-box talk-box"><h2>${e.name}</h2><p>${quote(line)}</p></div>
+      <div class="scrolls">${opts.map((op) => `<button class="scroll ${op.can === false ? 'off' : ''} ${op.secret ? 'secret' : ''}" data-act="talkopt" data-k="${op.k}" ${op.can === false ? 'disabled' : ''}>${tr(op.text)}<small>${op.hint}</small></button>`).join('')}</div>
+      ${heroBar(false)}`;
+  }
+
+  // ответ в разговоре; mod — как разговор изменит бой (действует до награды за него)
+  function talkChoose(k) {
+    const id = screen.dataset.enemy; const tier = screen.dataset.tier;
+    const e = ENEMIES[id];
+    const mod = { str: 0, weak: 0, goldMul: 1, hpMul: 1, stun: 0, talked: true };
+    let reply = null; let narr = null; let next = 'fight'; let fightId = id;
+    if (k !== 'fight') ach.add('talks');
+    if (k === 'taunt' || k === 'sass') {
+      mod.str = k === 'sass' ? 3 : 2; mod.goldMul = k === 'sass' ? 2 : 1.5;
+      reply = pick(LORE.TAUNTED); run.tone.anger++; ach.add('taunts');
+    } else if (k === 'calm') {
+      run.gold -= calmPrice(tier); mod.calm = true; if (run.grudge) delete run.grudge[id]; reply = 'Ладно, ладно. Уже не злюсь.';
+    } else if (k === 'heart') {
+      mod.weak = 2; reply = lineOf(id, 'peace') || 'Ладно… только ради тебя.'; run.tone.peace++;
+    } else if (k === 'peace') {
+      next = 'peace'; reply = lineOf(id, 'peace') || 'Ладно, иди с миром.'; run.tone.peace++; ach.add('peace');
+      if (tier === 'elite') evApi.giveRelic(); else { const g = goldFor('fight'); run.gold += g; evApi.heal(6); toast(`${coins(g)} · +6 HP`); }
+    } else if (k === 'scare') {
+      next = 'peace'; ach.add('scares'); const g = Math.ceil(goldFor(tier) / 2); run.gold += g;
+      narr = tr('{name} убегает, бросив {n} {n|монету|монеты|монет}.', { name: e.name, n: g });
+    } else if (k === 'bribe') {
+      run.gold -= bribePrice(); next = 'peace'; narr = tr('Монеты звякнули, и {name} уступает дорогу.', { name: e.name });
+    } else if (k === 'secret') {
+      const sc = secretOf(id); const fx = sc.effect;
+      run.secrets.push(id); ach.put('secrets', run.cls); ach.add('peace'); run.tone.peace++;
+      narr = tr(sc.res);
+      if (fx.gold) run.gold += fx.gold;
+      if (fx.maxHp) { run.maxHp += fx.maxHp; run.hp += fx.maxHp; }
+      if (fx.heal) evApi.heal(fx.heal);
+      if (fx.peace) { next = tier === 'boss' ? 'bosspeace' : 'peace'; if (tier === 'elite') evApi.giveRelic(); }
+      else { mod.hpMul = fx.hp || 1; mod.weak = fx.weak || 0; mod.stun = fx.stun || 0; }
+    } else if (k === 'forgive') {
+      run.maxHp -= 10; run.hp = Math.min(run.hp, run.maxHp);
+      run.rel[e.dark] = 2; run.fallen = run.fallen.filter((h) => h !== e.dark); run.forgiven = e.dark;
+      run.final = 'shadowking'; fightId = 'shadowking';
+      ach.flag('forgive'); narr = tr(LORE.FORGIVE.res);
+    }
+    if (next === 'fight') {
+      run.fmod = mod;
+      save({ t: tier, enemy: fightId }); // выход посреди боя вернёт в этот бой, а не к выбору ответа
+      if (!reply && !narr) { startCombat(fightId, tier); return; }
+      screen.dataset.fight = fightId;
+    } else save({ t: 'next' });
+    if (next === 'bosspeace') save({ t: 'bossrelic', opts: null });
+    $('.talk-box p').innerHTML = reply ? quote(reply) : narr;
+    if (fightId !== id) { $('.talk-box h2').textContent = ENEMIES[fightId].name; $('.talk-art').innerHTML = Art.enemy(fightId); }
+    const act = next === 'fight' ? 'talkgo' : next === 'bosspeace' ? 'talkboss' : 'next';
+    $('.scrolls').innerHTML = `<button class="scroll" data-act="${act}">${tr(next === 'fight' ? 'В бой' : 'Дальше')}</button>`;
+    $('.topbar').outerHTML = topBar();
+    $('.herobar').outerHTML = heroBar(false);
+  }
+
+  /* После боя побеждённый враг иногда просит пощады: подарок или больше монет, но обида на весь забег */
+  const wantsPlea = (id, tier) => mainStory() && SAY[id] && SAY[id].plea && (tier === 'boss' || Math.random() < 0.4);
+  function goAfter(tier, id) {
+    save({ t: 'after', tier, enemy: id });
+    const e = ENEMIES[id];
+    screen.className = 'scr-talk';
+    screen.dataset.enemy = id; screen.dataset.tier = tier;
+    screen.innerHTML = `${topBar()}
+      <div class="talk-art beaten tk-${e.tier}">${Art.enemy(id)}</div>
+      <div class="ev-box talk-box"><h2>${e.name}</h2><p>${quote(SAY[id].plea)}</p></div>
+      <div class="scrolls">
+        <button class="scroll" data-act="spare">${tr('Пощадить')}<small>${tr(tier === 'boss' ? 'Враг отдаст талисман' : 'Враг оставит подарок')}</small></button>
+        <button class="scroll" data-act="takeall">${tr('Забрать всё')}<small>${tr('Монет в полтора раза больше, но враг запомнит обиду')}</small></button>
+      </div>
+      ${heroBar(false)}`;
+  }
+  function afterChoose(spare) {
+    const id = screen.dataset.enemy; const tier = screen.dataset.tier;
+    let msg;
+    if (spare) {
+      run.tone.peace++; ach.add('spares');
+      if (tier === 'boss') evApi.giveRelic();
+      else {
+        const gift = rnd(0, 2);
+        if (gift === 0) { evApi.heal(8); toast('+8 HP'); } else if (gift === 1 && upgradeRandom(1)) { /* всплывашка уже показана */ } else { run.gold += 15; toast(coins(15)); }
+      }
+      SND.sfx('heal');
+      msg = tr('Ты {f|отпустила|отпустил} врага, и на прощание он оставил тебе подарок.');
+    } else {
+      run.tone.anger++; run.grudge[id] = 1;
+      run.fmod = { ...(run.fmod || {}), goldMul: ((run.fmod && run.fmod.goldMul) || 1) * 1.5 };
+      SND.sfx('coin');
+      msg = tr('Ты {f|забрала|забрал} всё до последней монетки. Враг это запомнит.');
+    }
+    save({ t: 'afterdone', tier });
+    $('.talk-box p').textContent = msg;
+    $('.scrolls').innerHTML = `<button class="scroll" data-act="afternext">${tr('Дальше')}</button>`;
+    $('.topbar').outerHTML = topBar();
+    $('.herobar').outerHTML = heroBar(false);
+  }
+  const afterNext = (tier) => (tier === 'boss' ? goBossRelic() : goReward(tier));
+
+  /* Встреча с другим героем: помочь, пройти мимо или обидеть; у связанных героев есть свой ответ */
+  function meetOptions(h) {
+    const m = LORE.MEET[h];
+    const ops = [];
+    const tie = m.ties && m.ties[run.cls];
+    if (tie) ops.push({ k: 'tie', ...tie, secret: true });
+    ops.push({ k: 'help', ...m.help });
+    ops.push({ k: 'pass', text: 'Пройти мимо', hint: tr('{name} немного обидится', { name: CLASSES[h].name }), fx: { rel: -1 }, ...m.pass });
+    ops.push({ k: 'hurt', ...m.hurt });
+    for (const o of ops) {
+      const fx = o.fx || {};
+      o.can = !(fx.gold < 0 && run.gold < -fx.gold) && !(fx.hp && run.hp <= fx.hp) && !(fx.maxHp < 0 && run.maxHp <= 12);
+      if (o.k !== 'pass') o.hint = tr(o.hint);
+    }
+    return ops;
+  }
+  function goMeet(h) {
+    ensureLore();
+    const m = LORE.MEET[h];
+    if (!run.met.includes(h)) run.met.push(h);
+    ach.put('met', h);
+    screen.className = 'scr-meet';
+    screen.dataset.hero = h;
+    screen.innerHTML = `${topBar()}
+      <div class="talk-art hero">${heroArt(h)}</div>
+      <div class="ev-box talk-box"><h2>${tr(m.title)}</h2><p>${tr(m.text)}</p></div>
+      <div class="scrolls">${meetOptions(h).map((o) => `<button class="scroll ${o.can ? '' : 'off'} ${o.secret ? 'secret' : ''}" data-act="meetopt" data-k="${o.k}" ${o.can ? '' : 'disabled'}>${tr(o.text)}<small>${o.hint}</small></button>`).join('')}</div>
+      ${heroBar(false)}`;
+  }
+  function relChange(h, d) {
+    run.rel[h] = (run.rel[h] || 0) + d;
+    const name = CLASSES[h].name;
+    if (run.rel[h] <= -2 && !run.fallen.includes(h)) { run.fallen.push(h); ach.flag('betray'); SND.sfx('snuff'); toast(tr('Тень коснулась героя: {name}', { name })); }
+    else if (d > 0 && run.rel[h] >= 2) { SND.sfx('relic'); toast(tr('Новый друг: {name}', { name })); }
+  }
+  function meetChoose(k) {
+    const h = screen.dataset.hero;
+    const m = LORE.MEET[h];
+    const o = meetOptions(h).find((x) => x.k === k);
+    if (!o || !o.can) return;
+    const fx = o.fx || {};
+    if (fx.gold) run.gold += fx.gold;
+    if (fx.hp) evApi.damage(fx.hp);
+    if (fx.heal) evApi.heal(fx.heal);
+    if (fx.maxHp) { run.maxHp += fx.maxHp; run.hp = Math.min(run.hp, run.maxHp); }
+    if (fx.relic) evApi.giveRelic();
+    if (fx.upRandom) upgradeRandom(fx.upRandom);
+    if (k === 'pass') run.tone.pass++;
+    if (k === 'help' || k === 'tie') ach.add('helps');
+    run.meetLog.push(k);
+    relChange(h, fx.rel || 0);
+    const finish = () => {
+      save({ t: 'next' });
+      screen.innerHTML = `${topBar()}
+        <div class="talk-art hero">${heroArt(h)}</div>
+        <div class="ev-box talk-box"><h2>${tr(m.title)}</h2><p>${tr(o.res)}</p></div>
+        <div class="scrolls"><button class="scroll" data-act="next">${tr('Дальше')}</button></div>
+        ${heroBar(false)}`;
+    };
+    if (fx.up) upgradeFlow(() => finish()); else finish();
+  }
+
+  /* Реплика врага в бою: облачко над головой (выключается в настройках) */
+  function say(text, ms = 2600) {
+    if (!text || SETTINGS.lines === false || !C) return;
+    const z = $('.enemy-zone');
+    if (!z) return;
+    z.querySelectorAll('.saybub').forEach((b) => b.remove());
+    const b = document.createElement('div');
+    b.className = 'saybub';
+    b.textContent = tr(text);
+    z.appendChild(b);
+    ach.add('lines');
+    setTimeout(() => b.remove(), SETTINGS.fast ? ms * 0.7 : ms);
+  }
+
+  /* Друзья помогают в начале финального боя (js/lore.js, FRIEND) */
+  async function friendHelp() {
+    const fr = C.friends;
+    if (!fr.length) return;
+    toast(tr('Друзья рядом: {list}', { list: fr.map((h) => CLASSES[h].name).join(', ') }));
+    if (fr.length >= 3) ach.flag('friends3');
+    if (fr.includes('guard')) api.block(12);
+    if (fr.includes('baker')) { evApi.heal(10); FX.play('heal'); }
+    if (fr.includes('stoker')) { C.enemy.burn += 6; FX.play('fire', 'enemy'); }
+    if (fr.includes('herbalist')) { C.enemy.weak += 3; FX.play('weak', 'enemy'); }
+    if (fr.includes('shepherd')) { C.dog = Math.max(C.dog, 3); FX.play('growl'); }
+    if (fr.includes('grinder')) api.sharpen(2, true);
+    renderCombat();
+    if (fr.includes('lamp')) await api.flame(2);
+  }
+
   /* ---------- Лавка ---------- */
   function goShop(saved) {
     const disc = (n) => Math.round(n * (hasRelic('coupon') ? 0.75 : 1));
@@ -1039,10 +1369,12 @@
     const rid = pickRelic();
     const shop = saved || { cards, relic: rid ? { id: rid, price: disc({ common: 90, uncommon: 108, rare: 125, epic: 150, legendary: 190 }[RELICS[rid].tier]), sold: false } : null, tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false } };
     screen.className = 'scr-shop';
+    const last = isFinalStep(run.step); // лавка у последней двери
+    const bought = () => { if (last) ach.flag('finalbuy'); };
     const render = () => {
       save({ t: 'shop', shop });
       screen.innerHTML = `${topBar()}
-        <div class="shopkeeper">${Art.enemy('hedgehog')}<div class="bubble">${tr('Всё по-честному! Почти.')}</div></div>
+        <div class="shopkeeper">${Art.enemy('hedgehog')}<div class="bubble">${tr(last ? 'Последняя лавка перед дверью! Бери, не стесняйся.' : 'Всё по-честному! Почти.')}</div></div>
         <div class="shop-cards">${shop.cards.map((c, i) => `<div class="ware ${c.sold ? 'sold' : ''}">${cardHTML(c.id, 'shopcard', `data-act="buy" data-i="${i}"`)}<div class="price ${run.gold < c.price ? 'poor' : ''}">${Art.icon('coin')}${c.price}</div></div>`).join('')}</div>
         <div class="shop-services">
           ${shop.relic ? `<button class="svc ${shop.relic.sold ? 'sold' : ''}" data-act="buyrelic">${Art.icon(RELICS[shop.relic.id].art)}<span><b>${RELICS[shop.relic.id].name}<em class="rtier ${RELICS[shop.relic.id].tier}">${TIER_LABEL[RELICS[shop.relic.id].tier]}</em></b><small>${RELICS[shop.relic.id].desc}</small></span><i class="${run.gold < shop.relic.price ? 'poor' : ''}">${shop.relic.price}</i></button>` : ''}
@@ -1056,7 +1388,7 @@
     const pay = (item) => {
       if (item.sold) return false;
       if (run.gold < item.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return false; }
-      run.gold -= item.price; item.sold = true; ach.add('spent', item.price); SND.sfx('coin'); return true;
+      run.gold -= item.price; item.sold = true; ach.add('spent', item.price); SND.sfx('coin'); bought(); return true;
     };
     screen.onShop = (act, i) => {
       if (act === 'buy' && pay(shop.cards[i])) { ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(tr('Куплено: {name}', { name: CARDS[shop.cards[i].id].name })); }
@@ -1064,12 +1396,12 @@
       if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
       if (act === 'buyup' && !shop.up.sold) {
         if (run.gold < shop.up.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
-        upgradeFlow((ok) => { if (ok) { run.gold -= shop.up.price; shop.up.sold = true; ach.add('spent', shop.up.price); } render(); });
+        upgradeFlow((ok) => { if (ok) { run.gold -= shop.up.price; shop.up.sold = true; ach.add('spent', shop.up.price); bought(); } render(); });
         return;
       }
       if (act === 'buyremove' && !shop.remove.sold) {
         if (run.gold < shop.remove.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
-        removeCardFlow((ok) => { if (ok) { run.gold -= shop.remove.price; shop.remove.sold = true; ach.add('spent', shop.remove.price); } render(); });
+        removeCardFlow((ok) => { if (ok) { run.gold -= shop.remove.price; shop.remove.sold = true; ach.add('spent', shop.remove.price); bought(); } render(); });
         return;
       }
       render();
@@ -1103,9 +1435,19 @@
   const restHeal = () => Math.round(run.maxHp * DIFF().rest) + (hasRelic('kettle') ? 10 : 0);
   function goRest() {
     const noHeal = hasRelic('bottomless');
+    // у последнего костра собираются друзья, а обиженный герой мелькает в темноте
+    const last = isFinalStep(run.step) && mainStory();
+    let talk = tr('Костёр потрескивает. Снег вокруг тает.');
+    if (last) {
+      const fr = friendsOf();
+      const shade = finalBoss().startsWith('dk_') ? CLASSES[ENEMIES[finalBoss()].dark] : null;
+      talk = fr.length ? `${tr('К костру подсели друзья:')}<span class="friends">${fr.map((h) => `<span class="frow"><span class="fport">${heroArt(h)}</span><span>${tr(LORE.FRIEND[h].line)}<small>${tr(LORE.FRIEND[h].bonus)}</small></span></span>`).join('')}</span>`
+        : tr('У костра тихо. Только ты и последний огонь перед дверью.');
+      if (shade) talk += ` <span class="shade">${tr('За деревьями мелькнула знакомая фигура: {name}. Но тень на ней гуще ночи.', { name: shade.name })}</span>`;
+    }
     screen.className = 'scr-rest';
     screen.innerHTML = `${topBar()}
-      <div class="fire-wrap">${Art.icon('fire')}<p>${tr('Костёр потрескивает. Снег вокруг тает.')}</p></div>
+      <div class="fire-wrap ${last ? 'last' : ''}">${Art.icon('fire')}<p>${talk}</p></div>
       <div class="scrolls">
         <button class="scroll ${noHeal ? 'off' : ''}" data-act="rest-heal" ${noHeal ? 'disabled' : ''}>${tr('Отдохнуть')}<small>${noHeal ? tr('Бездонная сумка не даёт присесть') : `+${restHeal()} HP${hasRelic('cocoatin') ? `, ${tr('+{n} макс.', { n: 2 })}` : ''}`}</small></button>
         <button class="scroll" data-act="rest-up">${tr('Наточить карту')}<small>${tr('Улучшить карту')}</small></button>
@@ -1301,10 +1643,16 @@
     run.recent = [...run.recent, enemyId].slice(-4);
     const scale = tier === 'boss' ? 1 : 1 + run.step * (MAX_STEPS > 20 ? 0.035 : 0.08);
     const hp = Math.round(e.hp * scale * DIFF().hp);
-    const str = (tier === 'boss' ? 0 : Math.floor(run.step / (MAX_STEPS > 20 ? 8 : 3))) - (hasRelic('frostglass') ? 2 : 0);
+    // отношение к герою и разговор до боя (js/lore.js): кто не терпит — злее, кто боится — слабее
+    const mod = run.fmod || {};
+    const att = attOf(enemyId);
+    const angry = (att === 'hate' || att === 'grudge') && !mod.calm ? 2 : 0;
+    const str = (tier === 'boss' ? 0 : Math.floor(run.step / (MAX_STEPS > 20 ? 8 : 3))) - (hasRelic('frostglass') ? 2 : 0) + angry + (mod.str || 0);
+    const weak = (hasRelic('inkwell') ? 2 : 0) + (hasRelic('frostring') ? 2 : 0) + (att === 'fear' ? 2 : 0) + (mod.weak || 0);
+    const final = tier === 'boss' && isFinalStep(run.step);
     C = {
-      tier, id: enemyId,
-      enemy: { hp, max: hp, block: 0, str, weak: (hasRelic('inkwell') ? 2 : 0) + (hasRelic('frostring') ? 2 : 0), vuln: hasRelic('frostring') ? 2 : 0, burn: 0, thorns: e.thorns || 0, stun: 0, pi: 0, nest: e.nest || 0, layer: 0, boil: 0, mist: 0 },
+      tier, id: enemyId, att, saidHurt: false, friends: final && mainStory() ? friendsOf() : [],
+      enemy: { hp: Math.round(hp * (mod.hpMul || 1)), max: hp, block: 0, str, weak, vuln: hasRelic('frostring') ? 2 : 0, burn: 0, thorns: e.thorns || 0, stun: mod.stun || 0, pi: 0, nest: e.nest || 0, layer: 0, boil: 0, mist: 0 },
       draw: shuffle(run.deck.map((c) => ({ ...c }))), hand: [], disc: [], exh: [],
       energy: maxEnergy(), block: 0, flame: (hasRelic('feather') ? 1 : 0) + (hasRelic('eternaloil') ? 1 : 0), pWeak: 0, turn: 0,
       str: 0, tmpStr: 0, thorns: hasRelic('pinecone') ? (hasRelic('wreath') ? 6 : 3) : 0,
@@ -1335,6 +1683,9 @@
       <div class="hb-slot"></div>
       <div class="fxlayer"></div>`;
     startPlayerTurn();
+    // первая реплика: к герою лично, если враг его знает (и ещё не сказал этого в разговоре)
+    const first = mod.talked ? lineOf(enemyId, 'start') : att === 'grudge' ? LORE.GRUDGE : (att && lineOf(enemyId, att)) || lineOf(enemyId, 'start');
+    setTimeout(() => say(first), SETTINGS.fast ? 300 : 700);
   }
 
   function drawCards(n) {
@@ -1365,7 +1716,8 @@
     if (first && proc('northstar')) C.energy += 2;
     if (C.sap) { C.energy = Math.max(0, C.energy - C.sap); toast(tr('Кукушка сбила с ритма: −{n} {n|энергия|энергии|энергии}', { n: C.sap })); }
     C.sap = 0; C.vane = false; C.medal = false;
-    let n = handSize() + (C.charms.compass || 0) + (first && proc('sled') ? 2 : 0) + (first && hasRelic('northstar') ? 2 : 0);
+    let n = handSize() + (C.charms.compass || 0) + (first && proc('sled') ? 2 : 0) + (first && hasRelic('northstar') ? 2 : 0)
+      + (first && C.friends.includes('courier') ? 2 : 0);
     if (C.bury) { n = Math.max(1, n - C.bury); toast(tr('Метелица замела: −{n} {n|карта|карты|карт}', { n: C.bury })); C.bury = 0; }
     drawCards(n);
     if (first && proc('mug')) { run.hp = Math.min(run.maxHp, run.hp + 3); FX.play('heal'); }
@@ -1376,6 +1728,7 @@
     if (proc('moldform')) api.ginger(1);
     if (proc('grindwheel')) api.sharpen(1, true);
     if (C.charms.apprentice) api.sharpen(2 * C.charms.apprentice, true);
+    if (first) await friendHelp();
     if (proc('bridgerail')) { C.thorns += hasRelic('wreath') ? 2 : 1; FX.play('thorns'); }
     renderCombat();
     // Доставки с прошлого хода и чары
@@ -1447,6 +1800,7 @@
   function renderCombat(dealAnim = false) {
     if (!C) return;
     const e = C.enemy;
+    if (!C.saidHurt && e.hp > 0 && e.hp <= e.max / 2) { C.saidHurt = true; say(lineOf(C.id, 'hurt')); }
     $('.intent').innerHTML = e.hp > 0 ? currentIntents().map(intentHTML).join('') : '';
     $('.ehp .fill').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
     $('.ehp span').textContent = `${Math.max(0, e.hp)}/${e.max}`;
@@ -1690,6 +2044,7 @@
     for (const c of C.hand) {
       const cd = CARDS[c.id];
       if (c.id === 'dread') dread += 2;
+      if (c.id === 'ash') dread += 3;
       if (cd.ethereal) exhaustCard(c);
       else if (cd.retain || c === ribbon || (hasRelic('magicbag') && cd.type !== 'status')) { keep.push(c); if (cd.onRetain) cd.onRetain(c, c.up); }
       else C.disc.push(c);
@@ -1724,7 +2079,7 @@
     }
     const el = $('#enemy');
     if (e.stun > 0) {
-      e.stun = 0;
+      e.stun--;
       floatText($('.enemy-fx'), tr('Спит…'), 'weakf');
       await sleep(500);
     } else {
@@ -1786,6 +2141,8 @@
   async function winCombat() {
     busy = true;
     const el = $('#enemy');
+    const dl = !C.boomed && lineOf(C.id, 'death');
+    if (dl && SETTINGS.lines !== false) { say(dl, 1600); await sleep(800); }
     if (el) el.classList.add('dying');
     await sleep(800);
     const { tier, stolen, hpLost, id, turn, boomed, paid } = C;
@@ -1814,7 +2171,11 @@
     if (hasRelic('snowman')) evApi.heal(4);
     if (hasRelic('candybox') && tier === 'elite') { evApi.heal(10); toast(`${RELICS.candybox.name}: +10 HP`); }
     if (hasRelic('thermos') && run.hp < run.maxHp / 2) { evApi.heal(12); toast(`${RELICS.thermos.name}: +12 HP`); }
-    if (tier === 'boss' && isFinalStep(run.step)) { goVictory(); return; }
+    if (tier === 'boss' && isFinalStep(run.step)) {
+      if (ENEMIES[id].dark) { ach.put('darkbeaten', ENEMIES[id].dark); run.finalDark = ENEMIES[id].dark; }
+      goVictory(); return;
+    }
+    if (wantsPlea(id, tier)) { goAfter(tier, id); return; }
     if (tier === 'boss') { goBossRelic(); return; }
     goReward(tier);
   }
@@ -1837,7 +2198,8 @@
   /* ---------- Награда ---------- */
   function goReward(tier) {
     const boss = tier === 'boss';
-    const gold = Math.round((boss ? rnd(50, 60) : tier === 'elite' ? rnd(30, 40) : rnd(12, 20)) * DIFF().gold * (hasRelic('luckystamp') ? 1.2 : 1)) + (hasRelic('envelope') ? 8 : 0);
+    const gold = Math.round(goldFor(tier) * ((run.fmod && run.fmod.goldMul) || 1));
+    run.fmod = null;
     run.gold += gold;
     if (!boss) { SND.sfx('win'); SND.music(mapTrack()); }
     if (tier === 'elite') evApi.giveRelic();
@@ -1874,6 +2236,9 @@
     clearSave();
     STATS.wins++; STATS.best = MAX_STEPS;
     if (run.deck.length <= 15) ach.flag('light');
+    const log = run.meetLog || [];
+    if (log.length >= 4 && log.every((k) => k === 'help' || k === 'tie')) ach.flag('allhelp');
+    const saved = run.finalDark || run.forgiven;
     ach.put('winsCls', run.cls);
     ach.put('winsDiff', diffOf(run));
     saveStats();
@@ -1883,7 +2248,7 @@
       <div class="book"><div class="page">
         <div class="book-art moon">${heroArt()}</div>
         <h1>${STORY.winTitle}</h1>
-        <p class="story">${txt(STORY.winText)}</p>
+        <p class="story">${txt(STORY.winText)}${saved && LORE.DARK[saved] ? ` ${tr(LORE.DARK[saved].saved)}` : ''}</p>
         <p class="stats">${DIFF().name} · ${tr('Побед: {n}', { n: run.fights })} · ${tr('Карт в колоде: {n}', { n: run.deck.length })} · ${tr('Талисманов: {n}', { n: run.relics.length })}</p>
       </div></div>
       <button class="btn big" data-act="title">${tr('В главное меню')}</button>`;
@@ -2061,6 +2426,13 @@
       case 'pile-disc': showDeck(C.disc, tr('Сброс')); break;
       case 'end': endTurn(); break;
       case 'evopt': eventOption(+t.dataset.i); break;
+      case 'talkopt': talkChoose(t.dataset.k); break;
+      case 'talkgo': startCombat(screen.dataset.fight || screen.dataset.enemy, screen.dataset.tier); break;
+      case 'talkboss': goBossRelic(); break;
+      case 'spare': afterChoose(true); break;
+      case 'takeall': afterChoose(false); break;
+      case 'afternext': afterNext(screen.dataset.tier); break;
+      case 'meetopt': meetChoose(t.dataset.k); break;
       case 'openchest': openChest(); break;
       case 'rest-heal': evApi.heal(restHeal()); if (hasRelic('cocoatin')) { run.maxHp += 2; run.hp += 2; toast(`${RELICS.cocoatin.name}: ${tr('+{n} к макс. HP', { n: 2 })}`); } advance(); break;
       case 'rest-up': upgradeFlow((ok) => { if (ok) advance(); }); break;
@@ -2073,7 +2445,7 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)) };
+  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), finalBoss: () => finalBoss() };
 
   achCheck(true);
   goTitle();

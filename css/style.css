@@ -532,7 +532,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
   border: 2px solid var(--ink); box-shadow: inset 0 0 0 1.5px rgba(216, 169, 74, .5);
   clip-path: polygon(0 50%, 14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%);
 }
-.achtabs button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--title); font-size: 17px; color: #a89cbc; }
+.achtabs button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--title); font-size: 14px; color: #a89cbc; }
 .achtabs button small { font-family: var(--body); font-size: 13px; opacity: .8; }
 .achtabs button.on { color: #fff4d6; text-shadow: 0 0 10px rgba(255, 200, 120, .7); background: radial-gradient(ellipse at 50% 100%, rgba(216, 169, 74, .35), transparent 70%); }
 .achtabs button.on small { color: var(--gold-hi); opacity: 1; }
@@ -833,3 +833,31 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 /* длинное название игры на другом языке (украинский: «Останній промінь») */
 .logo h1.long { font-size: 44px; }
 .page h1.long { font-size: 29px; }
+
+/* ---------- Разговоры, встречи и реплики врагов (js/lore.js) ---------- */
+.talk-art { width: 170px; height: 170px; margin: 64px auto 0; filter: drop-shadow(0 0 18px rgba(255, 200, 120, .2)); }
+.talk-art > svg { width: 100%; height: 100%; }
+.talk-art.tk-boss { width: 210px; height: 190px; margin-top: 56px; filter: drop-shadow(0 0 14px rgba(210, 200, 255, .35)); }
+.talk-art.hero { width: 150px; height: 180px; margin-top: 56px; }
+.talk-art.beaten > svg { opacity: .85; transform: rotate(-7deg) translateY(10px) scale(.92); }
+.talk-box { margin-top: 8px; }
+.talk-box p { font-size: 17px; }
+.scr-talk .scrolls, .scr-meet .scrolls { gap: 8px; margin-top: 14px; }
+.scr-talk .scroll, .scr-meet .scroll { padding: 7px 14px; font-size: 18px; }
+.scroll.secret { background: linear-gradient(#fff1c6, #e8c87a); box-shadow: 0 4px 0 var(--ink), 0 0 14px rgba(255, 210, 110, .7); }
+.saybub {
+  position: absolute; top: 58px; left: 10px; max-width: 180px; padding: 7px 12px; z-index: 30; pointer-events: none;
+  border-radius: 14px; background: var(--paper); color: var(--ink); border: 3px solid var(--ink);
+  font-size: 15px; line-height: 1.15; text-align: center; animation: saypop .25s ease-out;
+}
+.saybub::after { content: ''; position: absolute; right: 18px; bottom: -14px; border: 7px solid transparent; border-top-color: var(--ink); border-left-color: var(--ink); }
+@keyframes saypop { from { transform: scale(.6); opacity: 0; } }
+.t-meet .enc-tag { background: #2f5a8a; }
+.fire-wrap.last .icon { width: 96px; height: 96px; margin-top: 64px; }
+.fire-wrap.last p { font-size: 17px; margin: 8px 22px 0; }
+.friends { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; text-align: left; }
+.frow { display: flex; align-items: center; gap: 10px; padding: 3px 10px; border-radius: 10px; background: rgba(20, 16, 32, .6); text-shadow: none; }
+.fport { flex: 0 0 38px; width: 38px; height: 46px; }
+.fport svg { width: 100%; height: 100%; }
+.frow small { display: block; font-size: 13px; color: var(--gold-hi); }
+.shade { display: block; margin-top: 8px; padding: 4px 10px; border-radius: 10px; background: rgba(20, 16, 32, .6); color: #d3bdff; text-shadow: none; }

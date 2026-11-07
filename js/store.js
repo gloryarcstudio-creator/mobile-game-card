@@ -67,6 +67,7 @@
         if (!layer || !layer.classList.contains('show')) return;
         left--;
         const t = el.querySelector('.sl-timer');
+        if (!t) return; // окно уже закрыли или подменили
         if (left > 0) { t.innerHTML = tr('Награда через <b>{n}</b> с', { n: left }); setTimeout(tick, 1000); }
         else t.outerHTML = `<button class="btn" data-sl="done">${tr('Забрать награду')}</button>`;
       };

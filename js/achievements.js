@@ -23,6 +23,7 @@
     ['path', 'Путь'],
     ['fight', 'Мастерство'],
     ['collect', 'Коллекция'],
+    ['story', 'Истории'],
   ].map(([id, name]) => [id, tr(name)]);
 
   const L = [];
@@ -102,6 +103,41 @@
   add('collect', 'hp', 'Крепкое здоровье', 'Поднять максимум HP до {p}.', 'c', 'maxhp', 50, 'i:heart');
   add('collect', 'updeck', 'Мастерица', 'Собрать колоду, в которой {p} улучшенных карт.', 'c', 'updeck', 15, 'i:mittens');
   add('collect', 'light', 'Налегке', 'Доставить письмо с колодой не больше 15 карт.', 'c', 'light', 1, 'i:feather');
+
+  /* ---------- Истории: разговоры, встречи, тайны и мрачные версии героев (js/lore.js) ---------- */
+  tiers('story', 'talk', 'Разговорчивая', 'Поговорить с противниками {p} раз.', 'c', 'talks', [5, 25, 75], ['e:pigeon', 'e:raven', 'e:owl']);
+  tiers('story', 'peace', 'Миром', 'Решить дело миром {p} раз.', 'c', 'peace', [1, 10, 30], ['e:samovar', 'e:matryoshka', 'e:icebear']);
+  tiers('story', 'taunt', 'Задира', 'Разозлить противников {p} раз.', 'c', 'taunts', [3, 20], ['e:snowimp', 'e:firecracker']);
+  tiers('story', 'spare', 'Великодушие', 'Пощадить {p} побеждённых противников.', 'c', 'spares', [3, 15], ['e:sootmouse', 'e:magpie']);
+  add('story', 'scare', 'Пугало', 'Прогнать {p} испуганных противников.', 'c', 'scares', 5, 'e:bat');
+  add('story', 'lines', 'Слушательница', 'Услышать {p} реплик противников.', 'c', 'lines', 100, 'e:cuckoo');
+  tiers('story', 'help', 'Друг в беде', 'Помочь героям в пути {p} раз.', 'c', 'helps', [1, 10, 30], ['c:baker', 'c:guard', 'c:herbalist']);
+  add('story', 'metall', 'Все свои', 'Встретить в пути каждого героя: {p}.', 's', 'met', Object.keys(CLS).length, 'i:horn');
+  add('story', 'friends3', 'Всей Горкой', 'Выйти на финальный бой с тремя друзьями.', 'c', 'friends3', 1, 'i:fire');
+  add('story', 'allhelp', 'Ни одной обиды', 'Доставить письмо, помогая всем встреченным героям (не меньше четырёх).', 'c', 'allhelp', 1, 'i:mittens');
+  add('story', 'betray', 'Тёмная сторона', 'Обидеть героя так, что его забрала Тень.', 'c', 'betray', 1, 'i:dread');
+  add('story', 'forgive', 'Прости меня', 'Попросить прощения у героя, ушедшего в Тень.', 'c', 'forgive', 1, 'i:lullaby');
+  const dark = (cls, name) => add('story', `dark-${cls}`, name, `Победить мрачную версию героя: ${CLS[cls].name}.`, 'has', 'darkbeaten', 1, `e:dk_${cls}`, cls);
+  dark('lamp', 'Свет вернулся');
+  dark('courier', 'Адрес найден');
+  dark('guard', 'Мост открыт');
+  dark('stoker', 'Пепел остыл');
+  dark('baker', 'Свежий хлеб');
+  dark('grinder', 'Тупой клинок');
+  dark('shepherd', 'Свой пёс');
+  dark('herbalist', 'Сладкое после горького');
+  add('story', 'alldark', 'Ни одной тени', 'Победить мрачные версии всех героев: {p}.', 's', 'darkbeaten', Object.keys(CLS).length, 'e:shadowking');
+  const secret = (cls, name, desc) => add('story', `secret-${cls}`, name, desc, 'has', 'secrets', 1, `c:${cls}`, cls);
+  secret('lamp', 'Незажжённый фонарь', 'За Иву зажечь Фонарного Призрака.');
+  secret('courier', 'Прадед', 'За Тишу назвать Пустого Почтальона по имени.');
+  secret('guard', 'Мост на двоих', 'За Марфу поделить мост с Мостовым Троллем.');
+  secret('stoker', 'Правда на ветру', 'За Фому признаться Флюгеру-Петуху про Груню.');
+  secret('baker', 'Морковка мира', 'За Груню помириться со Снеговиком-Громилой.');
+  secret('grinder', 'Вернуть час', 'За Савву затупить стрелки Сумеречного Часовщика.');
+  secret('shepherd', 'Брат Дружка', 'За Лушу помирить Дружка с Сумеречным Волком.');
+  secret('herbalist', 'Счёт закрыт', 'За Ульяну выкупить свои годы у Ворона-Счетовода.');
+  add('story', 'allsecrets', 'Все тайны Горки', 'Узнать все тайны героев: {p}.', 's', 'secrets', Object.keys(CLS).length, 'i:secret');
+  add('story', 'finalbuy', 'Последняя покупка', 'Купить что-нибудь в лавке у последней двери.', 'c', 'finalbuy', 1, 'e:hedgehog');
 
   I18N.patchAch(L); // названия и описания на языке игры
   window.Achievements = { CATS, LIST: L };
