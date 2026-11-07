@@ -121,7 +121,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
   color: #f1ead8; text-align: center; flex: none;
 }
 .card.skill { background: linear-gradient(#24324a, #161d2c); }
-.card.r-rare { box-shadow: inset 0 0 0 .22em #e7b8ff, inset 0 0 0 .42em var(--ink), 0 0 1.2em rgba(190, 140, 255, .55); }
+.card.r-rare { box-shadow: inset 0 0 0 .22em #9ad4ff, inset 0 0 0 .42em var(--ink), 0 0 1em rgba(110, 180, 255, .5); }
 .card .cost {
   position: absolute; left: -.7em; top: -.7em; z-index: 2; width: 2.7em; height: 2.7em;
   display: flex; align-items: center; justify-content: center; border-radius: 50%;
@@ -129,7 +129,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
   font-family: var(--title); font-size: 1.25em; line-height: 1; color: #fff; text-shadow: 0 .1em 0 var(--ink);
 }
 .ctitle {
-  position: relative; margin: .25em .3em 0 1.2em; padding: .2em .2em; border-radius: .3em;
+  position: relative; margin: .25em .3em 0 1.2em; padding: .2em .2em .2em .6em; border-radius: .3em;
   background: linear-gradient(#5a2a26, #3c1c1a); border: .15em solid var(--ink);
   font-family: var(--title); font-size: 1.02em; line-height: 1.05; min-height: 2.4em;
   display: flex; align-items: center; justify-content: center;
@@ -385,7 +385,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .rrow .icon { width: 40px; height: 40px; flex: none; }
 .rrow b, .brelic b { display: block; font-family: var(--title); font-size: 16px; font-weight: normal; color: var(--gold-hi); }
 .rrow small, .brelic small { font-size: 13px; opacity: .88; line-height: 1.15; display: block; }
-.rrow.rare { box-shadow: inset 0 0 0 2px #8a6ab0; }
+.rrow.rare { box-shadow: inset 0 0 0 2px #4f8fc8; }
 .rrow.boss { box-shadow: inset 0 0 0 2px #d8a94a; }
 .scr-bossrelic { text-align: center; }
 .brelics { display: flex; flex-direction: column; gap: 10px; margin: 0 22px 18px; }
@@ -596,22 +596,38 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .dpip.won::after { content: '✓'; position: absolute; left: 50%; top: -15px; transform: translateX(-50%); font-size: 11px; color: #7ad07a; }
 .diffhint { margin: 6px 0 0; font-size: 14px; line-height: 1.2; color: #d8d0e4; min-height: 34px; }
 
-/* ---------- Редкость карт и талисманов ---------- */
-.card.r-uncommon { box-shadow: inset 0 0 0 .22em #9ad4ff, inset 0 0 0 .42em var(--ink), 0 0 1em rgba(110, 180, 255, .45); }
+/* ---------- Редкость карт и талисманов ----------
+   обычная — серый, необычная — зелёный, редкая — синий, эпическая — фиолетовый, легендарная — золотой */
+.card.r-uncommon { box-shadow: inset 0 0 0 .22em #9de8a8, inset 0 0 0 .42em var(--ink), 0 0 .9em rgba(110, 220, 140, .4); }
+.card.r-epic { box-shadow: inset 0 0 0 .22em #e2b0ff, inset 0 0 0 .42em var(--ink), 0 0 1.2em rgba(190, 130, 255, .6); }
+.card.r-epic .ctitle { background: linear-gradient(#5a2a7a, #3a1a52); }
+.card.r-legendary { background: linear-gradient(#3e2a1a, #1e140e); box-shadow: inset 0 0 0 .2em #ff9a2a, inset 0 0 0 .3em #ffe08a, inset 0 0 0 .46em var(--ink), 0 0 1.4em rgba(255, 150, 40, .8); }
+.card.r-legendary .cart { border-color: #ffb347; box-shadow: 0 0 0 .18em var(--ink), 0 0 .8em rgba(255, 170, 60, .7); }
+.card.r-legendary .ctitle { background: linear-gradient(#b0681a, #6a3a10); color: #fff4d6; }
+.card.r-legendary::after { content: ''; position: absolute; inset: -.35em; border-radius: 1.1em; pointer-events: none; box-shadow: 0 0 1em .25em rgba(255, 190, 80, .55); animation: legend 1.6s ease-in-out infinite alternate; }
+@keyframes legend { from { opacity: .35; } to { opacity: 1; } }
 .gem { display: inline-block; width: .62em; height: .62em; margin: 0 .4em .05em -.2em; transform: rotate(45deg); border: .12em solid var(--ink); vertical-align: middle; }
 .gem.g-common { background: linear-gradient(135deg, #f2eee4, #9a9488); }
-.gem.g-uncommon { background: linear-gradient(135deg, #c8ecff, #3a8ad8); box-shadow: 0 0 .3em rgba(90, 170, 255, .8); }
-.gem.g-rare { background: linear-gradient(135deg, #f4d8ff, #9a4ad8); box-shadow: 0 0 .35em rgba(190, 120, 255, .9); }
+.gem.g-uncommon { background: linear-gradient(135deg, #d4ffd8, #3aa84e); box-shadow: 0 0 .3em rgba(110, 220, 140, .8); }
+.gem.g-rare { background: linear-gradient(135deg, #c8ecff, #3a8ad8); box-shadow: 0 0 .3em rgba(90, 170, 255, .8); }
+.gem.g-epic { background: linear-gradient(135deg, #f4d8ff, #9a4ad8); box-shadow: 0 0 .35em rgba(190, 120, 255, .9); }
+.gem.g-legendary { width: .75em; height: .75em; background: linear-gradient(135deg, #fff3c4, #ff9a2a); box-shadow: 0 0 .45em rgba(255, 170, 60, 1); }
 .relic.rt-common { border-color: #b8b2a4; }
-.relic.rt-uncommon { border-color: #6fb8ff; box-shadow: 0 0 6px rgba(110, 180, 255, .5); }
-.relic.rt-rare { border-color: #c58cff; box-shadow: 0 0 7px rgba(190, 130, 255, .6); }
+.relic.rt-uncommon { border-color: #7ad08a; box-shadow: 0 0 6px rgba(110, 220, 140, .45); }
+.relic.rt-rare { border-color: #6fb8ff; box-shadow: 0 0 6px rgba(110, 180, 255, .5); }
+.relic.rt-epic { border-color: #c58cff; box-shadow: 0 0 7px rgba(190, 130, 255, .6); }
+.relic.rt-legendary { border-color: #ffb347; box-shadow: 0 0 9px rgba(255, 170, 60, .8); }
 .relic.rt-boss { border-color: var(--gold-hi); box-shadow: 0 0 7px rgba(255, 210, 120, .6); }
 .relic.rt-class { border-color: #5fd0c0; }
-.rrow.uncommon { box-shadow: inset 0 0 0 2px #4f8fc8; }
+.rrow.uncommon { box-shadow: inset 0 0 0 2px #4a9a5a; }
+.rrow.epic { box-shadow: inset 0 0 0 2px #8a5ab8; }
+.rrow.legendary { box-shadow: inset 0 0 0 2px #e08a2a, 0 0 10px rgba(255, 170, 60, .35); }
 .rrow.class { box-shadow: inset 0 0 0 2px #3f9a8e; }
 .rtier { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 6px; font: 11px/1.5 var(--body); font-style: normal; vertical-align: 2px; color: #1a1520; background: #b8b2a4; }
-.rtier.uncommon { background: #7ec0ff; }
-.rtier.rare { background: #d0a0ff; }
+.rtier.uncommon { background: #8ee09a; }
+.rtier.rare { background: #7ec0ff; }
+.rtier.epic { background: #d0a0ff; }
+.rtier.legendary { background: linear-gradient(#ffd27a, #ff9a2a); }
 .rtier.boss { background: var(--gold-hi); }
 .rtier.class { background: #6fd8c8; }
 

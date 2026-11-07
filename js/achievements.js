@@ -84,6 +84,8 @@
   tiers('collect', 'trophy', 'Трофеи', 'Взять {p} разных талисманов босса.', 's', 'trophies', [3, trophies], ['i:hourglass', 'i:crown']);
   const rares = Object.keys(CARDS).filter((k) => CARDS[k].rarity === 'rare' && !CARDS[k].cls).length;
   tiers('collect', 'rare', 'Редкая находка', 'Сыграть {p} разных редких карт.', 's', 'rareplayed', [5, rares], ['i:aurora', 'i:avalanche']);
+  add('collect', 'legendcard', 'Легенда почты', 'Сыграть легендарную карту.', 'c', 'legendcard', 1, 'i:lastlight');
+  add('collect', 'legendrelic', 'Сокровище Горки', 'Найти легендарный талисман.', 'c', 'legendrelic', 1, 'i:sunstone');
   add('collect', 'rich', 'Копилка полна', 'Накопить {p} монет за один забег.', 'c', 'maxgold', 300, 'i:piggy');
   add('collect', 'hp', 'Крепкое здоровье', 'Поднять максимум HP до {p}.', 'c', 'maxhp', 50, 'i:heart');
   add('collect', 'updeck', 'Мастерица', 'Собрать колоду, в которой {p} улучшенных карт.', 'c', 'updeck', 15, 'i:mittens');

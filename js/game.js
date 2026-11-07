@@ -19,8 +19,9 @@
   const BURST_DMG = 8;
   const HAND_MAX = 10;
   // талисманы босса меняют базовые правила боя
-  const maxEnergy = () => MAX_ENERGY + ['hourglass', 'bottomless', 'crown'].filter((r) => hasRelic(r)).length;
-  const handSize = () => HAND_SIZE - (hasRelic('hourglass') ? 1 : 0) + (hasRelic('moonstone') ? 2 : 0);
+  const maxEnergy = () => MAX_ENERGY + ['hourglass', 'bottomless', 'crown', 'sunstone'].filter((r) => hasRelic(r)).length;
+  const handSize = () => HAND_SIZE - (hasRelic('hourglass') ? 1 : 0) + (hasRelic('moonstone') ? 2 : 0)
+    + (hasRelic('sunstone') ? 1 : 0) + (hasRelic('magicbag') ? 1 : 0);
   const flameMax = () => (hasRelic('bellows') ? 2 : FLAME_MAX);
   const flameBonus = () => (hasRelic('bellows') ? 0 : FLAME_BONUS);
 
@@ -44,7 +45,7 @@
     ['Кража', 'Некоторые враги крадут монеты. Если победить вора, монеты вернутся.'],
     ['Улучшение', 'У костра, у кузнеца и в лавке карту можно улучшить. Улучшенная карта отмечена плюсом.'],
     ['Талисманы босса', 'После босса стадии можно выбрать один из трёх сильных талисманов. У многих есть цена.'],
-    ['Редкость', 'Карты и талисманы бывают обычными (серый камень), необычными (синий) и редкими (фиолетовый). Чем сильнее противник, тем чаще после него выпадают необычные и редкие.'],
+    ['Редкость', 'Карты и талисманы бывают пяти редкостей: обычные (серый камень), необычные (зелёный), редкие (синий), эпические (фиолетовый) и легендарные (золотой). Чем сильнее противник, тем чаще после него выпадают редкие. Легендарную карту можно взять в колоду только одну.'],
     ['Приёмы врагов', 'У многих врагов есть свои хитрости: матрёшки раскрываются, самовар закипает, туман глушит удары, шутиха взрывается. Приёмы видны значками под именем врага, нажмите на значок, чтобы прочитать.'],
     ['Герои', 'У каждого героя своя колода, особенность и карты, которые выпадают только ему. Общие карты под его билд в наградах и лавке встречаются чаще.'],
   ];
@@ -57,6 +58,8 @@
     hearth: (n) => `Сердце костра: в начале хода Поджог ${n}`,
     rhythm: (n) => `Ритм шагов: каждая третья карта за ход даёт +${n} Огонёк`,
     standfast: () => 'Стоять до утра: защита не сгорает в начале хода',
+    firebird: (n) => `Перо Жар-птицы: в начале хода +${2 * n} Огонька и Поджог ${3 * n}`,
+    eternalwinter: (n) => `Вечная зима: в начале хода враг теряет ${2 * n} Силы, а вы получаете ${8 * n} защиты`,
     nightshift: (n) => `Ночная смена: в конце хода ${n} защиты за каждую неистраченную энергию`,
     aurora: (n) => `Северное сияние: в начале хода +${n} энергия`,
   };
@@ -156,7 +159,9 @@
   // случайная карта с перевесом в сторону билда героя
   function pickCard(rarity, exclude = []) {
     const h = hero();
-    const list = cardPool(rarity).filter((k) => !exclude.includes(k));
+    // легендарную карту можно взять в колоду только одну
+    const list = cardPool(rarity).filter((k) => !exclude.includes(k) && !(rarity === 'legendary' && run && run.deck.some((c) => c.id === k)));
+    if (!list.length) return rarity === 'legendary' ? pickCard('epic', exclude) : undefined;
     const w = list.map((k) => (CARDS[k].cls || h.favored.includes(k) ? 3 : 1));
     let r = Math.random() * w.reduce((a, b) => a + b, 0);
     for (let i = 0; i < list.length; i++) { r -= w[i]; if (r < 0) return list[i]; }
@@ -273,14 +278,18 @@
   /* ---------- Общие куски интерфейса ---------- */
   const TYPE_LABEL = { atk: 'Атака', skill: 'Навык', charm: 'Чары', status: 'Помеха' };
   // камень редкости на карте и подписи редкости талисманов
-  const RARITY_GEM = { common: 'Обычная', uncommon: 'Необычная', rare: 'Редкая' };
-  const TIER_LABEL = { common: 'Обычный', uncommon: 'Необычный', rare: 'Редкий', boss: 'Трофей босса', class: 'Особенность героя' };
+  const RARITY_GEM = { common: 'Обычная', uncommon: 'Необычная', rare: 'Редкая', epic: 'Эпическая', legendary: 'Легендарная' };
+  const TIER_LABEL = { common: 'Обычный', uncommon: 'Необычный', rare: 'Редкий', epic: 'Эпический', legendary: 'Легендарный', boss: 'Трофей босса', class: 'Особенность героя' };
+  // случайная редкость по порогам [легендарная, эпическая, редкая, необычная], остальное — обычная
+  const rollRarity = (t) => { const x = Math.random(); return x < t[0] ? 'legendary' : x < t[1] ? 'epic' : x < t[2] ? 'rare' : x < t[3] ? 'uncommon' : 'common'; };
+  // стоимость в бою: Бой курантов делает все карты бесплатными до конца хода
+  const playCost = (c) => { const v = costOf(c); return v != null && C && C.free ? 0 : v; };
   /* Карта: принимает экземпляр {id, up, grow} или просто id */
   function cardHTML(card, extra = '', attrs = '') {
     const inst = typeof card === 'string' ? { id: card, up: false } : card;
     const c = CARDS[inst.id];
     const g = C ? api : apiStatic;
-    const cost = costOf(inst);
+    const cost = extra.includes('inhand') ? playCost(inst) : costOf(inst);
     let desc = c.desc(g, inst.up, inst);
     if (c.retain) desc += ' Удержание.';
     if (c.exhaust && c.type !== 'status') desc += ' Сгорает.';
@@ -818,7 +827,7 @@
   };
 
   // обычные и редкие талисманы, которых ещё нет
-  const RELIC_WEIGHT = { common: 55, uncommon: 30, rare: 15 };
+  const RELIC_WEIGHT = { common: 55, uncommon: 30, rare: 15, epic: 6, legendary: 2 };
   const freeRelics = () => Object.keys(RELICS).filter((r) => RELIC_WEIGHT[RELICS[r].tier] && !hasRelic(r));
   // случайный талисман: обычные выпадают чаще необычных, необычные чаще редких
   function pickRelic(list = freeRelics()) {
@@ -833,6 +842,7 @@
     run.relics.push(id);
     ach.put('relics', id);
     if (RELICS[id].tier === 'boss') ach.put('trophies', id);
+    if (RELICS[id].tier === 'legendary') ach.flag('legendrelic');
     if (id === 'jar') { run.maxHp += 8; run.hp += 8; }
     if (id === 'moonstone') { run.maxHp -= 8; run.hp = Math.min(run.hp, run.maxHp); }
     if (id === 'whetstone') upgradeRandom(2, true);
@@ -906,10 +916,11 @@
   function goShop(saved) {
     const disc = (n) => Math.round(n * (hasRelic('coupon') ? 0.75 : 1));
     // на прилавке по карте каждой редкости
-    const base = { common: 38, uncommon: 54, rare: 72 };
-    const cards = ['common', 'uncommon', 'rare'].map((r) => pickCard(r)).map((id) => ({ id, price: disc(base[CARDS[id].rarity] + rnd(-4, 6)), sold: false }));
+    // третья карта иногда эпическая или легендарная
+    const base = { common: 38, uncommon: 54, rare: 72, epic: 95, legendary: 130 };
+    const cards = ['common', 'uncommon', rollRarity([0.05, 0.25, 1, 1])].map((r) => pickCard(r)).map((id) => ({ id, price: disc(base[CARDS[id].rarity] + rnd(-4, 6)), sold: false }));
     const rid = pickRelic();
-    const shop = saved || { cards, relic: rid ? { id: rid, price: disc({ common: 90, uncommon: 108, rare: 125 }[RELICS[rid].tier]), sold: false } : null, tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false } };
+    const shop = saved || { cards, relic: rid ? { id: rid, price: disc({ common: 90, uncommon: 108, rare: 125, epic: 150, legendary: 190 }[RELICS[rid].tier]), sold: false } : null, tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false } };
     screen.className = 'scr-shop';
     const render = () => {
       save({ t: 'shop', shop });
@@ -1034,7 +1045,7 @@
     energy(n) { C.energy += n; floatText($('.hero-fx'), `+${n} энергии`, 'blockf'); },
     resolve(n) { C.str += n; SND.sfx('buff'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
     rush(n) { C.tmpStr += n; SND.sfx('buff'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
-    thorns(n) { C.thorns += n; SND.sfx('block'); floatText($('.hero-fx'), `Шипы +${n}`, 'blockf'); },
+    thorns(n) { if (hasRelic('wreath')) n *= 2; C.thorns += n; SND.sfx('block'); floatText($('.hero-fx'), `Шипы +${n}`, 'blockf'); },
     gold(n) { run.gold += n; SND.sfx('coin'); floatText($('.hero-fx'), `+${n} монет`, 'burnf'); },
     maxHp(n) { run.maxHp += n; run.hp += n; SND.sfx('heal'); floatText($('.hero-fx'), `+${n} к макс. HP`, 'healf'); },
     doubleBlock() { if (C.block > 0) api.block(C.block); },
@@ -1045,6 +1056,7 @@
       C.charms[id] = (C.charms[id] || 0) + n; SND.sfx('relic'); floatText($('.hero-fx'), CARDS[id].name, 'weakf');
       if (Object.keys(C.charms).length >= 3) ach.flag('charms3');
     },
+    freeTurn() { C.free = true; SND.sfx('relic'); floatText($('.hero-fx'), 'Все карты бесплатно!', 'burnf'); },
     // Копирка: повторить предыдущую карту хода
     async copyLast() {
       const l = C.last;
@@ -1114,10 +1126,10 @@
     const str = (tier === 'boss' ? 0 : Math.floor(run.step / (MAX_STEPS > 20 ? 8 : 3))) - (hasRelic('frostglass') ? 2 : 0);
     C = {
       tier, id: enemyId,
-      enemy: { hp, max: hp, block: 0, str, weak: hasRelic('inkwell') ? 2 : 0, vuln: 0, burn: 0, thorns: e.thorns || 0, stun: 0, pi: 0, nest: e.nest || 0, layer: 0, boil: 0, mist: 0 },
+      enemy: { hp, max: hp, block: 0, str, weak: (hasRelic('inkwell') ? 2 : 0) + (hasRelic('frostring') ? 2 : 0), vuln: hasRelic('frostring') ? 2 : 0, burn: 0, thorns: e.thorns || 0, stun: 0, pi: 0, nest: e.nest || 0, layer: 0, boil: 0, mist: 0 },
       draw: shuffle(run.deck.map((c) => ({ ...c }))), hand: [], disc: [], exh: [],
       energy: maxEnergy(), block: 0, flame: (hasRelic('feather') ? 1 : 0) + (hasRelic('eternaloil') ? 1 : 0), pWeak: 0, turn: 0,
-      str: 0, tmpStr: 0, thorns: hasRelic('pinecone') ? 3 : 0,
+      str: 0, tmpStr: 0, thorns: hasRelic('pinecone') ? (hasRelic('wreath') ? 6 : 3) : 0,
       charms: {}, deliveries: [], playedTurn: 0, playedTotal: 0,
       firstAtk: false, shoe: false, hpLost: false, stolen: 0, burstsTurn: 0,
       last: null, atkTurn: false, frail: 0, sap: 0, bury: 0, vane: false, medal: false, boomed: false,
@@ -1158,7 +1170,7 @@
   async function startPlayerTurn() {
     busy = true;
     C.turn++;
-    C.playedTurn = 0; C.burstsTurn = 0; C.last = null; C.atkTurn = false;
+    C.playedTurn = 0; C.burstsTurn = 0; C.last = null; C.atkTurn = false; C.free = false;
     // защита сгорает, но Горячий камень сохраняет её часть
     if (!C.charms.standfast) C.block = hasRelic('hotstone') ? Math.min(C.block, 6) : 0;
     if (C.turn === 1 && hasRelic('bell')) C.block += 6;
@@ -1190,6 +1202,8 @@
     if (C.charms.stubborn) C.str += C.charms.stubborn;
     if (C.charms.hearth && C.enemy.hp > 0) api.burn(C.charms.hearth);
     if (C.charms.eveninglamp && C.enemy.hp > 0) await api.flame(C.charms.eveninglamp);
+    if (C.charms.eternalwinter && C.enemy.hp > 0) { api.chill(2 * C.charms.eternalwinter); api.block(8 * C.charms.eternalwinter); }
+    if (C.charms.firebird && C.enemy.hp > 0) { api.burn(3 * C.charms.firebird); await api.flame(2 * C.charms.firebird); }
     if (run.hp <= 0) { await sleep(400); goDefeat(); return; }
     if (C.enemy.hp <= 0) { await winCombat(); return; }
     busy = false;
@@ -1276,7 +1290,7 @@
     $('.hand').innerHTML = C.hand.map((c, i) => {
       const rot = (i - (n - 1) / 2) * 3.5;
       const lift = Math.abs(i - (n - 1) / 2) * 5;
-      const cost = costOf(c);
+      const cost = playCost(c);
       const can = cost != null && cost <= C.energy;
       let left = x0 + i * step;
       if (i === selected) left = Math.max(26, Math.min(400 - W - 26, left));
@@ -1288,7 +1302,7 @@
   async function playCard(i) {
     const c = C.hand[i];
     const cd = CARDS[c.id];
-    const cost = costOf(c);
+    const cost = playCost(c);
     if (cost == null) { SND.sfx('deny'); toast('Эту карту нельзя разыграть'); return; }
     if (cost > C.energy) { SND.sfx('deny'); toast('Не хватает энергии'); return; }
     busy = true; selected = -1;
@@ -1316,10 +1330,12 @@
     C.playedTurn++; C.playedTotal++; STATS.cards++;
     if (cd.rarity !== 'status') ach.put('played', c.id);
     if (cd.rarity === 'rare') ach.put('rareplayed', c.id);
+    if (cd.rarity === 'legendary') ach.flag('legendcard');
     if (C.playedTurn >= 8) ach.flag('combo');
     achCheck();
     // отклики чар и талисманов на розыгрыш
     if (cd.type === 'skill' && C.charms.inkpen && C.enemy.hp > 0) await hitEnemy(C.charms.inkpen);
+    if (cd.type === 'skill' && hasRelic('buckle')) api.block(3);
     if (C.charms.rhythm && C.playedTurn % 3 === 0 && C.enemy.hp > 0) await api.flame(C.charms.rhythm);
     if (hasRelic('stampbook') && C.playedTotal % 6 === 0) api.energy(1);
     if (hasRelic('wingboots') && C.playedTurn % 4 === 0) { api.energy(1); drawCards(1); }
@@ -1417,6 +1433,11 @@
   function loseHp(n) {
     if (n <= 0) return;
     run.hp = Math.max(0, run.hp - n);
+    // Последняя свеча: один раз за забег спасает от гибели
+    if (run.hp <= 0 && hasRelic('lastcandle') && !run.candle) {
+      run.candle = true; run.hp = Math.ceil(run.maxHp / 2);
+      SND.sfx('heal'); toast('Последняя свеча вспыхнула: половина HP');
+    }
     C.hpLost = true;
     app.classList.remove('redflash'); void app.offsetWidth; app.classList.add('redflash');
   }
@@ -1438,7 +1459,7 @@
       const cd = CARDS[c.id];
       if (c.id === 'dread') dread += 2;
       if (cd.ethereal) exhaustCard(c);
-      else if (cd.retain || c === ribbon) { keep.push(c); if (cd.onRetain) cd.onRetain(c, c.up); }
+      else if (cd.retain || c === ribbon || (hasRelic('magicbag') && cd.type !== 'status')) { keep.push(c); if (cd.onRetain) cd.onRetain(c, c.up); }
       else C.disc.push(c);
     }
     C.hand = keep;
@@ -1578,13 +1599,12 @@
     // после босса стадии Ива переводит дух
     const healed = boss ? Math.min(run.maxHp - run.hp, Math.round(run.maxHp * DIFF().bossHeal)) : 0;
     run.hp += healed;
-    // шансы [редкая, редкая + необычная]: после элит и боссов редкие выпадают чаще
-    const odds = boss ? [0.6, 1] : tier === 'elite' ? [0.25, 0.7] : [0.08, 0.4];
+    // пороги [легендарная, эпическая, редкая, необычная]: после элит и боссов редкие выпадают чаще
+    const odds = boss ? [0.1, 0.4, 1, 1] : tier === 'elite' ? [0.02, 0.12, 0.35, 0.75] : [0, 0.03, 0.11, 0.43];
     const count = Math.max(2, 3 + (hasRelic('clover') ? 1 : 0) - (hasRelic('crown') ? 1 : 0));
     const ids = [];
     while (ids.length < count) {
-      const x = Math.random();
-      const id = pickCard(x < odds[0] ? 'rare' : x < odds[1] ? 'uncommon' : 'common', ids);
+      const id = pickCard(rollRarity(odds), ids);
       if (id && !ids.includes(id)) ids.push(id);
     }
     const rw = { boss, gold, healed, ids };
