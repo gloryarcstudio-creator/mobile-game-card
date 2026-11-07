@@ -19,6 +19,25 @@
   const freeHeroes = Object.keys(CLS).filter((k) => !CLS[k].paid).length;
   const trophies = Object.keys(RELICS).filter((k) => RELICS[k].tier === 'boss').length;
 
+  // База знаний: что в ней есть и в каком порядке (противники — по стадиям основного сюжета, потом мрачные герои)
+  const MAIN = window.Story.STORIES.sunset.stages;
+  const codexFoes = [];
+  MAIN.forEach((g) => [...g.normals, ...g.early, ...g.elites, ...g.boss].forEach((id) => { if (!codexFoes.includes(id)) codexFoes.push(id); }));
+  Object.keys(window.Data.ENEMIES).filter((id) => window.Data.ENEMIES[id].dark).forEach((id) => codexFoes.push(id));
+  const classRelic = (k) => Object.keys(CLS).find((h) => CLS[h].relic === k);
+  const CODEX = {
+    h: Object.keys(CLS),
+    e: codexFoes,
+    c: Object.keys(CARDS),
+    r: Object.keys(RELICS),
+    // для достижений «собрать всё» — без карт и талисманов платных героев
+    freeC: Object.keys(CARDS).filter((k) => !paidItem(CARDS[k])),
+    freeR: Object.keys(RELICS).filter((k) => !paidItem(RELICS[k]) && !(classRelic(k) && CLS[classRelic(k)].paid)),
+    classRelic,
+  };
+  // разные особые ответы на встречах, доступные без покупок: бесплатные герои × остальные семь
+  const freeTies = freeHeroes * (Object.keys(CLS).length - 1);
+
   const CATS = [
     ['path', 'Путь'],
     ['fight', 'Мастерство'],
@@ -103,6 +122,12 @@
   add('collect', 'hp', 'Крепкое здоровье', 'Поднять максимум HP до {p}.', 'c', 'maxhp', 50, 'i:heart');
   add('collect', 'updeck', 'Мастерица', 'Собрать колоду, в которой {p} улучшенных карт.', 'c', 'updeck', 15, 'i:mittens');
   add('collect', 'light', 'Налегке', 'Доставить письмо с колодой не больше 15 карт.', 'c', 'light', 1, 'i:feather');
+  // база знаний в главном меню
+  tiers('collect', 'codex', 'Летописец', 'Открыть записей в базе знаний: {p}.', 'c', 'cxall', [30, 80, 150], ['i:inkpen', 'i:stampbook', 'i:goldquill']);
+  add('collect', 'codexheroes', 'Лица Горки', 'Открыть в базе знаний всех героев: {p}.', 's', 'cxh', CODEX.h.length, 'c:herbalist');
+  add('collect', 'codexfoes', 'Бестиарий', 'Открыть в базе знаний всех противников: {p}.', 'c', 'cxe', CODEX.e.length, 'e:troll');
+  add('collect', 'codexcards', 'Картотека', 'Открыть в базе знаний все карты: {p}.', 'c', 'cxc', CODEX.freeC.length, 'i:telegram');
+  add('collect', 'codexrelics', 'Шкатулка талисманов', 'Открыть в базе знаний все талисманы: {p}.', 'c', 'cxr', CODEX.freeR.length, 'i:musicbox');
 
   /* ---------- Истории: разговоры, встречи, тайны и мрачные версии героев (js/lore.js) ---------- */
   tiers('story', 'talk', 'Разговорчивая', 'Поговорить с противниками {p} раз.', 'c', 'talks', [5, 25, 75], ['e:pigeon', 'e:raven', 'e:owl']);
@@ -138,7 +163,14 @@
   secret('herbalist', 'Счёт закрыт', 'За Ульяну выкупить свои годы у Ворона-Счетовода.');
   add('story', 'allsecrets', 'Все тайны Горки', 'Узнать все тайны героев: {p}.', 's', 'secrets', Object.keys(CLS).length, 'i:secret');
   add('story', 'finalbuy', 'Последняя покупка', 'Купить что-нибудь в лавке у последней двери.', 'c', 'finalbuy', 1, 'e:hedgehog');
+  // связи: герои между собой и враги между собой
+  tiers('story', 'herotie', 'Старые знакомые', 'Выбрать разные особые ответы на встречах с героями: {p}.', 's', 'ties', [5, 15, freeTies], ['c:courier', 'c:stoker', 'c:grinder']);
+  add('story', 'befriend', 'Друг всей Горки', 'Подружиться с каждым героем: {p}.', 's', 'friends', CODEX.h.length, 'i:hearth');
+  add('story', 'letters', 'Письма сестре', 'За Тишу передать Марфе письма Саввы.', 'c', 'letters', 1, 'i:envelope');
+  tiers('story', 'regards', 'Добрая молва', 'Передать привет от пощажённых врагов: {p}.', 'c', 'regards', [5, 20], ['e:wisp', 'e:mist']);
+  add('story', 'avenged', 'За своих', 'Победить врагов, которые мстили за своих: {p}.', 'c', 'avenged', 5, 'e:snowbrute');
+  add('story', 'rivals', 'Враг моего врага', 'Победить соперников уже побеждённых врагов: {p}.', 'c', 'rivals', 5, 'e:vane');
 
   I18N.patchAch(L); // названия и описания на языке игры
-  window.Achievements = { CATS, LIST: L };
+  window.Achievements = { CATS, LIST: L, CODEX };
 })();

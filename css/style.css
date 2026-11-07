@@ -861,3 +861,67 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .fport svg { width: 100%; height: 100%; }
 .frow small { display: block; font-size: 13px; color: var(--gold-hi); }
 .shade { display: block; margin-top: 8px; padding: 4px 10px; border-radius: 10px; background: rgba(20, 16, 32, .6); color: #d3bdff; text-shadow: none; }
+
+/* ---------- Связи врагов в разговоре и портрет «Историй» ---------- */
+.tienote { display: block; margin-top: 6px; padding-top: 6px; border-top: 1.5px dashed rgba(23, 18, 31, .35); font-size: 14px; line-height: 1.2; font-style: italic; color: #4a3a2a; }
+.aport.story { background: radial-gradient(circle at 50% 30%, #f0b0c8, #9a4a7a 50%, #2a1838); }
+
+/* ---------- База знаний ---------- */
+.cxlist { padding-top: 0; }
+.cxgroup { margin: 12px 4px 8px; font-family: var(--title); font-size: 17px; font-weight: normal; color: var(--gold-hi); text-align: left; border-bottom: 1.5px solid rgba(216, 169, 74, .3); padding-bottom: 3px; }
+.cxgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 6px; }
+.cxtile { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; padding: 4px 2px 6px; border-radius: 8px; background: linear-gradient(#2b2440, #1b1727); border: 2px solid #0c0a12; box-shadow: inset 0 0 0 1px rgba(216, 169, 74, .3); animation: rise .25s backwards; }
+.cxtile.t-c { padding: 10px 0 12px; background: none; border: 0; box-shadow: none; }
+.cxtile .cxname { display: block; width: 100%; font-size: 12.5px; line-height: 1.1; color: #f1ead8; text-align: center; overflow-wrap: anywhere; hyphens: auto; }
+.cxtile.locked .cxname { color: #8a8098; }
+.cxpic { display: block; width: 74px; height: 74px; border-radius: 6px; padding: 3px; border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--gold); background: radial-gradient(circle at 50% 35%, #4a3f6a, #1a1528 75%); overflow: hidden; }
+.cxpic svg { width: 100%; height: 100%; }
+.cxpic.hero { background: radial-gradient(circle at 50% 30%, #f7c98a, #c8705a 50%, #3a2f55); }
+.cxpic.foe.f-elite { box-shadow: inset 0 0 0 2px #c58cff; }
+.cxpic.foe.f-boss { box-shadow: inset 0 0 0 2px #e05a4a; }
+.cxpic.relic { width: 60px; height: 60px; border-radius: 50%; padding: 8px; margin: 7px 0; }
+.cxpic.relic.rt-uncommon, .cxport.relic.rt-uncommon { box-shadow: inset 0 0 0 2px #7ad08a; }
+.cxpic.relic.rt-rare, .cxport.relic.rt-rare { box-shadow: inset 0 0 0 2px #6fb8ff; }
+.cxpic.relic.rt-epic, .cxport.relic.rt-epic { box-shadow: inset 0 0 0 2px #c58cff; }
+.cxpic.relic.rt-legendary, .cxport.relic.rt-legendary { box-shadow: inset 0 0 0 2px #ff9a3a; }
+.cxpic.relic.rt-boss, .cxport.relic.rt-boss { box-shadow: inset 0 0 0 2px #e05a4a; }
+.cxtile.locked .cxpic > svg, .cxrow.locked .cxmini > svg { filter: brightness(0) opacity(.55); }
+.cxtile.locked .cxpic { box-shadow: inset 0 0 0 2px #5a5070; }
+.cxtile.t-c .card.mini { --w: 84px; }
+.cxcardback { display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, #241d30 0 8px, #1a1524 8px 16px) !important; box-shadow: inset 0 0 0 .22em #5a5070, inset 0 0 0 .42em var(--ink) !important; }
+.cxcardback b { font-family: var(--title); font-size: 3em; font-weight: normal; color: #5a5070; }
+.cxdetail { padding: 4px 4px 16px; text-align: left; animation: rise .25s backwards; }
+.cxdetail h4 { margin: 14px 0 6px; font-family: var(--title); font-size: 18px; font-weight: normal; color: var(--gold-hi); }
+.cxdetail p { margin: 0 0 6px; font-size: 15px; line-height: 1.25; color: #e4dcee; }
+.cxdetail .center { text-align: center; }
+.cxback { display: inline-block; margin: 2px 0 8px; padding: 4px 12px; border-radius: 14px; font-family: var(--title); font-size: 16px; color: var(--gold-hi); background: linear-gradient(#2c2440, #1a1524); border: 2px solid var(--ink); box-shadow: inset 0 0 0 1.5px rgba(216, 169, 74, .6); }
+.cxhead { display: flex; gap: 12px; align-items: flex-start; }
+.cxhead h3 { margin: 0 0 2px; font-family: var(--title); font-size: 24px; font-weight: normal; color: #fff4d6; line-height: 1.05; }
+.cxport { flex: none; width: 112px; height: 112px; padding: 5px; border-radius: 8px; border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--gold); background: radial-gradient(circle at 50% 35%, #4a3f6a, #1a1528 75%); }
+.cxport svg { width: 100%; height: 100%; }
+.cxport.hero { background: radial-gradient(circle at 50% 30%, #f7c98a, #c8705a 50%, #3a2f55); }
+.cxport.foe.f-elite { box-shadow: inset 0 0 0 2px #c58cff; }
+.cxport.foe.f-boss { box-shadow: inset 0 0 0 2px #e05a4a; }
+.cxport.relic { width: 92px; height: 92px; padding: 14px; border-radius: 50%; }
+.cxsub { font-size: 14px !important; color: var(--gold-hi) !important; opacity: .9; }
+.cxlock { color: #9a90b0; }
+.cxrow { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; padding: 6px; border-radius: 8px; background: rgba(43, 36, 64, .7); border: 1.5px solid #0c0a12; }
+.cxrow p { margin: 0; font-size: 14px; }
+.cxrow b { display: block; margin-bottom: 1px; font-family: var(--title); font-size: 16px; font-weight: normal; color: #fff4d6; }
+.cxrow b em { font-family: var(--body); font-size: 12px; font-style: normal; color: var(--gold-hi); padding: 0 6px; border-radius: 8px; border: 1px solid rgba(216, 169, 74, .6); vertical-align: 2px; }
+.cxrow.locked p { color: #9a90b0; }
+.cxmini { flex: none; width: 52px; height: 52px; padding: 2px; border-radius: 6px; border: 2px solid var(--ink); background: radial-gradient(circle at 50% 35%, #4a3f6a, #1a1528 75%); overflow: hidden; }
+.cxmini.hero { background: radial-gradient(circle at 50% 30%, #f7c98a, #c8705a 50%, #3a2f55); }
+.cxmini svg { width: 100%; height: 100%; }
+.cxatt b { font-weight: normal; }
+.cxatt.a-like b { color: #8de0a0; }
+.cxatt.a-fear b { color: #9ad4ff; }
+.cxatt.a-hate b { color: #ff9a8a; }
+.cxstats { display: flex; gap: 8px; margin: 10px 0 4px; }
+.cxstats span { padding: 2px 10px; border-radius: 10px; font-size: 14px; color: #fff4d6; background: #241d2e; border: 1.5px solid #0c0a12; }
+.cxquote { font-style: italic; color: #f3d9a8 !important; }
+.cxmoves { display: flex; flex-wrap: wrap; gap: 6px; }
+.cxmoves span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px 2px 3px; border-radius: 12px; font-size: 13.5px; color: #fff4d6; background: #241d2e; border: 1.5px solid #0c0a12; }
+.cxmoves svg { width: 22px; height: 22px; }
+.cxcards { display: flex; justify-content: center; gap: 18px; margin: 14px 0 10px; }
+.cxcards .card { --w: 130px; }

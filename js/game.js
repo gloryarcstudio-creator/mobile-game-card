@@ -122,7 +122,8 @@
   // c — счётчики и флаги, s — наборы (разные карты, талисманы, противники), got — когда получено,
   // seenAt — когда панель открывали в последний раз (для пометки «новое»)
   const ACH_KEY = 'lastray.ach';
-  const ACH_DEF = { c: {}, s: {}, got: {}, seenAt: 0 };
+  // k — сколько раз побеждён каждый противник (для базы знаний)
+  const ACH_DEF = { c: {}, s: {}, got: {}, seenAt: 0, k: {} };
   const ACH = loadJSON(ACH_KEY, ACH_DEF);
   const ACH_LIST = window.Achievements.LIST;
   const achProgress = (a) => {
@@ -150,6 +151,24 @@
     flag(k) { if (!ACH.c[k]) { ACH.c[k] = 1; achCheck(); } },
     put(k, item) { const s = ACH.s[k] || (ACH.s[k] = []); if (!s.includes(item)) { s.push(item); achCheck(); } },
   };
+  /* База знаний: открытые герои, противники, карты и талисманы хранятся вместе с достижениями */
+  const CODEX = window.Achievements.CODEX;
+  const CX_SET = { h: 'cxh', e: 'cxe', c: 'cxc', r: 'cxr' };
+  const cxHas = (kind, id) => (ACH.s[CX_SET[kind]] || []).includes(id);
+  function codexSync(silent) {
+    const n = (kind, list) => list.filter((id) => cxHas(kind, id)).length;
+    ACH.c.cxe = n('e', CODEX.e); ACH.c.cxc = n('c', CODEX.freeC); ACH.c.cxr = n('r', CODEX.freeR);
+    ACH.c.cxall = n('h', CODEX.h) + n('e', CODEX.e) + n('c', CODEX.c) + n('r', CODEX.r);
+    achCheck(silent);
+  }
+  let cxPending = false;
+  function codexMark(kind, id) {
+    if (!id || cxHas(kind, id)) return;
+    (ACH.s[CX_SET[kind]] || (ACH.s[CX_SET[kind]] = [])).push(id);
+    if (!cxPending) { cxPending = true; setTimeout(() => { cxPending = false; codexSync(); }, 0); }
+  }
+  const codexCount = () => ACH.c.cxall || 0;
+  const codexTotal = CODEX.h.length + CODEX.e.length + CODEX.c.length + CODEX.r.length;
   const achArt = (a) => (a.art === 'h' ? heroArt() : a.art.startsWith('c:') ? Art.hero(CLASSES[a.art.slice(2)].look)
     : a.art.startsWith('e:') ? Art.enemy(a.art.slice(2)) : Art.icon(a.art.slice(2)));
   const achStars = (a) => (a.stars ? ` <i class="astars">${'★'.repeat(a.stars)}</i>` : '');
@@ -273,7 +292,10 @@
       // tone — сколько раз решили миром, разозлили врага и прошли мимо чужой беды
       rel: {}, fallen: [], met: [], meetLog: [], secrets: [], grudge: {}, tone: { peace: 0, anger: 0, pass: 0 },
       meetPlan: planMeetings(cls),
+      // враги, которых победили, и те, с кем обошлись по-доброму (связи врагов, js/lore.js ETIES)
+      killed: [], kind: [],
     };
+    codexMark('h', cls);
     setBg();
     goMap();
   }
@@ -334,6 +356,7 @@
   function cardHTML(card, extra = '', attrs = '') {
     const inst = typeof card === 'string' ? { id: card, up: false } : card;
     const c = CARDS[inst.id];
+    if (run) codexMark('c', inst.id); // карта попалась на глаза в забеге — открыта в базе знаний
     const g = C ? api : apiStatic;
     const cost = extra.includes('inhand') ? playCost(inst) : costOf(inst);
     let desc = c.desc(g, inst.up, inst);
@@ -367,6 +390,7 @@
   /* Значки талисманов: последние max штук и кнопка со списком остальных */
   function relicIcons(max) {
     const list = run.relics;
+    list.forEach((r) => codexMark('r', r));
     const shown = list.length > max ? list.slice(-(max - 1)) : list;
     const more = list.length - shown.length;
     return shown.map((r) => `<button class="relic rt-${RELICS[r].tier}" data-relic="${r}">${Art.icon(RELICS[r].art)}</button>`).join('')
@@ -446,6 +470,7 @@
         ${s ? `<button class="btn big" data-act="continue">${tr('Продолжить')}<small>${info}</small></button>` : ''}
         <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">${tr('Новая игра')}</button>
         <button class="btn ghost achbtn" data-act="ach">${ICO.medal}<span>${tr('Достижения')}<small>${tr('{a} из {b}', { a: achCount(), b: ACH_LIST.length })}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
+        <button class="btn ghost achbtn" data-act="codex">${ICO.book}<span>${tr('База знаний')}<small>${tr('{a} из {b}', { a: codexCount(), b: codexTotal })}</small></span></button>
         <button class="btn ghost achbtn storebtn" data-act="store">${ICO.gift}<span>${tr('Магазин')}<small>${tr('Герои и режим без рекламы')}</small></span></button>
         <div class="menu-row"><button class="btn ghost" data-act="gloss">${tr('Справочник')}</button><button class="btn ghost" data-act="settings">${tr('Настройки')}</button></div>
       </div>
@@ -646,6 +671,165 @@
     renderList();
   }
 
+  /* ---------- База знаний: герои, противники, карты и талисманы, которые уже встречались в игре ---------- */
+  // перенести в базу знаний то, что игрок видел до её появления (по наборам достижений)
+  function codexSeed() {
+    const s = (k) => ACH.s[k] || [];
+    const add = (kind, id) => { const set = ACH.s[CX_SET[kind]] || (ACH.s[CX_SET[kind]] = []); if (!set.includes(id)) set.push(id); };
+    s('played').filter((id) => CARDS[id]).forEach((id) => add('c', id));
+    s('relics').filter((id) => RELICS[id]).forEach((id) => add('r', id));
+    [...s('beaten'), ...s('bosses')].filter((id) => ENEMIES[id]).forEach((id) => add('e', id));
+    s('darkbeaten').filter((h) => ENEMIES[`dk_${h}`]).forEach((h) => add('e', `dk_${h}`));
+    [...s('met'), ...s('winsCls')].filter((h) => CLASSES[h]).forEach((h) => add('h', h));
+    codexSync(true);
+  }
+  const CX_TABS = [['h', 'Герои'], ['e', 'Враги'], ['c', 'Карты'], ['r', 'Талисманы']];
+  const ATT_FOE = { like: 'Любит', fear: 'Боится', hate: 'Не терпит' }; // как враг относится к герою
+  const ATT_HERO = { like: 'Любят', fear: 'Боятся', hate: 'Не терпят' }; // какие враги так относятся к герою
+  const MOVE_LABEL = {
+    attack: 'приём::Атака', hits: 'приём::Серия ударов', leech: 'приём::Пьёт здоровье', block: 'приём::Защита', buff: 'приём::Усиление',
+    debuff: 'приём::Слабость', curse: 'приём::Помехи', steal: 'приём::Кража монет', sap: 'приём::Сбивает ритм', snuff: 'приём::Гасит Огоньки',
+    mist: 'приём::Туман', boom: 'приём::Взрыв', bury: 'приём::Заметает руку', frail: 'приём::Хрупкость', spikes: 'приём::Шипы', heal: 'приём::Лечение',
+  };
+  const CARD_RARITY = { start: 'Стартовая', common: 'Обычная', uncommon: 'Необычная', rare: 'Редкая', epic: 'Эпическая', legendary: 'Легендарная', token: 'Создаётся в бою', status: 'Помеха' };
+  const MAIN_STAGES = window.Story.STORIES.sunset.stages;
+  const stageFoes = (g) => CODEX.e.filter((id) => [...g.normals, ...g.early, ...g.elites, ...g.boss].includes(id));
+  const cxName = (kind, id) => (kind === 'h' ? CLASSES[id].name : kind === 'e' ? ENEMIES[id].name : kind === 'c' ? CARDS[id].name : RELICS[id].name);
+  const cxBack = () => `<button class="cxback" data-act="x-back">‹ ${tr('Назад')}</button>`;
+  const cxGroup = (title, html) => `<h4 class="cxgroup">${title}</h4><div class="cxgrid">${html}</div>`;
+
+  function cxTile(kind, id) {
+    const on = cxHas(kind, id);
+    if (kind === 'c') return `<button class="cxtile t-c ${on ? '' : 'locked'}" data-cx="${id}">${on ? cardHTML(id, 'mini') : '<div class="card mini cxcardback"><b>?</b></div>'}</button>`;
+    const pic = kind === 'h' ? `<span class="cxpic hero">${heroArt(id)}</span>`
+      : kind === 'e' ? `<span class="cxpic foe f-${ENEMIES[id].tier}">${Art.enemy(id)}</span>`
+        : `<span class="cxpic relic rt-${RELICS[id].tier}">${Art.icon(RELICS[id].art)}</span>`;
+    return `<button class="cxtile t-${kind} ${on ? '' : 'locked'}" data-cx="${id}">${pic}<span class="cxname">${on ? cxName(kind, id) : '???'}</span></button>`;
+  }
+  function cxGrid(kind) {
+    const tiles = (ids) => ids.map((id) => cxTile(kind, id)).join('');
+    if (kind === 'h') return `<div class="cxgrid">${tiles(CODEX.h)}</div>`;
+    if (kind === 'e') {
+      return MAIN_STAGES.map((g) => cxGroup(g.name, tiles(stageFoes(g)))).join('')
+        + cxGroup(tr('Мрачные герои'), tiles(CODEX.e.filter((id) => ENEMIES[id].dark)));
+    }
+    if (kind === 'c') {
+      const common = CODEX.c.filter((id) => !CARDS[id].cls && CARDS[id].rarity !== 'status');
+      return cxGroup(tr('Общие карты'), tiles(common))
+        + CODEX.h.map((h) => cxGroup(CLASSES[h].name, tiles(CODEX.c.filter((id) => CARDS[id].cls === h)))).join('')
+        + cxGroup(tr('Помехи'), tiles(CODEX.c.filter((id) => CARDS[id].rarity === 'status')));
+    }
+    const owner = (id) => RELICS[id].cls || CODEX.classRelic(id);
+    return cxGroup(tr('Талисманы'), tiles(CODEX.r.filter((id) => !owner(id) && RELICS[id].tier !== 'boss')))
+      + cxGroup(tr('Трофеи боссов'), tiles(CODEX.r.filter((id) => RELICS[id].tier === 'boss')))
+      + CODEX.h.map((h) => cxGroup(CLASSES[h].name, tiles([CLASSES[h].relic, ...CODEX.r.filter((id) => RELICS[id].cls === h)]))).join('');
+  }
+  // строка-связь: картинка, имя и текст; если второго ещё не встречали — силуэт и подсказка
+  function cxRow(kind, id, text, label = '') {
+    const on = cxHas(kind, id);
+    const pic = kind === 'h' ? heroArt(id) : Art.enemy(id);
+    return `<div class="cxrow ${on ? '' : 'locked'}"><span class="cxmini ${kind === 'h' ? 'hero' : 'foe'}">${pic}</span>
+      <p><b>${on ? cxName(kind, id) : '???'}${label ? ` <em>${label}</em>` : ''}</b>${on ? text : tr(kind === 'h' ? 'Встреть этого героя, чтобы узнать больше' : 'Встреть этого врага, чтобы узнать больше')}</p></div>`;
+  }
+  function cxHero(h) {
+    const c = CLASSES[h]; const bio = LORE.BIO[h];
+    const known = (ACH.s.secrets || []).includes(h);
+    const att = ['like', 'fear', 'hate'].map((k) => {
+      const ids = CODEX.e.filter((id) => (LORE.ATT[id] || {})[k] === h);
+      return ids.length ? `<p class="cxatt a-${k}"><b>${tr(ATT_HERO[k])}:</b> ${ids.map((id) => (cxHas('e', id) ? ENEMIES[id].name : '???')).join(', ')}</p>` : '';
+    }).join('');
+    const dk = `dk_${h}`;
+    return `${cxBack()}
+      <div class="cxhead"><span class="cxport hero">${heroArt(h)}</span><div><h3>${c.name}</h3><p class="cxsub">${c.role} · ${c.build}</p><p>${c.about}</p></div></div>
+      <h4>${tr('О герое')}</h4><p>${tr(bio.who)}</p>
+      <h4>${tr('Зачем в пути')}</h4><p>${tr(bio.why)}</p>
+      <h4>${tr('Тайна')}</h4><p>${known ? tr(bio.secret) : `<i class="cxlock">${tr('Откроется после тайного разговора за этого героя')}</i>`}</p>
+      <h4>${tr('Связи с героями')}</h4>${CODEX.h.filter((o) => o !== h).map((o) => cxRow('h', o, tr(LORE.PAIRS[LORE.pairKey(h, o)]))).join('')}
+      ${att ? `<h4>${tr('Отношение врагов')}</h4>${att}` : ''}
+      <h4>${tr('Друг в финале')}</h4><p>${tr(LORE.FRIEND[h].bonus)}</p>
+      ${cxHas('e', dk) ? `<h4>${tr('Мрачная версия')}</h4>${cxRow('e', dk, quote(LORE.DARK[h].intro))}` : ''}`;
+  }
+  function cxFoe(id) {
+    const e = ENEMIES[id];
+    const final = e.dark || MAIN_STAGES[MAIN_STAGES.length - 1].boss.includes(id);
+    const stage = MAIN_STAGES.find((g) => stageFoes(g).includes(id));
+    const tierName = tr(final ? 'Финал' : e.tier === 'boss' ? 'Босс' : e.tier === 'elite' ? 'Элита' : 'Противник');
+    const moves = [];
+    e.pattern.forEach((p) => [p, p.then].filter(Boolean).forEach((it) => {
+      const k = it.k === 'attack' ? (it.leech ? 'leech' : it.hits ? 'hits' : 'attack') : it.k;
+      if (MOVE_LABEL[k] && !moves.includes(k)) moves.push(k);
+    }));
+    const traits = [
+      e.thorns && tr('Каждый ваш удар по врагу ранит вас на {n}', { n: e.thorns }),
+      e.nest && tr('Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: {n}.', { n: e.nest }),
+      e.boil && tr('Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После его хода кипяток остывает. Поджог его не злит.'),
+      e.tally && tr('Каждая {n}-я карта за ход: кукушка кукует и бьёт вас на 3.', { n: e.tally }),
+      e.plating && tr('Защита Ледяного Рыцаря не сгорает: она копится от хода к ходу. Поджог бьёт прямо по HP.'),
+      e.alarm && tr('Каждый ваш Навык даёт сторожу {n} защиты до конца вашего хода. Бейте до хитростей.', { n: e.alarm }),
+    ].filter(Boolean);
+    const att = ['like', 'fear', 'hate'].map((k) => { const h = (LORE.ATT[id] || {})[k]; return h ? `<p class="cxatt a-${k}"><b>${tr(ATT_FOE[k])}:</b> ${cxHas('h', h) ? CLASSES[h].name : '???'}</p>` : ''; }).join('');
+    const ties = LORE.ETIES.filter(([a, b]) => a === id || b === id)
+      .map(([a, b, k, text]) => cxRow('e', a === id ? b : a, tr(text), tr(k === 'kin' ? 'Свои' : 'Соперники'))).join('');
+    const said = SAY[id] && (Array.isArray(SAY[id].start) ? SAY[id].start[0] : SAY[id].start);
+    return `${cxBack()}
+      <div class="cxhead"><span class="cxport foe f-${e.tier}">${Art.enemy(id)}</span><div><h3>${e.name}</h3><p class="cxsub">${tierName}${stage && !e.dark ? ` · ${stage.name}` : ''}</p><p>${e.line}</p></div></div>
+      <div class="cxstats"><span>${e.hp} HP</span><span>${tr('Побед над этим врагом: {n}', { n: ACH.k[id] || 0 })}</span></div>
+      ${said ? `<p class="cxquote">${quote(said)}</p>` : ''}
+      <h4>${tr('Приёмы')}</h4><div class="cxmoves">${moves.map((k) => `<span>${Art.intentIcon(k === 'hits' ? 'attack' : k)}${tr(MOVE_LABEL[k])}</span>`).join('')}</div>
+      ${traits.length ? `<h4>${tr('Особенности')}</h4>${traits.map((t) => `<p>${t}</p>`).join('')}` : ''}
+      ${att ? `<h4>${tr('Отношение к героям')}</h4>${att}` : ''}
+      ${ties ? `<h4>${tr('Связи с врагами')}</h4>${ties}` : ''}`;
+  }
+  function cxCard(id) {
+    const c = CARDS[id];
+    const up = c.rarity !== 'status';
+    const from = CODEX.e.filter((eid) => ENEMIES[eid].pattern.some((p) => [p, p.then].some((it) => it && it.k === 'curse' && it.card === id)));
+    const info = [tr(CARD_RARITY[c.rarity] || 'Обычная'), c.cls && tr('Карта героя: {name}', { name: CLASSES[c.cls].name })].filter(Boolean).join(' · ');
+    return `${cxBack()}
+      <div class="cxcards">${cardHTML(id)}${up ? cardHTML({ id, up: true }) : ''}</div>
+      ${up ? `<p class="cxsub center">${tr('Слева обычная, справа улучшенная')}</p>` : ''}
+      <p class="center">${info}</p>
+      ${from.length ? `<p class="center">${tr('Подкидывают: {list}', { list: from.map((x) => (cxHas('e', x) ? ENEMIES[x].name : '???')).join(', ') })}</p>` : ''}`;
+  }
+  function cxRelic(id) {
+    const r = RELICS[id]; const owner = r.cls || CODEX.classRelic(id);
+    return `${cxBack()}
+      <div class="cxhead"><span class="cxport relic rt-${r.tier}">${Art.icon(r.art)}</span><div><h3>${r.name}</h3><p class="cxsub">${TIER_LABEL[r.tier]}${owner ? ` · ${CLASSES[owner].name}` : ''}</p><p>${r.desc}</p></div></div>`;
+  }
+  function showCodex(back) {
+    let tab = 'h'; let open = null; let keep = 0;
+    const got = codexCount();
+    const close = () => { if (back) back(); else { hideOverlay(); if (screen.className === 'scr-title') goTitle(); } };
+    showOverlay(`<div class="achp cxp">
+      <div class="achhead">
+        <span class="achtag">${ICO.book}${tr('База знаний')}</span>
+        <button class="sclose" data-act="x-close" aria-label="${tr('Закрыть')}">✕</button>
+        <div class="achbar"><i style="width:${(got / codexTotal) * 100}%"></i><b>${got}/${codexTotal}</b></div>
+      </div>
+      <div class="achlist cxlist"></div>
+      <div class="achtabs">${CX_TABS.map(([k, name]) => `<button data-tab="${k}"><span>${tr(name)}</span><small>${CODEX[k].filter((id) => cxHas(k, id)).length}/${CODEX[k].length}</small></button>`).join('')}</div>
+    </div>`, (e) => {
+      const b = e.target.closest('[data-act], [data-tab], [data-cx]');
+      if (!b) return;
+      const list = overlay.querySelector('.cxlist');
+      if (b.dataset.tab) { tab = b.dataset.tab; open = null; render(0); return; }
+      if (b.dataset.cx) {
+        if (b.classList.contains('locked')) { toast(tr('Ещё не встречалось в игре')); return; }
+        keep = list.scrollTop; open = b.dataset.cx; render(0); return;
+      }
+      if (b.dataset.act === 'x-back') { open = null; render(keep); return; }
+      if (b.dataset.act === 'x-close') close();
+    });
+    const render = (top) => {
+      const list = overlay.querySelector('.cxlist');
+      const view = { h: cxHero, e: cxFoe, c: cxCard, r: cxRelic };
+      list.innerHTML = open ? `<div class="cxdetail">${view[tab](open)}</div>` : cxGrid(tab);
+      list.scrollTop = top;
+      overlay.querySelectorAll('.achtabs button').forEach((t) => t.classList.toggle('on', t.dataset.tab === tab));
+    };
+    render(0);
+  }
+
   function showStats() {
     const rows = [
       ['Забегов начато', STATS.runs], ['Писем доставлено', STATS.wins], ['Поражений', STATS.losses],
@@ -666,7 +850,7 @@
       if (!b) return;
       if (b.dataset.act === 'r-no') { showSettings(); return; }
       clearSave();
-      Object.assign(ACH, { c: {}, s: {}, got: {}, seenAt: 0 });
+      Object.assign(ACH, { c: {}, s: {}, got: {}, seenAt: 0, k: {} });
       Object.assign(STATS, STATS_DEF); saveStats();
       hideOverlay();
       toast(tr('Прогресс сброшен'));
@@ -1021,6 +1205,7 @@
 
   function addRelic(id) {
     run.relics.push(id);
+    codexMark('r', id);
     ach.put('relics', id);
     if (RELICS[id].tier === 'boss') ach.put('trophies', id);
     if (RELICS[id].tier === 'legendary') ach.flag('legendrelic');
@@ -1109,6 +1294,7 @@
     run.rel = run.rel || {}; run.fallen = run.fallen || []; run.met = run.met || []; run.meetLog = run.meetLog || [];
     run.secrets = run.secrets || []; run.grudge = run.grudge || {}; run.tone = run.tone || { peace: 0, anger: 0, pass: 0 };
     run.meetPlan = run.meetPlan || {};
+    run.killed = run.killed || []; run.kind = run.kind || [];
   }
   // отношение врага к герою забега: like / fear / hate; обида за «забрать всё» — grudge
   function attOf(id) {
@@ -1126,12 +1312,28 @@
   const goldFor = (tier) => Math.round((tier === 'boss' ? rnd(50, 60) : tier === 'elite' ? rnd(30, 40) : rnd(12, 20)) * DIFF().gold * (hasRelic('luckystamp') ? 1.2 : 1)) + (hasRelic('envelope') ? 8 : 0);
   // друзья забега: герои, которым помогли, и те, кто вернулся из Тени
   const friendsOf = () => Object.keys(run.rel || {}).filter((h) => h !== run.cls && run.rel[h] >= 2 && !(run.fallen || []).includes(h) && LORE.FRIEND[h]);
+  // связи врагов между собой (js/lore.js, ETIES): avenge — ты победил(а) его своих, thanks — пощадил(а) их,
+  // rival — победил(а) его соперника
+  function tieOf(id) {
+    if (!mainStory() || !run.killed) return null;
+    const ties = LORE.ETIES.filter(([a, b]) => a === id || b === id).map(([a, b, k, text]) => ({ other: a === id ? b : a, k, text }));
+    const kin = ties.filter((t) => t.k === 'kin');
+    let t = kin.find((x) => run.killed.includes(x.other));
+    if (t) return { ...t, kind: 'avenge' };
+    t = kin.find((x) => run.kind.includes(x.other));
+    if (t) return { ...t, kind: 'thanks' };
+    t = ties.find((x) => x.k === 'rival' && run.killed.includes(x.other));
+    return t ? { ...t, kind: 'rival' } : null;
+  }
+  const beKind = (id) => { if (!run.kind.includes(id)) run.kind.push(id); };
 
   // заговорит ли враг до боя: тайна, финал и обида — всегда, отношение к герою — часто, остальные — изредка
   function preFight(o) {
     if (!mainStory() || !SAY[o.enemy]) return false;
     const att = attOf(o.enemy);
+    const tie = tieOf(o.enemy);
     const show = (o.t === 'boss' && isFinalStep(run.step)) || secretOf(o.enemy)
+      || (tie && (tie.kind !== 'rival' || Math.random() < 0.6))
       || (att && Math.random() < (o.t === 'boss' || att === 'grudge' ? 1 : 0.6))
       || (!att && o.t === 'fight' && Math.random() < 0.15);
     if (!show) return false;
@@ -1141,14 +1343,16 @@
 
   function talkOptions(id, tier, att) {
     const e = ENEMIES[id];
-    const ops = [{ k: 'fight', text: 'В бой', hint: tr('Обычный бой') }];
+    const tie = tieOf(id);
+    const ops = [{ k: 'fight', text: 'В бой', hint: tr(tie && tie.kind === 'avenge' ? 'Сила врага +1' : tie && tie.kind === 'rival' ? 'Враг Ослаблен на 2 хода' : 'Обычный бой') }];
+    if (tie && tie.kind === 'thanks') ops.push({ k: 'regards', text: 'Передать привет', hint: tr(tier === 'boss' ? 'Босс Ослаблен на 2 хода' : 'Без боя, монеты и +6 HP'), secret: true });
     const sc = secretOf(id);
     if (sc) ops.push({ k: 'secret', text: sc.text, hint: tr(sc.hint), can: !(sc.effect.gold < 0) || run.gold >= -sc.effect.gold, secret: true });
     if (e.dark) ops.push({ k: 'forgive', text: LORE.FORGIVE.text, hint: tr(LORE.FORGIVE.hint), can: run.maxHp > 12 });
     if (att === 'like') ops.push(tier === 'boss' ? { k: 'heart', text: 'Поговорить по душам', hint: tr('Босс Ослаблен на 2 хода') }
       : { k: 'peace', text: 'Договориться миром', hint: tr(tier === 'elite' ? 'Без боя, талисман' : 'Без боя, монеты и +6 HP') });
     if (att === 'fear' && tier !== 'boss') ops.push({ k: 'scare', text: 'Прогнать', hint: tr('Без боя, половина монет') });
-    if (att === 'hate' || att === 'grudge') {
+    if (att === 'hate' || att === 'grudge' || (tie && tie.kind === 'avenge')) {
       ops.push({ k: 'calm', text: 'Успокоить', hint: tr('−{n} монет, враг не злится', { n: calmPrice(tier) }), can: run.gold >= calmPrice(tier) });
       ops.push({ k: 'sass', text: 'Ответить дерзко', hint: tr('Сила врага +3, монет вдвое больше') });
     } else ops.push({ k: 'taunt', text: 'Подразнить', hint: tr('Сила врага +2, монет в полтора раза больше') });
@@ -1160,15 +1364,17 @@
   function goTalk(id, tier) {
     ensureLore();
     save({ t: 'talk', enemy: id, tier });
+    codexMark('e', id);
     const e = ENEMIES[id];
     const att = attOf(id);
-    const line = e.dark ? LORE.DARK[e.dark].intro : att && att !== 'grudge' ? lineOf(id, att) : att === 'grudge' ? LORE.GRUDGE : (lineOf(id, 'start') || LORE.CHALLENGE);
+    const tie = !e.dark && tieOf(id);
+    const line = e.dark ? LORE.DARK[e.dark].intro : tie ? pick(LORE.TIE_SAY[tie.kind]) : att && att !== 'grudge' ? lineOf(id, att) : att === 'grudge' ? LORE.GRUDGE : (lineOf(id, 'start') || LORE.CHALLENGE);
     const opts = talkOptions(id, tier, att);
     screen.className = 'scr-talk';
     screen.dataset.enemy = id; screen.dataset.tier = tier;
     screen.innerHTML = `${topBar()}
       <div class="talk-art tk-${e.tier}">${Art.enemy(id)}</div>
-      <div class="ev-box talk-box"><h2>${e.name}</h2><p>${quote(line)}</p></div>
+      <div class="ev-box talk-box"><h2>${e.name}</h2><p>${quote(line)}</p>${tie ? `<small class="tienote">${tr(tie.text)}</small>` : ''}</div>
       <div class="scrolls">${opts.map((op) => `<button class="scroll ${op.can === false ? 'off' : ''} ${op.secret ? 'secret' : ''}" data-act="talkopt" data-k="${op.k}" ${op.can === false ? 'disabled' : ''}>${tr(op.text)}<small>${op.hint}</small></button>`).join('')}</div>
       ${heroBar(false)}`;
   }
@@ -1187,8 +1393,14 @@
       run.gold -= calmPrice(tier); mod.calm = true; if (run.grudge) delete run.grudge[id]; reply = 'Ладно, ладно. Уже не злюсь.';
     } else if (k === 'heart') {
       mod.weak = 2; reply = lineOf(id, 'peace') || 'Ладно… только ради тебя.'; run.tone.peace++;
+    } else if (k === 'regards') {
+      ach.add('regards'); run.tone.peace++;
+      if (tier === 'boss') { mod.weak = 2; reply = LORE.TIE_SAY.regardsBoss; } else {
+        next = 'peace'; beKind(id); ach.add('peace'); reply = pick(LORE.TIE_SAY.regards);
+        const g = goldFor('fight'); run.gold += g; evApi.heal(6); toast(`${coins(g)} · +6 HP`);
+      }
     } else if (k === 'peace') {
-      next = 'peace'; reply = lineOf(id, 'peace') || 'Ладно, иди с миром.'; run.tone.peace++; ach.add('peace');
+      next = 'peace'; beKind(id); reply = lineOf(id, 'peace') || 'Ладно, иди с миром.'; run.tone.peace++; ach.add('peace');
       if (tier === 'elite') evApi.giveRelic(); else { const g = goldFor('fight'); run.gold += g; evApi.heal(6); toast(`${coins(g)} · +6 HP`); }
     } else if (k === 'scare') {
       next = 'peace'; ach.add('scares'); const g = Math.ceil(goldFor(tier) / 2); run.gold += g;
@@ -1202,11 +1414,11 @@
       if (fx.gold) run.gold += fx.gold;
       if (fx.maxHp) { run.maxHp += fx.maxHp; run.hp += fx.maxHp; }
       if (fx.heal) evApi.heal(fx.heal);
-      if (fx.peace) { next = tier === 'boss' ? 'bosspeace' : 'peace'; if (tier === 'elite') evApi.giveRelic(); }
+      if (fx.peace) { next = tier === 'boss' ? 'bosspeace' : 'peace'; beKind(id); if (tier === 'elite') evApi.giveRelic(); }
       else { mod.hpMul = fx.hp || 1; mod.weak = fx.weak || 0; mod.stun = fx.stun || 0; }
     } else if (k === 'forgive') {
       run.maxHp -= 10; run.hp = Math.min(run.hp, run.maxHp);
-      run.rel[e.dark] = 2; run.fallen = run.fallen.filter((h) => h !== e.dark); run.forgiven = e.dark;
+      run.rel[e.dark] = 2; run.fallen = run.fallen.filter((h) => h !== e.dark); run.forgiven = e.dark; ach.put('friends', e.dark);
       run.final = 'shadowking'; fightId = 'shadowking';
       ach.flag('forgive'); narr = tr(LORE.FORGIVE.res);
     }
@@ -1218,6 +1430,7 @@
     } else save({ t: 'next' });
     if (next === 'bosspeace') save({ t: 'bossrelic', opts: null });
     $('.talk-box p').innerHTML = reply ? quote(reply) : narr;
+    const note = $('.tienote'); if (note) note.remove();
     if (fightId !== id) { $('.talk-box h2').textContent = ENEMIES[fightId].name; $('.talk-art').innerHTML = Art.enemy(fightId); }
     const act = next === 'fight' ? 'talkgo' : next === 'bosspeace' ? 'talkboss' : 'next';
     $('.scrolls').innerHTML = `<button class="scroll" data-act="${act}">${tr(next === 'fight' ? 'В бой' : 'Дальше')}</button>`;
@@ -1246,6 +1459,7 @@
     let msg;
     if (spare) {
       run.tone.peace++; ach.add('spares');
+      run.killed = run.killed.filter((x) => x !== id); beKind(id);
       if (tier === 'boss') evApi.giveRelic();
       else {
         const gift = rnd(0, 2);
@@ -1287,7 +1501,7 @@
     ensureLore();
     const m = LORE.MEET[h];
     if (!run.met.includes(h)) run.met.push(h);
-    ach.put('met', h);
+    ach.put('met', h); codexMark('h', h);
     screen.className = 'scr-meet';
     screen.dataset.hero = h;
     screen.innerHTML = `${topBar()}
@@ -1300,7 +1514,7 @@
     run.rel[h] = (run.rel[h] || 0) + d;
     const name = CLASSES[h].name;
     if (run.rel[h] <= -2 && !run.fallen.includes(h)) { run.fallen.push(h); ach.flag('betray'); SND.sfx('snuff'); toast(tr('Тень коснулась героя: {name}', { name })); }
-    else if (d > 0 && run.rel[h] >= 2) { SND.sfx('relic'); toast(tr('Новый друг: {name}', { name })); }
+    else if (d > 0 && run.rel[h] >= 2) { SND.sfx('relic'); toast(tr('Новый друг: {name}', { name })); ach.put('friends', h); }
   }
   function meetChoose(k) {
     const h = screen.dataset.hero;
@@ -1316,6 +1530,8 @@
     if (fx.upRandom) upgradeRandom(fx.upRandom);
     if (k === 'pass') run.tone.pass++;
     if (k === 'help' || k === 'tie') ach.add('helps');
+    if (k === 'tie') ach.put('ties', `${run.cls}>${h}`);
+    if (fx.letters) ach.flag('letters');
     run.meetLog.push(k);
     relChange(h, fx.rel || 0);
     const finish = () => {
@@ -1369,6 +1585,7 @@
     const rid = pickRelic();
     const shop = saved || { cards, relic: rid ? { id: rid, price: disc({ common: 90, uncommon: 108, rare: 125, epic: 150, legendary: 190 }[RELICS[rid].tier]), sold: false } : null, tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false } };
     screen.className = 'scr-shop';
+    if (shop.relic) codexMark('r', shop.relic.id);
     const last = isFinalStep(run.step); // лавка у последней двери
     const bought = () => { if (last) ach.flag('finalbuy'); };
     const render = () => {
@@ -1646,12 +1863,14 @@
     // отношение к герою и разговор до боя (js/lore.js): кто не терпит — злее, кто боится — слабее
     const mod = run.fmod || {};
     const att = attOf(enemyId);
-    const angry = (att === 'hate' || att === 'grudge') && !mod.calm ? 2 : 0;
+    const tie = !e.dark && run.killed ? tieOf(enemyId) : null;
+    codexMark('e', enemyId);
+    const angry = ((att === 'hate' || att === 'grudge') && !mod.calm ? 2 : 0) + (tie && tie.kind === 'avenge' && !mod.calm ? 1 : 0);
     const str = (tier === 'boss' ? 0 : Math.floor(run.step / (MAX_STEPS > 20 ? 8 : 3))) - (hasRelic('frostglass') ? 2 : 0) + angry + (mod.str || 0);
-    const weak = (hasRelic('inkwell') ? 2 : 0) + (hasRelic('frostring') ? 2 : 0) + (att === 'fear' ? 2 : 0) + (mod.weak || 0);
+    const weak = (hasRelic('inkwell') ? 2 : 0) + (hasRelic('frostring') ? 2 : 0) + (att === 'fear' ? 2 : 0) + (tie && tie.kind === 'rival' ? 2 : 0) + (mod.weak || 0);
     const final = tier === 'boss' && isFinalStep(run.step);
     C = {
-      tier, id: enemyId, att, saidHurt: false, friends: final && mainStory() ? friendsOf() : [],
+      tier, id: enemyId, att, tie: tie && tie.kind, saidHurt: false, friends: final && mainStory() ? friendsOf() : [],
       enemy: { hp: Math.round(hp * (mod.hpMul || 1)), max: hp, block: 0, str, weak, vuln: hasRelic('frostring') ? 2 : 0, burn: 0, thorns: e.thorns || 0, stun: mod.stun || 0, pi: 0, nest: e.nest || 0, layer: 0, boil: 0, mist: 0 },
       draw: shuffle(run.deck.map((c) => ({ ...c }))), hand: [], disc: [], exh: [],
       energy: maxEnergy(), block: 0, flame: (hasRelic('feather') ? 1 : 0) + (hasRelic('eternaloil') ? 1 : 0), pWeak: 0, turn: 0,
@@ -1684,7 +1903,7 @@
       <div class="fxlayer"></div>`;
     startPlayerTurn();
     // первая реплика: к герою лично, если враг его знает (и ещё не сказал этого в разговоре)
-    const first = mod.talked ? lineOf(enemyId, 'start') : att === 'grudge' ? LORE.GRUDGE : (att && lineOf(enemyId, att)) || lineOf(enemyId, 'start');
+    const first = mod.talked ? lineOf(enemyId, 'start') : tie ? pick(LORE.TIE_SAY[tie.kind]) : att === 'grudge' ? LORE.GRUDGE : (att && lineOf(enemyId, att)) || lineOf(enemyId, 'start');
     setTimeout(() => say(first), SETTINGS.fast ? 300 : 700);
   }
 
@@ -2145,7 +2364,7 @@
     if (dl && SETTINGS.lines !== false) { say(dl, 1600); await sleep(800); }
     if (el) el.classList.add('dying');
     await sleep(800);
-    const { tier, stolen, hpLost, id, turn, boomed, paid } = C;
+    const { tier, stolen, hpLost, id, turn, boomed, paid, tie } = C;
     // Ремень для правки: одна заточенная карта остаётся улучшенной
     const sharp = [...C.draw, ...C.hand, ...C.disc, ...C.exh].filter((c) => c.sharp).map((c) => c.uid);
     C = null;
@@ -2157,6 +2376,10 @@
     STATS.fights++;
     if (tier === 'elite') STATS.elites++;
     if (tier === 'boss') STATS.bosses++;
+    ACH.k[id] = (ACH.k[id] || 0) + 1; // для базы знаний
+    if (run.killed && !run.killed.includes(id)) run.killed.push(id);
+    if (tie === 'avenge') ach.add('avenged');
+    if (tie === 'rival') ach.add('rivals');
     ach.put('beaten', id);
     if (tier === 'boss') ach.put('bosses', id);
     if (!hpLost) ach.flag('flawless');
@@ -2186,6 +2409,7 @@
     const opts = saved || shuffle(Object.keys(RELICS).filter((r) => RELICS[r].tier === 'boss' && !hasRelic(r))).slice(0, 3);
     if (!opts.length) { goReward('boss'); return; }
     save({ t: 'bossrelic', opts });
+    opts.forEach((r) => codexMark('r', r));
     screen.className = 'scr-bossrelic';
     screen.innerHTML = `${topBar()}
       <div class="ribbon">${tr('Трофей босса')}</div>
@@ -2418,6 +2642,7 @@
       case 'gloss': showGlossary(); break;
       case 'settings': showSettings(); break;
       case 'ach': showAchievements(); break;
+      case 'codex': showCodex(); break;
       case 'choose': chooseEncounter(+t.dataset.i); break;
       case 'next': advance(); break;
       case 'deck': showDeck(run.deck, `${tr('Колода')} · ${run.deck.length}`); break;
@@ -2445,9 +2670,10 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), finalBoss: () => finalBoss() };
+  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id) };
 
   achCheck(true);
+  codexSeed();
   goTitle();
   try {
     if (sessionStorage.getItem('lastray.reopen') === 'settings') { sessionStorage.removeItem('lastray.reopen'); showSettings(); }
