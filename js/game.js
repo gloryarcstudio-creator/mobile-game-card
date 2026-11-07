@@ -7,6 +7,24 @@
   // Путь делится на стадии, последний уровень каждой стадии — её босс
   const STAGES = STORY.stages;
   const SND = window.Sound;
+  const FX = window.FX;
+  // Анимация удара у каждой атаки своя (js/fx.js); у остальных атак — обычный удар
+  const ATK_FX = {
+    strike: 'lantern', spark: 'sparks', sparks: 'sparks', heavy: 'heavy', ember: 'fire', snowkick: 'snow', payback: 'heavy',
+    luckycoin: 'coin', snowball: 'snowball', flurry: 'blizzard', icethrow: 'icicle', heavybag: 'heavy', sledram: 'heavy',
+    snowstorm: 'blizzard', cancel: 'stamp', stamp: 'stamp', registered: 'stamp', surprise: 'letter', palm: 'fire', lastword: 'letter',
+    secret: 'letter', urgent: 'letter', finale: 'starfall', starfall: 'starfall', avalanche: 'avalanche', lastlight: 'beam', beam: 'beam',
+    poker: 'sparks', rollingpin: 'flour', fair: 'confetti', gritsparks: 'sparks', steelring: 'slash', bitterroot: 'roots', gingerbread: 'crumbs',
+  };
+  // при нескольких ударах подряд следующие удары короче
+  const ATK_FX_NEXT = { avalanche: 'snow', blizzard: 'snow', snowball: 'snow', icicle: 'shatter', coin: 'bonk', letter: 'bonk', starfall: 'sparks', beam: 'lantern', flour: 'heavy', confetti: 'bonk' };
+  // сопровождение розыгрыша навыков: пар от чая, ветер, свисток, рожок, вой
+  const CAST_FX = {
+    tea: ['steam'], sbiten: ['steam'], cocoa: ['steam'], chamomile: ['steam'], livingwater: ['steam'],
+    wind: ['wind'], breath: ['wind'], express: ['wind'], rushmail: ['wind'],
+    whistle: ['notes', 'whistle'], hornblow: ['notes', 'horn'], howl: ['notes', 'howl'], lullaby: ['notes'], sleepgrass: ['notes'],
+    parcel: ['parcel'], poste: ['parcel'], moneyorder: ['parcel'],
+  };
   const MAX_STEPS = STAGES.reduce((a, g) => a + g.len, 0);
   let acc = 0;
   STAGES.forEach((g) => { g.start = acc; acc += g.len; g.end = acc - 1; });
@@ -74,6 +92,8 @@
   const $ = (s, el = document) => el.querySelector(s);
   const app = $('#app');
   const screen = $('#screen');
+  // в бою фон опускается к земле: класс ground на #app
+  new MutationObserver(() => app.classList.toggle('ground', screen.className === 'scr-combat')).observe(screen, { attributes: true, attributeFilter: ['class'] });
   const overlay = $('#overlay');
   /* ---------- Настройки и статистика (хранятся в браузере) ---------- */
   const VERSION = '0.8';
@@ -1075,24 +1095,26 @@
       return v > base ? `<b class="up">${v}</b>` : v < base ? `<b class="down">${v}</b>` : `${v}`;
     },
     async attack(base, hits = 1) {
+      const kind = C.fx || 'bonk';
       for (let h = 0; h < hits; h++) {
         if (C.enemy.hp <= 0 || run.hp <= 0) break;
         heroLunge();
-        await hitEnemy(calcDmg(base));
+        // первый удар карты — полная анимация, следующие короче
+        await strike(calcDmg(base), C.fxHits++ ? ATK_FX_NEXT[kind] || kind : kind);
         // метла трубочиста: каждый удар подкидывает искру
-        if (hasRelic('sootbroom') && C.enemy.hp > 0) { C.enemy.burn += 1; floatText($('.enemy-fx'), 'Поджог +1', 'burnf'); }
+        if (C.enemy.hp > 0 && proc('sootbroom', 'enemy')) { C.enemy.burn += 1; FX.play('sparks', 'enemy'); floatText($('.enemy-fx'), 'Поджог +1', 'burnf'); }
         // колючий враг ранит в ответ на каждый удар
-        if (C.enemy.thorns > 0 && C.enemy.hp > 0) await hitHero(C.enemy.thorns);
+        if (C.enemy.thorns > 0 && C.enemy.hp > 0) { FX.play('thorns'); await hitHero(C.enemy.thorns); }
         if (hits > 1) await sleep(140);
       }
     },
     block(n) {
       if (C.frail > 0) n = Math.floor(n * 0.75);
-      C.block += n; SND.sfx('block'); floatText($('.hero-fx'), `+${n}`, 'blockf');
+      C.block += n; SND.sfx('block'); FX.play('shield'); floatText($('.hero-fx'), `+${n}`, 'blockf');
     },
     async flame(n) {
       C.flame += n;
-      SND.sfx('flame');
+      SND.sfx('flame'); FX.play('flamelet');
       renderCombat();
       while (C.flame >= flameMax() && C.enemy.hp > 0) {
         C.flame -= flameMax();
@@ -1100,33 +1122,36 @@
       }
     },
     draw(n) { drawCards(n); },
-    heal(n) { SND.sfx('heal'); const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
-    burn(n) { const v = n + (hasRelic('matchbox') ? 2 : 0); SND.sfx('flame'); C.enemy.burn += v; floatText($('.enemy-fx'), `Поджог ${v}`, 'burnf'); },
-    weak(n) { SND.sfx('debuff'); C.enemy.weak += n; floatText($('.enemy-fx'), 'Ослаблен', 'weakf'); },
-    vuln(n) { SND.sfx('debuff'); C.enemy.vuln += n + (hasRelic('stamppad') ? 1 : 0); floatText($('.enemy-fx'), 'Уязвим', 'weakf'); },
-    chill(n) { SND.sfx('debuff'); C.enemy.str -= n; floatText($('.enemy-fx'), `Сила −${n}`, 'blockf'); },
-    stun() { SND.sfx('debuff'); C.enemy.stun = 1; floatText($('.enemy-fx'), 'Засыпает…', 'weakf'); if (C.tier === 'boss') ach.flag('stunboss'); },
-    energy(n) { C.energy += n; floatText($('.hero-fx'), `+${n} энергии`, 'blockf'); },
-    resolve(n) { C.str += n; SND.sfx('buff'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
-    rush(n) { C.tmpStr += n; SND.sfx('buff'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
-    thorns(n) { if (hasRelic('wreath')) n *= 2; C.thorns += n; SND.sfx('block'); floatText($('.hero-fx'), `Шипы +${n}`, 'blockf'); },
-    gold(n) { run.gold += n; SND.sfx('coin'); floatText($('.hero-fx'), `+${n} монет`, 'burnf'); },
-    maxHp(n) { run.maxHp += n; run.hp += n; SND.sfx('heal'); floatText($('.hero-fx'), `+${n} к макс. HP`, 'healf'); },
+    heal(n) { SND.sfx('heal'); FX.play('heal'); const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
+    burn(n) { const v = n + (proc('matchbox', 'enemy') ? 2 : 0); FX.play('fire', 'enemy'); C.enemy.burn += v; floatText($('.enemy-fx'), `Поджог ${v}`, 'burnf'); },
+    weak(n) { FX.play('weak', 'enemy'); C.enemy.weak += n; floatText($('.enemy-fx'), 'Ослаблен', 'weakf'); },
+    vuln(n) { FX.play('vuln', 'enemy'); C.enemy.vuln += n + (proc('stamppad', 'enemy') ? 1 : 0); floatText($('.enemy-fx'), 'Уязвим', 'weakf'); },
+    chill(n) { FX.play('frost', 'enemy'); C.enemy.str -= n; floatText($('.enemy-fx'), `Сила −${n}`, 'blockf'); },
+    stun() { FX.play('sleep', 'enemy'); C.enemy.stun = 1; floatText($('.enemy-fx'), 'Засыпает…', 'weakf'); if (C.tier === 'boss') ach.flag('stunboss'); },
+    energy(n) { C.energy += n; FX.play('energy'); floatText($('.hero-fx'), `+${n} энергии`, 'blockf'); },
+    resolve(n) { C.str += n; FX.play('aura'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
+    rush(n) { C.tmpStr += n; FX.play('aura'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
+    thorns(n) { if (proc('wreath')) n *= 2; C.thorns += n; FX.play('thorns'); floatText($('.hero-fx'), `Шипы +${n}`, 'blockf'); },
+    gold(n) { run.gold += n; FX.play('gold'); floatText($('.hero-fx'), `+${n} монет`, 'burnf'); },
+    maxHp(n) { run.maxHp += n; run.hp += n; SND.sfx('heal'); FX.play('heart'); floatText($('.hero-fx'), `+${n} к макс. HP`, 'healf'); },
     doubleBlock() { if (C.block > 0) api.block(C.block); },
     async burstNow() { await burst(); },
     consumeFlame() { const n = C.flame; C.flame = 0; return n; },
-    deliver(name, fn) { C.deliveries.push({ name, fn }); SND.sfx('card'); floatText($('.hero-fx'), `${name} в пути`, 'weakf'); },
+    deliver(name, fn) { C.deliveries.push({ name, fn }); FX.play('deliver'); floatText($('.hero-fx'), `${name} в пути`, 'weakf'); },
     charm(id, n) {
-      C.charms[id] = (C.charms[id] || 0) + n; SND.sfx('relic'); floatText($('.hero-fx'), CARDS[id].name, 'weakf');
+      C.charms[id] = (C.charms[id] || 0) + n; FX.play('sigil', CARDS[id].art); floatText($('.hero-fx'), CARDS[id].name, 'weakf');
       if (Object.keys(C.charms).length >= 3) ach.flag('charms3');
     },
-    freeTurn() { C.free = true; SND.sfx('relic'); floatText($('.hero-fx'), 'Все карты бесплатно!', 'burnf'); },
+    freeTurn() { C.free = true; FX.play('clock'); floatText($('.hero-fx'), 'Все карты бесплатно!', 'burnf'); },
     // Копирка: повторить предыдущую карту хода
     async copyLast() {
       const l = C.last;
       if (!l || l.id === 'carbon') { floatText($('.hero-fx'), 'Нечего копировать', 'weakf'); return; }
       floatText($('.hero-fx'), `Копия: ${CARDS[l.id].name}`, 'weakf');
+      FX.play('mirror');
+      const was = C.fx; C.fx = ATK_FX[l.id]; C.fxHits = 0;
       await CARDS[l.id].play(api, l.up, l);
+      C.fx = was;
     },
     // Обратный адрес: вернуть в руку последние карты из сброса (кроме помех)
     recall(n) {
@@ -1135,7 +1160,7 @@
         if (CARDS[C.disc[i].id].type === 'status') continue;
         C.hand.push(C.disc.splice(i, 1)[0]); got++;
       }
-      SND.sfx('draw'); floatText($('.hero-fx'), got ? `Вернулось карт: ${got}` : 'Сброс пуст', 'weakf');
+      FX.play('cards'); floatText($('.hero-fx'), got ? `Вернулось карт: ${got}` : 'Сброс пуст', 'weakf');
     },
     // До востребования: бесплатно разыграть верхние карты колоды, помехи сгорают
     async autoplay(n) {
@@ -1146,6 +1171,7 @@
         const cd = CARDS[c.id];
         toast(`Из колоды: ${cardName(c)}`);
         if (cd.type === 'status') { exhaustCard(c); continue; }
+        C.fx = ATK_FX[c.id]; C.fxHits = 0;
         await cd.play(api, c.up, c);
         if (cd.type === 'charm') C.exh.push(c);
         else if (cd.exhaust) exhaustCard(c);
@@ -1158,11 +1184,12 @@
     ginger(n) {
       let got = 0;
       for (let k = 0; k < n && C.hand.length < HAND_MAX; k++) { C.hand.push(mk('gingerbread', C.glaze)); got++; }
-      if (got) { SND.sfx('draw'); floatText($('.hero-fx'), `Пряник +${got}`, 'burnf'); }
+      if (got) { FX.play('ginger'); floatText($('.hero-fx'), `Пряник +${got}`, 'burnf'); }
     },
     glaze() {
       C.glaze = true;
       [...C.hand, ...C.draw, ...C.disc].forEach((c) => { if (c.id === 'gingerbread') c.up = true; });
+      FX.play('sugar');
       floatText($('.hero-fx'), 'Глазурь!', 'weakf');
     },
     // Точильщик: заточить карты в руке — улучшить до конца боя
@@ -1170,28 +1197,29 @@
       const list = shuffle(C.hand.filter(canUpgrade)).slice(0, n);
       list.forEach((c) => { c.up = true; c.sharp = true; });
       C.sharpened += list.length;
-      if (list.length) { ach.max('sharpfight', C.sharpened); SND.sfx('clank'); floatText($('.hero-fx'), list.length === 1 ? `Заточено: ${CARDS[list[0].id].name}` : `Заточено карт: ${list.length}`, 'blockf'); }
+      if (list.length) { ach.max('sharpfight', C.sharpened); FX.play('grind'); floatText($('.hero-fx'), list.length === 1 ? `Заточено: ${CARDS[list[0].id].name}` : `Заточено карт: ${list.length}`, 'blockf'); }
       else if (!quiet) floatText($('.hero-fx'), 'Нечего точить', 'weakf');
       return list.length;
     },
     // сколько улучшенных карт в колоде, руке и сбросе (кроме самой карты)
     upCount(self) { return C ? [...C.draw, ...C.hand, ...C.disc].filter((c) => c.up && c !== self).length : 0; },
     // Пастушка: Злость Дружка и укус
-    dog(n) { C.dog += n; SND.sfx('buff'); floatText($('.hero-fx'), `Злость +${n}`, 'burnf'); ach.max('dogmax', C.dog); },
+    dog(n) { C.dog += n; FX.play('growl'); floatText($('.hero-fx'), `Злость +${n}`, 'burnf'); ach.max('dogmax', C.dog); },
     async bite() {
       if (C.dog <= 0 || C.enemy.hp <= 0) return;
       const pt = $('#heroPortrait');
       if (pt) { pt.classList.remove('bite'); void pt.offsetWidth; pt.classList.add('bite'); }
+      await FX.play('bite', 'enemy');
       floatText($('.enemy-fx'), 'Гав!', 'weakf');
-      await hitEnemy(dogDmg());
-      if (hasRelic('collar')) api.block(2);
+      await hitEnemy(dogDmg(), true);
+      if (proc('collar')) api.block(2);
     },
     // Знахарка: заплатить Цену здоровьем
     async price(n) {
       loseHp(n); C.paid += n; ach.max('pricefight', C.paid);
-      SND.sfx('hurt'); floatText($('.hero-fx'), `Цена −${n} HP`, 'dmgf');
+      FX.play('price'); floatText($('.hero-fx'), `Цена −${n} HP`, 'dmgf');
       renderCombat();
-      if (hasRelic('mortar') && C.enemy.hp > 0) { await sleep(120); await hitEnemy(n); }
+      if (C.enemy.hp > 0 && proc('mortar', 'enemy')) { await sleep(120); await strike(n, 'roots'); }
     },
     // сжечь карты из руки по условию, вернуть их количество
     exhaustHand(pred) {
@@ -1201,6 +1229,18 @@
       return out.length;
     },
   };
+
+  // удар по врагу со своей анимацией: сначала эффект (снаряд долетает), потом урон
+  async function strike(dmg, kind = 'bonk') {
+    await FX.play(kind, 'enemy');
+    return hitEnemy(dmg, true);
+  }
+  // талисман сработал: его значок всплывает над героем (или врагом)
+  function proc(id, where) {
+    if (!hasRelic(id)) return false;
+    if (screen.className === 'scr-combat') FX.relic(RELICS[id].art, RELICS[id].name, where);
+    return true;
+  }
 
   function calcDmg(base) {
     if (!C) return base;
@@ -1259,7 +1299,8 @@
       <div class="hstatus"></div>
       <div class="hero-fx"></div>
       <div class="hand"></div>
-      <div class="hb-slot"></div>`;
+      <div class="hb-slot"></div>
+      <div class="fxlayer"></div>`;
     startPlayerTurn();
   }
 
@@ -1279,39 +1320,44 @@
     C.turn++;
     C.playedTurn = 0; C.burstsTurn = 0; C.last = null; C.atkTurn = false; C.free = false;
     // защита сгорает, но Горячий камень сохраняет её часть
-    if (!C.charms.standfast) C.block = hasRelic('hotstone') ? Math.min(C.block, 6) : 0;
-    if (C.turn === 1 && hasRelic('bell')) C.block += 6;
-    if (hasRelic('thimble')) C.block += 2;
-    if (C.charms.mittens) C.block += C.charms.mittens;
+    if (!C.charms.standfast) C.block = C.block > 0 && proc('hotstone') ? Math.min(C.block, 6) : 0;
     const first = C.turn === 1;
-    C.energy = maxEnergy() + (first && hasRelic('scarf') ? 1 : 0) + (C.turn % 3 === 0 && hasRelic('musicbox') ? 2 : 0)
-      + (first && hasRelic('northstar') ? 2 : 0) + (C.charms.aurora || 0) + (C.vane ? 1 : 0) + (C.medal ? 1 : 0);
+    if (first) startProcs();
+    if (first && proc('bell')) { C.block += 6; FX.play('shield'); }
+    if (proc('thimble')) C.block += 2;
+    if (C.charms.mittens) C.block += C.charms.mittens;
+    C.energy = maxEnergy() + (C.charms.aurora || 0) + (C.vane ? 1 : 0) + (C.medal ? 1 : 0);
+    if (first && proc('scarf')) C.energy += 1;
+    if (C.turn % 3 === 0 && proc('musicbox')) C.energy += 2;
+    if (first && proc('northstar')) C.energy += 2;
     if (C.sap) { C.energy = Math.max(0, C.energy - C.sap); toast(`Кукушка сбила с ритма: −${C.sap} энергии`); }
     C.sap = 0; C.vane = false; C.medal = false;
-    let n = handSize() + (C.charms.compass || 0) + (first && hasRelic('sled') ? 2 : 0) + (first && hasRelic('northstar') ? 2 : 0);
+    let n = handSize() + (C.charms.compass || 0) + (first && proc('sled') ? 2 : 0) + (first && hasRelic('northstar') ? 2 : 0);
     if (C.bury) { n = Math.max(1, n - C.bury); toast(`Метелица замела: −${C.bury} карты`); C.bury = 0; }
     drawCards(n);
-    if (first && hasRelic('mug')) { run.hp = Math.min(run.maxHp, run.hp + 3); }
+    if (first && proc('mug')) { run.hp = Math.min(run.maxHp, run.hp + 3); FX.play('heal'); }
     SND.sfx(C.turn === 1 ? 'draw' : 'turn');
     renderCombat(true);
     // особенности героев в начале хода
-    if (first && hasRelic('honeypot')) api.ginger(2);
-    if (hasRelic('moldform')) api.ginger(1);
-    if (hasRelic('grindwheel')) api.sharpen(1, true);
+    if (first && proc('honeypot')) api.ginger(2);
+    if (proc('moldform')) api.ginger(1);
+    if (proc('grindwheel')) api.sharpen(1, true);
     if (C.charms.apprentice) api.sharpen(2 * C.charms.apprentice, true);
-    if (hasRelic('bridgerail')) { C.thorns += hasRelic('wreath') ? 2 : 1; }
+    if (proc('bridgerail')) { C.thorns += hasRelic('wreath') ? 2 : 1; FX.play('thorns'); }
     renderCombat();
     // Доставки с прошлого хода и чары
     const dels = C.deliveries; C.deliveries = [];
     for (const d of dels) {
       for (let k = 0; k < (hasRelic('horn') ? 2 : 1); k++) {
         if (C.enemy.hp <= 0) break;
+        if (k === 1) proc('horn');
         toast(`Доставка: ${d.name}`);
         await sleep(250);
+        C.fx = 'arrive'; C.fxHits = 0;
         await d.fn(api);
         renderCombat();
       }
-      if (hasRelic('oilcan') && C.enemy.hp > 0) api.block(4);
+      if (C.enemy.hp > 0 && proc('oilcan')) api.block(4);
     }
     if (C.charms.stubborn) C.str += C.charms.stubborn;
     if (C.charms.hearth && C.enemy.hp > 0) api.burn(C.charms.hearth);
@@ -1322,6 +1368,17 @@
     if (C.enemy.hp <= 0) { await winCombat(); return; }
     busy = false;
     renderCombat();
+  }
+
+  // талисманы, которые сработали в начале боя
+  function startProcs() {
+    const at = { inkwell: 'enemy', frostring: 'enemy', frostglass: 'enemy', chimneycap: 'enemy' };
+    ['feather', 'eternaloil', 'pinecone', 'dogfriend', 'bookmark', 'inkwell', 'frostring', 'frostglass', 'chimneycap'].forEach((id) => proc(id, at[id]));
+    if (hasRelic('chimneycap')) FX.play('fire', 'enemy');
+    if (hasRelic('frostring') || hasRelic('frostglass')) FX.play('frost', 'enemy');
+    if (hasRelic('inkwell')) FX.play('weak', 'enemy');
+    if (hasRelic('dogfriend')) FX.play('growl');
+    if (hasRelic('pinecone')) FX.play('thorns');
   }
 
   function currentIntents() {
@@ -1416,16 +1473,26 @@
     }).join('');
   }
 
-  async function playCard(i) {
+  // почему карту сейчас нельзя разыграть (null — можно)
+  function cantPlay(c) {
+    const cost = playCost(c);
+    if (cost == null) return 'Эту карту нельзя разыграть';
+    if (cost > C.energy) return 'Не хватает энергии';
+    const price = CARDS[c.id].price ? CARDS[c.id].price(c.up) : 0;
+    if (price && price >= run.hp) return 'Не хватит здоровья, чтобы заплатить Цену';
+    return null;
+  }
+
+  // dragEl — карта, которую вытянули из руки: она улетает с того места, где её отпустили
+  async function playCard(i, dragEl) {
     const c = C.hand[i];
     const cd = CARDS[c.id];
+    const why = cantPlay(c);
+    if (why) { SND.sfx('deny'); toast(why); return; }
     const cost = playCost(c);
-    if (cost == null) { SND.sfx('deny'); toast('Эту карту нельзя разыграть'); return; }
-    if (cost > C.energy) { SND.sfx('deny'); toast('Не хватает энергии'); return; }
     const price = cd.price ? cd.price(c.up) : 0;
-    if (price && price >= run.hp) { SND.sfx('deny'); toast('Не хватит здоровья, чтобы заплатить Цену'); return; }
     busy = true; selected = -1;
-    const el = $(`.hand [data-hi="${i}"]`);
+    const el = dragEl || $(`.hand [data-hi="${i}"]`);
     SND.sfx('card');
     if (el) { el.classList.add('fly'); await sleep(220); }
     C.energy -= cost;
@@ -1434,11 +1501,13 @@
     if (price) await api.price(price);
     if (cd.type === 'atk' && !C.firstAtk) {
       C.firstAtk = true;
-      if (hasRelic('magnifier')) api.vuln(2);
+      if (proc('magnifier', 'enemy')) api.vuln(2);
     }
+    C.fx = ATK_FX[c.id]; C.fxHits = 0;
+    if (CAST_FX[c.id]) FX.play(...CAST_FX[c.id]);
     await cd.play(api, c.up, c);
     // Осколок зеркала: первая карта хода срабатывает ещё раз
-    if (hasRelic('mirrorshard') && C.playedTurn === 0 && cd.type !== 'status' && C.enemy.hp > 0 && run.hp > 0) {
+    if (C.playedTurn === 0 && cd.type !== 'status' && C.enemy.hp > 0 && run.hp > 0 && proc('mirrorshard')) {
       floatText($('.hero-fx'), 'Отражение!', 'weakf'); await sleep(200);
       await cd.play(api, c.up, c);
     }
@@ -1454,16 +1523,16 @@
     if (C.playedTurn >= 8) ach.flag('combo');
     achCheck();
     // отклики чар и талисманов на розыгрыш
-    if (cd.type === 'skill' && C.charms.inkpen && C.enemy.hp > 0) await hitEnemy(C.charms.inkpen);
-    if (cd.type === 'skill' && hasRelic('buckle')) api.block(3);
+    if (cd.type === 'skill' && C.charms.inkpen && C.enemy.hp > 0) await strike(C.charms.inkpen, 'ink');
+    if (cd.type === 'skill' && proc('buckle')) api.block(3);
     if (c.id === 'gingerbread') {
       C.ginger++; ach.add('ginger');
-      if (C.charms.gingerhouse && C.enemy.hp > 0) await hitEnemy(4 * C.charms.gingerhouse);
+      if (C.charms.gingerhouse && C.enemy.hp > 0) await strike(4 * C.charms.gingerhouse, 'crumbs');
     }
-    if (hasRelic('milestone') && C.playedTurn % 5 === 0 && C.enemy.hp > 0) { floatText($('.enemy-fx'), 'Верста!', 'weakf'); await hitEnemy(8); }
+    if (C.playedTurn % 5 === 0 && C.enemy.hp > 0 && proc('milestone', 'enemy')) { floatText($('.enemy-fx'), 'Верста!', 'weakf'); await strike(8, 'heavy'); }
     if (C.charms.rhythm && C.playedTurn % 3 === 0 && C.enemy.hp > 0) await api.flame(C.charms.rhythm);
-    if (hasRelic('stampbook') && C.playedTotal % 6 === 0) api.energy(1);
-    if (hasRelic('wingboots') && C.playedTurn % 4 === 0) { api.energy(1); drawCards(1); }
+    if (C.playedTotal % 6 === 0 && proc('stampbook')) api.energy(1);
+    if (C.playedTurn % 4 === 0 && proc('wingboots')) { api.energy(1); drawCards(1); }
     // приёмы врага в ответ на ваши карты
     const ed = ENEMIES[C.id];
     if (ed.alarm && cd.type === 'skill' && C.enemy.hp > 0) { C.enemy.block += ed.alarm; SND.sfx('clank'); floatText($('.enemy-fx'), `Тук-тук! +${ed.alarm}`, 'blockf'); }
@@ -1488,7 +1557,8 @@
     p.classList.remove('lunge'); void p.offsetWidth; p.classList.add('lunge');
   }
 
-  async function hitEnemy(dmg) {
+  // quiet: звук удара уже сыграла анимация приёма
+  async function hitEnemy(dmg, quiet) {
     const e = C.enemy;
     if (e.mist > 0 && dmg > e.mist) dmg = e.mist; // туман глушит сильные удары
     const absorbed = Math.min(e.block, dmg);
@@ -1500,7 +1570,8 @@
     nestCheck();
     const el = $('#enemy');
     el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
-    SND.sfx(real > 0 ? 'hit' : 'clank', Math.min(1.4, 0.6 + real / 15));
+    if (real <= 0) SND.sfx('clank');
+    else if (!quiet) SND.sfx('hit', Math.min(1.4, 0.6 + real / 15));
     floatText($('.enemy-fx'), real > 0 ? `-${real}` : 'Блок', real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
     await sleep(260);
@@ -1527,13 +1598,14 @@
     await sleep(380);
     ach.add('bursts');
     if (++C.burstsTurn >= 2) ach.flag('dblburst');
-    let dmg = BURST_DMG + (hasRelic('flint') ? 5 : 0);
+    let dmg = BURST_DMG + (proc('flint') ? 5 : 0);
     if (C.enemy.vuln > 0) dmg = Math.floor(dmg * 1.5);
-    await hitEnemy(dmg);
-    if (hasRelic('stub')) api.heal(2);
-    if (hasRelic('snowglobe') && C.enemy.hp > 0) api.weak(1);
-    if (hasRelic('ivalamp')) C.flame += 1;
-    if (hasRelic('wickcutter')) api.block(4);
+    FX.play('flash', 'enemy');
+    await hitEnemy(dmg, true);
+    if (proc('stub')) api.heal(2);
+    if (C.enemy.hp > 0 && proc('snowglobe', 'enemy')) api.weak(1);
+    if (proc('ivalamp')) C.flame += 1;
+    if (proc('wickcutter')) api.block(4);
     setTimeout(() => fx.remove(), 500);
     renderCombat();
   }
@@ -1543,8 +1615,9 @@
     C.block -= absorbed;
     let real = dmg - absorbed;
     // Подкова смягчает первый пропущенный удар в бою
-    if (real > 1 && hasRelic('horseshoe') && !C.shoe) { C.shoe = true; real = 1; floatText($('.hero-fx'), 'Подкова!', 'blockf'); }
+    if (real > 1 && !C.shoe && proc('horseshoe')) { C.shoe = true; real = 1; floatText($('.hero-fx'), 'Подкова!', 'blockf'); }
     loseHp(real);
+    if (real > 0) FX.play('claw'); else FX.play('shield');
     const p = $('#heroPortrait');
     if (p) { p.classList.remove('hurt'); void p.offsetWidth; p.classList.add('hurt'); }
     SND.sfx(real > 0 ? 'hurt' : 'clank');
@@ -1552,7 +1625,7 @@
     renderCombat();
     await sleep(300);
     // окованный ставень: удар целиком в защиту — враг получает в ответ
-    if (hasRelic('ironshutter') && dmg > 0 && real === 0 && absorbed > 0 && C.enemy.hp > 0) await hitEnemy(4);
+    if (dmg > 0 && real === 0 && absorbed > 0 && C.enemy.hp > 0 && proc('ironshutter', 'enemy')) await strike(4, 'heavy');
     return real;
   }
 
@@ -1560,9 +1633,9 @@
     if (n <= 0) return;
     run.hp = Math.max(0, run.hp - n);
     // Последняя свеча: один раз за забег спасает от гибели
-    if (run.hp <= 0 && hasRelic('lastcandle') && !run.candle) {
+    if (run.hp <= 0 && !run.candle && proc('lastcandle')) {
       run.candle = true; run.hp = Math.ceil(run.maxHp / 2);
-      SND.sfx('heal'); toast('Последняя свеча вспыхнула: половина HP');
+      SND.sfx('heal'); FX.play('heal'); toast('Последняя свеча вспыхнула: половина HP');
     }
     C.hpLost = true;
     app.classList.remove('redflash'); void app.offsetWidth; app.classList.add('redflash');
@@ -1575,11 +1648,11 @@
     let ribbon = null;
     if (hasRelic('ribbon')) {
       const cands = C.hand.filter((c) => !CARDS[c.id].retain && CARDS[c.id].type !== 'status');
-      if (cands.length) ribbon = cands.reduce((a, b) => ((costOf(b) || 0) > (costOf(a) || 0) ? b : a));
+      if (cands.length) { ribbon = cands.reduce((a, b) => ((costOf(b) || 0) > (costOf(a) || 0) ? b : a)); proc('ribbon'); }
     }
     let dread = 0;
-    C.vane = hasRelic('vanefeather') && C.hand.length === 0;
-    C.medal = hasRelic('medal') && C.playedTurn >= 6;
+    C.vane = C.hand.length === 0 && proc('vanefeather');
+    C.medal = C.playedTurn >= 6 && proc('medal');
     if (C.charms.nightshift && C.energy > 0) api.block(C.charms.nightshift * C.energy);
     for (const c of C.hand) {
       const cd = CARDS[c.id];
@@ -1605,11 +1678,12 @@
     if (!ENEMIES[C.id].plating) e.block = 0; // у Ледяного Рыцаря латы
     e.mist = 0; // туман рассеивается, когда враг снова ходит
     if (e.burn > 0) {
+      FX.play('fire', 'enemy');
       e.hp -= e.burn;
       floatText($('.enemy-fx'), `-${e.burn}`, 'burnf');
       $('#enemy').classList.add('hit');
       e.burn--;
-      if (hasRelic('stokerglove') && e.hp > 0) api.block(2);
+      if (e.hp > 0 && proc('stokerglove')) api.block(2);
       nestCheck();
       renderCombat();
       await sleep(400);
@@ -1624,7 +1698,7 @@
       for (const it of currentIntents()) {
         if (it.k === 'attack' || it.k === 'snuff' || it.k === 'steal') {
           if (it.k === 'snuff') {
-            if (hasRelic('eternaloil')) floatText($('.hero-fx'), 'Огоньки не гаснут', 'blockf');
+            if (proc('eternaloil')) floatText($('.hero-fx'), 'Огоньки не гаснут', 'blockf');
             else { C.flame = 0; SND.sfx('snuff'); floatText($('.hero-fx'), 'Огоньки погасли', 'weakf'); }
           }
           for (let h = 0; h < (it.hits || 1); h++) {
@@ -1636,7 +1710,7 @@
             if (it.leech && real > 0 && e.hp > 0) { const b = e.hp; e.hp = Math.min(e.max, e.hp + real); if (e.hp > b) { SND.sfx('heal'); floatText($('.enemy-fx'), `+${e.hp - b}`, 'healf'); } }
             if (run.hp <= 0 || e.hp <= 0) break;
             // Шипы героя ранят врага за каждый удар
-            if (C.thorns > 0) { await hitEnemy(C.thorns); if (e.hp <= 0) { ach.flag('thornskill'); break; } }
+            if (C.thorns > 0) { await strike(C.thorns, 'spikes'); if (e.hp <= 0) { ach.flag('thornskill'); break; } }
           }
           if (it.k === 'steal' && run.hp > 0) {
             const g = Math.min(run.gold, it.gold);
@@ -1851,6 +1925,52 @@
   menuBtn.innerHTML = '<svg viewBox="0 0 40 40"><path d="M10 12 h20 M10 20 h20 M10 28 h20" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/></svg>';
   menuBtn.addEventListener('click', (e) => { e.stopPropagation(); SND.unlock(); SND.sfx('click'); if (run) showPause(); else showGlossary(); });
 
+  /* ---------- Карту можно вытянуть из руки: отпущенная выше руки, она разыгрывается ---------- */
+  const PLAY_Y = 540; // выше этой линии (чуть над рукой) карта сыграет
+  let drag = null; let dragEndAt = 0;
+  const toLocal = (e) => { const r = app.getBoundingClientRect(); const k = r.width / 400; return { x: (e.clientX - r.left) / k, y: (e.clientY - r.top) / k }; };
+  app.addEventListener('pointerdown', (e) => {
+    if (screen.className !== 'scr-combat' || busy || !C || drag || e.button > 0) return;
+    const el = e.target.closest('.hand [data-hi]');
+    if (!el) return;
+    const p = toLocal(e);
+    drag = { i: +el.dataset.hi, el, x0: p.x, y0: p.y, on: false, ready: false, id: e.pointerId };
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const p = toLocal(e);
+    const dx = p.x - drag.x0; const dy = p.y - drag.y0;
+    if (!drag.on) {
+      if (Math.hypot(dx, dy) < 12 || busy) return;
+      drag.on = true;
+      if (selected >= 0) { selected = -1; renderHand(false); drag.el = $(`.hand [data-hi="${drag.i}"]`); }
+      if (!drag.el) { drag = null; return; }
+      drag.el.classList.add('drag'); SND.sfx('draw');
+    }
+    drag.el.style.setProperty('--dx', `${dx}px`); drag.el.style.setProperty('--dy', `${dy}px`);
+    const ready = p.y < PLAY_Y && dy < -50;
+    if (ready !== drag.ready) {
+      drag.ready = ready; drag.el.classList.toggle('ready', ready);
+      app.classList.toggle('aim', ready && CARDS[C.hand[drag.i].id].type === 'atk');
+      if (ready) SND.sfx('click');
+    }
+  });
+  function endDrag(e, cancel) {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null;
+    app.classList.remove('aim');
+    if (!d.on) return; // простое касание: дальше сработает click
+    dragEndAt = performance.now();
+    if (!cancel && d.ready && !busy && C && C.hand[d.i]) {
+      const why = cantPlay(C.hand[d.i]);
+      if (!why) { playCard(d.i, d.el); return; }
+      SND.sfx('deny'); toast(why);
+    }
+    d.el.classList.remove('drag', 'ready'); // карта возвращается в руку
+  }
+  window.addEventListener('pointerup', (e) => endDrag(e));
+  window.addEventListener('pointercancel', (e) => endDrag(e, true));
+
   app.addEventListener('click', (e) => {
     SND.unlock();
     if (overlay.contains(e.target)) { if (!e.target.matches('input')) SND.sfx('click'); return; }
@@ -1861,7 +1981,7 @@
     const t = e.target.closest('[data-act], [data-hi]');
 
     if (screen.className === 'scr-combat') {
-      if (busy) return;
+      if (busy || performance.now() - dragEndAt < 350) return;
       if (t && t.dataset.hi != null) {
         const i = +t.dataset.hi;
         if (selected === i || SETTINGS.oneTap) playCard(i);

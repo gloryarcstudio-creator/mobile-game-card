@@ -69,9 +69,9 @@
         <circle cx="26" cy="-22" r="2" fill="#e6c45a"/>
       </g>
       <!-- снег и дорога -->
-      <path d="M0 600 Q100 585 200 598 T400 592 V860 H0z" fill="url(#snowG)"/>
+      <path d="M0 600 Q100 585 200 598 T400 592 V1200 H0z" fill="url(#snowG)"/>
       <path d="M0 600 Q100 585 200 598 T400 592" fill="none" stroke="${p.snowEdge}" stroke-width="3" opacity="0.7"/>
-      <path d="M150 860 Q190 700 ${200 - 10 * sc} ${hy} L${200 + 10 * sc} ${hy} Q210 700 250 860z" fill="${p.snowBot}" opacity="0.55"/>
+      <path d="M110 1120 L150 860 Q190 700 ${200 - 10 * sc} ${hy} L${200 + 10 * sc} ${hy} Q210 700 250 860 L290 1120z" fill="${p.snowBot}" opacity="0.55"/>
       ${lamp(110)}${lamp(290)}
       ${pine(-6, 640, 190, p.wall, p.roofHi)}${pine(408, 650, 210, p.wall, p.roofHi)}${pine(70, 612, 110, p.wall2, p.roofHi)}${pine(334, 618, 120, p.wall2, p.roofHi)}
     `;
@@ -107,7 +107,7 @@
           <stop offset="0.6" stop-color="${p.skyMid}"/>
           <stop offset="1" stop-color="${p.skyBot}"/>
         </linearGradient>
-        <linearGradient id="snowG" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="snowG" gradientUnits="userSpaceOnUse" x1="0" y1="585" x2="0" y2="860">
           <stop offset="0" stop-color="${p.snowTop}"/>
           <stop offset="1" stop-color="${p.snowBot}"/>
         </linearGradient>
@@ -128,6 +128,8 @@
           <stop offset="1" stop-color="${p.fog}" stop-opacity="0"/>
         </radialGradient>
       </defs>
+      <g class="bg-cam">
+      <rect y="-300" width="400" height="1160" fill="${p.skyTop}"/>
       <rect width="400" height="860" fill="url(#sky)"/>
       ${stars}
       ${moonHole}
@@ -159,7 +161,7 @@
       </g>
       ${lamps}
       <!-- снег на земле -->
-      <path d="M0 600 Q100 585 200 598 T400 592 V860 H0z" fill="url(#snowG)"/>
+      <path d="M0 600 Q100 585 200 598 T400 592 V1200 H0z" fill="url(#snowG)"/>
       <path d="M0 600 Q100 585 200 598 T400 592" fill="none" stroke="${p.snowEdge}" stroke-width="3" opacity="0.7"/>
       <!-- забор -->
       <g stroke="#17121f" stroke-width="2.5" fill="${p.fence}">
@@ -167,6 +169,7 @@
         <path d="M128 578 h52" fill="none"/>
       </g>
       `}
+      </g>
     `, 'bg-svg');
   }
 
@@ -1578,5 +1581,5 @@
     return svg('0 0 40 40', body, 'snd-ico');
   }
 
-  window.Art = { soundIcon, background, mixSky, sampleSky, hero, enemy: (id) => (enemiesArt[id] || enemiesArt.inkcat)(), icon, intentIcon, flame: (s = 1) => svg('0 0 100 100', flameShape(50, 44, s * 1.2), 'icon') };
+  window.Art = { soundIcon, background, mixSky, sampleSky, hero, enemy: (id) => (enemiesArt[id] || enemiesArt.inkcat)(), icon, intentIcon, flame: (s = 1) => svg('0 0 100 100', flameShape(50, 44, s * 1.2), 'icon'), dog: (o = {}) => svg('-34 -34 68 68', dogHead(0, 0, 1, o), 'icon') };
 })();
