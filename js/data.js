@@ -908,6 +908,7 @@
       id: 'well', title: 'Старый колодец', art: 'well',
       text: 'Из колодца доносится тихое «спасибо» на каждую упавшую монетку.',
       options: [
+        { text: 'Загадать желание', hint: '+20 HP и +15 монет', ad: true, act: (r, a) => { a.heal(20); r.gold += 15; return 'Колодец звякнул, вода засияла, и на сруб выкатились монетки.'; } },
         { text: 'Бросить 15 монет', hint: '−15 монет, +10 HP', can: (r) => r.gold >= 15, act: (r, a) => { r.gold -= 15; a.heal(10); return 'Вода засветилась тёплым светом. Тебе стало легче.'; } },
         { text: 'Заглянуть внутрь', hint: '50%: карта / −5 HP', act: (r, a) => { if (Math.random() < 0.5) { a.giveRandomCard('common'); return 'На дне блеснула карта. Ты выловила её ведром.'; } a.damage(5); return 'Из колодца вылетела стая летучих мышей!'; } },
         { text: 'Пройти мимо', hint: 'Ничего', act: () => 'Ты пошла дальше. Колодец обиженно булькнул.' },
@@ -918,6 +919,7 @@
       text: 'Кукольник без лица протягивает тебе нитку: «Сыграй со мной — получишь редкость».',
       options: [
         { text: 'Сыграть', hint: '−6 HP, редкая карта', act: (r, a) => { a.damage(6); a.giveRandomCard('rare'); return 'Нитка больно дёрнула палец, но в руке осталась редкая карта.'; } },
+        { text: 'Досмотреть спектакль', hint: 'Редкая карта без потери HP', ad: true, act: (r, a) => { a.giveRandomCard('rare'); return 'Куклы раскланялись, и кукольник вручил тебе редкую карту.'; } },
         { text: 'Купить куклу', hint: '−30 монет, талисман', can: (r) => r.gold >= 30, act: (r, a) => { r.gold -= 30; a.giveRelic(); return 'Кукла подмигнула и превратилась в талисман.'; } },
         { text: 'Отказаться', hint: 'Ничего', act: () => 'Кукольник растворился в снегопаде.' },
       ],
@@ -944,6 +946,7 @@
       text: 'В сугробе блестят монеты. Рядом следы чернильных лап.',
       options: [
         { text: 'Собрать', hint: '+30 монет, бой?', act: (r, a) => { r.gold += 30; if (Math.random() < 0.4) { a.startFight('inkcat'); return 'Хозяин кошелька вернулся!'; } return 'Повезло: никто не заметил.'; } },
+        { text: 'Посветить фонарём', hint: '+60 монет, без боя', ad: true, act: (r) => { r.gold += 60; return 'В свете фонаря нашлись все монетки до одной, а хозяин так и не пришёл.'; } },
         { text: 'Оставить', hint: 'Ничего', act: () => 'Чужого не надо.' },
       ],
     },
@@ -952,6 +955,7 @@
       text: 'У горна греется снегирь в кожаном фартуке. «Наточу что угодно, хоть письмо!»',
       options: [
         { text: 'Наточить карту', hint: 'Улучшить карту на выбор', act: (r, a) => { a.upgradePrompt(); return null; } },
+        { text: 'Заказать большую работу', hint: 'Улучшить 3 случайные карты', ad: true, act: (r, a) => { const n = a.upgradeRandom(3); return n ? 'Снегирь трудился без отдыха, и три карты заблестели.' : 'Точить оказалось нечего.'; } },
         { text: 'Помочь у горна', hint: '−6 HP, улучшить 2 случайные', act: (r, a) => { a.damage(6); const n = a.upgradeRandom(2); return n ? 'Руки в саже, зато две карты стали острее.' : 'Точить оказалось нечего.'; } },
         { text: 'Пройти мимо', hint: 'Ничего', act: () => 'Снегирь пожал плечами и снова раздул мехи.' },
       ],
@@ -974,11 +978,20 @@
         { text: 'Уйти', hint: 'Ничего', act: () => 'Отражение помахало вслед.' },
       ],
     },
+    {
+      id: 'showbooth', title: 'Балаган на площади', art: 'showbooth',
+      text: 'Под пёстрым шатром крутят волшебный фонарь: на простыне сменяются картинки, а зрителям после представления раздают подарки.',
+      options: [
+        { text: 'Посмотреть представление', hint: 'Талисман и +20 монет', ad: true, act: (r, a) => { a.giveRelic(); r.gold += 20; return 'Картинки погасли, зрители захлопали, а балаганщик сунул тебе в руку подарок.'; } },
+        { text: 'Пройти мимо', hint: 'Ничего', act: () => 'Из шатра доносились смех и музыка, но письмо не ждёт.' },
+      ],
+    },
   ];
 
   /* Герои. Каждый начинает со своей колодой и особенностью (талисман tier: 'class').
      favored — общие карты под его билд: в наградах и лавке они выпадают чаще.
-     f — героиня (для окончаний в тексте), who/whom — как назвать героя в сюжете. */
+     f — героиня (для окончаний в тексте), who/whom — как назвать героя в сюжете.
+     paid — герой открывается покупкой в магазине (js/store.js). */
   const CLASSES = {
     lamp: {
       name: 'Ива', role: 'Фонарщица', f: true, who: 'фонарщица Ива', whom: 'фонарщице Иве', look: 'lamp',
@@ -1016,21 +1029,21 @@
       favored: ['wind', 'cocoa', 'flurry', 'finale', 'inkpen', 'rhythm', 'carbon', 'sbiten', 'compass', 'breath', 'drafts', 'mittens', 'chimes'],
     },
     grinder: {
-      name: 'Савва', role: 'Точильщик', f: false, who: 'точильщик Савва', whom: 'точильщику Савве', look: 'grinder',
+      name: 'Савва', role: 'Точильщик', f: false, who: 'точильщик Савва', whom: 'точильщику Савве', look: 'grinder', paid: true,
       hp: 40, gold: 20, relic: 'grindwheel', build: 'Заточка и Решимость',
       about: 'Точит карты прямо в бою: заточенная карта до конца боя работает как улучшенная.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'hone', 'gritsparks'],
       favored: ['heavy', 'heavybag', 'snowball', 'whistle', 'cocoa', 'hornblow', 'stubborn', 'secret', 'lastword', 'carbon', 'returnaddr', 'snowkick', 'registered', 'lastlight'],
     },
     shepherd: {
-      name: 'Луша', role: 'Пастушка', f: true, who: 'пастушка Луша', whom: 'пастушке Луше', look: 'shepherd',
+      name: 'Луша', role: 'Пастушка', f: true, who: 'пастушка Луша', whom: 'пастушке Луше', look: 'shepherd', paid: true,
       hp: 36, gold: 20, relic: 'dogfriend', build: 'Верный пёс и команды',
       about: 'Ходит с псом Дружком. Он кусает врага каждый ход, а команды делают его злее.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'sic', 'heel'],
       favored: ['stamp', 'redseal', 'cancel', 'wax', 'shadow', 'cloak', 'umbrella', 'mittens', 'lullaby', 'frostbite', 'nightshift', 'icelantern', 'iceprison', 'eternalwinter'],
     },
     herbalist: {
-      name: 'Ульяна', role: 'Знахарка', f: true, who: 'знахарка Ульяна', whom: 'знахарке Ульяне', look: 'herbalist',
+      name: 'Ульяна', role: 'Знахарка', f: true, who: 'знахарка Ульяна', whom: 'знахарке Ульяне', look: 'herbalist', paid: true,
       hp: 44, gold: 15, relic: 'mortar', build: 'Цена здоровья и травы',
       about: 'Платит за сильные карты своим здоровьем, а потом лечится травами.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'bitterroot', 'chamomile'],

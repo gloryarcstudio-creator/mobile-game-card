@@ -228,6 +228,7 @@
   let selected = -1;
 
   function newRun(cls = SETTINGS.cls, diff = SETTINGS.diff) {
+    snapFight = null; snapStep = null;
     STATS.runs++; saveStats();
     const h = CLASSES[cls] || CLASSES.lamp;
     const d = DIFFICULTIES[diff] || DIFFICULTIES[1];
@@ -407,6 +408,7 @@
         ${s ? `<button class="btn big" data-act="continue">Продолжить<small>${info}</small></button>` : ''}
         <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">Новая игра</button>
         <button class="btn ghost achbtn" data-act="ach">${ICO.medal}<span>Достижения<small>${achCount()} из ${ACH_LIST.length}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
+        <button class="btn ghost achbtn storebtn" data-act="store">${ICO.gift}<span>Магазин<small>Герои и режим без рекламы</small></span></button>
         <div class="menu-row"><button class="btn ghost" data-act="gloss">Справочник</button><button class="btn ghost" data-act="settings">Настройки</button></div>
       </div>
       <p class="savehint">${s ? 'Прогресс сохраняется после каждого уровня' : ''}</p>`;
@@ -450,6 +452,9 @@
 
   /* ---------- Настройки ---------- */
   const ICO = {
+    gift: '<svg viewBox="0 0 40 40"><rect x="7" y="16" width="26" height="19" rx="2" fill="#c8423a" stroke="#17121f" stroke-width="2.2"/><rect x="5" y="11" width="30" height="7" rx="2" fill="#e05a4a" stroke="#17121f" stroke-width="2.2"/><path d="M20 11 v24" stroke="#f3d27c" stroke-width="4"/><path d="M20 11 q-9 -9 -11 -2 q0 4 11 2 q9 -9 11 -2 q0 4 -11 2" fill="#f3d27c" stroke="#17121f" stroke-width="2" stroke-linejoin="round"/></svg>',
+    lock: '<svg viewBox="0 0 40 40"><path d="M13 18 v-5 a7 7 0 0 1 14 0 v5" fill="none" stroke="#17121f" stroke-width="6"/><path d="M13 18 v-5 a7 7 0 0 1 14 0 v5" fill="none" stroke="#c9ccd8" stroke-width="3"/><rect x="9" y="17" width="22" height="17" rx="3" fill="#f3d27c" stroke="#17121f" stroke-width="2.4"/><circle cx="20" cy="24" r="2.6" fill="#17121f"/><path d="M20 25 v4" stroke="#17121f" stroke-width="2.4"/></svg>',
+    ad: '<svg viewBox="0 0 40 40"><rect x="4" y="9" width="32" height="22" rx="5" fill="#f3d27c" stroke="#17121f" stroke-width="2.4"/><path d="M16 14 l10 6 l-10 6z" fill="#c8423a" stroke="#17121f" stroke-width="2" stroke-linejoin="round"/></svg>',
     gear: '<svg viewBox="0 0 40 40"><path d="M17 4 h6 l1 5 l4 2 l4 -3 l4 4 l-3 4 l2 4 l5 1 v6 l-5 1 l-2 4 l3 4 l-4 4 l-4 -3 l-4 2 l-1 5 h-6 l-1 -5 l-4 -2 l-4 3 l-4 -4 l3 -4 l-2 -4 l-5 -1 v-6 l5 -1 l2 -4 l-3 -4 l4 -4 l4 3 l4 -2z" fill="#f3d27c" stroke="#17121f" stroke-width="2" stroke-linejoin="round" transform="translate(20 20) scale(.82) translate(-20 -20)"/><circle cx="20" cy="20" r="5.5" fill="#262d45" stroke="#17121f" stroke-width="2"/></svg>',
     note: '<svg viewBox="0 0 40 40"><path d="M15 29 V9 l16 -4 v20" fill="none" stroke="#f3d27c" stroke-width="3"/><ellipse cx="11" cy="29" rx="5.5" ry="4.5" fill="#f3d27c"/><ellipse cx="27" cy="25" rx="5.5" ry="4.5" fill="#f3d27c"/></svg>',
     stats: '<svg viewBox="0 0 40 40"><path d="M8 32 h26" stroke="#17121f" stroke-width="3" stroke-linecap="round"/><rect x="10" y="18" width="5" height="13" fill="#f3d27c" stroke="#17121f" stroke-width="2"/><rect x="18" y="10" width="5" height="21" fill="#f3d27c" stroke="#17121f" stroke-width="2"/><rect x="26" y="22" width="5" height="9" fill="#f3d27c" stroke="#17121f" stroke-width="2"/></svg>',
@@ -601,7 +606,7 @@
 
   function askReset() {
     showOverlay(`<div class="pause"><h2>Сбросить прогресс?</h2>
-      <p class="ovhint">Сохранённый забег, статистика и достижения будут удалены. Настройки останутся.</p>
+      <p class="ovhint">Сохранённый забег, статистика и достижения будут удалены. Настройки и покупки останутся.</p>
       <button class="btn" data-act="r-yes">Сбросить</button>
       <button class="btn ghost" data-act="r-no">Отмена</button></div>`, (e) => {
       const b = e.target.closest('[data-act]');
@@ -614,6 +619,46 @@
       toast('Прогресс сброшен');
       goTitle();
     });
+  }
+
+  /* ---------- Магазин: платные герои и режим без рекламы (js/store.js) ---------- */
+  const adTag = () => (Store.noAds() ? '<i class="adtag free">Бонус</i>' : `<i class="adtag">${ICO.ad}Реклама</i>`);
+  let storeBackCls = null; // какой герой был выбран, если в магазин пришли с экрана героя
+  function goStore(back = 'title') {
+    C = null; busy = false; setBg(0.45);
+    if (back === 'cls' && screen.className === 'scr-class') storeBackCls = [screen.dataset.cls, +screen.dataset.diff];
+    hideOverlay();
+    screen.className = 'scr-store';
+    screen.dataset.back = back;
+    const P = Store.PRODUCTS;
+    const allHeroes = Store.paidHeroes.every((id) => Store.heroOwned(id));
+    const priceBtn = (id, label) => (Store.owns(id) ? '<span class="owned">Куплено ✓</span>'
+      : `<button class="btn price" data-act="sbuy" data-p="${id}">${label || P[id].price}</button>`);
+    screen.innerHTML = `
+      <div class="clshead"><h2>Магазин</h2><p>Поддержите почту Медовой Горки</p></div>
+      <div class="storelist">
+        ${Store.paidHeroes.map((id) => { const h = CLASSES[id]; return `<div class="sitem">
+          <span class="cp ${id}">${heroArt(id)}</span>
+          <span class="stext"><b>${h.name}<small>${h.role}</small></b><em>${h.build}</em><small>${RELICS[h.relic].desc}</small></span>
+          ${Store.heroOwned(id) ? '<span class="owned">Куплено ✓</span>' : `<button class="btn price" data-act="sbuy" data-p="hero_${id}">${P[`hero_${id}`].price}</button>`}</div>`; }).join('')}
+        <div class="sitem pack ${allHeroes ? 'done' : ''}">
+          <span class="sico">${Store.paidHeroes.map((id) => `<i class="cp ${id}">${heroArt(id)}</i>`).join('')}</span>
+          <span class="stext"><b>Все три героя</b><small>Выгоднее, чем по одному</small></span>
+          ${allHeroes ? '<span class="owned">Куплено ✓</span>' : priceBtn('heroes')}</div>
+        <div class="sitem noads">
+          <span class="sico big">${ICO.ad}</span>
+          <span class="stext"><b>Без рекламы</b><small>Бонусы событий и возрождение после поражения сразу, без роликов</small></span>
+          ${priceBtn('noads')}</div>
+      </div>
+      <p class="storenote">Тестовая версия: покупки не настоящие, деньги не списываются.</p>
+      <div class="clsbtns"><button class="btn ghost" data-act="sback">Назад</button><button class="btn ghost" data-act="srestore">Восстановить покупки</button></div>
+      <button class="sreset" data-act="sreset">Сбросить тестовые покупки</button>`;
+  }
+  async function storeBuy(id, after) {
+    SND.sfx('click');
+    const ok = await Store.buy(id);
+    if (ok) { SND.sfx('relic'); toast(`Куплено: ${Store.PRODUCTS[id].name}`); }
+    after();
   }
 
   /* ---------- Выбор героя перед забегом ---------- */
@@ -632,8 +677,8 @@
     const won = ACH.s.winsDiff || [];
     screen.innerHTML = `
       <div class="clshead"><h2>Кто понесёт письмо?</h2><p>У каждого героя свой путь к победе</p></div>
-      <div class="clsrow">${Object.entries(CLASSES).map(([id, c]) => `<button class="clscard ${id === sel ? 'on' : ''}" data-act="pickcls" data-cls="${id}">
-        <span class="cp ${id}">${heroArt(id)}</span><b>${c.name}</b><small>${c.role}</small></button>`).join('')}</div>
+      <div class="clsrow">${Object.entries(CLASSES).map(([id, c]) => `<button class="clscard ${id === sel ? 'on' : ''} ${Store.heroOwned(id) ? '' : 'locked'}" data-act="pickcls" data-cls="${id}">
+        <span class="cp ${id}">${heroArt(id)}${Store.heroOwned(id) ? '' : `<i class="lockico">${ICO.lock}</i>`}</span><b>${c.name}</b><small>${c.role}</small></button>`).join('')}</div>
       <div class="clsinfo">
         <div class="clsbig ${sel}">${heroArt(sel)}</div>
         <div class="clstext">
@@ -652,7 +697,8 @@
         <div class="dpips">${DIFFICULTIES.map((x, i) => `<button class="dpip d${i} ${i <= diff ? 'on' : ''} ${won.includes(i) ? 'won' : ''}" data-act="diffset" data-d="${i}" aria-label="${x.name}"></button>`).join('')}</div>
         <p class="diffhint">${d.hint}</p>
       </div>
-      <div class="clsbtns"><button class="btn ghost" data-act="title">Назад</button><button class="btn big" data-act="clsgo">В путь</button></div>`;
+      ${Store.heroOwned(sel) ? '<div class="clsbtns"><button class="btn ghost" data-act="title">Назад</button><button class="btn big" data-act="clsgo">В путь</button></div>'
+        : `<div class="clsbtns locked"><button class="btn ghost" data-act="title">Назад</button><button class="btn big buyhero" data-act="sbuy" data-p="hero_${sel}">${ICO.lock}<span>Открыть<small>${Store.PRODUCTS[`hero_${sel}`].price}</small></span></button><button class="btn ghost" data-act="store" data-back="cls">Магазин</button></div>`}`;
   }
   // стартовая колода и собственные карты героя
   function showClassCards(id) {
@@ -764,6 +810,7 @@
     SND.music(mapTrack());
     if (!run.choices) run.choices = genChoices();
     save();
+    snapStep = JSON.stringify(run); // для возрождения «до боя»
     screen.className = 'scr-map';
     screen.innerHTML = `${topBar()}
       <div class="map-hint">${mapHint()}</div>
@@ -898,15 +945,23 @@
       <div class="ev-box"><h2>${ev.title}</h2><p>${ev.text}</p></div>
       <div class="scrolls">${ev.options.map((o, i) => {
         const ok = !o.can || o.can(run);
-        return `<button class="scroll ${ok ? '' : 'off'}" data-act="evopt" data-i="${i}" ${ok ? '' : 'disabled'}>${o.text}<small>${o.hint}</small></button>`;
+        return `<button class="scroll ${ok ? '' : 'off'} ${o.ad ? 'adopt' : ''}" data-act="evopt" data-i="${i}" ${ok ? '' : 'disabled'}>${o.ad ? adTag() : ''}${o.text}<small>${o.hint}</small></button>`;
       }).join('')}</div>
       ${heroBar(false)}`;
     screen.dataset.ev = ev.id;
     ach.put('events', ev.id);
   }
 
-  function eventOption(i) {
+  async function eventOption(i) {
     const ev = EVENTS.find((e) => e.id === screen.dataset.ev);
+    // награда за рекламу: без рекламы (покупка) она выдаётся сразу
+    if (ev.options[i].ad) {
+      busy = true;
+      const seen = await Store.ad(ev.options[i].hint);
+      busy = false;
+      if (!seen) { toast('Реклама не досмотрена, награды нет'); return; }
+      STATS.ads = (STATS.ads || 0) + 1; saveStats();
+    }
     let fought = false;
     evApi.startFight = (id) => { fought = id; };
     const gold0 = run.gold;
@@ -1167,6 +1222,7 @@
   }
 
   function startCombat(enemyId, tier) {
+    snapFight = { run: JSON.stringify(run), enemyId, tier }; // для «начать бой заново»
     const e = ENEMIES[enemyId];
     run.seen[enemyId] = (run.seen[enemyId] || 0) + 1;
     run.recent = [...run.recent, enemyId].slice(-4);
@@ -1725,7 +1781,50 @@
       </div></div>
       <button class="btn big" data-act="title">В главное меню</button>`;
   }
+  /* После поражения можно начать бой заново или вернуться на развилку перед боем:
+     за просмотр рекламы, а в режиме без рекламы сразу. Или закончить забег. */
+  let snapStep = null;
+  let snapFight = null;
   function goDefeat() {
+    if (!snapFight) { endRun(); return; }
+    C = null; busy = false;
+    clearSave();
+    SND.music(null); SND.sfx('defeat');
+    const tag = Store.noAds() ? '' : `<i class="adtag">${ICO.ad}Реклама</i>`;
+    screen.className = 'scr-end lose revive';
+    screen.innerHTML = `<div class="book"><div class="page">
+        <div class="book-art dim">${heroArt()}</div>
+        <h1>Тени настигли</h1>
+        <p class="story">Но письмо ещё можно спасти. Попробуйте этот бой снова или вернитесь на развилку перед ним и выберите другой путь.</p>
+      </div></div>
+      <div class="endbtns">
+        <button class="btn big rv" data-act="revive-fight">${tag}Начать бой заново<small>с теми же HP и колодой, что перед боем</small></button>
+        ${snapStep ? `<button class="btn rv" data-act="revive-step">${tag}Вернуться до боя<small>снова на развилке перед этим боем</small></button>` : ''}
+        <button class="btn ghost" data-act="giveup">Закончить забег</button></div>`;
+  }
+  async function revive(kind) {
+    if (busy) return;
+    busy = true;
+    const seen = await Store.ad(kind === 'fight' ? 'Бой начнётся заново' : 'Вернуться на развилку перед боем');
+    busy = false;
+    if (!seen) { toast('Реклама не досмотрена'); return; }
+    if (!Store.noAds()) { STATS.ads = (STATS.ads || 0) + 1; }
+    STATS.revives = (STATS.revives || 0) + 1; saveStats();
+    SND.sfx('heal');
+    if (kind === 'fight') {
+      const f = snapFight;
+      run = JSON.parse(f.run);
+      save({ t: f.tier, enemy: f.enemyId });
+      setBg();
+      startCombat(f.enemyId, f.tier);
+    } else {
+      run = JSON.parse(snapStep);
+      goMap();
+    }
+    toast('Ещё одна попытка!');
+  }
+  function endRun() {
+    snapFight = null; snapStep = null;
     C = null;
     clearSave();
     STATS.losses++; saveStats();
@@ -1780,7 +1879,15 @@
       case 'retry': goClassSelect(); break;
       case 'pickcls': goClassSelect(t.dataset.cls, +screen.dataset.diff); break;
       case 'diffset': goClassSelect(screen.dataset.cls, +t.dataset.d); break;
-      case 'clsgo': SETTINGS.cls = screen.dataset.cls; SETTINGS.diff = +screen.dataset.diff; saveJSON(SETTINGS_KEY, SETTINGS); if (SETTINGS.skipIntro) newRun(); else goIntro(); break;
+      case 'store': goStore(t.dataset.back || 'title'); break;
+      case 'sback': if (screen.dataset.back === 'cls' && storeBackCls) goClassSelect(...storeBackCls); else goTitle(); break;
+      case 'sbuy': storeBuy(t.dataset.p, () => (screen.className === 'scr-class' ? goClassSelect(screen.dataset.cls, +screen.dataset.diff) : goStore(screen.dataset.back))); break;
+      case 'srestore': Store.restore().then((n) => toast(n ? `Покупки восстановлены: ${n}` : 'Покупок пока нет')); break;
+      case 'sreset': Store.resetTest(); toast('Тестовые покупки сброшены'); goStore(screen.dataset.back); break;
+      case 'revive-fight': revive('fight'); break;
+      case 'revive-step': revive('step'); break;
+      case 'giveup': endRun(); break;
+      case 'clsgo': if (!Store.heroOwned(screen.dataset.cls)) break; SETTINGS.cls = screen.dataset.cls; SETTINGS.diff = +screen.dataset.diff; saveJSON(SETTINGS_KEY, SETTINGS); if (SETTINGS.skipIntro) newRun(); else goIntro(); break;
       case 'clscards': showClassCards(screen.dataset.cls); break;
       case 'title': goTitle(); break;
       case 'continue': continueRun(); break;
@@ -1808,7 +1915,7 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics() };
+  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)) };
 
   achCheck(true);
   goTitle();

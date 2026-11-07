@@ -11,8 +11,12 @@
   // сколько разных противников встречается в текущем сюжете
   const foes = new Set();
   STORY.stages.forEach((g) => [...g.boss, ...g.early, ...g.normals, ...g.elites].forEach((id) => foes.add(id)));
-  const playable = Object.keys(CARDS).filter((k) => CARDS[k].rarity !== 'status').length;
-  const relics = Object.keys(RELICS).filter((k) => RELICS[k].tier !== 'class').length;
+  // карты и талисманы платных героев не нужны для «собрать всё»: цели достижимы без покупок
+  const CLS = window.Data.CLASSES;
+  const paidItem = (x) => x.cls && CLS[x.cls] && CLS[x.cls].paid;
+  const playable = Object.keys(CARDS).filter((k) => CARDS[k].rarity !== 'status' && !paidItem(CARDS[k])).length;
+  const relics = Object.keys(RELICS).filter((k) => RELICS[k].tier !== 'class' && !paidItem(RELICS[k])).length;
+  const freeHeroes = Object.keys(CLS).filter((k) => !CLS[k].paid).length;
   const trophies = Object.keys(RELICS).filter((k) => RELICS[k].tier === 'boss').length;
 
   const CATS = [
@@ -40,7 +44,7 @@
   hero('grinder', 'Острый глаз', 'Доставить письмо за точильщика Савву.');
   hero('shepherd', 'Вдвоём не страшно', 'Доставить письмо за пастушку Лушу.');
   hero('herbalist', 'Горькое лекарство', 'Доставить письмо за знахарку Ульяну.');
-  add('path', 'allheroes', 'Вся почта Горки', 'Доставить письмо каждым героем: {p}.', 's', 'winsCls', Object.keys(window.Data.CLASSES).length, 'i:horn');
+  add('path', 'allheroes', 'Вся почта Горки', 'Доставить письмо разными героями: {p}.', 's', 'winsCls', freeHeroes, 'i:horn');
   // победа на каждом уровне сложности
   const diff = (i, name, art) => add('path', `diff-${i}`, name, `Доставить письмо на сложности «${window.Data.DIFFICULTIES[i].name}».`, 'has', 'winsDiff', 1, art, i);
   diff(0, 'Лёгкой походкой', 'i:tea');
