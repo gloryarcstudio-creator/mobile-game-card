@@ -29,7 +29,7 @@
   const GLOSS = [
     ['Огонёк', `Каждый Огонёк даёт атакам +${FLAME_BONUS} урона. На ${FLAME_MAX} Огоньках лампа вспыхивает и бьёт врага на ${BURST_DMG}.`],
     ['Решимость', 'Каждое очко добавляет +1 урона каждой атаке. Бывает до конца боя или до конца хода.'],
-    ['Уязвим', 'Враг получает на 50% больше урона от атак и Вспышек. Число — сколько ходов это продлится.'],
+    ['Уязвим', 'Враг получает на 50% больше урона от атак, Вспышек и укусов Дружка. Число — сколько ходов это продлится.'],
     ['Ослаблен', 'Враг наносит на 25% меньше урона.'],
     ['Поджог', 'В конце вашего хода враг теряет столько HP, а Поджог слабеет на 1.'],
     ['Шипы', 'Когда враг бьёт вас, он сам получает столько урона. Колючие враги так же ранят вас за каждый удар по ним.'],
@@ -41,13 +41,17 @@
     ['Удержание', 'Карта не сбрасывается в конце хода и остаётся в руке.'],
     ['Сгорает', 'После розыгрыша карта уходит до конца боя.'],
     ['Чары', 'Разыгрываются один раз и действуют до конца боя. Активные чары видны над рукой.'],
+    ['Пряник', 'Пряничница печёт их прямо в бою. Пряник стоит 0, бьёт и даёт защиту, а после розыгрыша сгорает. После боя Пряники исчезают.'],
+    ['Заточка', 'Карта улучшается до конца боя, как у костра. После боя она снова обычная.'],
+    ['Дружок', 'Пёс пастушки. В конце вашего хода он кусает врага на свою Злость. Команды делают его злее или заставляют кусать сразу.'],
+    ['Цена', 'Чтобы сыграть карту, нужно отдать столько HP. Защита не помогает. Последние HP отдать нельзя.'],
     ['Помехи', 'Враги подкидывают в колоду Кляксы, Ледышки, Сургуч и Недоставленные письма. Они исчезают после боя.'],
     ['Кража', 'Некоторые враги крадут монеты. Если победить вора, монеты вернутся.'],
     ['Улучшение', 'У костра, у кузнеца и в лавке карту можно улучшить. Улучшенная карта отмечена плюсом.'],
     ['Талисманы босса', 'После босса стадии можно выбрать один из трёх сильных талисманов. У многих есть цена.'],
     ['Редкость', 'Карты и талисманы бывают пяти редкостей: обычные (серый камень), необычные (зелёный), редкие (синий), эпические (фиолетовый) и легендарные (золотой). Чем сильнее противник, тем чаще после него выпадают редкие. Легендарную карту можно взять в колоду только одну.'],
     ['Приёмы врагов', 'У многих врагов есть свои хитрости: матрёшки раскрываются, самовар закипает, туман глушит удары, шутиха взрывается. Приёмы видны значками под именем врага, нажмите на значок, чтобы прочитать.'],
-    ['Герои', 'У каждого героя своя колода, особенность и карты, которые выпадают только ему. Общие карты под его билд в наградах и лавке встречаются чаще.'],
+    ['Герои', 'У каждого героя своя колода, особенность, карты и талисманы, которые выпадают только ему. Общие карты под его билд в наградах и лавке встречаются чаще.'],
   ];
   const CHARM_TIP = {
     mittens: (n) => `Варежки: в начале хода ${n} защиты`,
@@ -62,6 +66,9 @@
     eternalwinter: (n) => `Вечная зима: в начале хода враг теряет ${2 * n} Силы, а вы получаете ${8 * n} защиты`,
     nightshift: (n) => `Ночная смена: в конце хода ${n} защиты за каждую неистраченную энергию`,
     aurora: (n) => `Северное сияние: в начале хода +${n} энергия`,
+    gingerhouse: (n) => `Пряничный терем: каждый Пряник наносит ещё ${4 * n} урона`,
+    apprentice: (n) => `Подмастерье: в начале хода заточить ${2 * n} карты`,
+    wolfhound: (n) => `Волкодав: Дружок кусает в конце хода ${1 + n} раза`,
   };
 
   const $ = (s, el = document) => el.querySelector(s);
@@ -117,7 +124,7 @@
     flag(k) { if (!ACH.c[k]) { ACH.c[k] = 1; achCheck(); } },
     put(k, item) { const s = ACH.s[k] || (ACH.s[k] = []); if (!s.includes(item)) { s.push(item); achCheck(); } },
   };
-  const achArt = (a) => (a.art === 'h' ? Art.hero() : a.art.startsWith('c:') ? Art.hero(CLASSES[a.art.slice(2)].look)
+  const achArt = (a) => (a.art === 'h' ? heroArt() : a.art.startsWith('c:') ? Art.hero(CLASSES[a.art.slice(2)].look)
     : a.art.startsWith('e:') ? Art.enemy(a.art.slice(2)) : Art.icon(a.art.slice(2)));
   const achStars = (a) => (a.stars ? ` <i class="astars">${'★'.repeat(a.stars)}</i>` : '');
   function achNextToast() {
@@ -294,7 +301,7 @@
     if (c.retain) desc += ' Удержание.';
     if (c.exhaust && c.type !== 'status') desc += ' Сгорает.';
     const plain = desc.replace(/<[^>]+>/g, '');
-    return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${extra}" ${attrs}>
+    return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${inst.sharp ? 'sharp' : ''} ${extra}" ${attrs}>
       <div class="cost ${cost == null ? 'none' : ''}"><span>${cost == null ? '✕' : cost}</span></div>
       <div class="ctitle"><span>${c.name}${inst.up ? '<i>+</i>' : ''}</span></div>
       <div class="cart">${Art.icon(c.art)}</div>
@@ -328,7 +335,7 @@
   }
 
   function showRelics() {
-    showOverlay(`<h2>Талисманы · ${run.relics.length}</h2><div class="rlist">${run.relics.map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${TIER_LABEL[RELICS[r].tier]}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
+    showOverlay(`<h2>Талисманы · ${run.relics.length}</h2><div class="rlist">${run.relics.map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${TIER_LABEL[RELICS[r].tier]}${RELICS[r].cls ? ` · ${CLASSES[RELICS[r].cls].name}` : ''}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
       <button class="btn" data-act="close">Закрыть</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
   }
 
@@ -637,7 +644,7 @@
         </div>
       </div>
       <div class="clsrelic">${Art.icon(r.art)}<span><small>Особенность</small><b>${r.name}</b>${r.desc}</span></div>
-      <button class="clscards" data-act="clscards"><span class="mini3">${own.map((k) => Art.icon(CARDS[k].art)).join('')}</span><span><b>Карты героя</b><small>${own.map((k) => CARDS[k].name).join(', ')}</small></span><i>›</i></button>
+      <button class="clscards" data-act="clscards"><span class="mini3">${own.slice(0, 4).map((k) => Art.icon(CARDS[k].art)).join('')}</span><span><b>Карты героя</b><small>${own.map((k) => CARDS[k].name).join(', ')}</small></span><i>›</i></button>
       <div class="diffbox">
         <div class="diffhead"><button class="darrow" data-act="diffset" data-d="${Math.max(0, diff - 1)}" ${diff ? '' : 'disabled'}>‹</button>
           <span><small>Сложность ${diff + 1} из ${DIFFICULTIES.length}</small><b>${d.name}${won.includes(diff) ? ' <i class="dwon">✓</i>' : ''}</b></span>
@@ -654,6 +661,8 @@
     showOverlay(`<h2>${h.name} · ${h.role}</h2>
       <p class="ovhint">Свои карты: выпадают в наградах и лавке только этому герою</p>
       <div class="grid">${heroCards(id).map((k) => cardHTML(k, 'mini')).join('')}</div>
+      <p class="ovhint">Особенность и свой талисман: он выпадает только этому герою</p>
+      <div class="rlist">${[h.relic, ...Object.keys(RELICS).filter((r) => RELICS[r].cls === id)].map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${r === h.relic ? 'Особенность' : TIER_LABEL[RELICS[r].tier]}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
       <p class="ovhint">Стартовая колода · ${start.length}</p>
       <div class="grid">${start.map((c) => cardHTML(c, 'mini')).join('')}</div>
       <button class="btn" data-act="close">Закрыть</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
@@ -828,7 +837,7 @@
 
   // обычные и редкие талисманы, которых ещё нет
   const RELIC_WEIGHT = { common: 55, uncommon: 30, rare: 15, epic: 6, legendary: 2 };
-  const freeRelics = () => Object.keys(RELICS).filter((r) => RELIC_WEIGHT[RELICS[r].tier] && !hasRelic(r));
+  const freeRelics = () => Object.keys(RELICS).filter((r) => RELIC_WEIGHT[RELICS[r].tier] && !hasRelic(r) && (!RELICS[r].cls || RELICS[r].cls === run.cls));
   // случайный талисман: обычные выпадают чаще необычных, необычные чаще редких
   function pickRelic(list = freeRelics()) {
     if (!list.length) return null;
@@ -1090,6 +1099,45 @@
         await sleep(250);
       }
     },
+    // Пряничница: положить Пряники в руку (с Глазурью — улучшенные)
+    ginger(n) {
+      let got = 0;
+      for (let k = 0; k < n && C.hand.length < HAND_MAX; k++) { C.hand.push(mk('gingerbread', C.glaze)); got++; }
+      if (got) { SND.sfx('draw'); floatText($('.hero-fx'), `Пряник +${got}`, 'burnf'); }
+    },
+    glaze() {
+      C.glaze = true;
+      [...C.hand, ...C.draw, ...C.disc].forEach((c) => { if (c.id === 'gingerbread') c.up = true; });
+      floatText($('.hero-fx'), 'Глазурь!', 'weakf');
+    },
+    // Точильщик: заточить карты в руке — улучшить до конца боя
+    sharpen(n, quiet) {
+      const list = shuffle(C.hand.filter(canUpgrade)).slice(0, n);
+      list.forEach((c) => { c.up = true; c.sharp = true; });
+      C.sharpened += list.length;
+      if (list.length) { ach.max('sharpfight', C.sharpened); SND.sfx('clank'); floatText($('.hero-fx'), list.length === 1 ? `Заточено: ${CARDS[list[0].id].name}` : `Заточено карт: ${list.length}`, 'blockf'); }
+      else if (!quiet) floatText($('.hero-fx'), 'Нечего точить', 'weakf');
+      return list.length;
+    },
+    // сколько улучшенных карт в колоде, руке и сбросе (кроме самой карты)
+    upCount(self) { return C ? [...C.draw, ...C.hand, ...C.disc].filter((c) => c.up && c !== self).length : 0; },
+    // Пастушка: Злость Дружка и укус
+    dog(n) { C.dog += n; SND.sfx('buff'); floatText($('.hero-fx'), `Злость +${n}`, 'burnf'); ach.max('dogmax', C.dog); },
+    async bite() {
+      if (C.dog <= 0 || C.enemy.hp <= 0) return;
+      const pt = $('#heroPortrait');
+      if (pt) { pt.classList.remove('bite'); void pt.offsetWidth; pt.classList.add('bite'); }
+      floatText($('.enemy-fx'), 'Гав!', 'weakf');
+      await hitEnemy(dogDmg());
+      if (hasRelic('collar')) api.block(2);
+    },
+    // Знахарка: заплатить Цену здоровьем
+    async price(n) {
+      loseHp(n); C.paid += n; ach.max('pricefight', C.paid);
+      SND.sfx('hurt'); floatText($('.hero-fx'), `Цена −${n} HP`, 'dmgf');
+      renderCombat();
+      if (hasRelic('mortar') && C.enemy.hp > 0) { await sleep(120); await hitEnemy(n); }
+    },
     // сжечь карты из руки по условию, вернуть их количество
     exhaustHand(pred) {
       const out = C.hand.filter((c) => pred(CARDS[c.id]));
@@ -1106,6 +1154,7 @@
     if (C.enemy.vuln > 0) v = Math.floor(v * 1.5);
     return Math.max(0, v);
   }
+  const dogDmg = () => (C.enemy.vuln > 0 ? Math.floor(C.dog * 1.5) : C.dog);
   function enemyDmg(v) {
     let d = Math.round((v + C.enemy.str + C.enemy.boil) * DIFF().dmg);
     if (C.enemy.weak > 0) d = Math.floor(d * 0.75);
@@ -1133,7 +1182,9 @@
       charms: {}, deliveries: [], playedTurn: 0, playedTotal: 0,
       firstAtk: false, shoe: false, hpLost: false, stolen: 0, burstsTurn: 0,
       last: null, atkTurn: false, frail: 0, sap: 0, bury: 0, vane: false, medal: false, boomed: false,
+      ginger: 0, glaze: false, sharpened: 0, dog: hasRelic('dogfriend') ? 3 : 0, paid: 0,
     };
+    if (hasRelic('chimneycap')) C.enemy.burn += 6;
     // Закладка: одна случайная карта улучшена до конца боя
     if (hasRelic('bookmark')) { const list = C.draw.filter(canUpgrade); if (list.length) pick(list).up = true; }
     selected = -1;
@@ -1187,6 +1238,13 @@
     if (first && hasRelic('mug')) { run.hp = Math.min(run.maxHp, run.hp + 3); }
     SND.sfx(C.turn === 1 ? 'draw' : 'turn');
     renderCombat(true);
+    // особенности героев в начале хода
+    if (first && hasRelic('honeypot')) api.ginger(2);
+    if (hasRelic('moldform')) api.ginger(1);
+    if (hasRelic('grindwheel')) api.sharpen(1, true);
+    if (C.charms.apprentice) api.sharpen(2 * C.charms.apprentice, true);
+    if (hasRelic('bridgerail')) { C.thorns += hasRelic('wreath') ? 2 : 1; }
+    renderCombat();
     // Доставки с прошлого хода и чары
     const dels = C.deliveries; C.deliveries = [];
     for (const d of dels) {
@@ -1272,6 +1330,9 @@
     const res = C.str + C.tmpStr;
     if (res) hs.push(chip('h-res', `Решимость ${res}`, `${g('Решимость')}${C.tmpStr ? ` До конца хода: ${C.tmpStr}.` : ''}`));
     if (C.thorns) hs.push(chip('h-thorns', `Шипы ${C.thorns}`, g('Шипы')));
+    if (C.dog > 0) hs.push(chip('h-dog', `${C.dog}`, `${g('Дружок')} Злость ${C.dog}: укус на ${dogDmg()}${C.charms.wolfhound ? `, ${1 + C.charms.wolfhound} раза за ход` : ''}.`, Art.icon('dogfriend')));
+    if (C.glaze) hs.push(chip('h-charm', '', 'Сахарная глазурь: до конца боя все Пряники улучшены', Art.icon('glaze')));
+    if (C.paid) hs.push(chip('h-paid', `Цена ${C.paid}`, `${g('Цена')} В этом бою уже отдано ${C.paid} HP.`));
     if (C.pWeak) hs.push(chip('h-weak', `Слабость ${C.pWeak}`, 'Слабость: ваши атаки наносят на 25% меньше урона.'));
     if (C.frail) hs.push(chip('h-weak', `Хрупкость ${C.frail}`, g('Хрупкость')));
     if (C.deliveries.length) hs.push(chip('h-del', `Доставка ${C.deliveries.length}`, `${g('Доставка')} В пути: ${C.deliveries.map((d) => d.name).join(', ')}.`));
@@ -1305,6 +1366,8 @@
     const cost = playCost(c);
     if (cost == null) { SND.sfx('deny'); toast('Эту карту нельзя разыграть'); return; }
     if (cost > C.energy) { SND.sfx('deny'); toast('Не хватает энергии'); return; }
+    const price = cd.price ? cd.price(c.up) : 0;
+    if (price && price >= run.hp) { SND.sfx('deny'); toast('Не хватит здоровья, чтобы заплатить Цену'); return; }
     busy = true; selected = -1;
     const el = $(`.hand [data-hi="${i}"]`);
     SND.sfx('card');
@@ -1312,6 +1375,7 @@
     C.energy -= cost;
     C.hand.splice(i, 1);
     renderCombat();
+    if (price) await api.price(price);
     if (cd.type === 'atk' && !C.firstAtk) {
       C.firstAtk = true;
       if (hasRelic('magnifier')) api.vuln(2);
@@ -1336,6 +1400,11 @@
     // отклики чар и талисманов на розыгрыш
     if (cd.type === 'skill' && C.charms.inkpen && C.enemy.hp > 0) await hitEnemy(C.charms.inkpen);
     if (cd.type === 'skill' && hasRelic('buckle')) api.block(3);
+    if (c.id === 'gingerbread') {
+      C.ginger++; ach.add('ginger');
+      if (C.charms.gingerhouse && C.enemy.hp > 0) await hitEnemy(4 * C.charms.gingerhouse);
+    }
+    if (hasRelic('milestone') && C.playedTurn % 5 === 0 && C.enemy.hp > 0) { floatText($('.enemy-fx'), 'Верста!', 'weakf'); await hitEnemy(8); }
     if (C.charms.rhythm && C.playedTurn % 3 === 0 && C.enemy.hp > 0) await api.flame(C.charms.rhythm);
     if (hasRelic('stampbook') && C.playedTotal % 6 === 0) api.energy(1);
     if (hasRelic('wingboots') && C.playedTurn % 4 === 0) { api.energy(1); drawCards(1); }
@@ -1408,6 +1477,7 @@
     if (hasRelic('stub')) api.heal(2);
     if (hasRelic('snowglobe') && C.enemy.hp > 0) api.weak(1);
     if (hasRelic('ivalamp')) C.flame += 1;
+    if (hasRelic('wickcutter')) api.block(4);
     setTimeout(() => fx.remove(), 500);
     renderCombat();
   }
@@ -1470,6 +1540,11 @@
     renderCombat();
     await sleep(250);
     if (run.hp <= 0) { await sleep(400); goDefeat(); return; }
+    // пёс пастушки кусает в конце хода
+    if (C.dog > 0 && C.enemy.hp > 0) {
+      for (let k = 0; k < 1 + (C.charms.wolfhound || 0) && C.enemy.hp > 0; k++) await api.bite();
+      if (C.enemy.hp <= 0) { await winCombat(); return; }
+    }
     const e = C.enemy;
     if (!ENEMIES[C.id].plating) e.block = 0; // у Ледяного Рыцаря латы
     e.mist = 0; // туман рассеивается, когда враг снова ходит
@@ -1550,8 +1625,15 @@
     const el = $('#enemy');
     if (el) el.classList.add('dying');
     await sleep(800);
-    const { tier, stolen, hpLost, id, turn, boomed } = C;
+    const { tier, stolen, hpLost, id, turn, boomed, paid } = C;
+    // Ремень для правки: одна заточенная карта остаётся улучшенной
+    const sharp = [...C.draw, ...C.hand, ...C.disc, ...C.exh].filter((c) => c.sharp).map((c) => c.uid);
     C = null;
+    if (hasRelic('leatherstrop')) {
+      const cand = run.deck.filter((c) => sharp.includes(c.uid) && canUpgrade(c));
+      if (cand.length) { const c = pick(cand); c.up = true; achUpgraded(1); toast(`Ремень для правки: ${cardName(c)} навсегда`); }
+    }
+    if (hasRelic('herbbag') && paid > 1) { evApi.heal(Math.floor(paid / 2)); toast(`Мешочек трав: +${Math.floor(paid / 2)} HP`); }
     STATS.fights++;
     if (tier === 'elite') STATS.elites++;
     if (tier === 'boss') STATS.bosses++;
@@ -1726,7 +1808,7 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat() };
+  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics() };
 
   achCheck(true);
   goTitle();

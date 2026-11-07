@@ -2,7 +2,8 @@
 (function () {
   /* Карта: {name, cost, upCost?, type, rarity, art, exhaust?, retain?, desc(g, u, c), play(g, u, c)}
      type: atk (атака) | skill (навык) | charm (чары: действуют до конца боя) | status (помеха от врагов)
-     rarity: start | common | uncommon | rare | epic | legendary | status
+     rarity: start | common | uncommon | rare | epic | legendary | status | token (Пряник: только создаётся в бою)
+     price(u) — Цена: сколько HP стоит розыгрыш (знахарка)
        (обычная, необычная, редкая, эпическая, легендарная; легендарную можно взять в колоду только одну)
      cls — карта героя: выпадает в наградах и лавке только этому герою (см. CLASSES)
      u — карта улучшена у костра (цифры в описании и розыгрыше берутся через u ? улучшено : обычно)
@@ -10,7 +11,8 @@
      g — интерфейс боя из game.js: attack(n, hits), block(n), flame(n), draw(n), heal(n), burn(n),
          weak(n), vuln(n), energy(n), resolve(n), rush(n), thorns(n), chill(n), stun(), deliver(fn),
          gold(n), burstNow(), exhaustHand(pred), charm(id, n), doubleBlock(), maxHp(n), consumeFlame(),
-         copyLast(), recall(n), autoplay(n), played, blockNow, enemyDead, lastCard, state, dmgText(n) */
+         copyLast(), recall(n), autoplay(n), ginger(n), glaze(), sharpen(n), upCount(c), dog(n), bite(),
+         played, blockNow, enemyDead, lastCard, state, dmgText(n) */
   const CARDS = {
     // ---------- стартовые ----------
     strike: {
@@ -466,6 +468,124 @@
       play: async (g) => { if (g.state.enemy.burn > 0) g.burn(g.state.enemy.burn); },
     },
 
+    // Груня, пряничница: Пряники прямо в бою
+    gingerbread: {
+      name: 'Пряник', cost: 0, type: 'skill', rarity: 'token', art: 'gingerbread', cls: 'baker', exhaust: true,
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 5 : 3)} урона. Получить ${u ? 5 : 3} защиты.`,
+      play: async (g, u) => { await g.attack(u ? 5 : 3); g.block(u ? 5 : 3); },
+    },
+    dough: {
+      name: 'Замесить тесто', cost: 1, type: 'skill', rarity: 'common', art: 'dough', cls: 'baker',
+      desc: (g, u) => `Положить в руку ${u ? 3 : 2} Пряника.`,
+      play: async (g, u) => g.ginger(u ? 3 : 2),
+    },
+    rollingpin: {
+      name: 'Скалка', cost: 1, type: 'atk', rarity: 'common', art: 'rollingpin', cls: 'baker',
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 9 : 6)} урона. Положить в руку Пряник.`,
+      play: async (g, u) => { await g.attack(u ? 9 : 6); g.ginger(1); },
+    },
+    glaze: {
+      name: 'Сахарная глазурь', cost: 1, type: 'skill', rarity: 'uncommon', art: 'glaze', cls: 'baker',
+      desc: (g, u) => `Получить ${u ? 9 : 6} защиты. До конца боя все Пряники улучшены.`,
+      play: async (g, u) => { g.block(u ? 9 : 6); g.glaze(); },
+    },
+    gingerhouse: {
+      name: 'Пряничный терем', cost: 2, upCost: 1, type: 'charm', rarity: 'rare', art: 'gingerhouse', cls: 'baker',
+      desc: () => 'Каждый сыгранный Пряник наносит врагу ещё 4 урона.',
+      play: async (g) => g.charm('gingerhouse', 1),
+    },
+    fair: {
+      name: 'Ярмарка', cost: 2, type: 'atk', rarity: 'epic', art: 'fair', cls: 'baker',
+      desc: (g, u) => (g.state ? `Нанести ${g.dmgText((u ? 4 : 3) * g.state.ginger)} урона: по ${u ? 4 : 3} за каждый Пряник, съеденный в этом бою.`
+        : `Нанести по ${u ? 4 : 3} урона за каждый Пряник, съеденный в этом бою.`),
+      play: async (g, u) => g.attack((u ? 4 : 3) * g.state.ginger),
+    },
+    // Савва, точильщик: Заточка карт прямо в бою
+    hone: {
+      name: 'Править лезвие', cost: 1, type: 'skill', rarity: 'common', art: 'hone', cls: 'grinder',
+      desc: (g, u) => `Получить ${u ? 7 : 5} защиты. Заточить ${u ? 2 : 1} карт${u ? 'ы' : 'у'} в руке.`,
+      play: async (g, u) => { g.block(u ? 7 : 5); g.sharpen(u ? 2 : 1); },
+    },
+    gritsparks: {
+      name: 'Искры из-под круга', cost: 1, type: 'atk', rarity: 'common', art: 'gritsparks', cls: 'grinder',
+      desc: (g, u, c) => {
+        const n = g.state ? g.state.hand.filter((x) => x.up && x !== c).length : 0;
+        return `Нанести ${g.dmgText((u ? 6 : 4) + (u ? 3 : 2) * n)} урона, +${u ? 3 : 2} за каждую улучшенную карту в руке.`;
+      },
+      play: async (g, u) => g.attack((u ? 6 : 4) + (u ? 3 : 2) * g.state.hand.filter((x) => x.up).length),
+    },
+    oselok: {
+      name: 'Оселок', cost: 0, type: 'skill', rarity: 'uncommon', art: 'oselok', cls: 'grinder', exhaust: true,
+      desc: (g, u) => (u ? 'Взять 1 карту. Заточить все карты в руке.' : 'Заточить все карты в руке.'),
+      play: async (g, u) => { if (u) g.draw(1); g.sharpen(99); },
+    },
+    apprentice: {
+      name: 'Подмастерье', cost: 1, upCost: 0, type: 'charm', rarity: 'rare', art: 'apprentice', cls: 'grinder',
+      desc: () => 'В начале каждого хода заточить ещё 2 карты в руке.',
+      play: async (g) => g.charm('apprentice', 1),
+    },
+    steelring: {
+      name: 'Звон стали', cost: 2, type: 'atk', rarity: 'epic', art: 'steelring', cls: 'grinder',
+      desc: (g, u, c) => {
+        if (!g.state) return `Нанести по ${u ? 4 : 3} урона за каждую улучшенную карту в колоде, руке и сбросе.`;
+        const n = g.upCount(c);
+        return `Нанести ${g.dmgText((u ? 4 : 3) * n)} урона: по ${u ? 4 : 3} за каждую улучшенную карту в колоде, руке и сбросе.`;
+      },
+      play: async (g, u, c) => g.attack((u ? 4 : 3) * g.upCount(c)),
+    },
+    // Луша, пастушка: пёс Дружок и команды
+    sic: {
+      name: 'Взять!', cost: 1, type: 'skill', rarity: 'common', art: 'sic', cls: 'shepherd',
+      desc: (g, u) => `Злость Дружка +${u ? 2 : 1}. Дружок сразу кусает.`,
+      play: async (g, u) => { g.dog(u ? 2 : 1); await g.bite(); },
+    },
+    heel: {
+      name: 'Рядом!', cost: 1, type: 'skill', rarity: 'common', art: 'heel', cls: 'shepherd',
+      desc: (g, u) => `Получить ${u ? 6 : 4} защиты и ещё столько, сколько Злости у Дружка${g.state ? ` (${(u ? 6 : 4) + g.state.dog})` : ''}.`,
+      play: async (g, u) => g.block((u ? 6 : 4) + g.state.dog),
+    },
+    bone: {
+      name: 'Сахарная косточка', cost: 0, type: 'skill', rarity: 'uncommon', art: 'bone', cls: 'shepherd', exhaust: true,
+      desc: (g, u) => `Злость Дружка +${u ? 4 : 3}.`,
+      play: async (g, u) => g.dog(u ? 4 : 3),
+    },
+    wolfhound: {
+      name: 'Волкодав', cost: 2, upCost: 1, type: 'charm', rarity: 'rare', art: 'wolfhound', cls: 'shepherd',
+      desc: () => 'В конце каждого хода Дружок кусает ещё раз.',
+      play: async (g) => g.charm('wolfhound', 1),
+    },
+    howl: {
+      name: 'Вой на луну', cost: 1, upCost: 0, type: 'skill', rarity: 'epic', art: 'howl', cls: 'shepherd', exhaust: true,
+      desc: (g) => `Удвоить Злость Дружка${g.state ? ` (${g.state.dog} → ${g.state.dog * 2})` : ''}. Он сразу кусает.`,
+      play: async (g) => { g.dog(g.state.dog); await g.bite(); },
+    },
+    // Ульяна, знахарка: Цена здоровьем и травы
+    bitterroot: {
+      name: 'Горький корень', cost: 1, type: 'atk', rarity: 'common', art: 'bitterroot', cls: 'herbalist', price: () => 2,
+      desc: (g, u) => `Цена 2. Нанести ${g.dmgText(u ? 15 : 11)} урона.`,
+      play: async (g, u) => g.attack(u ? 15 : 11),
+    },
+    chamomile: {
+      name: 'Ромашковый отвар', cost: 1, type: 'skill', rarity: 'common', art: 'chamomile', cls: 'herbalist',
+      desc: (g, u) => `Получить ${u ? 7 : 5} защиты. Восстановить ${u ? 4 : 3} HP.`,
+      play: async (g, u) => { g.block(u ? 7 : 5); g.heal(u ? 4 : 3); },
+    },
+    wormwood: {
+      name: 'Полынь', cost: 0, type: 'skill', rarity: 'uncommon', art: 'wormwood', cls: 'herbalist', price: (u) => (u ? 2 : 3),
+      desc: (g, u) => `Цена ${u ? 2 : 3}. +2 энергии.`,
+      play: async (g) => g.energy(2),
+    },
+    sleepgrass: {
+      name: 'Сон-трава', cost: 1, type: 'skill', rarity: 'rare', art: 'sleepgrass', cls: 'herbalist', exhaust: true, price: (u) => (u ? 2 : 4),
+      desc: (g, u) => `Цена ${u ? 2 : 4}. Враг засыпает и пропускает свой следующий ход.`,
+      play: async (g) => g.stun(),
+    },
+    livingwater: {
+      name: 'Живая вода', cost: 1, upCost: 0, type: 'skill', rarity: 'epic', art: 'livingwater', cls: 'herbalist', exhaust: true,
+      desc: (g) => `Восстановить столько HP, сколько вы заплатили Ценой в этом бою${g.state ? ` (${g.state.paid})` : ''}.`,
+      play: async (g) => g.heal(g.state.paid),
+    },
+
     // ---------- помехи: враги подкидывают их в колоду на время боя ----------
     blot: {
       name: 'Клякса', cost: 1, type: 'status', rarity: 'status', art: 'blot', exhaust: true,
@@ -760,6 +880,19 @@
     wingboots: { tier: 'class', name: 'Крылатые ботинки', art: 'wingboots', desc: 'Каждая четвёртая карта за ход: +1 энергия и 1 карта.' },
     ironshutter: { tier: 'class', name: 'Окованный ставень', art: 'ironshutter', desc: 'Когда защита целиком принимает удар врага, он получает 4 урона.' },
     sootbroom: { tier: 'class', name: 'Закопчённая метла', art: 'sootbroom', desc: 'Каждый удар ваших атак добавляет врагу Поджог 1.' },
+    // талисманы героя: выпадают только своему герою (cls)
+    wickcutter: { tier: 'uncommon', cls: 'lamp', name: 'Щипцы для фитиля', art: 'wickcutter', desc: 'Каждая Вспышка лампы даёт 4 защиты.' },
+    milestone: { tier: 'uncommon', cls: 'courier', name: 'Верстовой столб', art: 'milestone', desc: 'Каждая пятая карта за ход наносит врагу 8 урона.' },
+    bridgerail: { tier: 'uncommon', cls: 'guard', name: 'Перила моста', art: 'bridgerail', desc: 'В начале каждого хода Шипы +1.' },
+    chimneycap: { tier: 'uncommon', cls: 'stoker', name: 'Колпак на трубу', art: 'chimneycap', desc: 'В начале боя враг получает Поджог 6.' },
+    honeypot: { tier: 'uncommon', cls: 'baker', name: 'Горшочек мёда', art: 'honeypot', desc: 'В начале боя в руку ложатся 2 Пряника.' },
+    leatherstrop: { tier: 'rare', cls: 'grinder', name: 'Ремень для правки', art: 'leatherstrop', desc: 'После победы одна карта, заточенная в бою, остаётся улучшенной навсегда.' },
+    collar: { tier: 'uncommon', cls: 'shepherd', name: 'Ошейник с бубенцом', art: 'collar', desc: 'Каждый укус Дружка даёт вам 2 защиты.' },
+    herbbag: { tier: 'uncommon', cls: 'herbalist', name: 'Мешочек трав', art: 'herbbag', desc: 'После боя восстановить половину HP, заплаченных Ценой.' },
+    moldform: { tier: 'class', name: 'Расписная формочка', art: 'moldform', desc: 'В начале каждого хода в руку ложится Пряник.' },
+    grindwheel: { tier: 'class', name: 'Точильный круг', art: 'grindwheel', desc: 'В начале каждого хода одна карта в руке затачивается: улучшается до конца боя.' },
+    dogfriend: { tier: 'class', name: 'Пёс Дружок', art: 'dogfriend', desc: 'В конце каждого хода Дружок кусает врага на свою Злость. В начале боя Злость 3.' },
+    mortar: { tier: 'class', name: 'Ступка знахарки', art: 'mortar', desc: 'Когда вы платите Цену, враг получает столько же урона.' },
     // талисманы босса
     hourglass: { tier: 'boss', name: 'Песочные часы', art: 'hourglass', desc: '+1 энергия каждый ход. В руку на 1 карту меньше.' },
     bottomless: { tier: 'boss', name: 'Бездонная сумка', art: 'bottomless', desc: '+1 энергия каждый ход. Костёр больше не лечит.' },
@@ -874,6 +1007,34 @@
       about: 'Разжигает врага каждым ударом и даёт огню сделать остальное.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'ember', 'poker'],
       favored: ['ember', 'blaze', 'hearth', 'sparks', 'flurry', 'whistle', 'cocoa', 'stubborn', 'stamp', 'redseal', 'kindling', 'snowstorm', 'hornblow', 'cancel', 'bonfire', 'firebird'],
+    },
+    baker: {
+      name: 'Груня', role: 'Пряничница', f: true, who: 'пряничница Груня', whom: 'пряничнице Груне', look: 'baker',
+      hp: 36, gold: 25, relic: 'moldform', build: 'Пряники и быстрые ходы',
+      about: 'Печёт Пряники прямо в бою. Они ничего не стоят, бьют и защищают.',
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'dough', 'rollingpin'],
+      favored: ['wind', 'cocoa', 'flurry', 'finale', 'inkpen', 'rhythm', 'carbon', 'sbiten', 'compass', 'breath', 'drafts', 'mittens', 'chimes'],
+    },
+    grinder: {
+      name: 'Савва', role: 'Точильщик', f: false, who: 'точильщик Савва', whom: 'точильщику Савве', look: 'grinder',
+      hp: 40, gold: 20, relic: 'grindwheel', build: 'Заточка и Решимость',
+      about: 'Точит карты прямо в бою: заточенная карта до конца боя работает как улучшенная.',
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'hone', 'gritsparks'],
+      favored: ['heavy', 'heavybag', 'snowball', 'whistle', 'cocoa', 'hornblow', 'stubborn', 'secret', 'lastword', 'carbon', 'returnaddr', 'snowkick', 'registered', 'lastlight'],
+    },
+    shepherd: {
+      name: 'Луша', role: 'Пастушка', f: true, who: 'пастушка Луша', whom: 'пастушке Луше', look: 'shepherd',
+      hp: 36, gold: 20, relic: 'dogfriend', build: 'Верный пёс и команды',
+      about: 'Ходит с псом Дружком. Он кусает врага каждый ход, а команды делают его злее.',
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'sic', 'heel'],
+      favored: ['stamp', 'redseal', 'cancel', 'wax', 'shadow', 'cloak', 'umbrella', 'mittens', 'lullaby', 'frostbite', 'nightshift', 'icelantern', 'iceprison', 'eternalwinter'],
+    },
+    herbalist: {
+      name: 'Ульяна', role: 'Знахарка', f: true, who: 'знахарка Ульяна', whom: 'знахарке Ульяне', look: 'herbalist',
+      hp: 44, gold: 15, relic: 'mortar', build: 'Цена здоровья и травы',
+      about: 'Платит за сильные карты своим здоровьем, а потом лечится травами.',
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'bitterroot', 'chamomile'],
+      favored: ['tea', 'sbiten', 'heavy', 'lastword', 'cocoa', 'whistle', 'stubborn', 'snowkick', 'cloak', 'payback', 'bonfire', 'breath', 'lullaby', 'returnaddr'],
     },
   };
 
