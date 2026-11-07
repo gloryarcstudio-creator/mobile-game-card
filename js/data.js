@@ -910,8 +910,8 @@
       options: [
         { text: 'Загадать желание', hint: '+20 HP и +15 монет', ad: true, act: (r, a) => { a.heal(20); r.gold += 15; return 'Колодец звякнул, вода засияла, и на сруб выкатились монетки.'; } },
         { text: 'Бросить 15 монет', hint: '−15 монет, +10 HP', can: (r) => r.gold >= 15, act: (r, a) => { r.gold -= 15; a.heal(10); return 'Вода засветилась тёплым светом. Тебе стало легче.'; } },
-        { text: 'Заглянуть внутрь', hint: '50%: карта / −5 HP', act: (r, a) => { if (Math.random() < 0.5) { a.giveRandomCard('common'); return 'На дне блеснула карта. Ты выловила её ведром.'; } a.damage(5); return 'Из колодца вылетела стая летучих мышей!'; } },
-        { text: 'Пройти мимо', hint: 'Ничего', act: () => 'Ты пошла дальше. Колодец обиженно булькнул.' },
+        { text: 'Заглянуть внутрь', hint: '50%: карта / −5 HP', act: (r, a) => { if (Math.random() < 0.5) { a.giveRandomCard('common'); return 'На дне блеснула карта. Ты {f|выловила|выловил} её ведром.'; } a.damage(5); return 'Из колодца вылетела стая летучих мышей!'; } },
+        { text: 'Пройти мимо', hint: 'Ничего', act: () => 'Ты {f|пошла|пошёл} дальше. Колодец обиженно булькнул.' },
       ],
     },
     {
@@ -1066,6 +1066,14 @@
     { name: 'Полярная ночь', hp: 1.45, dmg: 1.3, heroHp: -8, gold: 0.75, rest: 0.2, bossHeal: 0.25, curses: ['blot', 'dread'],
       hint: 'Враги крепче на 45%, бьют на 30% сильнее. Ещё меньше HP, монет и отдыха. В колоде Клякса и Недоставленное письмо.' },
   ];
+
+  // перевод на язык игры: поля подменяются переведёнными (js/i18n.js, js/lang/*.js)
+  I18N.patch('cards', CARDS);
+  I18N.patch('enemies', ENEMIES);
+  I18N.patch('relics', RELICS);
+  I18N.patch('events', EVENTS);
+  I18N.patch('classes', CLASSES);
+  I18N.patch('diff', DIFFICULTIES);
 
   window.Data = { CARDS, ENEMIES, RELICS, EVENTS, CLASSES, DIFFICULTIES };
 })();

@@ -128,6 +128,7 @@
     },
   };
   for (const st of Object.values(STORIES)) st.stages.forEach((g, i) => { g.roman = roman[i]; });
+  I18N.patch('story', STORIES); // тексты сюжета на языке игры
 
   const ACTIVE_STORY = 'sunset';
   const fromHash = (location.hash || '').slice(1);

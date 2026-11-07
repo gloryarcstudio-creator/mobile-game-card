@@ -203,7 +203,7 @@
     // штемпель: круглый оттиск с волнами гашения
     async stamp(t) {
       const a = anchor(t);
-      pop(a, svg('-60 -60 120 120', `<circle r="46" fill="rgba(255,240,230,.25)" stroke="#b8322c" stroke-width="7"/><circle r="34" fill="none" stroke="#b8322c" stroke-width="3" stroke-dasharray="6 5"/><path d="M-56 -8 q14 -10 28 0 t28 0 t28 0 t28 0 M-56 8 q14 -10 28 0 t28 0 t28 0 t28 0" fill="none" stroke="#b8322c" stroke-width="5"/><text y="6" text-anchor="middle" font-size="18" font-family="Kurale, serif" fill="#b8322c">ПОЧТА</text>`, 130), 'stamp', 900, rnd(-10, 10), rnd(-20, 0));
+      pop(a, svg('-60 -60 120 120', `<circle r="46" fill="rgba(255,240,230,.25)" stroke="#b8322c" stroke-width="7"/><circle r="34" fill="none" stroke="#b8322c" stroke-width="3" stroke-dasharray="6 5"/><path d="M-56 -8 q14 -10 28 0 t28 0 t28 0 t28 0 M-56 8 q14 -10 28 0 t28 0 t28 0 t28 0" fill="none" stroke="#b8322c" stroke-width="5"/><text y="6" text-anchor="middle" font-size="18" font-family="Kurale, serif" fill="#b8322c">${tr('ПОЧТА')}</text>`, 130), 'stamp', 900, rnd(-10, 10), rnd(-20, 0));
       await wait(150);
       sfx('stamp'); shake(1);
       particles(a, 6, { html: () => dot(rnd(2, 4), '#b8322c'), dist: [50, 80], dur: 0.4 });

@@ -15,8 +15,8 @@
   const paidHeroes = Object.keys(CLASSES).filter((id) => CLASSES[id].paid);
   const PRODUCTS = {};
   paidHeroes.forEach((id) => { PRODUCTS[`hero_${id}`] = { kind: 'hero', cls: id, price: PRICE.hero, name: `${CLASSES[id].name}, ${CLASSES[id].role.toLowerCase()}` }; });
-  PRODUCTS.heroes = { kind: 'pack', gives: paidHeroes.map((id) => `hero_${id}`), price: PRICE.pack, name: 'Все платные герои' };
-  PRODUCTS.noads = { kind: 'noads', price: PRICE.noads, name: 'Без рекламы' };
+  PRODUCTS.heroes = { kind: 'pack', gives: paidHeroes.map((id) => `hero_${id}`), price: PRICE.pack, name: tr('Все платные герои') };
+  PRODUCTS.noads = { kind: 'noads', price: PRICE.noads, name: tr('Без рекламы') };
 
   const load = () => { try { return { owned: [], ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { return { owned: [] }; } };
   const state = load();
@@ -45,11 +45,11 @@
     const p = PRODUCTS[id];
     return new Promise((resolve) => {
       const el = show(`<div class="sl-box">
-        <small class="sl-test">Тестовая покупка</small>
+        <small class="sl-test">${tr('Тестовая покупка')}</small>
         <h2>${p.name}</h2>
-        <p>Цена ${p.price}. Это тестовая версия: деньги не списываются, покупка просто откроется.</p>
-        <button class="btn" data-sl="ok">Купить за ${p.price}</button>
-        <button class="btn ghost" data-sl="no">Отмена</button></div>`);
+        <p>${tr('Цена {p}. Это тестовая версия: деньги не списываются, покупка просто откроется.', { p: p.price })}</p>
+        <button class="btn" data-sl="ok">${tr('Купить за {p}', { p: p.price })}</button>
+        <button class="btn ghost" data-sl="no">${tr('Отмена')}</button></div>`);
       el.onclick = (e) => { const b = e.target.closest('[data-sl]'); if (!b) return; hide(); resolve(b.dataset.sl === 'ok'); };
     });
   }
@@ -59,16 +59,16 @@
     return new Promise((resolve) => {
       let left = AD_SECONDS;
       const el = show(`<div class="sl-ad">
-        <button class="sl-close" data-sl="close" aria-label="Закрыть">✕</button>
-        <small class="sl-test">Реклама</small>
-        <div class="sl-screen"><b>Здесь будет рекламный ролик</b><span>${reason || 'Награда после просмотра'}</span></div>
-        <div class="sl-timer">Награда через <b>${left}</b> с</div></div>`);
+        <button class="sl-close" data-sl="close" aria-label="${tr('Закрыть')}">✕</button>
+        <small class="sl-test">${tr('Реклама')}</small>
+        <div class="sl-screen"><b>${tr('Здесь будет рекламный ролик')}</b><span>${reason || tr('Награда после просмотра')}</span></div>
+        <div class="sl-timer">${tr('Награда через <b>{n}</b> с', { n: left })}</div></div>`);
       const tick = () => {
         if (!layer || !layer.classList.contains('show')) return;
         left--;
         const t = el.querySelector('.sl-timer');
-        if (left > 0) { t.innerHTML = `Награда через <b>${left}</b> с`; setTimeout(tick, 1000); }
-        else t.outerHTML = '<button class="btn" data-sl="done">Забрать награду</button>';
+        if (left > 0) { t.innerHTML = tr('Награда через <b>{n}</b> с', { n: left }); setTimeout(tick, 1000); }
+        else t.outerHTML = `<button class="btn" data-sl="done">${tr('Забрать награду')}</button>`;
       };
       setTimeout(tick, 1000);
       el.onclick = (e) => {

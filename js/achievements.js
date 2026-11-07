@@ -23,7 +23,7 @@
     ['path', 'Путь'],
     ['fight', 'Мастерство'],
     ['collect', 'Коллекция'],
-  ];
+  ].map(([id, name]) => [id, tr(name)]);
 
   const L = [];
   const add = (cat, id, name, desc, src, key, goal, art, item, stars = 0) => L.push({ cat, id, name, stars, desc, src, key, goal, art, item });
@@ -103,5 +103,6 @@
   add('collect', 'updeck', 'Мастерица', 'Собрать колоду, в которой {p} улучшенных карт.', 'c', 'updeck', 15, 'i:mittens');
   add('collect', 'light', 'Налегке', 'Доставить письмо с колодой не больше 15 карт.', 'c', 'light', 1, 'i:feather');
 
+  I18N.patchAch(L); // названия и описания на языке игры
   window.Achievements = { CATS, LIST: L };
 })();

@@ -585,8 +585,8 @@
       <path d="M120 166 V236" ${sw(6)}/>
       <path d="M70 206 H170" ${sw(5)}/>
       <path d="M166 198 l14 8 l-14 8z M74 198 l-14 8 l14 8z" fill="#3a3a46" ${sw(2.5)}/>
-      <text x="184" y="198" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#e6c45a" stroke="${O}" stroke-width="1">В</text>
-      <text x="40" y="198" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#e6c45a" stroke="${O}" stroke-width="1">З</text>
+      <text x="184" y="198" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#e6c45a" stroke="${O}" stroke-width="1">${tr('В')}</text>
+      <text x="40" y="198" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#e6c45a" stroke="${O}" stroke-width="1">${tr('З')}</text>
       <!-- петух из кованого железа -->
       <path d="M86 70 Q60 60 40 86 Q60 92 66 116 Q70 160 120 168 Q168 168 174 126 Q178 96 156 80 Q140 70 128 84 Q118 60 86 70z" fill="#2a2a34" ${sw(4)}/>
       <!-- хвост-перья -->
@@ -645,7 +645,7 @@
       <!-- табличка «Плата» -->
       <g transform="rotate(-8 44 206)">
         <rect x="14" y="190" width="64" height="30" rx="3" fill="#d8c59c" ${sw(3)}/>
-        <text x="46" y="211" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#5a2a26">ПЛАТА</text>
+        <text x="46" y="211" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#5a2a26">${tr('ПЛАТА')}</text>
       </g>
       <!-- голова -->
       <ellipse cx="120" cy="84" rx="50" ry="44" fill="#7a8a9a" ${sw(4)}/>

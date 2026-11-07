@@ -44,8 +44,8 @@
   const flameBonus = () => (hasRelic('bellows') ? 0 : FLAME_BONUS);
 
   /* Пояснения к ключевым словам: показываются в справочнике и по нажатию на статус */
-  const GLOSS = [
-    ['Огонёк', `Каждый Огонёк даёт атакам +${FLAME_BONUS} урона. На ${FLAME_MAX} Огоньках лампа вспыхивает и бьёт врага на ${BURST_DMG}.`],
+  const GLOSS_RU = [
+    ['Огонёк', 'Каждый Огонёк даёт атакам +{b} урона. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.', { b: FLAME_BONUS, m: FLAME_MAX, d: BURST_DMG }],
     ['Решимость', 'Каждое очко добавляет +1 урона каждой атаке. Бывает до конца боя или до конца хода.'],
     ['Уязвим', 'Враг получает на 50% больше урона от атак, Вспышек и укусов Дружка. Число — сколько ходов это продлится.'],
     ['Ослаблен', 'Враг наносит на 25% меньше урона.'],
@@ -71,22 +71,26 @@
     ['Приёмы врагов', 'У многих врагов есть свои хитрости: матрёшки раскрываются, самовар закипает, туман глушит удары, шутиха взрывается. Приёмы видны значками под именем врага, нажмите на значок, чтобы прочитать.'],
     ['Герои', 'У каждого героя своя колода, особенность, карты и талисманы, которые выпадают только ему. Общие карты под его билд в наградах и лавке встречаются чаще.'],
   ];
+  // пояснение по русскому термину (GL) и список для справочника (GLOSS) — на языке игры
+  const GL = {};
+  const GLOSS = GLOSS_RU.map(([k, v, vars]) => { GL[k] = tr(v, vars); return [tr(k), GL[k]]; });
+  // что делают активные чары (перед текстом ставится название карты)
   const CHARM_TIP = {
-    mittens: (n) => `Варежки: в начале хода ${n} защиты`,
-    inkpen: (n) => `Перо и чернила: каждый Навык наносит ${n} урона`,
-    eveninglamp: (n) => `Вечерняя лампа: в начале хода +${n} Огонёк`,
-    stubborn: (n) => `Упрямство: в начале хода +${n} Решимость`,
-    compass: (n) => `Компас: каждый ход +${n} карта`,
-    hearth: (n) => `Сердце костра: в начале хода Поджог ${n}`,
-    rhythm: (n) => `Ритм шагов: каждая третья карта за ход даёт +${n} Огонёк`,
-    standfast: () => 'Стоять до утра: защита не сгорает в начале хода',
-    firebird: (n) => `Перо Жар-птицы: в начале хода +${2 * n} Огонька и Поджог ${3 * n}`,
-    eternalwinter: (n) => `Вечная зима: в начале хода враг теряет ${2 * n} Силы, а вы получаете ${8 * n} защиты`,
-    nightshift: (n) => `Ночная смена: в конце хода ${n} защиты за каждую неистраченную энергию`,
-    aurora: (n) => `Северное сияние: в начале хода +${n} энергия`,
-    gingerhouse: (n) => `Пряничный терем: каждый Пряник наносит ещё ${4 * n} урона`,
-    apprentice: (n) => `Подмастерье: в начале хода заточить ${2 * n} карты`,
-    wolfhound: (n) => `Волкодав: Дружок кусает в конце хода ${1 + n} раза`,
+    mittens: (n) => tr('в начале хода {n} защиты', { n }),
+    inkpen: (n) => tr('каждый Навык наносит {n} урона', { n }),
+    eveninglamp: (n) => tr('в начале хода +{n} {n|Огонёк|Огонька|Огоньков}', { n }),
+    stubborn: (n) => tr('в начале хода +{n} Решимость', { n }),
+    compass: (n) => tr('каждый ход +{n} {n|карта|карты|карт}', { n }),
+    hearth: (n) => tr('в начале хода Поджог {n}', { n }),
+    rhythm: (n) => tr('каждая третья карта за ход даёт +{n} {n|Огонёк|Огонька|Огоньков}', { n }),
+    standfast: () => tr('защита не сгорает в начале хода'),
+    firebird: (n) => tr('в начале хода +{a} {a|Огонёк|Огонька|Огоньков} и Поджог {b}', { a: 2 * n, b: 3 * n }),
+    eternalwinter: (n) => tr('в начале хода враг теряет {a} Силы, а вы получаете {b} защиты', { a: 2 * n, b: 8 * n }),
+    nightshift: (n) => tr('в конце хода {n} защиты за каждую неистраченную энергию', { n }),
+    aurora: (n) => tr('в начале хода +{n} {n|энергия|энергии|энергии}', { n }),
+    gingerhouse: (n) => tr('каждый Пряник наносит ещё {n} урона', { n: 4 * n }),
+    apprentice: (n) => tr('в начале хода заточить {n} {n|карту|карты|карт}', { n: 2 * n }),
+    wolfhound: (n) => tr('Дружок кусает в конце хода {n} {n|раз|раза|раз}', { n: 1 + n }),
   };
 
   const $ = (s, el = document) => el.querySelector(s);
@@ -156,13 +160,15 @@
     const t = document.createElement('div');
     t.className = 'achtoast';
     t.innerHTML = a.summary
-      ? `<span class="aport collect">${ICO.medal}</span><span><small>Достижения получены</small><b>И ещё ${a.summary}</b></span>`
-      : `<span class="aport ${a.cat}">${achArt(a)}</span><span><small>Достижение получено</small><b>${a.name}${achStars(a)}</b></span>`;
+      ? `<span class="aport collect">${ICO.medal}</span><span><small>${tr('Достижения получены')}</small><b>${tr('И ещё {n}', { n: a.summary })}</b></span>`
+      : `<span class="aport ${a.cat}">${achArt(a)}</span><span><small>${tr('Достижение получено')}</small><b>${a.name}${achStars(a)}</b></span>`;
     app.appendChild(t);
     SND.sfx('achieve');
     setTimeout(() => { t.remove(); achNextToast(); }, SETTINGS.fast ? 1700 : 2600);
   }
 
+  // «+15 монет» с нужной формой слова
+  const coins = (n) => tr('+{n} {n|монета|монеты|монет}', { n });
   const sleep = (ms) => new Promise((r) => setTimeout(r, SETTINGS.fast ? ms * 0.5 : ms));
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -177,6 +183,7 @@
   const heroId = () => (run && CLASSES[run.cls] ? run.cls : SETTINGS.cls);
   const hero = () => CLASSES[heroId()];
   const heroArt = (cls = heroId()) => Art.hero(CLASSES[cls].look);
+  I18N.gender = () => !!hero().f; // {f|она|он} в текстах — по герою забега
   const txt = (v) => (typeof v === 'function' ? v(hero()) : v);
   // сложность забега; у сохранений до её появления — «Обычный маршрут»
   const diffOf = (r) => (r && DIFFICULTIES[r.diff] ? r.diff : 1);
@@ -304,10 +311,10 @@
   }
 
   /* ---------- Общие куски интерфейса ---------- */
-  const TYPE_LABEL = { atk: 'Атака', skill: 'Навык', charm: 'Чары', status: 'Помеха' };
+  const TYPE_LABEL = { atk: tr('Атака'), skill: tr('Навык'), charm: tr('Чары'), status: tr('Помеха') };
   // камень редкости на карте и подписи редкости талисманов
   const RARITY_GEM = { common: 'Обычная', uncommon: 'Необычная', rare: 'Редкая', epic: 'Эпическая', legendary: 'Легендарная' };
-  const TIER_LABEL = { common: 'Обычный', uncommon: 'Необычный', rare: 'Редкий', epic: 'Эпический', legendary: 'Легендарный', boss: 'Трофей босса', class: 'Особенность героя' };
+  const TIER_LABEL = { common: tr('Обычный'), uncommon: tr('Необычный'), rare: tr('Редкий'), epic: tr('Эпический'), legendary: tr('Легендарный'), boss: tr('Трофей босса'), class: tr('Особенность героя') };
   // случайная редкость по порогам [легендарная, эпическая, редкая, необычная], остальное — обычная
   const rollRarity = (t) => { const x = Math.random(); return x < t[0] ? 'legendary' : x < t[1] ? 'epic' : x < t[2] ? 'rare' : x < t[3] ? 'uncommon' : 'common'; };
   // стоимость в бою: Бой курантов делает все карты бесплатными до конца хода
@@ -319,8 +326,8 @@
     const g = C ? api : apiStatic;
     const cost = extra.includes('inhand') ? playCost(inst) : costOf(inst);
     let desc = c.desc(g, inst.up, inst);
-    if (c.retain) desc += ' Удержание.';
-    if (c.exhaust && c.type !== 'status') desc += ' Сгорает.';
+    if (c.retain) desc += ` ${tr('Удержание.')}`;
+    if (c.exhaust && c.type !== 'status') desc += ` ${tr('Сгорает.')}`;
     const plain = desc.replace(/<[^>]+>/g, '');
     return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${inst.sharp ? 'sharp' : ''} ${extra}" ${attrs}>
       <div class="cost ${cost == null ? 'none' : ''}"><span>${cost == null ? '✕' : cost}</span></div>
@@ -356,8 +363,8 @@
   }
 
   function showRelics() {
-    showOverlay(`<h2>Талисманы · ${run.relics.length}</h2><div class="rlist">${run.relics.map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${TIER_LABEL[RELICS[r].tier]}${RELICS[r].cls ? ` · ${CLASSES[RELICS[r].cls].name}` : ''}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
-      <button class="btn" data-act="close">Закрыть</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
+    showOverlay(`<h2>${tr('Талисманы')} · ${run.relics.length}</h2><div class="rlist">${run.relics.map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${TIER_LABEL[RELICS[r].tier]}${RELICS[r].cls ? ` · ${CLASSES[RELICS[r].cls].name}` : ''}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
+      <button class="btn" data-act="close">${tr('Закрыть')}</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
   }
 
   function heroBar(inCombat) {
@@ -373,9 +380,9 @@
         </div>
       </div>
       ${inCombat ? `<div class="energy"><b>${C.energy}</b><small>/${maxEnergy()}</small></div>
-        <div class="piles"><button class="pile" data-act="pile-draw">Колода<b>${C.draw.length}</b></button><button class="pile" data-act="pile-disc">Сброс<b>${C.disc.length}</b></button></div>
-        <button class="btn end" data-act="end">Конец<br>хода</button>`
-        : `<button class="btn deckbtn" data-act="deck">Колода<b>${run.deck.length}</b></button>`}
+        <div class="piles"><button class="pile" data-act="pile-draw">${tr('Колода')}<b>${C.draw.length}</b></button><button class="pile" data-act="pile-disc">${tr('Сброс')}<b>${C.disc.length}</b></button></div>
+        <button class="btn end" data-act="end">${tr('Конец<br>хода')}</button>`
+        : `<button class="btn deckbtn" data-act="deck">${tr('Колода')}<b>${run.deck.length}</b></button>`}
     </div>`;
   }
 
@@ -396,8 +403,8 @@
   function showDeck(list, title, onPick, preview) {
     const sorted = [...list].sort((a, b) => a.id.localeCompare(b.id) || (a.up ? 1 : 0) - (b.up ? 1 : 0));
     const view = (c) => (preview === 'up' ? { ...c, up: true } : c);
-    showOverlay(`<h2>${title}</h2>${preview === 'up' ? '<p class="ovhint">Так карты будут выглядеть после улучшения</p>' : ''}<div class="grid">${sorted.map((c) => cardHTML(view(c), 'mini', `data-uid="${c.uid}"`)).join('') || '<p class="muted">Пусто</p>'}</div>
-      <button class="btn" data-act="close">${onPick ? 'Отмена' : 'Закрыть'}</button>`, (e) => {
+    showOverlay(`<h2>${title}</h2>${preview === 'up' ? `<p class="ovhint">${tr('Так карты будут выглядеть после улучшения')}</p>` : ''}<div class="grid">${sorted.map((c) => cardHTML(view(c), 'mini', `data-uid="${c.uid}"`)).join('') || `<p class="muted">${tr('Пусто')}</p>`}</div>
+      <button class="btn" data-act="close">${onPick ? tr('Отмена') : tr('Закрыть')}</button>`, (e) => {
       const cardEl = e.target.closest('.card');
       if (onPick && cardEl) { onPick(+cardEl.dataset.uid); return; }
       if (e.target.closest('[data-act="close"]') || !onPick) { hideOverlay(); if (onPick) onPick(null); }
@@ -409,8 +416,8 @@
   const mapTrack = () => ['stage1', 'stage2', 'night'][Math.min(2, run ? stageOf(run.step) : 0)];
 
   function showGlossary(back) {
-    showOverlay(`<h2>Справочник</h2><dl class="gloss">${GLOSS.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
-      <button class="btn" data-act="close">${back ? 'Назад' : 'Закрыть'}</button>`, (e) => { if (e.target.closest('[data-act="close"]')) { if (back) back(); else hideOverlay(); } });
+    showOverlay(`<h2>${tr('Справочник')}</h2><dl class="gloss">${GLOSS.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+      <button class="btn" data-act="close">${back ? tr('Назад') : tr('Закрыть')}</button>`, (e) => { if (e.target.closest('[data-act="close"]')) { if (back) back(); else hideOverlay(); } });
   }
 
   /* ---------- Главное меню ---------- */
@@ -419,29 +426,29 @@
     hideOverlay();
     SND.music('title');
     const s = loadSave();
-    const info = s && `${CLASSES[s.run.cls || 'lamp'].name} · ${DIFFICULTIES[diffOf(s.run)].name} · ур. ${s.run.step + 1} · ${s.run.hp}/${s.run.maxHp} HP`;
+    const info = s && `${CLASSES[s.run.cls || 'lamp'].name} · ${DIFFICULTIES[diffOf(s.run)].name} · ${tr('ур. {n}', { n: s.run.step + 1 })} · ${s.run.hp}/${s.run.maxHp} HP`;
     screen.className = 'scr-title';
     screen.innerHTML = `
-      <div class="logo"><small>почтовая сказка</small><h1>${STORY.title}</h1></div>
+      <div class="logo"><small>${tr('почтовая сказка')}</small><h1${STORY.title.length > 14 ? ' class="long"' : ''}>${STORY.title}</h1></div>
       <div class="title-hero">${heroArt(s ? (s.run.cls || 'lamp') : SETTINGS.cls)}</div>
       <div class="menu">
-        ${s ? `<button class="btn big" data-act="continue">Продолжить<small>${info}</small></button>` : ''}
-        <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">Новая игра</button>
-        <button class="btn ghost achbtn" data-act="ach">${ICO.medal}<span>Достижения<small>${achCount()} из ${ACH_LIST.length}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
-        <button class="btn ghost achbtn storebtn" data-act="store">${ICO.gift}<span>Магазин<small>Герои и режим без рекламы</small></span></button>
-        <div class="menu-row"><button class="btn ghost" data-act="gloss">Справочник</button><button class="btn ghost" data-act="settings">Настройки</button></div>
+        ${s ? `<button class="btn big" data-act="continue">${tr('Продолжить')}<small>${info}</small></button>` : ''}
+        <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">${tr('Новая игра')}</button>
+        <button class="btn ghost achbtn" data-act="ach">${ICO.medal}<span>${tr('Достижения')}<small>${tr('{a} из {b}', { a: achCount(), b: ACH_LIST.length })}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
+        <button class="btn ghost achbtn storebtn" data-act="store">${ICO.gift}<span>${tr('Магазин')}<small>${tr('Герои и режим без рекламы')}</small></span></button>
+        <div class="menu-row"><button class="btn ghost" data-act="gloss">${tr('Справочник')}</button><button class="btn ghost" data-act="settings">${tr('Настройки')}</button></div>
       </div>
-      <p class="savehint">${s ? 'Прогресс сохраняется после каждого уровня' : ''}</p>`;
+      <p class="savehint">${s ? tr('Прогресс сохраняется после каждого уровня') : ''}</p>`;
   }
 
   function askNewGame() {
     const s = loadSave();
     const begin = () => goClassSelect();
     if (!s) { begin(); return; }
-    showOverlay(`<div class="pause"><h2>Начать заново?</h2>
-      <p class="ovhint">Сохранённый забег на уровне ${s.run.step + 1} из ${MAX_STEPS} будет потерян.</p>
-      <button class="btn" data-act="c-yes">Начать заново</button>
-      <button class="btn ghost" data-act="c-no">Отмена</button></div>`, (e) => {
+    showOverlay(`<div class="pause"><h2>${tr('Начать заново?')}</h2>
+      <p class="ovhint">${tr('Сохранённый забег на уровне {n} из {total} будет потерян.', { n: s.run.step + 1, total: MAX_STEPS })}</p>
+      <button class="btn" data-act="c-yes">${tr('Начать заново')}</button>
+      <button class="btn ghost" data-act="c-no">${tr('Отмена')}</button></div>`, (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       hideOverlay();
@@ -451,20 +458,20 @@
 
   /* Пауза во время забега: справочник и выход в главное меню */
   function showPause() {
-    showOverlay(`<div class="pause"><h2>Пауза</h2>
+    showOverlay(`<div class="pause"><h2>${tr('Пауза')}</h2>
       <p class="ovhint">${hero().name} · ${DIFF().name}</p>
-      <p class="ovhint">${C ? 'Прогресс сохранён до начала этого боя. Если выйти, бой начнётся заново.' : 'Прогресс сохранён. Можно выйти и вернуться позже.'}</p>
-      <button class="btn" data-act="p-resume">Вернуться в игру</button>
-      <button class="btn ghost" data-act="p-gloss">Справочник</button>
-      <button class="btn ghost" data-act="p-settings">Настройки</button>
-      <button class="btn ghost" data-act="p-title">Главное меню</button></div>`, (e) => {
+      <p class="ovhint">${C ? tr('Прогресс сохранён до начала этого боя. Если выйти, бой начнётся заново.') : tr('Прогресс сохранён. Можно выйти и вернуться позже.')}</p>
+      <button class="btn" data-act="p-resume">${tr('Вернуться в игру')}</button>
+      <button class="btn ghost" data-act="p-gloss">${tr('Справочник')}</button>
+      <button class="btn ghost" data-act="p-settings">${tr('Настройки')}</button>
+      <button class="btn ghost" data-act="p-title">${tr('Главное меню')}</button></div>`, (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       if (b.dataset.act === 'p-resume') hideOverlay();
       if (b.dataset.act === 'p-gloss') showGlossary();
       if (b.dataset.act === 'p-settings') showSettings();
       if (b.dataset.act === 'p-title') {
-        if (C && busy) { toast('Дождись конца хода'); return; }
+        if (C && busy) { toast(tr('Дождись конца хода')); return; }
         goTitle();
       }
     });
@@ -487,7 +494,7 @@
     ['fast', 'Анимации', 'Обычные', 'Быстрые', false],
     ['snow', 'Снегопад', 'Идёт', 'Нет', true],
     ['oneTap', 'Розыгрыш карты', 'В 2 касания', 'В 1 касание', false],
-  ];
+  ].map(([key, ...words]) => [key, ...words.slice(0, 3).map((w) => tr(w)), words[3]]);
 
   function settingsHTML() {
     const p = SND.prefs;
@@ -500,22 +507,26 @@
         <button class="radio ${first ? 'on' : ''}" data-set="${key}" data-val="${onIsFirst ? 1 : 0}"><i></i>${a}</button>
         <button class="radio ${first ? '' : 'on'}" data-set="${key}" data-val="${onIsFirst ? 0 : 1}"><i></i>${b}</button></div>`;
     };
+    // язык: названия языков пишутся на них самих
+    const langRow = `<div class="trow langrow"><span class="tlabel">${tr('Язык')}</span>
+      ${Object.entries(I18N.LANGS).map(([k, name]) => `<button class="radio ${k === I18N.lang ? 'on' : ''}" data-lang="${k}" lang="${k}"><i></i>${name}</button>`).join('')}</div>`;
     return `<div class="settings">
-      <div class="sribbon">Настройки</div>
-      <button class="sclose" data-act="s-close" aria-label="Закрыть">✕</button>
+      <div class="sribbon">${tr('Настройки')}</div>
+      <button class="sclose" data-act="s-close" aria-label="${tr('Закрыть')}">✕</button>
       <div class="sicons">
-        <button data-act="s-ach"><span>${ICO.medal}</span>Достижения</button>
-        <button data-act="s-gloss"><span>${ICO.book}</span>Справочник</button>
-        <button data-act="s-stats"><span>${ICO.stats}</span>Статистика</button>
-        <button data-act="s-reset"><span>${ICO.reset}</span>Сбросить</button>
+        <button data-act="s-ach"><span>${ICO.medal}</span>${tr('Достижения')}</button>
+        <button data-act="s-gloss"><span>${ICO.book}</span>${tr('Справочник')}</button>
+        <button data-act="s-stats"><span>${ICO.stats}</span>${tr('Статистика')}</button>
+        <button data-act="s-reset"><span>${ICO.reset}</span>${tr('Сбросить')}</button>
       </div>
       <div class="sline"></div>
-      ${slider('sfx', 'Звуки', Art.soundIcon('all'), p.sfxVol)}
-      ${slider('music', 'Музыка', ICO.note, p.musicVol)}
+      ${slider('sfx', tr('Звуки'), Art.soundIcon('all'), p.sfxVol)}
+      ${slider('music', tr('Музыка'), ICO.note, p.musicVol)}
       <div class="sline"></div>
+      ${langRow}
       ${TOGGLES.map(toggle).join('')}
       <div class="sline"></div>
-      <p class="sfoot"><span>Версия ${VERSION}</span><span>Сохранение в этом браузере</span></p>
+      <p class="sfoot"><span>${tr('Версия {v}', { v: VERSION })}</span><span>${tr('Сохранение в этом браузере')}</span></p>
     </div>`;
   }
 
@@ -534,8 +545,18 @@
       });
     };
     const onClick = (e) => {
-      const b = e.target.closest('[data-act], [data-set]');
+      const b = e.target.closest('[data-act], [data-set], [data-lang]');
       if (!b) return;
+      // смена языка: тексты переводятся при загрузке, поэтому игра перезапускается
+      // (забег сохранён; после перезапуска снова откроются настройки)
+      if (b.dataset.lang) {
+        if (b.dataset.lang === I18N.lang) return;
+        SETTINGS.lang = b.dataset.lang;
+        saveJSON(SETTINGS_KEY, SETTINGS);
+        try { sessionStorage.setItem('lastray.reopen', 'settings'); } catch (err) { /* недоступно */ }
+        location.reload();
+        return;
+      }
       if (b.dataset.set) {
         SETTINGS[b.dataset.set] = b.dataset.val === '1';
         saveJSON(SETTINGS_KEY, SETTINGS);
@@ -557,15 +578,15 @@
   /* ---------- Панель достижений ---------- */
   const achCount = (cat) => ACH_LIST.filter((a) => (!cat || a.cat === cat) && achDone(a)).length;
   const achHasNew = () => ACH_LIST.some((a) => ACH.got[a.id] > ACH.seenAt);
-  const fmt = (n) => n.toLocaleString('ru-RU');
+  const fmt = (n) => I18N.num(n);
   // почтовый штемпель «Получено» с датой
   function achStamp(ts) {
     const d = new Date(ts);
-    const dd = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const dd = d.toLocaleDateString(I18N.locale, { day: '2-digit', month: '2-digit' });
     return `<svg class="astamp" viewBox="0 0 92 80"><g fill="none" stroke="currentColor">
       <path d="M2 30 q5 -4 10 0 t10 0 t10 0 M2 40 q5 -4 10 0 t10 0 t10 0 M2 50 q5 -4 10 0 t10 0 t10 0" stroke-width="2"/>
       <circle cx="54" cy="40" r="34" stroke-width="3"/><circle cx="54" cy="40" r="23" stroke-width="1.6"/></g>
-      <text font-size="10.5" letter-spacing="1"><textPath href="#ach-arc" startOffset="50%" text-anchor="middle">ПОЛУЧЕНО</textPath></text>
+      <text font-size="10.5" letter-spacing="1"><textPath href="#ach-arc" startOffset="50%" text-anchor="middle">${tr('ПОЛУЧЕНО')}</textPath></text>
       <text x="54" y="42" font-size="13" text-anchor="middle">${dd}</text>
       <text x="54" y="53" font-size="8" text-anchor="middle">${d.getFullYear()}</text>
       <text x="54" y="69" font-size="8" text-anchor="middle">★ ★ ★</text></svg>`;
@@ -576,7 +597,7 @@
     const desc = a.desc.replace('{p}', `<b>${fmt(p)}/${fmt(a.goal)}</b>`);
     const fresh = done && ACH.got[a.id] > since;
     return `<div class="arow ${done ? 'done' : 'locked'}">
-      <div class="aport ${a.cat}">${achArt(a)}${fresh ? '<em class="anew">новое</em>' : ''}</div>
+      <div class="aport ${a.cat}">${achArt(a)}${fresh ? `<em class="anew">${tr('новое')}</em>` : ''}</div>
       <div class="atext"><h3>${a.name}${achStars(a)}</h3><p>${desc}</p>
         ${!done && a.goal > 1 ? `<div class="abar"><i style="width:${(p / a.goal) * 100}%"></i></div>` : ''}</div>
       ${done ? achStamp(ACH.got[a.id]) : '<span class="aslot"></span>'}
@@ -592,8 +613,8 @@
     showOverlay(`<div class="achp">
       <svg style="position:absolute;width:0;height:0"><defs><path id="ach-arc" d="M28.5 40 a25.5 25.5 0 0 1 51 0"/></defs></svg>
       <div class="achhead">
-        <span class="achtag">${ICO.medal}Достижения</span>
-        <button class="sclose" data-act="a-close" aria-label="Закрыть">✕</button>
+        <span class="achtag">${ICO.medal}${tr('Достижения')}</span>
+        <button class="sclose" data-act="a-close" aria-label="${tr('Закрыть')}">✕</button>
         <div class="achbar"><i style="width:${(got / total) * 100}%"></i><b>${got}/${total}</b></div>
       </div>
       <div class="achlist"></div>
@@ -616,19 +637,19 @@
   function showStats() {
     const rows = [
       ['Забегов начато', STATS.runs], ['Писем доставлено', STATS.wins], ['Поражений', STATS.losses],
-      ['Лучший уровень', STATS.best ? `${STATS.best} из ${MAX_STEPS}` : '—'], ['Побед в боях', STATS.fights],
+      ['Лучший уровень', STATS.best ? tr('{a} из {b}', { a: STATS.best, b: MAX_STEPS }) : '—'], ['Побед в боях', STATS.fights],
       ['Побеждено элит', STATS.elites], ['Побеждено боссов', STATS.bosses], ['Сыграно карт', STATS.cards],
     ];
-    showOverlay(`<div class="settings small"><div class="sribbon">Статистика</div>
-      <dl class="statlist">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
-      <button class="btn" data-act="back">Назад</button></div>`, (e) => { if (e.target.closest('[data-act="back"]')) showSettings(); });
+    showOverlay(`<div class="settings small"><div class="sribbon">${tr('Статистика')}</div>
+      <dl class="statlist">${rows.map(([k, v]) => `<dt>${tr(k)}</dt><dd>${v}</dd>`).join('')}</dl>
+      <button class="btn" data-act="back">${tr('Назад')}</button></div>`, (e) => { if (e.target.closest('[data-act="back"]')) showSettings(); });
   }
 
   function askReset() {
-    showOverlay(`<div class="pause"><h2>Сбросить прогресс?</h2>
-      <p class="ovhint">Сохранённый забег, статистика и достижения будут удалены. Настройки и покупки останутся.</p>
-      <button class="btn" data-act="r-yes">Сбросить</button>
-      <button class="btn ghost" data-act="r-no">Отмена</button></div>`, (e) => {
+    showOverlay(`<div class="pause"><h2>${tr('Сбросить прогресс?')}</h2>
+      <p class="ovhint">${tr('Сохранённый забег, статистика и достижения будут удалены. Настройки и покупки останутся.')}</p>
+      <button class="btn" data-act="r-yes">${tr('Сбросить')}</button>
+      <button class="btn ghost" data-act="r-no">${tr('Отмена')}</button></div>`, (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       if (b.dataset.act === 'r-no') { showSettings(); return; }
@@ -636,13 +657,13 @@
       Object.assign(ACH, { c: {}, s: {}, got: {}, seenAt: 0 });
       Object.assign(STATS, STATS_DEF); saveStats();
       hideOverlay();
-      toast('Прогресс сброшен');
+      toast(tr('Прогресс сброшен'));
       goTitle();
     });
   }
 
   /* ---------- Магазин: платные герои и режим без рекламы (js/store.js) ---------- */
-  const adTag = () => (Store.noAds() ? '<i class="adtag free">Бонус</i>' : `<i class="adtag">${ICO.ad}Реклама</i>`);
+  const adTag = () => (Store.noAds() ? `<i class="adtag free">${tr('Бонус')}</i>` : `<i class="adtag">${ICO.ad}${tr('Реклама')}</i>`);
   let storeBackCls = null; // какой герой был выбран, если в магазин пришли с экрана героя
   function goStore(back = 'title') {
     C = null; busy = false; setBg(0.45);
@@ -652,32 +673,33 @@
     screen.dataset.back = back;
     const P = Store.PRODUCTS;
     const allHeroes = Store.paidHeroes.every((id) => Store.heroOwned(id));
-    const priceBtn = (id, label) => (Store.owns(id) ? '<span class="owned">Куплено ✓</span>'
+    const owned = `<span class="owned">${tr('Куплено')} ✓</span>`;
+    const priceBtn = (id, label) => (Store.owns(id) ? owned
       : `<button class="btn price" data-act="sbuy" data-p="${id}">${label || P[id].price}</button>`);
     screen.innerHTML = `
-      <div class="clshead"><h2>Магазин</h2><p>Поддержите почту Медовой Горки</p></div>
+      <div class="clshead"><h2>${tr('Магазин')}</h2><p>${tr('Поддержите почту Медовой Горки')}</p></div>
       <div class="storelist">
         ${Store.paidHeroes.map((id) => { const h = CLASSES[id]; return `<div class="sitem">
           <span class="cp ${id}">${heroArt(id)}</span>
           <span class="stext"><b>${h.name}<small>${h.role}</small></b><em>${h.build}</em><small>${RELICS[h.relic].desc}</small></span>
-          ${Store.heroOwned(id) ? '<span class="owned">Куплено ✓</span>' : `<button class="btn price" data-act="sbuy" data-p="hero_${id}">${P[`hero_${id}`].price}</button>`}</div>`; }).join('')}
+          ${Store.heroOwned(id) ? owned : `<button class="btn price" data-act="sbuy" data-p="hero_${id}">${P[`hero_${id}`].price}</button>`}</div>`; }).join('')}
         <div class="sitem pack ${allHeroes ? 'done' : ''}">
           <span class="sico">${Store.paidHeroes.map((id) => `<i class="cp ${id}">${heroArt(id)}</i>`).join('')}</span>
-          <span class="stext"><b>Все три героя</b><small>Выгоднее, чем по одному</small></span>
-          ${allHeroes ? '<span class="owned">Куплено ✓</span>' : priceBtn('heroes')}</div>
+          <span class="stext"><b>${tr('Все три героя')}</b><small>${tr('Выгоднее, чем по одному')}</small></span>
+          ${allHeroes ? owned : priceBtn('heroes')}</div>
         <div class="sitem noads">
           <span class="sico big">${ICO.ad}</span>
-          <span class="stext"><b>Без рекламы</b><small>Бонусы событий и возрождение после поражения сразу, без роликов</small></span>
+          <span class="stext"><b>${tr('Без рекламы')}</b><small>${tr('Бонусы событий и возрождение после поражения сразу, без роликов')}</small></span>
           ${priceBtn('noads')}</div>
       </div>
-      <p class="storenote">Тестовая версия: покупки не настоящие, деньги не списываются.</p>
-      <div class="clsbtns"><button class="btn ghost" data-act="sback">Назад</button><button class="btn ghost" data-act="srestore">Восстановить покупки</button></div>
-      <button class="sreset" data-act="sreset">Сбросить тестовые покупки</button>`;
+      <p class="storenote">${tr('Тестовая версия: покупки не настоящие, деньги не списываются.')}</p>
+      <div class="clsbtns"><button class="btn ghost" data-act="sback">${tr('Назад')}</button><button class="btn ghost" data-act="srestore">${tr('Восстановить покупки')}</button></div>
+      <button class="sreset" data-act="sreset">${tr('Сбросить тестовые покупки')}</button>`;
   }
   async function storeBuy(id, after) {
     SND.sfx('click');
     const ok = await Store.buy(id);
-    if (ok) { SND.sfx('relic'); toast(`Куплено: ${Store.PRODUCTS[id].name}`); }
+    if (ok) { SND.sfx('relic'); toast(tr('Куплено: {name}', { name: Store.PRODUCTS[id].name })); }
     after();
   }
 
@@ -696,7 +718,7 @@
     const d = DIFFICULTIES[diff];
     const won = ACH.s.winsDiff || [];
     screen.innerHTML = `
-      <div class="clshead"><h2>Кто понесёт письмо?</h2><p>У каждого героя свой путь к победе</p></div>
+      <div class="clshead"><h2>${tr('Кто понесёт письмо?')}</h2><p>${tr('У каждого героя свой путь к победе')}</p></div>
       <div class="clsrow">${Object.entries(CLASSES).map(([id, c]) => `<button class="clscard ${id === sel ? 'on' : ''} ${Store.heroOwned(id) ? '' : 'locked'}" data-act="pickcls" data-cls="${id}">
         <span class="cp ${id}">${heroArt(id)}${Store.heroOwned(id) ? '' : `<i class="lockico">${ICO.lock}</i>`}</span><b>${c.name}</b><small>${c.role}</small></button>`).join('')}</div>
       <div class="clsinfo">
@@ -708,30 +730,30 @@
           <p class="clsabout">${h.about}</p>
         </div>
       </div>
-      <div class="clsrelic">${Art.icon(r.art)}<span><small>Особенность</small><b>${r.name}</b>${r.desc}</span></div>
-      <button class="clscards" data-act="clscards"><span class="mini3">${own.slice(0, 4).map((k) => Art.icon(CARDS[k].art)).join('')}</span><span><b>Карты героя</b><small>${own.map((k) => CARDS[k].name).join(', ')}</small></span><i>›</i></button>
+      <div class="clsrelic">${Art.icon(r.art)}<span><small>${tr('Особенность')}</small><b>${r.name}</b>${r.desc}</span></div>
+      <button class="clscards" data-act="clscards"><span class="mini3">${own.slice(0, 4).map((k) => Art.icon(CARDS[k].art)).join('')}</span><span><b>${tr('Карты героя')}</b><small>${own.map((k) => CARDS[k].name).join(', ')}</small></span><i>›</i></button>
       <div class="diffbox">
         <div class="diffhead"><button class="darrow" data-act="diffset" data-d="${Math.max(0, diff - 1)}" ${diff ? '' : 'disabled'}>‹</button>
-          <span><small>Сложность ${diff + 1} из ${DIFFICULTIES.length}</small><b>${d.name}${won.includes(diff) ? ' <i class="dwon">✓</i>' : ''}</b></span>
+          <span><small>${tr('Сложность {a} из {b}', { a: diff + 1, b: DIFFICULTIES.length })}</small><b>${d.name}${won.includes(diff) ? ' <i class="dwon">✓</i>' : ''}</b></span>
           <button class="darrow" data-act="diffset" data-d="${Math.min(DIFFICULTIES.length - 1, diff + 1)}" ${diff < DIFFICULTIES.length - 1 ? '' : 'disabled'}>›</button></div>
         <div class="dpips">${DIFFICULTIES.map((x, i) => `<button class="dpip d${i} ${i <= diff ? 'on' : ''} ${won.includes(i) ? 'won' : ''}" data-act="diffset" data-d="${i}" aria-label="${x.name}"></button>`).join('')}</div>
         <p class="diffhint">${d.hint}</p>
       </div>
-      ${Store.heroOwned(sel) ? '<div class="clsbtns"><button class="btn ghost" data-act="title">Назад</button><button class="btn big" data-act="clsgo">В путь</button></div>'
-        : `<div class="clsbtns locked"><button class="btn ghost" data-act="title">Назад</button><button class="btn big buyhero" data-act="sbuy" data-p="hero_${sel}">${ICO.lock}<span>Открыть<small>${Store.PRODUCTS[`hero_${sel}`].price}</small></span></button><button class="btn ghost" data-act="store" data-back="cls">Магазин</button></div>`}`;
+      ${Store.heroOwned(sel) ? `<div class="clsbtns"><button class="btn ghost" data-act="title">${tr('Назад')}</button><button class="btn big" data-act="clsgo">${tr('В путь')}</button></div>`
+        : `<div class="clsbtns locked"><button class="btn ghost" data-act="title">${tr('Назад')}</button><button class="btn big buyhero" data-act="sbuy" data-p="hero_${sel}">${ICO.lock}<span>${tr('герой::Открыть')}<small>${Store.PRODUCTS[`hero_${sel}`].price}</small></span></button><button class="btn ghost" data-act="store" data-back="cls">${tr('Магазин')}</button></div>`}`;
   }
   // стартовая колода и собственные карты героя
   function showClassCards(id) {
     const h = CLASSES[id];
     const start = h.deck.map((k) => mk(k));
     showOverlay(`<h2>${h.name} · ${h.role}</h2>
-      <p class="ovhint">Свои карты: выпадают в наградах и лавке только этому герою</p>
+      <p class="ovhint">${tr('Свои карты: выпадают в наградах и лавке только этому герою')}</p>
       <div class="grid">${heroCards(id).map((k) => cardHTML(k, 'mini')).join('')}</div>
-      <p class="ovhint">Особенность и свой талисман: он выпадает только этому герою</p>
-      <div class="rlist">${[h.relic, ...Object.keys(RELICS).filter((r) => RELICS[r].cls === id)].map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${r === h.relic ? 'Особенность' : TIER_LABEL[RELICS[r].tier]}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
-      <p class="ovhint">Стартовая колода · ${start.length}</p>
+      <p class="ovhint">${tr('Особенность и свой талисман: он выпадает только этому герою')}</p>
+      <div class="rlist">${[h.relic, ...Object.keys(RELICS).filter((r) => RELICS[r].cls === id)].map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${r === h.relic ? tr('Особенность') : TIER_LABEL[RELICS[r].tier]}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
+      <p class="ovhint">${tr('Стартовая колода')} · ${start.length}</p>
       <div class="grid">${start.map((c) => cardHTML(c, 'mini')).join('')}</div>
-      <button class="btn" data-act="close">Закрыть</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
+      <button class="btn" data-act="close">${tr('Закрыть')}</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
   }
 
   /* ---------- Вступление перед новым забегом ---------- */
@@ -742,16 +764,27 @@
       <div class="book">
         <div class="page">
           <div class="book-art">${heroArt()}</div>
-          <h1>${STORY.title}</h1>
+          <h1${STORY.title.length > 14 ? ' class="long"' : ''}>${STORY.title}</h1>
           <p class="story">${txt(STORY.intro)}</p>
           <ul class="howto">
-            <li><b>Огонёк.</b> Каждый даёт атакам +${FLAME_BONUS} урона. На ${FLAME_MAX} Огоньках лампа бьёт врага на ${BURST_DMG}.</li>
-            <li><b>Меню</b> в углу: пауза, справочник и выход. Прогресс сохраняется сам.</li>
+            <li>${tr('<b>Огонёк.</b> Каждый даёт атакам +{b} урона. На {m} Огоньках лампа бьёт врага на {d}.', { b: FLAME_BONUS, m: FLAME_MAX, d: BURST_DMG })}</li>
+            <li>${tr('<b>Меню</b> в углу: пауза, справочник и выход. Прогресс сохраняется сам.')}</li>
             <li>${STORY.pathRule(MAX_STEPS)}</li>
           </ul>
         </div>
       </div>
-      <button class="btn big" data-act="start">В путь</button>`;
+      <button class="btn big" data-act="start">${tr('В путь')}</button>`;
+    fitBook();
+  }
+
+  /* Текст на другом языке бывает длиннее: если книжка с кнопками не помещается на экран,
+     картинка в ней становится ниже (но не меньше 110px) */
+  function fitBook() {
+    const art = screen.querySelector('.book-art');
+    if (!art) return;
+    art.style.height = '';
+    const over = screen.scrollHeight - screen.clientHeight;
+    if (over > 0) art.style.height = `${Math.max(110, art.offsetHeight - over - 8)}px`;
   }
 
   /* ---------- Путь: выбор из трёх карт-встреч ---------- */
@@ -805,16 +838,16 @@
     if (o.t === 'fight' || o.t === 'elite' || o.t === 'boss') {
       const e = ENEMIES[o.enemy];
       title = e.name; art = `<div class="enc-char">${Art.enemy(o.enemy)}</div>`; text = e.line;
-      tag = o.t === 'boss' ? (isFinalStep(run.step) ? 'Финальный босс' : 'Босс стадии') : o.t === 'elite' ? 'Элита' : 'Бой';
+      tag = tr(o.t === 'boss' ? (isFinalStep(run.step) ? 'Финальный босс' : 'Босс стадии') : o.t === 'elite' ? 'Элита' : 'Бой');
     } else if (o.t === 'event') {
       const ev = EVENTS.find((e) => e.id === o.ev);
-      title = ev.title; art = Art.icon(ev.art); text = 'Что-то происходит впереди…'; tag = 'Событие';
+      title = ev.title; art = Art.icon(ev.art); text = tr('Что-то происходит впереди…'); tag = tr('Событие');
     } else if (o.t === 'shop') {
-      title = 'Лавка Игольника'; art = `<div class="enc-char">${Art.enemy('hedgehog')}</div>`; text = 'Ёж торгует всем, что нашёл в сугробах.'; tag = 'Лавка';
+      title = tr('Лавка Игольника'); art = `<div class="enc-char">${Art.enemy('hedgehog')}</div>`; text = tr('Ёж торгует всем, что нашёл в сугробах.'); tag = tr('Лавка');
     } else if (o.t === 'chest') {
-      title = 'Сундук-соня'; art = Art.icon('chest'); text = 'Сундук храпит. Внутри что-то звенит.'; tag = 'Сундук';
+      title = tr('Сундук-соня'); art = Art.icon('chest'); text = tr('Сундук храпит. Внутри что-то звенит.'); tag = tr('Сундук');
     } else if (o.t === 'rest') {
-      title = 'Костёр'; art = Art.icon('fire'); text = 'Тёплый огонь. Можно передохнуть.'; tag = 'Привал';
+      title = tr('Костёр'); art = Art.icon('fire'); text = tr('Тёплый огонь. Можно передохнуть.'); tag = tr('Привал');
     }
     return `<button class="enc t-${o.t}" data-act="choose" data-i="${i}" style="--d:${i * 90}ms">
       <div class="enc-title">${title}</div>
@@ -842,8 +875,8 @@
     const si = stageOf(run.step);
     const g = STAGES[si];
     if (run.step === g.start && STORY.stageIntro) return `<b>${g.name}</b><small>${STORY.stageIntro[si] || ''}</small>`;
-    if (run.step === 0) return 'Выбери, куда идти';
-    return `Уровень ${run.step + 1}`;
+    if (run.step === 0) return tr('Выбери, куда идти');
+    return tr('Уровень {n}', { n: run.step + 1 });
   }
 
   function chooseEncounter(i) {
@@ -868,25 +901,25 @@
     heal: (n) => { run.hp = Math.min(run.maxHp, run.hp + n); },
     damage: (n) => { run.hp = Math.max(1, run.hp - n); },
     giveCard: (id) => run.deck.push(mk(id)),
-    giveRandomCard: (rarity) => { const id = pickCard(rarity); run.deck.push(mk(id)); toast(`Новая карта: ${CARDS[id].name}`); return id; },
+    giveRandomCard: (rarity) => { const id = pickCard(rarity); run.deck.push(mk(id)); toast(tr('Новая карта: {name}', { name: CARDS[id].name })); return id; },
     giveRelic: () => {
       const free = freeRelics();
-      if (!free.length) { run.gold += 40; toast('+40 монет'); return; }
+      if (!free.length) { run.gold += 40; toast(coins(40)); return; }
       addRelic(pickRelic(free));
     },
     removeCardPrompt: () => removeCardFlow(() => advance()),
     upgradePrompt: () => upgradeFlow(() => advance()),
     upgradeRandom: (n) => upgradeRandom(n),
     duplicatePrompt: () => {
-      showDeck(run.deck.filter((c) => CARDS[c.id].rarity !== 'status'), 'Выбери карту для копии', (uid) => {
+      showDeck(run.deck.filter((c) => CARDS[c.id].rarity !== 'status'), tr('Выбери карту для копии'), (uid) => {
         hideOverlay();
         const c = uid != null && run.deck.find((d) => d.uid === uid);
-        if (c) { run.deck.push(mk(c.id, c.up)); SND.sfx('card'); toast(`Копия: ${cardName(c)}`); }
+        if (c) { run.deck.push(mk(c.id, c.up)); SND.sfx('card'); toast(tr('Копия: {name}', { name: cardName(c) })); }
         advance();
       });
     },
     transformPrompt: () => {
-      showDeck(run.deck, 'Какую карту отдать?', (uid) => {
+      showDeck(run.deck, tr('Какую карту отдать?'), (uid) => {
         hideOverlay();
         if (uid != null) {
           const c = run.deck.find((d) => d.uid === uid);
@@ -924,7 +957,7 @@
     if (id === 'whetstone') upgradeRandom(2, true);
     if (id === 'goldquill') { const list = run.deck.filter(canUpgrade); list.forEach((c) => { c.up = true; }); achUpgraded(list.length); }
     SND.sfx('relic');
-    toast(`Талисман: ${RELICS[id].name}`);
+    toast(tr('Талисман: {name}', { name: RELICS[id].name }));
   }
 
   // счётчик улучшений и число улучшенных карт в колоде — для достижений
@@ -934,25 +967,25 @@
     const list = shuffle(run.deck.filter(canUpgrade)).slice(0, n);
     list.forEach((c) => { c.up = true; });
     achUpgraded(list.length);
-    if (list.length && !quiet) toast(`Улучшены: ${list.map(cardName).join(', ')}`);
+    if (list.length && !quiet) toast(tr('Улучшены: {list}', { list: list.map(cardName).join(', ') }));
     return list.length;
   }
 
   function upgradeFlow(done) {
     const list = run.deck.filter(canUpgrade);
-    if (!list.length) { toast('Все карты уже улучшены'); done(false); return; }
-    showDeck(list, 'Выбери карту для улучшения', (uid) => {
+    if (!list.length) { toast(tr('Все карты уже улучшены')); done(false); return; }
+    showDeck(list, tr('Выбери карту для улучшения'), (uid) => {
       hideOverlay();
       const c = uid != null && run.deck.find((d) => d.uid === uid);
-      if (c) { c.up = true; achUpgraded(1); SND.sfx('relic'); toast(`Улучшена: ${cardName(c)}`); }
+      if (c) { c.up = true; achUpgraded(1); SND.sfx('relic'); toast(tr('Улучшена: {name}', { name: cardName(c) })); }
       done(!!c);
     }, 'up');
   }
 
   function removeCardFlow(done) {
-    showDeck(run.deck, 'Выбери карту, которую убрать', (uid) => {
+    showDeck(run.deck, tr('Выбери карту, которую убрать'), (uid) => {
       hideOverlay();
-      if (uid != null) { const c = run.deck.find((d) => d.uid === uid); run.deck = run.deck.filter((d) => d.uid !== uid); toast(`Убрана: ${cardName(c)}`); }
+      if (uid != null) { const c = run.deck.find((d) => d.uid === uid); run.deck = run.deck.filter((d) => d.uid !== uid); toast(tr('Убрана: {name}', { name: cardName(c) })); }
       done(uid != null);
     });
   }
@@ -979,18 +1012,18 @@
       busy = true;
       const seen = await Store.ad(ev.options[i].hint);
       busy = false;
-      if (!seen) { toast('Реклама не досмотрена, награды нет'); return; }
+      if (!seen) { toast(tr('Реклама не досмотрена, награды нет')); return; }
       STATS.ads = (STATS.ads || 0) + 1; saveStats();
     }
     let fought = false;
     evApi.startFight = (id) => { fought = id; };
     const gold0 = run.gold;
-    const res = ev.options[i].act(run, evApi);
+    const res = tr(ev.options[i].act(run, evApi)); // итог события — русский текст, он же ключ перевода
     ach.add('spent', gold0 - run.gold);
     if (res === null) return; // опция сама ведёт дальше (например, удаление карты)
     if (fought) { save({ t: 'fight', enemy: fought }); toast(res); setTimeout(() => startCombat(fought, 'fight'), 600); return; }
     save({ t: 'next' });
-    $('.scrolls').innerHTML = `<button class="scroll" data-act="next">Дальше</button>`;
+    $('.scrolls').innerHTML = `<button class="scroll" data-act="next">${tr('Дальше')}</button>`;
     $('.ev-box p').textContent = res;
     $('.topbar').outerHTML = topBar();
     $('.herobar').outerHTML = heroBar(false);
@@ -1009,33 +1042,33 @@
     const render = () => {
       save({ t: 'shop', shop });
       screen.innerHTML = `${topBar()}
-        <div class="shopkeeper">${Art.enemy('hedgehog')}<div class="bubble">Всё по-честному! Почти.</div></div>
+        <div class="shopkeeper">${Art.enemy('hedgehog')}<div class="bubble">${tr('Всё по-честному! Почти.')}</div></div>
         <div class="shop-cards">${shop.cards.map((c, i) => `<div class="ware ${c.sold ? 'sold' : ''}">${cardHTML(c.id, 'shopcard', `data-act="buy" data-i="${i}"`)}<div class="price ${run.gold < c.price ? 'poor' : ''}">${Art.icon('coin')}${c.price}</div></div>`).join('')}</div>
         <div class="shop-services">
           ${shop.relic ? `<button class="svc ${shop.relic.sold ? 'sold' : ''}" data-act="buyrelic">${Art.icon(RELICS[shop.relic.id].art)}<span><b>${RELICS[shop.relic.id].name}<em class="rtier ${RELICS[shop.relic.id].tier}">${TIER_LABEL[RELICS[shop.relic.id].tier]}</em></b><small>${RELICS[shop.relic.id].desc}</small></span><i class="${run.gold < shop.relic.price ? 'poor' : ''}">${shop.relic.price}</i></button>` : ''}
-          <button class="svc ${shop.tea.sold ? 'sold' : ''}" data-act="buytea">${Art.icon('tea')}<span><b>Горячий сбитень</b><small>Восстановить 12 HP</small></span><i class="${run.gold < shop.tea.price ? 'poor' : ''}">${shop.tea.price}</i></button>
-          <button class="svc ${shop.up.sold ? 'sold' : ''}" data-act="buyup">${Art.icon('whetstone')}<span><b>Заточка</b><small>Улучшить карту</small></span><i class="${run.gold < shop.up.price ? 'poor' : ''}">${shop.up.price}</i></button>
-          <button class="svc ${shop.remove.sold ? 'sold' : ''}" data-act="buyremove">${Art.icon('scissors')}<span><b>Распустить карту</b><small>Убрать карту из колоды</small></span><i class="${run.gold < shop.remove.price ? 'poor' : ''}">${shop.remove.price}</i></button>
+          <button class="svc ${shop.tea.sold ? 'sold' : ''}" data-act="buytea">${Art.icon('tea')}<span><b>${tr('Горячий сбитень')}</b><small>${tr('Восстановить {n} HP', { n: 12 })}</small></span><i class="${run.gold < shop.tea.price ? 'poor' : ''}">${shop.tea.price}</i></button>
+          <button class="svc ${shop.up.sold ? 'sold' : ''}" data-act="buyup">${Art.icon('whetstone')}<span><b>${tr('лавка::Заточка')}</b><small>${tr('Улучшить карту')}</small></span><i class="${run.gold < shop.up.price ? 'poor' : ''}">${shop.up.price}</i></button>
+          <button class="svc ${shop.remove.sold ? 'sold' : ''}" data-act="buyremove">${Art.icon('scissors')}<span><b>${tr('Распустить карту')}</b><small>${tr('Убрать карту из колоды')}</small></span><i class="${run.gold < shop.remove.price ? 'poor' : ''}">${shop.remove.price}</i></button>
         </div>
-        <button class="btn leave" data-act="next">Уйти</button>
+        <button class="btn leave" data-act="next">${tr('Уйти')}</button>
         ${heroBar(false)}`;
     };
     const pay = (item) => {
       if (item.sold) return false;
-      if (run.gold < item.price) { SND.sfx('deny'); toast('Не хватает монет'); return false; }
+      if (run.gold < item.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return false; }
       run.gold -= item.price; item.sold = true; ach.add('spent', item.price); SND.sfx('coin'); return true;
     };
     screen.onShop = (act, i) => {
-      if (act === 'buy' && pay(shop.cards[i])) { ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(`Куплено: ${CARDS[shop.cards[i].id].name}`); }
+      if (act === 'buy' && pay(shop.cards[i])) { ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(tr('Куплено: {name}', { name: CARDS[shop.cards[i].id].name })); }
       if (act === 'buyrelic' && shop.relic && pay(shop.relic)) addRelic(shop.relic.id);
       if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
       if (act === 'buyup' && !shop.up.sold) {
-        if (run.gold < shop.up.price) { SND.sfx('deny'); toast('Не хватает монет'); return; }
+        if (run.gold < shop.up.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
         upgradeFlow((ok) => { if (ok) { run.gold -= shop.up.price; shop.up.sold = true; ach.add('spent', shop.up.price); } render(); });
         return;
       }
       if (act === 'buyremove' && !shop.remove.sold) {
-        if (run.gold < shop.remove.price) { SND.sfx('deny'); toast('Не хватает монет'); return; }
+        if (run.gold < shop.remove.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
         removeCardFlow((ok) => { if (ok) { run.gold -= shop.remove.price; shop.remove.sold = true; ach.add('spent', shop.remove.price); } render(); });
         return;
       }
@@ -1048,20 +1081,20 @@
   function goChest() {
     screen.className = 'scr-chest';
     screen.innerHTML = `${topBar()}
-      <div class="chest-wrap"><div class="chest">${Art.icon('chest')}</div><p>Сундук-соня сладко храпит.</p></div>
-      <div class="row2"><button class="btn" data-act="openchest">Открыть</button><button class="btn ghost" data-act="next">Не будить</button></div>
+      <div class="chest-wrap"><div class="chest">${Art.icon('chest')}</div><p>${tr('Сундук-соня сладко храпит.')}</p></div>
+      <div class="row2"><button class="btn" data-act="openchest">${tr('Открыть')}</button><button class="btn ghost" data-act="next">${tr('Не будить')}</button></div>
       ${heroBar(false)}`;
   }
   function openChest() {
     ach.add('chests');
     const free = freeRelics();
     let msg;
-    if (free.length && Math.random() < 0.5) { const id = pickRelic(free); addRelic(id); msg = `Внутри: ${RELICS[id].name}. ${RELICS[id].desc}`; }
-    else { const g = rnd(28, 45); run.gold += g; SND.sfx('coin'); msg = `Внутри ${g} монет.`; }
+    if (free.length && Math.random() < 0.5) { const id = pickRelic(free); addRelic(id); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
+    else { const g = rnd(28, 45); run.gold += g; SND.sfx('coin'); msg = tr('Внутри {n} {n|монета|монеты|монет}.', { n: g }); }
     save({ t: 'next' });
     $('.chest').classList.add('open');
     $('.chest-wrap p').textContent = msg;
-    $('.row2').innerHTML = `<button class="btn" data-act="next">Дальше</button>`;
+    $('.row2').innerHTML = `<button class="btn" data-act="next">${tr('Дальше')}</button>`;
     $('.topbar').outerHTML = topBar();
     $('.herobar').outerHTML = heroBar(false);
   }
@@ -1072,11 +1105,11 @@
     const noHeal = hasRelic('bottomless');
     screen.className = 'scr-rest';
     screen.innerHTML = `${topBar()}
-      <div class="fire-wrap">${Art.icon('fire')}<p>Костёр потрескивает. Снег вокруг тает.</p></div>
+      <div class="fire-wrap">${Art.icon('fire')}<p>${tr('Костёр потрескивает. Снег вокруг тает.')}</p></div>
       <div class="scrolls">
-        <button class="scroll ${noHeal ? 'off' : ''}" data-act="rest-heal" ${noHeal ? 'disabled' : ''}>Отдохнуть<small>${noHeal ? 'Бездонная сумка не даёт присесть' : `+${restHeal()} HP${hasRelic('cocoatin') ? ', +2 макс.' : ''}`}</small></button>
-        <button class="scroll" data-act="rest-up">Наточить карту<small>Улучшить карту</small></button>
-        <button class="scroll" data-act="rest-burn">Сжечь карту<small>Убрать карту из колоды</small></button>
+        <button class="scroll ${noHeal ? 'off' : ''}" data-act="rest-heal" ${noHeal ? 'disabled' : ''}>${tr('Отдохнуть')}<small>${noHeal ? tr('Бездонная сумка не даёт присесть') : `+${restHeal()} HP${hasRelic('cocoatin') ? `, ${tr('+{n} макс.', { n: 2 })}` : ''}`}</small></button>
+        <button class="scroll" data-act="rest-up">${tr('Наточить карту')}<small>${tr('Улучшить карту')}</small></button>
+        <button class="scroll" data-act="rest-burn">${tr('Сжечь карту')}<small>${tr('Убрать карту из колоды')}</small></button>
       </div>
       ${heroBar(false)}`;
   }
@@ -1102,7 +1135,7 @@
         // первый удар карты — полная анимация, следующие короче
         await strike(calcDmg(base), C.fxHits++ ? ATK_FX_NEXT[kind] || kind : kind);
         // метла трубочиста: каждый удар подкидывает искру
-        if (C.enemy.hp > 0 && proc('sootbroom', 'enemy')) { C.enemy.burn += 1; FX.play('sparks', 'enemy'); floatText($('.enemy-fx'), 'Поджог +1', 'burnf'); }
+        if (C.enemy.hp > 0 && proc('sootbroom', 'enemy')) { C.enemy.burn += 1; FX.play('sparks', 'enemy'); floatText($('.enemy-fx'), tr('Поджог +{n}', { n: 1 }), 'burnf'); }
         // колючий враг ранит в ответ на каждый удар
         if (C.enemy.thorns > 0 && C.enemy.hp > 0) { FX.play('thorns'); await hitHero(C.enemy.thorns); }
         if (hits > 1) await sleep(140);
@@ -1123,31 +1156,31 @@
     },
     draw(n) { drawCards(n); },
     heal(n) { SND.sfx('heal'); FX.play('heal'); const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
-    burn(n) { const v = n + (proc('matchbox', 'enemy') ? 2 : 0); FX.play('fire', 'enemy'); C.enemy.burn += v; floatText($('.enemy-fx'), `Поджог ${v}`, 'burnf'); },
-    weak(n) { FX.play('weak', 'enemy'); C.enemy.weak += n; floatText($('.enemy-fx'), 'Ослаблен', 'weakf'); },
-    vuln(n) { FX.play('vuln', 'enemy'); C.enemy.vuln += n + (proc('stamppad', 'enemy') ? 1 : 0); floatText($('.enemy-fx'), 'Уязвим', 'weakf'); },
-    chill(n) { FX.play('frost', 'enemy'); C.enemy.str -= n; floatText($('.enemy-fx'), `Сила −${n}`, 'blockf'); },
-    stun() { FX.play('sleep', 'enemy'); C.enemy.stun = 1; floatText($('.enemy-fx'), 'Засыпает…', 'weakf'); if (C.tier === 'boss') ach.flag('stunboss'); },
-    energy(n) { C.energy += n; FX.play('energy'); floatText($('.hero-fx'), `+${n} энергии`, 'blockf'); },
-    resolve(n) { C.str += n; FX.play('aura'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
-    rush(n) { C.tmpStr += n; FX.play('aura'); floatText($('.hero-fx'), `Решимость +${n}`, 'burnf'); },
-    thorns(n) { if (proc('wreath')) n *= 2; C.thorns += n; FX.play('thorns'); floatText($('.hero-fx'), `Шипы +${n}`, 'blockf'); },
-    gold(n) { run.gold += n; FX.play('gold'); floatText($('.hero-fx'), `+${n} монет`, 'burnf'); },
-    maxHp(n) { run.maxHp += n; run.hp += n; SND.sfx('heal'); FX.play('heart'); floatText($('.hero-fx'), `+${n} к макс. HP`, 'healf'); },
+    burn(n) { const v = n + (proc('matchbox', 'enemy') ? 2 : 0); FX.play('fire', 'enemy'); C.enemy.burn += v; floatText($('.enemy-fx'), tr('Поджог {n}', { n: v }), 'burnf'); },
+    weak(n) { FX.play('weak', 'enemy'); C.enemy.weak += n; floatText($('.enemy-fx'), tr('Ослаблен'), 'weakf'); },
+    vuln(n) { FX.play('vuln', 'enemy'); C.enemy.vuln += n + (proc('stamppad', 'enemy') ? 1 : 0); floatText($('.enemy-fx'), tr('Уязвим'), 'weakf'); },
+    chill(n) { FX.play('frost', 'enemy'); C.enemy.str -= n; floatText($('.enemy-fx'), tr('Сила −{n}', { n }), 'blockf'); },
+    stun() { FX.play('sleep', 'enemy'); C.enemy.stun = 1; floatText($('.enemy-fx'), tr('Засыпает…'), 'weakf'); if (C.tier === 'boss') ach.flag('stunboss'); },
+    energy(n) { C.energy += n; FX.play('energy'); floatText($('.hero-fx'), tr('+{n} {n|энергия|энергии|энергии}', { n }), 'blockf'); },
+    resolve(n) { C.str += n; FX.play('aura'); floatText($('.hero-fx'), tr('Решимость +{n}', { n }), 'burnf'); },
+    rush(n) { C.tmpStr += n; FX.play('aura'); floatText($('.hero-fx'), tr('Решимость +{n}', { n }), 'burnf'); },
+    thorns(n) { if (proc('wreath')) n *= 2; C.thorns += n; FX.play('thorns'); floatText($('.hero-fx'), tr('Шипы +{n}', { n }), 'blockf'); },
+    gold(n) { run.gold += n; FX.play('gold'); floatText($('.hero-fx'), coins(n), 'burnf'); },
+    maxHp(n) { run.maxHp += n; run.hp += n; SND.sfx('heal'); FX.play('heart'); floatText($('.hero-fx'), tr('+{n} к макс. HP', { n }), 'healf'); },
     doubleBlock() { if (C.block > 0) api.block(C.block); },
     async burstNow() { await burst(); },
     consumeFlame() { const n = C.flame; C.flame = 0; return n; },
-    deliver(name, fn) { C.deliveries.push({ name, fn }); FX.play('deliver'); floatText($('.hero-fx'), `${name} в пути`, 'weakf'); },
+    deliver(name, fn) { name = tr(name); C.deliveries.push({ name, fn }); FX.play('deliver'); floatText($('.hero-fx'), tr('{name} в пути', { name }), 'weakf'); },
     charm(id, n) {
       C.charms[id] = (C.charms[id] || 0) + n; FX.play('sigil', CARDS[id].art); floatText($('.hero-fx'), CARDS[id].name, 'weakf');
       if (Object.keys(C.charms).length >= 3) ach.flag('charms3');
     },
-    freeTurn() { C.free = true; FX.play('clock'); floatText($('.hero-fx'), 'Все карты бесплатно!', 'burnf'); },
+    freeTurn() { C.free = true; FX.play('clock'); floatText($('.hero-fx'), tr('Все карты бесплатно!'), 'burnf'); },
     // Копирка: повторить предыдущую карту хода
     async copyLast() {
       const l = C.last;
-      if (!l || l.id === 'carbon') { floatText($('.hero-fx'), 'Нечего копировать', 'weakf'); return; }
-      floatText($('.hero-fx'), `Копия: ${CARDS[l.id].name}`, 'weakf');
+      if (!l || l.id === 'carbon') { floatText($('.hero-fx'), tr('Нечего копировать'), 'weakf'); return; }
+      floatText($('.hero-fx'), tr('Копия: {name}', { name: CARDS[l.id].name }), 'weakf');
       FX.play('mirror');
       const was = C.fx; C.fx = ATK_FX[l.id]; C.fxHits = 0;
       await CARDS[l.id].play(api, l.up, l);
@@ -1160,7 +1193,7 @@
         if (CARDS[C.disc[i].id].type === 'status') continue;
         C.hand.push(C.disc.splice(i, 1)[0]); got++;
       }
-      FX.play('cards'); floatText($('.hero-fx'), got ? `Вернулось карт: ${got}` : 'Сброс пуст', 'weakf');
+      FX.play('cards'); floatText($('.hero-fx'), got ? tr('Вернулось карт: {n}', { n: got }) : tr('Сброс пуст'), 'weakf');
     },
     // До востребования: бесплатно разыграть верхние карты колоды, помехи сгорают
     async autoplay(n) {
@@ -1169,7 +1202,7 @@
         if (!C.draw.length) { if (!C.disc.length) break; C.draw = shuffle(C.disc); C.disc = []; }
         const c = C.draw.pop();
         const cd = CARDS[c.id];
-        toast(`Из колоды: ${cardName(c)}`);
+        toast(tr('Из колоды: {name}', { name: cardName(c) }));
         if (cd.type === 'status') { exhaustCard(c); continue; }
         C.fx = ATK_FX[c.id]; C.fxHits = 0;
         await cd.play(api, c.up, c);
@@ -1184,40 +1217,40 @@
     ginger(n) {
       let got = 0;
       for (let k = 0; k < n && C.hand.length < HAND_MAX; k++) { C.hand.push(mk('gingerbread', C.glaze)); got++; }
-      if (got) { FX.play('ginger'); floatText($('.hero-fx'), `Пряник +${got}`, 'burnf'); }
+      if (got) { FX.play('ginger'); floatText($('.hero-fx'), tr('Пряник +{n}', { n: got }), 'burnf'); }
     },
     glaze() {
       C.glaze = true;
       [...C.hand, ...C.draw, ...C.disc].forEach((c) => { if (c.id === 'gingerbread') c.up = true; });
       FX.play('sugar');
-      floatText($('.hero-fx'), 'Глазурь!', 'weakf');
+      floatText($('.hero-fx'), tr('Глазурь!'), 'weakf');
     },
     // Точильщик: заточить карты в руке — улучшить до конца боя
     sharpen(n, quiet) {
       const list = shuffle(C.hand.filter(canUpgrade)).slice(0, n);
       list.forEach((c) => { c.up = true; c.sharp = true; });
       C.sharpened += list.length;
-      if (list.length) { ach.max('sharpfight', C.sharpened); FX.play('grind'); floatText($('.hero-fx'), list.length === 1 ? `Заточено: ${CARDS[list[0].id].name}` : `Заточено карт: ${list.length}`, 'blockf'); }
-      else if (!quiet) floatText($('.hero-fx'), 'Нечего точить', 'weakf');
+      if (list.length) { ach.max('sharpfight', C.sharpened); FX.play('grind'); floatText($('.hero-fx'), list.length === 1 ? tr('Заточено: {name}', { name: CARDS[list[0].id].name }) : tr('Заточено карт: {n}', { n: list.length }), 'blockf'); }
+      else if (!quiet) floatText($('.hero-fx'), tr('Нечего точить'), 'weakf');
       return list.length;
     },
     // сколько улучшенных карт в колоде, руке и сбросе (кроме самой карты)
     upCount(self) { return C ? [...C.draw, ...C.hand, ...C.disc].filter((c) => c.up && c !== self).length : 0; },
     // Пастушка: Злость Дружка и укус
-    dog(n) { C.dog += n; FX.play('growl'); floatText($('.hero-fx'), `Злость +${n}`, 'burnf'); ach.max('dogmax', C.dog); },
+    dog(n) { C.dog += n; FX.play('growl'); floatText($('.hero-fx'), tr('Злость +{n}', { n }), 'burnf'); ach.max('dogmax', C.dog); },
     async bite() {
       if (C.dog <= 0 || C.enemy.hp <= 0) return;
       const pt = $('#heroPortrait');
       if (pt) { pt.classList.remove('bite'); void pt.offsetWidth; pt.classList.add('bite'); }
       await FX.play('bite', 'enemy');
-      floatText($('.enemy-fx'), 'Гав!', 'weakf');
+      floatText($('.enemy-fx'), tr('Гав!'), 'weakf');
       await hitEnemy(dogDmg(), true);
       if (proc('collar')) api.block(2);
     },
     // Знахарка: заплатить Цену здоровьем
     async price(n) {
       loseHp(n); C.paid += n; ach.max('pricefight', C.paid);
-      FX.play('price'); floatText($('.hero-fx'), `Цена −${n} HP`, 'dmgf');
+      FX.play('price'); floatText($('.hero-fx'), tr('Цена −{n} HP', { n }), 'dmgf');
       renderCombat();
       if (C.enemy.hp > 0 && proc('mortar', 'enemy')) { await sleep(120); await strike(n, 'roots'); }
     },
@@ -1287,11 +1320,11 @@
     SND.music(tier === 'boss' ? 'boss' : 'battle');
     screen.className = 'scr-combat';
     screen.innerHTML = `
-      <div class="topbar slim">${relicIcons(6)}<div class="spacer"></div><div class="stepl">${tier === 'boss' ? (isFinalStep(run.step) ? 'Финал' : 'Босс стадии') : `Уровень ${run.step + 1}/${MAX_STEPS}`}</div></div>
+      <div class="topbar slim">${relicIcons(6)}<div class="spacer"></div><div class="stepl">${tier === 'boss' ? tr(isFinalStep(run.step) ? 'Финал' : 'Босс стадии') : tr('Уровень {a}/{b}', { a: run.step + 1, b: MAX_STEPS })}</div></div>
       <div class="enemy-zone">
         <div class="intent"></div>
         <div class="enemy ${e.tier}" id="enemy">${Art.enemy(enemyId)}<div class="enemy-fx"></div></div>
-        <div class="nameplate"><div class="ename">${e.name}${e.tier !== 'normal' ? `<i>${e.tier === 'boss' ? (isFinalStep(run.step) ? 'Финал' : 'Босс') : 'Элита'}</i>` : ''}</div>
+        <div class="nameplate"><div class="ename">${e.name}${e.tier !== 'normal' ? `<i>${tr(e.tier === 'boss' ? (isFinalStep(run.step) ? 'Финал' : 'Босс') : 'Элита')}</i>` : ''}</div>
           <div class="ehp"><div class="fill"></div><span></span><div class="eblk"></div></div>
           <div class="estatus"></div>
         </div>
@@ -1330,10 +1363,10 @@
     if (first && proc('scarf')) C.energy += 1;
     if (C.turn % 3 === 0 && proc('musicbox')) C.energy += 2;
     if (first && proc('northstar')) C.energy += 2;
-    if (C.sap) { C.energy = Math.max(0, C.energy - C.sap); toast(`Кукушка сбила с ритма: −${C.sap} энергии`); }
+    if (C.sap) { C.energy = Math.max(0, C.energy - C.sap); toast(tr('Кукушка сбила с ритма: −{n} {n|энергия|энергии|энергии}', { n: C.sap })); }
     C.sap = 0; C.vane = false; C.medal = false;
     let n = handSize() + (C.charms.compass || 0) + (first && proc('sled') ? 2 : 0) + (first && hasRelic('northstar') ? 2 : 0);
-    if (C.bury) { n = Math.max(1, n - C.bury); toast(`Метелица замела: −${C.bury} карты`); C.bury = 0; }
+    if (C.bury) { n = Math.max(1, n - C.bury); toast(tr('Метелица замела: −{n} {n|карта|карты|карт}', { n: C.bury })); C.bury = 0; }
     drawCards(n);
     if (first && proc('mug')) { run.hp = Math.min(run.maxHp, run.hp + 3); FX.play('heal'); }
     SND.sfx(C.turn === 1 ? 'draw' : 'turn');
@@ -1351,7 +1384,7 @@
       for (let k = 0; k < (hasRelic('horn') ? 2 : 1); k++) {
         if (C.enemy.hp <= 0) break;
         if (k === 1) proc('horn');
-        toast(`Доставка: ${d.name}`);
+        toast(tr('Доставка: {name}', { name: d.name }));
         await sleep(250);
         C.fx = 'arrive'; C.fxHits = 0;
         await d.fn(api);
@@ -1389,21 +1422,21 @@
 
   function intentHTML(it) {
     const tip = (t) => `data-tip="${t}"`;
-    if (it.k === 'attack') return `<div class="it atk" ${tip(`Атака: ${enemyDmg(it.v)} урона${it.hits ? ` ${it.hits} раза` : ''}${it.leech ? '. Враг вылечится на весь урон, который пройдёт сквозь защиту' : ''}`)}>${Art.intentIcon(it.leech ? 'leech' : 'attack')}<b>${enemyDmg(it.v)}${it.hits ? `×${it.hits}` : ''}</b></div>`;
-    if (it.k === 'sap') return `<div class="it deb" ${tip(`Собьёт с ритма: в ваш следующий ход −${it.v} энергии`)}>${Art.intentIcon('sap')}<b>−${it.v}</b></div>`;
-    if (it.k === 'mist') return `<div class="it blk" ${tip(`Напустит туман: до её следующего хода любой удар по ней наносит не больше ${it.v} урона. Поджог проходит`)}>${Art.intentIcon('mist')}<b>≤${it.v}</b></div>`;
-    if (it.k === 'boom') return `<div class="it atk boom" ${tip(`Взорвётся: ${enemyDmg(it.v)} урона, и после этого исчезнет`)}>${Art.intentIcon('boom')}<b>${enemyDmg(it.v)}</b></div>`;
-    if (it.k === 'bury') return `<div class="it deb" ${tip(`Заметёт руку: в следующий ход на ${it.v} карты меньше`)}>${Art.intentIcon('bury')}<b>−${it.v}</b></div>`;
-    if (it.k === 'frail') return `<div class="it deb" ${tip(`Хрупкость на ${it.v} хода: ваша защита слабее на 25%`)}>${Art.intentIcon('frail')}<b>${it.v}</b></div>`;
-    if (it.k === 'block') return `<div class="it blk" ${tip(`Защита ${it.v}`)}>${Art.intentIcon('block')}<b>${it.v}</b></div>`;
-    if (it.k === 'buff') return `<div class="it buf" ${tip(`Враг станет сильнее: Сила +${it.v}`)}>${Art.intentIcon('buff')}<b>+${it.v}</b></div>`;
-    if (it.k === 'debuff') return `<div class="it deb" ${tip(`Слабость на ${it.v} хода: ваши атаки слабее на 25%`)}>${Art.intentIcon('debuff')}</div>`;
-    if (it.k === 'snuff') return `<div class="it snf" ${tip(`Погасит все Огоньки и ударит на ${enemyDmg(it.v)}`)}>${Art.intentIcon('snuff')}<b>${enemyDmg(it.v)}</b></div>`;
-    if (it.k === 'curse') return `<div class="it cur" ${tip(`Подкинет в колоду: ${CARDS[it.card].name} ×${it.n}`)}>${Art.intentIcon('curse')}<b>×${it.n}</b></div>`;
-    if (it.k === 'steal') return `<div class="it atk" ${tip(`Ударит на ${enemyDmg(it.v)} и украдёт до ${it.gold} монет`)}>${Art.intentIcon('steal')}<b>${enemyDmg(it.v)}</b></div>`;
-    if (it.k === 'heal') return `<div class="it hea" ${tip(`Восстановит ${it.v} HP`)}>${Art.intentIcon('heal')}<b>+${it.v}</b></div>`;
-    if (it.k === 'spikes') return `<div class="it blk" ${tip(`Отрастит Шипы ${it.v}: каждый ваш удар по нему будет ранить вас`)}>${Art.intentIcon('spikes')}<b>+${it.v}</b></div>`;
-    if (it.k === 'sleep') return `<div class="it slp" ${tip('Враг спит и пропустит ход')}>${Art.intentIcon('sleep')}<b>Спит</b></div>`;
+    if (it.k === 'attack') return `<div class="it atk" ${tip(`${tr('Атака: {d} урона', { d: enemyDmg(it.v) })}${it.hits ? ` ${tr('{n} {n|раз|раза|раз}', { n: it.hits })}` : ''}${it.leech ? `. ${tr('Враг вылечится на весь урон, который пройдёт сквозь защиту')}` : ''}`)}>${Art.intentIcon(it.leech ? 'leech' : 'attack')}<b>${enemyDmg(it.v)}${it.hits ? `×${it.hits}` : ''}</b></div>`;
+    if (it.k === 'sap') return `<div class="it deb" ${tip(tr('Собьёт с ритма: в ваш следующий ход −{n} {n|энергия|энергии|энергии}', { n: it.v }))}>${Art.intentIcon('sap')}<b>−${it.v}</b></div>`;
+    if (it.k === 'mist') return `<div class="it blk" ${tip(tr('Напустит туман: до её следующего хода любой удар по ней наносит не больше {n} урона. Поджог проходит', { n: it.v }))}>${Art.intentIcon('mist')}<b>≤${it.v}</b></div>`;
+    if (it.k === 'boom') return `<div class="it atk boom" ${tip(tr('Взорвётся: {d} урона, и после этого исчезнет', { d: enemyDmg(it.v) }))}>${Art.intentIcon('boom')}<b>${enemyDmg(it.v)}</b></div>`;
+    if (it.k === 'bury') return `<div class="it deb" ${tip(tr('Заметёт руку: в следующий ход на {n} {n|карту|карты|карт} меньше', { n: it.v }))}>${Art.intentIcon('bury')}<b>−${it.v}</b></div>`;
+    if (it.k === 'frail') return `<div class="it deb" ${tip(tr('Хрупкость на {n} {n|ход|хода|ходов}: ваша защита слабее на 25%', { n: it.v }))}>${Art.intentIcon('frail')}<b>${it.v}</b></div>`;
+    if (it.k === 'block') return `<div class="it blk" ${tip(tr('Защита {n}', { n: it.v }))}>${Art.intentIcon('block')}<b>${it.v}</b></div>`;
+    if (it.k === 'buff') return `<div class="it buf" ${tip(tr('Враг станет сильнее: Сила +{n}', { n: it.v }))}>${Art.intentIcon('buff')}<b>+${it.v}</b></div>`;
+    if (it.k === 'debuff') return `<div class="it deb" ${tip(tr('Слабость на {n} {n|ход|хода|ходов}: ваши атаки слабее на 25%', { n: it.v }))}>${Art.intentIcon('debuff')}</div>`;
+    if (it.k === 'snuff') return `<div class="it snf" ${tip(tr('Погасит все Огоньки и ударит на {d}', { d: enemyDmg(it.v) }))}>${Art.intentIcon('snuff')}<b>${enemyDmg(it.v)}</b></div>`;
+    if (it.k === 'curse') return `<div class="it cur" ${tip(tr('Подкинет в колоду: {name} ×{n}', { name: CARDS[it.card].name, n: it.n }))}>${Art.intentIcon('curse')}<b>×${it.n}</b></div>`;
+    if (it.k === 'steal') return `<div class="it atk" ${tip(tr('Ударит на {d} и украдёт до {g} {g|монеты|монет|монет}', { d: enemyDmg(it.v), g: it.gold }))}>${Art.intentIcon('steal')}<b>${enemyDmg(it.v)}</b></div>`;
+    if (it.k === 'heal') return `<div class="it hea" ${tip(tr('Восстановит {n} HP', { n: it.v }))}>${Art.intentIcon('heal')}<b>+${it.v}</b></div>`;
+    if (it.k === 'spikes') return `<div class="it blk" ${tip(tr('Отрастит Шипы {n}: каждый ваш удар по нему будет ранить вас', { n: it.v }))}>${Art.intentIcon('spikes')}<b>+${it.v}</b></div>`;
+    if (it.k === 'sleep') return `<div class="it slp" ${tip(tr('Враг спит и пропустит ход'))}>${Art.intentIcon('sleep')}<b>${tr('Спит')}</b></div>`;
     return '';
   }
 
@@ -1418,38 +1451,38 @@
     $('.ehp .fill').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
     $('.ehp span').textContent = `${Math.max(0, e.hp)}/${e.max}`;
     $('.eblk').innerHTML = e.block > 0 ? `${Art.intentIcon('block')}<b>${e.block}</b>` : '';
-    const g = (name) => GLOSS.find((x) => x[0] === name)[1];
+    const g = (name) => GL[name];
     const st = [];
-    if (e.str) st.push(chip('s-str', `Сила ${e.str}`, g('Сила врага')));
-    if (e.weak) st.push(chip('s-weak', `Ослаблен ${e.weak}`, g('Ослаблен')));
-    if (e.vuln) st.push(chip('s-vuln', `Уязвим ${e.vuln}`, g('Уязвим')));
-    if (e.burn) st.push(chip('s-burn', `Поджог ${e.burn}`, g('Поджог')));
-    if (e.thorns) st.push(chip('s-thorns', `Колючки ${e.thorns}`, `Каждый ваш удар по врагу ранит вас на ${e.thorns}`));
+    if (e.str) st.push(chip('s-str', tr('Сила {n}', { n: e.str }), g('Сила врага')));
+    if (e.weak) st.push(chip('s-weak', tr('Ослаблен {n}', { n: e.weak }), g('Ослаблен')));
+    if (e.vuln) st.push(chip('s-vuln', tr('Уязвим {n}', { n: e.vuln }), g('Уязвим')));
+    if (e.burn) st.push(chip('s-burn', tr('Поджог {n}', { n: e.burn }), g('Поджог')));
+    if (e.thorns) st.push(chip('s-thorns', tr('Колючки {n}', { n: e.thorns }), tr('Каждый ваш удар по врагу ранит вас на {n}', { n: e.thorns })));
     // особые приёмы врага
     const ed = ENEMIES[C.id];
-    if (e.nest) st.push(chip('s-trait', `Матрёшка ×${e.nest}`, `Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: ${e.nest}.`));
-    if (ed.boil) st.push(chip(e.boil ? 's-burn' : 's-trait', `Кипит +${e.boil}`, 'Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После его хода кипяток остывает. Поджог его не злит.'));
-    if (ed.tally) st.push(chip('s-trait', `Ку-ку ${C.playedTurn % ed.tally}/${ed.tally}`, `Каждая ${ed.tally}-я карта за ход: кукушка кукует и бьёт вас на 3.`));
-    if (ed.plating) st.push(chip('s-trait', 'Латы', 'Защита Ледяного Рыцаря не сгорает: она копится от хода к ходу. Поджог бьёт прямо по HP.'));
-    if (ed.alarm) st.push(chip('s-trait', `Колотушка +${ed.alarm}`, `Каждый ваш Навык даёт сторожу ${ed.alarm} защиты до конца вашего хода. Бейте до хитростей.`));
-    if (e.mist) st.push(chip('s-weak', `Туман ≤${e.mist}`, `Пока туман, любой удар по ней наносит не больше ${e.mist} урона. Поджог проходит. Туман рассеется, когда она снова сходит.`));
+    if (e.nest) st.push(chip('s-trait', tr('Матрёшка ×{n}', { n: e.nest }), tr('Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: {n}.', { n: e.nest })));
+    if (ed.boil) st.push(chip(e.boil ? 's-burn' : 's-trait', tr('Кипит +{n}', { n: e.boil }), tr('Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После его хода кипяток остывает. Поджог его не злит.')));
+    if (ed.tally) st.push(chip('s-trait', tr('Ку-ку {a}/{b}', { a: C.playedTurn % ed.tally, b: ed.tally }), tr('Каждая {n}-я карта за ход: кукушка кукует и бьёт вас на 3.', { n: ed.tally })));
+    if (ed.plating) st.push(chip('s-trait', tr('Латы'), tr('Защита Ледяного Рыцаря не сгорает: она копится от хода к ходу. Поджог бьёт прямо по HP.')));
+    if (ed.alarm) st.push(chip('s-trait', tr('Колотушка +{n}', { n: ed.alarm }), tr('Каждый ваш Навык даёт сторожу {n} защиты до конца вашего хода. Бейте до хитростей.', { n: ed.alarm })));
+    if (e.mist) st.push(chip('s-weak', tr('Туман ≤{n}', { n: e.mist }), tr('Пока туман, любой удар по ней наносит не больше {n} урона. Поджог проходит. Туман рассеется, когда она снова сходит.', { n: e.mist })));
     const bi = ed.pattern.findIndex((p) => p.k === 'boom');
-    if (bi >= 0) { const L = ed.pattern.length; const left = ((bi - (e.pi % L)) + L) % L + 1; st.push(chip('s-burn', `Фитиль ${left}`, `Через ${left} ${left === 1 ? 'ход' : 'хода'} шутиха взорвётся: сильно ударит и исчезнет. Победите её раньше, если успеете.`)); }
-    if (e.stun) st.push(chip('s-weak', 'Спит', g('Спит')));
-    if (C.stolen) st.push(chip('s-gold', `Украдено ${C.stolen}`, g('Кража')));
+    if (bi >= 0) { const L = ed.pattern.length; const left = ((bi - (e.pi % L)) + L) % L + 1; st.push(chip('s-burn', tr('Фитиль {n}', { n: left }), tr('Через {n} {n|ход|хода|ходов} шутиха взорвётся: сильно ударит и исчезнет. Победите её раньше, если успеете.', { n: left }))); }
+    if (e.stun) st.push(chip('s-weak', tr('Спит'), g('Спит')));
+    if (C.stolen) st.push(chip('s-gold', tr('Украдено {n}', { n: C.stolen }), g('Кража')));
     $('.estatus').innerHTML = st.join('');
     // статусы Ивы и активные чары
     const hs = [];
     const res = C.str + C.tmpStr;
-    if (res) hs.push(chip('h-res', `Решимость ${res}`, `${g('Решимость')}${C.tmpStr ? ` До конца хода: ${C.tmpStr}.` : ''}`));
-    if (C.thorns) hs.push(chip('h-thorns', `Шипы ${C.thorns}`, g('Шипы')));
-    if (C.dog > 0) hs.push(chip('h-dog', `${C.dog}`, `${g('Дружок')} Злость ${C.dog}: укус на ${dogDmg()}${C.charms.wolfhound ? `, ${1 + C.charms.wolfhound} раза за ход` : ''}.`, Art.icon('dogfriend')));
-    if (C.glaze) hs.push(chip('h-charm', '', 'Сахарная глазурь: до конца боя все Пряники улучшены', Art.icon('glaze')));
-    if (C.paid) hs.push(chip('h-paid', `Цена ${C.paid}`, `${g('Цена')} В этом бою уже отдано ${C.paid} HP.`));
-    if (C.pWeak) hs.push(chip('h-weak', `Слабость ${C.pWeak}`, 'Слабость: ваши атаки наносят на 25% меньше урона.'));
-    if (C.frail) hs.push(chip('h-weak', `Хрупкость ${C.frail}`, g('Хрупкость')));
-    if (C.deliveries.length) hs.push(chip('h-del', `Доставка ${C.deliveries.length}`, `${g('Доставка')} В пути: ${C.deliveries.map((d) => d.name).join(', ')}.`));
-    for (const [id, n] of Object.entries(C.charms)) hs.push(chip('h-charm', `${n}`, CHARM_TIP[id](n), Art.icon(CARDS[id].art)));
+    if (res) hs.push(chip('h-res', tr('Решимость {n}', { n: res }), `${g('Решимость')}${C.tmpStr ? ` ${tr('До конца хода: {n}.', { n: C.tmpStr })}` : ''}`));
+    if (C.thorns) hs.push(chip('h-thorns', tr('Шипы {n}', { n: C.thorns }), g('Шипы')));
+    if (C.dog > 0) hs.push(chip('h-dog', `${C.dog}`, `${g('Дружок')} ${tr('Злость {n}: укус на {d}', { n: C.dog, d: dogDmg() })}${C.charms.wolfhound ? `, ${tr('{n} {n|раз|раза|раз} за ход', { n: 1 + C.charms.wolfhound })}` : ''}.`, Art.icon('dogfriend')));
+    if (C.glaze) hs.push(chip('h-charm', '', `${CARDS.glaze.name}: ${tr('до конца боя все Пряники улучшены')}`, Art.icon('glaze')));
+    if (C.paid) hs.push(chip('h-paid', tr('Цена {n}', { n: C.paid }), `${g('Цена')} ${tr('В этом бою уже отдано {n} HP.', { n: C.paid })}`));
+    if (C.pWeak) hs.push(chip('h-weak', tr('Слабость {n}', { n: C.pWeak }), tr('Слабость: ваши атаки наносят на 25% меньше урона.')));
+    if (C.frail) hs.push(chip('h-weak', tr('Хрупкость {n}', { n: C.frail }), g('Хрупкость')));
+    if (C.deliveries.length) hs.push(chip('h-del', tr('Доставка {n}', { n: C.deliveries.length }), `${g('Доставка')} ${tr('В пути: {list}.', { list: C.deliveries.map((d) => d.name).join(', ') })}`));
+    for (const [id, n] of Object.entries(C.charms)) hs.push(chip('h-charm', `${n}`, `${CARDS[id].name}: ${CHARM_TIP[id](n)}`, Art.icon(CARDS[id].art)));
     $('.hstatus').innerHTML = hs.join('');
     $('.hb-slot').innerHTML = heroBar(true);
     renderHand(dealAnim);
@@ -1476,10 +1509,10 @@
   // почему карту сейчас нельзя разыграть (null — можно)
   function cantPlay(c) {
     const cost = playCost(c);
-    if (cost == null) return 'Эту карту нельзя разыграть';
-    if (cost > C.energy) return 'Не хватает энергии';
+    if (cost == null) return tr('Эту карту нельзя разыграть');
+    if (cost > C.energy) return tr('Не хватает энергии');
     const price = CARDS[c.id].price ? CARDS[c.id].price(c.up) : 0;
-    if (price && price >= run.hp) return 'Не хватит здоровья, чтобы заплатить Цену';
+    if (price && price >= run.hp) return tr('Не хватит здоровья, чтобы заплатить Цену');
     return null;
   }
 
@@ -1508,7 +1541,7 @@
     await cd.play(api, c.up, c);
     // Осколок зеркала: первая карта хода срабатывает ещё раз
     if (C.playedTurn === 0 && cd.type !== 'status' && C.enemy.hp > 0 && run.hp > 0 && proc('mirrorshard')) {
-      floatText($('.hero-fx'), 'Отражение!', 'weakf'); await sleep(200);
+      floatText($('.hero-fx'), tr('Отражение!'), 'weakf'); await sleep(200);
       await cd.play(api, c.up, c);
     }
     if (cd.type === 'atk') C.atkTurn = true;
@@ -1529,14 +1562,14 @@
       C.ginger++; ach.add('ginger');
       if (C.charms.gingerhouse && C.enemy.hp > 0) await strike(4 * C.charms.gingerhouse, 'crumbs');
     }
-    if (C.playedTurn % 5 === 0 && C.enemy.hp > 0 && proc('milestone', 'enemy')) { floatText($('.enemy-fx'), 'Верста!', 'weakf'); await strike(8, 'heavy'); }
+    if (C.playedTurn % 5 === 0 && C.enemy.hp > 0 && proc('milestone', 'enemy')) { floatText($('.enemy-fx'), tr('Верста!'), 'weakf'); await strike(8, 'heavy'); }
     if (C.charms.rhythm && C.playedTurn % 3 === 0 && C.enemy.hp > 0) await api.flame(C.charms.rhythm);
     if (C.playedTotal % 6 === 0 && proc('stampbook')) api.energy(1);
     if (C.playedTurn % 4 === 0 && proc('wingboots')) { api.energy(1); drawCards(1); }
     // приёмы врага в ответ на ваши карты
     const ed = ENEMIES[C.id];
-    if (ed.alarm && cd.type === 'skill' && C.enemy.hp > 0) { C.enemy.block += ed.alarm; SND.sfx('clank'); floatText($('.enemy-fx'), `Тук-тук! +${ed.alarm}`, 'blockf'); }
-    if (ed.tally && C.playedTurn % ed.tally === 0 && C.enemy.hp > 0 && run.hp > 0) { floatText($('.enemy-fx'), 'Ку-ку!', 'weakf'); await hitHero(3); }
+    if (ed.alarm && cd.type === 'skill' && C.enemy.hp > 0) { C.enemy.block += ed.alarm; SND.sfx('clank'); floatText($('.enemy-fx'), tr('Тук-тук! +{n}', { n: ed.alarm }), 'blockf'); }
+    if (ed.tally && C.playedTurn % ed.tally === 0 && C.enemy.hp > 0 && run.hp > 0) { floatText($('.enemy-fx'), tr('Ку-ку!'), 'weakf'); await hitHero(3); }
     if (run.hp <= 0) { await sleep(400); goDefeat(); return; }
     if (C.enemy.hp <= 0) { await winCombat(); return; }
     renderCombat();
@@ -1572,7 +1605,7 @@
     el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
     if (real <= 0) SND.sfx('clank');
     else if (!quiet) SND.sfx('hit', Math.min(1.4, 0.6 + real / 15));
-    floatText($('.enemy-fx'), real > 0 ? `-${real}` : 'Блок', real > 0 ? 'dmgf' : 'blockf');
+    floatText($('.enemy-fx'), real > 0 ? `-${real}` : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
     await sleep(260);
   }
@@ -1586,13 +1619,13 @@
     const el = $('#enemy');
     if (el) el.style.setProperty('--nest', `${1 - 0.15 * e.layer}`);
     SND.sfx('clank');
-    floatText($('.enemy-fx'), 'Внутри ещё одна!', 'weakf');
+    floatText($('.enemy-fx'), tr('Внутри ещё одна!'), 'weakf');
     return true;
   }
 
   async function burst() {
     const fx = document.createElement('div');
-    fx.className = 'burst'; fx.innerHTML = `${Art.flame(1.4)}<span>Вспышка!</span>`;
+    fx.className = 'burst'; fx.innerHTML = `${Art.flame(1.4)}<span>${tr('Вспышка!')}</span>`;
     $('.enemy-zone').appendChild(fx);
     SND.sfx('burst');
     await sleep(380);
@@ -1615,13 +1648,13 @@
     C.block -= absorbed;
     let real = dmg - absorbed;
     // Подкова смягчает первый пропущенный удар в бою
-    if (real > 1 && !C.shoe && proc('horseshoe')) { C.shoe = true; real = 1; floatText($('.hero-fx'), 'Подкова!', 'blockf'); }
+    if (real > 1 && !C.shoe && proc('horseshoe')) { C.shoe = true; real = 1; floatText($('.hero-fx'), tr('Подкова!'), 'blockf'); }
     loseHp(real);
     if (real > 0) FX.play('claw'); else FX.play('shield');
     const p = $('#heroPortrait');
     if (p) { p.classList.remove('hurt'); void p.offsetWidth; p.classList.add('hurt'); }
     SND.sfx(real > 0 ? 'hurt' : 'clank');
-    floatText($('.hero-fx'), real > 0 ? `-${real}` : 'Блок', real > 0 ? 'dmgf' : 'blockf');
+    floatText($('.hero-fx'), real > 0 ? `-${real}` : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
     await sleep(300);
     // окованный ставень: удар целиком в защиту — враг получает в ответ
@@ -1635,7 +1668,7 @@
     // Последняя свеча: один раз за забег спасает от гибели
     if (run.hp <= 0 && !run.candle && proc('lastcandle')) {
       run.candle = true; run.hp = Math.ceil(run.maxHp / 2);
-      SND.sfx('heal'); FX.play('heal'); toast('Последняя свеча вспыхнула: половина HP');
+      SND.sfx('heal'); FX.play('heal'); toast(tr('Последняя свеча вспыхнула: половина HP'));
     }
     C.hpLost = true;
     app.classList.remove('redflash'); void app.offsetWidth; app.classList.add('redflash');
@@ -1692,14 +1725,14 @@
     const el = $('#enemy');
     if (e.stun > 0) {
       e.stun = 0;
-      floatText($('.enemy-fx'), 'Спит…', 'weakf');
+      floatText($('.enemy-fx'), tr('Спит…'), 'weakf');
       await sleep(500);
     } else {
       for (const it of currentIntents()) {
         if (it.k === 'attack' || it.k === 'snuff' || it.k === 'steal') {
           if (it.k === 'snuff') {
-            if (proc('eternaloil')) floatText($('.hero-fx'), 'Огоньки не гаснут', 'blockf');
-            else { C.flame = 0; SND.sfx('snuff'); floatText($('.hero-fx'), 'Огоньки погасли', 'weakf'); }
+            if (proc('eternaloil')) floatText($('.hero-fx'), tr('Огоньки не гаснут'), 'blockf');
+            else { C.flame = 0; SND.sfx('snuff'); floatText($('.hero-fx'), tr('Огоньки погасли'), 'weakf'); }
           }
           for (let h = 0; h < (it.hits || 1); h++) {
             el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
@@ -1714,24 +1747,24 @@
           }
           if (it.k === 'steal' && run.hp > 0) {
             const g = Math.min(run.gold, it.gold);
-            if (g > 0) { run.gold -= g; C.stolen += g; SND.sfx('coin'); floatText($('.hero-fx'), `-${g} монет`, 'weakf'); }
+            if (g > 0) { run.gold -= g; C.stolen += g; SND.sfx('coin'); floatText($('.hero-fx'), tr('−{n} {n|монета|монеты|монет}', { n: g }), 'weakf'); }
           }
         } else if (it.k === 'boom') {
           el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
           SND.sfx('burst');
-          floatText($('.enemy-fx'), 'Бабах!', 'burnf');
+          floatText($('.enemy-fx'), tr('Бабах!'), 'burnf');
           await sleep(200);
           await hitHero(enemyDmg(it.v));
           e.hp = 0; C.boomed = true;
-        } else if (it.k === 'sap') { C.sap += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), `−${it.v} энергии`, 'weakf'); }
-        else if (it.k === 'mist') { e.mist = it.v; SND.sfx('debuff'); floatText($('.enemy-fx'), 'Туман', 'weakf'); }
-        else if (it.k === 'bury') { C.bury += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), `Замело: −${it.v} карты`, 'weakf'); }
-        else if (it.k === 'frail') { C.frail += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), 'Хрупкость', 'weakf'); }
+        } else if (it.k === 'sap') { C.sap += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), tr('−{n} {n|энергия|энергии|энергии}', { n: it.v }), 'weakf'); }
+        else if (it.k === 'mist') { e.mist = it.v; SND.sfx('debuff'); floatText($('.enemy-fx'), tr('Туман'), 'weakf'); }
+        else if (it.k === 'bury') { C.bury += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), tr('Замело: −{n} {n|карта|карты|карт}', { n: it.v }), 'weakf'); }
+        else if (it.k === 'frail') { C.frail += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), tr('Хрупкость'), 'weakf'); }
         else if (it.k === 'block') { e.block += it.v; floatText($('.enemy-fx'), `+${it.v}`, 'blockf'); }
-        else if (it.k === 'buff') { e.str += it.v; SND.sfx('buff'); floatText($('.enemy-fx'), `Сила +${it.v}`, 'burnf'); }
-        else if (it.k === 'debuff') { C.pWeak += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), 'Слабость', 'weakf'); }
+        else if (it.k === 'buff') { e.str += it.v; SND.sfx('buff'); floatText($('.enemy-fx'), tr('Сила +{n}', { n: it.v }), 'burnf'); }
+        else if (it.k === 'debuff') { C.pWeak += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), tr('Слабость'), 'weakf'); }
         else if (it.k === 'heal') { const b = e.hp; e.hp = Math.min(e.max, e.hp + it.v); SND.sfx('heal'); floatText($('.enemy-fx'), `+${e.hp - b}`, 'healf'); }
-        else if (it.k === 'spikes') { e.thorns += it.v; SND.sfx('buff'); floatText($('.enemy-fx'), `Колючки +${it.v}`, 'burnf'); }
+        else if (it.k === 'spikes') { e.thorns += it.v; SND.sfx('buff'); floatText($('.enemy-fx'), tr('Колючки +{n}', { n: it.v }), 'burnf'); }
         else if (it.k === 'curse') {
           for (let k = 0; k < it.n; k++) C.draw.splice(rnd(0, C.draw.length), 0, mk(it.card));
           SND.sfx('debuff'); floatText($('.hero-fx'), `${CARDS[it.card].name} ×${it.n}`, 'weakf');
@@ -1761,9 +1794,9 @@
     C = null;
     if (hasRelic('leatherstrop')) {
       const cand = run.deck.filter((c) => sharp.includes(c.uid) && canUpgrade(c));
-      if (cand.length) { const c = pick(cand); c.up = true; achUpgraded(1); toast(`Ремень для правки: ${cardName(c)} навсегда`); }
+      if (cand.length) { const c = pick(cand); c.up = true; achUpgraded(1); toast(`${RELICS.leatherstrop.name}: ${tr('{card} навсегда', { card: cardName(c) })}`); }
     }
-    if (hasRelic('herbbag') && paid > 1) { evApi.heal(Math.floor(paid / 2)); toast(`Мешочек трав: +${Math.floor(paid / 2)} HP`); }
+    if (hasRelic('herbbag') && paid > 1) { evApi.heal(Math.floor(paid / 2)); toast(`${RELICS.herbbag.name}: +${Math.floor(paid / 2)} HP`); }
     STATS.fights++;
     if (tier === 'elite') STATS.elites++;
     if (tier === 'boss') STATS.bosses++;
@@ -1775,12 +1808,12 @@
     if (id === 'firecracker' && !boomed) ach.flag('defuse');
     saveStats();
     run.fights++; run.lit++;
-    if (stolen) { run.gold += stolen; toast(`Монеты возвращены: +${stolen}`); }
-    if (hasRelic('piggy') && !hpLost) { run.gold += 15; toast('Копилка: +15 монет'); }
+    if (stolen) { run.gold += stolen; toast(tr('Монеты возвращены: +{n}', { n: stolen })); }
+    if (hasRelic('piggy') && !hpLost) { run.gold += 15; toast(`${RELICS.piggy.name}: ${coins(15)}`); }
     setBg();
     if (hasRelic('snowman')) evApi.heal(4);
-    if (hasRelic('candybox') && tier === 'elite') { evApi.heal(10); toast('Коробка леденцов: +10 HP'); }
-    if (hasRelic('thermos') && run.hp < run.maxHp / 2) { evApi.heal(12); toast('Термос: +12 HP'); }
+    if (hasRelic('candybox') && tier === 'elite') { evApi.heal(10); toast(`${RELICS.candybox.name}: +10 HP`); }
+    if (hasRelic('thermos') && run.hp < run.maxHp / 2) { evApi.heal(12); toast(`${RELICS.thermos.name}: +12 HP`); }
     if (tier === 'boss' && isFinalStep(run.step)) { goVictory(); return; }
     if (tier === 'boss') { goBossRelic(); return; }
     goReward(tier);
@@ -1794,10 +1827,10 @@
     save({ t: 'bossrelic', opts });
     screen.className = 'scr-bossrelic';
     screen.innerHTML = `${topBar()}
-      <div class="ribbon">Трофей босса</div>
-      <p class="pickhint">Выбери один талисман</p>
+      <div class="ribbon">${tr('Трофей босса')}</div>
+      <p class="pickhint">${tr('Выбери один талисман')}</p>
       <div class="brelics">${opts.map((id, i) => `<button class="brelic" data-act="bossrelic" data-id="${id}" style="--d:${i * 120}ms">${Art.icon(RELICS[id].art)}<span><b>${RELICS[id].name}</b><small>${RELICS[id].desc}</small></span></button>`).join('')}</div>
-      <button class="btn ghost" data-act="bossrelic-skip">Не брать</button>
+      <button class="btn ghost" data-act="bossrelic-skip">${tr('Не брать')}</button>
       ${heroBar(false)}`;
   }
 
@@ -1828,11 +1861,11 @@
     const count = ids.length;
     screen.className = 'scr-reward';
     screen.innerHTML = `${topBar()}
-      <div class="ribbon">${boss ? 'Босс повержен!' : 'Победа!'}</div>
-      <div class="loot">${Art.icon('coin')} +${gold} монет${healed ? ` · +${healed} HP` : ''}</div>
-      <p class="pickhint">Возьми одну карту в колоду</p>
+      <div class="ribbon">${boss ? tr('Босс повержен!') : tr('Победа!')}</div>
+      <div class="loot">${Art.icon('coin')} ${coins(gold)}${healed ? ` · +${healed} HP` : ''}</div>
+      <p class="pickhint">${tr('Возьми одну карту в колоду')}</p>
       <div class="reward-cards n${count}">${ids.map((id, i) => cardHTML(id, 'reward', `data-act="takecard" data-id="${id}" style="--d:${i * 120}ms"`)).join('')}</div>
-      <button class="btn ghost" data-act="next">Пропустить</button>
+      <button class="btn ghost" data-act="next">${tr('Пропустить')}</button>
       ${heroBar(false)}`;
   }
 
@@ -1851,9 +1884,10 @@
         <div class="book-art moon">${heroArt()}</div>
         <h1>${STORY.winTitle}</h1>
         <p class="story">${txt(STORY.winText)}</p>
-        <p class="stats">${DIFF().name} · Побед: ${run.fights} · Карт в колоде: ${run.deck.length} · Талисманов: ${run.relics.length}</p>
+        <p class="stats">${DIFF().name} · ${tr('Побед: {n}', { n: run.fights })} · ${tr('Карт в колоде: {n}', { n: run.deck.length })} · ${tr('Талисманов: {n}', { n: run.relics.length })}</p>
       </div></div>
-      <button class="btn big" data-act="title">В главное меню</button>`;
+      <button class="btn big" data-act="title">${tr('В главное меню')}</button>`;
+    fitBook();
   }
   /* После поражения можно начать бой заново или вернуться на развилку перед боем:
      за просмотр рекламы, а в режиме без рекламы сразу. Или закончить забег. */
@@ -1864,24 +1898,25 @@
     C = null; busy = false;
     clearSave();
     SND.music(null); SND.sfx('defeat');
-    const tag = Store.noAds() ? '' : `<i class="adtag">${ICO.ad}Реклама</i>`;
+    const tag = Store.noAds() ? '' : `<i class="adtag">${ICO.ad}${tr('Реклама')}</i>`;
     screen.className = 'scr-end lose revive';
     screen.innerHTML = `<div class="book"><div class="page">
         <div class="book-art dim">${heroArt()}</div>
-        <h1>Тени настигли</h1>
-        <p class="story">Но письмо ещё можно спасти. Попробуйте этот бой снова или вернитесь на развилку перед ним и выберите другой путь.</p>
+        <h1>${tr('Тени настигли')}</h1>
+        <p class="story">${tr('Но письмо ещё можно спасти. Попробуйте этот бой снова или вернитесь на развилку перед ним и выберите другой путь.')}</p>
       </div></div>
       <div class="endbtns">
-        <button class="btn big rv" data-act="revive-fight">${tag}Начать бой заново<small>с теми же HP и колодой, что перед боем</small></button>
-        ${snapStep ? `<button class="btn rv" data-act="revive-step">${tag}Вернуться до боя<small>снова на развилке перед этим боем</small></button>` : ''}
-        <button class="btn ghost" data-act="giveup">Закончить забег</button></div>`;
+        <button class="btn big rv" data-act="revive-fight">${tag}${tr('Начать бой заново')}<small>${tr('с теми же HP и колодой, что перед боем')}</small></button>
+        ${snapStep ? `<button class="btn rv" data-act="revive-step">${tag}${tr('Вернуться до боя')}<small>${tr('снова на развилке перед этим боем')}</small></button>` : ''}
+        <button class="btn ghost" data-act="giveup">${tr('Закончить забег')}</button></div>`;
+    fitBook();
   }
   async function revive(kind) {
     if (busy) return;
     busy = true;
-    const seen = await Store.ad(kind === 'fight' ? 'Бой начнётся заново' : 'Вернуться на развилку перед боем');
+    const seen = await Store.ad(tr(kind === 'fight' ? 'Бой начнётся заново' : 'Вернуться на развилку перед боем'));
     busy = false;
-    if (!seen) { toast('Реклама не досмотрена'); return; }
+    if (!seen) { toast(tr('Реклама не досмотрена')); return; }
     if (!Store.noAds()) { STATS.ads = (STATS.ads || 0) + 1; }
     STATS.revives = (STATS.revives || 0) + 1; saveStats();
     SND.sfx('heal');
@@ -1895,7 +1930,7 @@
       run = JSON.parse(snapStep);
       goMap();
     }
-    toast('Ещё одна попытка!');
+    toast(tr('Ещё одна попытка!'));
   }
   function endRun() {
     snapFight = null; snapStep = null;
@@ -1908,9 +1943,10 @@
         <div class="book-art dim">${heroArt()}</div>
         <h1>${STORY.loseTitle}</h1>
         <p class="story">${txt(STORY.loseText)}</p>
-        <p class="stats">${DIFF().name} · Пройдено уровней: ${run.step + 1} из ${MAX_STEPS} · Побед: ${run.fights}</p>
+        <p class="stats">${DIFF().name} · ${tr('Пройдено уровней: {a} из {b}', { a: run.step + 1, b: MAX_STEPS })} · ${tr('Побед: {n}', { n: run.fights })}</p>
       </div></div>
-      <div class="endbtns"><button class="btn big" data-act="retry">Попробовать снова</button><button class="btn ghost" data-act="title">Главное меню</button></div>`;
+      <div class="endbtns"><button class="btn big" data-act="retry">${tr('Попробовать снова')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
+    fitBook();
   }
 
   /* ---------- Обработка нажатий ---------- */
@@ -1919,9 +1955,11 @@
   app.classList.toggle('fast', SETTINGS.fast);
   const gearBtn = $('#gear');
   gearBtn.innerHTML = ICO.gear;
+  gearBtn.setAttribute('aria-label', tr('Настройки'));
   gearBtn.addEventListener('click', (e) => { e.stopPropagation(); SND.unlock(); SND.sfx('click'); showSettings(); });
 
   const menuBtn = $('#menu');
+  menuBtn.setAttribute('aria-label', tr('Меню'));
   menuBtn.innerHTML = '<svg viewBox="0 0 40 40"><path d="M10 12 h20 M10 20 h20 M10 28 h20" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/></svg>';
   menuBtn.addEventListener('click', (e) => { e.stopPropagation(); SND.unlock(); SND.sfx('click'); if (run) showPause(); else showGlossary(); });
 
@@ -2002,8 +2040,8 @@
       case 'store': goStore(t.dataset.back || 'title'); break;
       case 'sback': if (screen.dataset.back === 'cls' && storeBackCls) goClassSelect(...storeBackCls); else goTitle(); break;
       case 'sbuy': storeBuy(t.dataset.p, () => (screen.className === 'scr-class' ? goClassSelect(screen.dataset.cls, +screen.dataset.diff) : goStore(screen.dataset.back))); break;
-      case 'srestore': Store.restore().then((n) => toast(n ? `Покупки восстановлены: ${n}` : 'Покупок пока нет')); break;
-      case 'sreset': Store.resetTest(); toast('Тестовые покупки сброшены'); goStore(screen.dataset.back); break;
+      case 'srestore': Store.restore().then((n) => toast(n ? tr('Покупки восстановлены: {n}', { n }) : tr('Покупок пока нет'))); break;
+      case 'sreset': Store.resetTest(); toast(tr('Тестовые покупки сброшены')); goStore(screen.dataset.back); break;
       case 'revive-fight': revive('fight'); break;
       case 'revive-step': revive('step'); break;
       case 'giveup': endRun(); break;
@@ -2017,17 +2055,17 @@
       case 'ach': showAchievements(); break;
       case 'choose': chooseEncounter(+t.dataset.i); break;
       case 'next': advance(); break;
-      case 'deck': showDeck(run.deck, `Колода · ${run.deck.length}`); break;
+      case 'deck': showDeck(run.deck, `${tr('Колода')} · ${run.deck.length}`); break;
       case 'relics': showRelics(); break;
-      case 'pile-draw': showDeck(C.draw, 'Осталось в колоде'); break;
-      case 'pile-disc': showDeck(C.disc, 'Сброс'); break;
+      case 'pile-draw': showDeck(C.draw, tr('Осталось в колоде')); break;
+      case 'pile-disc': showDeck(C.disc, tr('Сброс')); break;
       case 'end': endTurn(); break;
       case 'evopt': eventOption(+t.dataset.i); break;
       case 'openchest': openChest(); break;
-      case 'rest-heal': evApi.heal(restHeal()); if (hasRelic('cocoatin')) { run.maxHp += 2; run.hp += 2; toast('Жестянка какао: +2 к макс. HP'); } advance(); break;
+      case 'rest-heal': evApi.heal(restHeal()); if (hasRelic('cocoatin')) { run.maxHp += 2; run.hp += 2; toast(`${RELICS.cocoatin.name}: ${tr('+{n} к макс. HP', { n: 2 })}`); } advance(); break;
       case 'rest-up': upgradeFlow((ok) => { if (ok) advance(); }); break;
       case 'rest-burn': removeCardFlow((ok) => { if (ok) advance(); }); break;
-      case 'takecard': SND.sfx('card'); run.deck.push(mk(t.dataset.id)); toast(`В колоду: ${CARDS[t.dataset.id].name}`); advance(); break;
+      case 'takecard': SND.sfx('card'); run.deck.push(mk(t.dataset.id)); toast(tr('В колоду: {name}', { name: CARDS[t.dataset.id].name })); advance(); break;
       case 'bossrelic': addRelic(t.dataset.id); goReward('boss'); break;
       case 'bossrelic-skip': goReward('boss'); break;
       case 'buy': case 'buyrelic': case 'buytea': case 'buyremove': case 'buyup': screen.onShop(act, +t.dataset.i); break;
@@ -2039,4 +2077,7 @@
 
   achCheck(true);
   goTitle();
+  try {
+    if (sessionStorage.getItem('lastray.reopen') === 'settings') { sessionStorage.removeItem('lastray.reopen'); showSettings(); }
+  } catch (e) { /* недоступно */ }
 })();
