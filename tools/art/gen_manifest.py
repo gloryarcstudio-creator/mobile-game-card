@@ -37,9 +37,17 @@ for n in names('bg'):
     c = im[-12:].reshape(-1, 3).mean(0)
     bgc[n] = '#%02x%02x%02x' % tuple(int(x) for x in c)
 
+# where the feet are: lowest opaque row of each enemy picture, as a fraction of its height.
+# The game shifts the picture down by the empty strip below the feet so enemies stand on the ground.
+foot = {}
+for n in names('e'):
+    al = np.asarray(Image.open(os.path.join(A, 'e', n + '.webp')).convert('RGBA'))[..., 3] > 40
+    rows = np.where(al.any(1))[0]
+    if len(rows): foot[n] = round((rows[-1] + 1) / al.shape[0], 3)
+
 M = {
     'hero': hero, 'face': face,
-    'enemy': names('e'), 'anim': anim,
+    'enemy': names('e'), 'foot': foot, 'anim': anim,
     'relic': names('r'), 'card': names('c'), 'st': names('st'),
     'intent': names('it'), 'icon': names('i'),
     'bg': names('bg'), 'bgc': bgc, 'pic': names('pic'), 'ea': EA,

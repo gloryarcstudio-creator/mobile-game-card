@@ -98,8 +98,22 @@
   const $ = (s, el = document) => el.querySelector(s);
   const app = $('#app');
   const screen = $('#screen');
-  // в бою фон опускается к земле: класс ground на #app
-  new MutationObserver(() => app.classList.toggle('ground', screen.className === 'scr-combat')).observe(screen, { attributes: true, attributeFilter: ['class'] });
+  // в бою фон опускается к земле: класс ground на #app.
+  // На нарисованном фоне камера подстраивается под того, кто стоит на экране:
+  // снег с картинки встаёт ему под ноги (враг в бою, собеседник, сундук, ёж в лавке)
+  const STANDS = '.enemy, .talk-art, .chest, .shopkeeper, .ev-art';
+  function groundCam() {
+    if (!Art.groundCam) return;
+    const el = screen.querySelector(STANDS);
+    let y = null;
+    if (el && el.offsetHeight) {
+      y = el.offsetHeight;
+      for (let n = el; n && n !== app; n = n.offsetParent) y += n.offsetTop;
+    }
+    Art.groundCam($('#bg'), y);
+  }
+  new MutationObserver(() => { app.classList.toggle('ground', screen.className === 'scr-combat'); groundCam(); })
+    .observe(screen, { attributes: true, attributeFilter: ['class'], childList: true });
   const overlay = $('#overlay');
   /* ---------- Настройки и статистика (хранятся в браузере) ---------- */
   const VERSION = '0.8';
@@ -274,6 +288,7 @@
     }
     app.classList.toggle('painted-bg', !!painted);
     $('#bg').innerHTML = painted || Art.background(p, lamps, g.scene, approach);
+    if (painted) groundCam();
     app.style.setProperty('--sky-top', p.skyTop);
     app.style.setProperty('--sky-mid', p.skyMid);
     app.style.setProperty('--sky-bot', p.skyBot);

@@ -27,7 +27,17 @@
   Art.face = (look = 'lamp') => (S.face.has(look) ? pic(`h/${look}_face`, '0 0 100 100', 'face', 'xMidYMin slice') : orig.hero(look));
 
   /* ---------- Враги ---------- */
-  Art.enemy = (id) => (S.enemy.has(id) ? pic(`e/${id}`, '0 0 100 100', 'foe', 'xMidYMax meet') : orig.enemy(id));
+  // Под ногами у нарисованных врагов бывает пустая полоска: картинку сдвигаем вниз на неё,
+  // чтобы ноги стояли ровно на нижнем краю рамки (а рамка стоит на снегу).
+  // Летающие и парящие враги остаются в воздухе, под ними только тень.
+  const ALOFT = new Set(['bat', 'lampghost', 'mist', 'skywhale', 'wisp', 'icicle', 'laundress']);
+  const footOf = (id) => (ALOFT.has(id) ? 1 : Math.min(1, (A.foot || {})[id] || 1));
+  Art.aloft = (id) => ALOFT.has(id);
+  Art.enemy = (id) => {
+    if (!S.enemy.has(id)) return orig.enemy(id);
+    const dy = ((1 - footOf(id)) * 100).toFixed(1);
+    return `<svg class="foe painted${ALOFT.has(id) ? ' aloft' : ''}" viewBox="0 0 100 100" ${NS}><image href="${url(`e/${id}`)}" y="${dy}" width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg>`;
+  };
 
   /* ---------- Значки ---------- */
   const ICON_ALIAS = { dogfriend: 'buddy' };
@@ -76,9 +86,18 @@
   function layer(k, op = 1) {
     return `<image href="${url(`bg/${k}`)}" x="${BX}" y="0" width="${BW}" height="${BH}" preserveAspectRatio="xMidYMid slice"${op < 1 ? ` opacity="${op.toFixed(3)}"` : ''}/>`;
   }
+  // Где на картинке снег перед домами, куда можно поставить персонажа (y на экране 400×860 без сдвига).
+  // По этой линии «камера» опускается так, чтобы ноги героя или врага стояли на земле.
+  const FEET = {
+    bg_stage1_town_day: 690, bg_stage1_town_mid: 690, bg_stage1_town_sunset: 690,
+    bg_stage2_outskirts_start: 660, bg_stage2_outskirts_mid: 670, bg_stage2_outskirts_night: 685,
+    bg_final_house: 650, bg_title: 700, scene_talk: 700, scene_meet: 715, scene_shop: 515,
+    scene_campfire: 700, scene_chest: 690,
+  };
   function paintBg(a, b, mix) {
     const c = (A.bgc || {})[mix > 0.5 && b ? b : a] || '#2a3350';
-    return `<svg class="bg-svg painted" viewBox="0 0 400 860" ${NS}>
+    const fa = FEET[a] || 690; const feet = b && mix > 0.001 ? fa + ((FEET[b] || 690) - fa) * mix : fa;
+    return `<svg class="bg-svg painted" viewBox="0 0 400 860" data-feet="${feet.toFixed(0)}" ${NS}>
       <defs><linearGradient id="bgFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}"/></linearGradient></defs>
       <g class="bg-cam">
         <rect y="-300" width="400" height="1600" fill="${c}"/>
@@ -98,6 +117,17 @@
     const x = Math.max(0, Math.min(1, opts.t || 0)) * (keys.length - 1);
     const i = Math.min(keys.length - 2, Math.floor(x));
     return paintBg(keys[i], keys[i + 1], x - i);
+  };
+
+  // Опустить камеру: снег с картинки встаёт под ноги персонажа на высоте y (экран 400×860).
+  // y = null возвращает обычный вид. Вверх фон не сдвигаем, чтобы над ним не открылась пустота.
+  Art.groundCam = (root, y) => {
+    const sv = root && root.querySelector('svg.bg-svg.painted');
+    const g = sv && sv.querySelector('.bg-cam');
+    if (!g) return false;
+    const ty = y == null ? 0 : Math.min(0, y - (+sv.dataset.feet || 690));
+    g.style.transform = ty ? `translateY(${ty.toFixed(1)}px)` : '';
+    return true;
   };
 
   /* ---------- Живые враги: раскадровки из роликов ---------- */
@@ -123,7 +153,7 @@
     load(url(`e/${id}`));
     load(atlasUrl(id, 'idle'));
     if (m.act) load(atlasUrl(id, 'act'));
-    return `<canvas class="foe painted live" data-live="${id}"></canvas>`;
+    return `<canvas class="foe painted live${ALOFT.has(id) ? ' aloft' : ''}" data-live="${id}"></canvas>`;
   };
   // разыграть движение: attack | hurt | death | happy; speed 2 — ускоренный режим.
   // Возвращает мс до самой сильной позы (удара) при обычной скорости
@@ -149,16 +179,17 @@
     return true;
   }
   function paint(cv, layers) {
-    // layers: [{im, sx, sy, s, alpha}] — кадр квадратный, вписан по ширине и прижат к низу
+    // layers: [{im, sx, sy, s, alpha}] — кадр квадратный, вписан по ширине, ноги на нижнем краю
     const key = layers.map((l) => `${l.im.src}|${l.sx}|${l.sy}|${l.alpha}`).join(';');
     if (cv._key === key) return;
     cv._key = key;
     const W = cv.width; const H = cv.height; const d = Math.min(W, H);
+    const fy = H - d * footOf(cv.dataset.live);
     const ctx = cv.getContext('2d');
     ctx.clearRect(0, 0, W, H);
     for (const l of layers) {
       ctx.globalAlpha = l.alpha == null ? 1 : l.alpha;
-      ctx.drawImage(l.im, l.sx, l.sy, l.s, l.s, (W - d) / 2, H - d, d, d);
+      ctx.drawImage(l.im, l.sx, l.sy, l.s, l.s, (W - d) / 2, fy, d, d);
     }
     ctx.globalAlpha = 1;
   }

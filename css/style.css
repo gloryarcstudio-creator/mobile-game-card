@@ -953,3 +953,29 @@ canvas.live { display: block; width: 100%; height: 100%; }
 /* у костра на нарисованной сцене свой огонь, рисованный значок прячем */
 #app.painted-bg .fire-wrap > svg.icon:not(.painted) { visibility: hidden; }
 #app.painted-bg .fire-wrap:not(.last) > svg.icon:not(.painted) { height: 110px; }
+
+/* ---------- Персонажи стоят на земле (нарисованный фон) ----------
+   Камера фона опускается так, что снег встаёт под ноги (Art.groundCam в game.js),
+   под ногами мягкая тень. Летающие враги (.aloft) висят над своей тенью. */
+#app.painted-bg .bg-cam { transition: none; }
+#app.painted-bg.ground .bg-cam { transform: none; }
+#app.painted-bg :is(.enemy, .talk-art, .shopkeeper, .chest, .ev-art) { isolation: isolate; }
+#app.painted-bg :is(.talk-art, .chest, .ev-art) { position: relative; }
+#app.painted-bg :is(.enemy, .talk-art, .shopkeeper, .chest, .ev-art)::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; bottom: -13px; width: 56%; height: 28px; margin-left: -28%;
+  border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(8, 10, 22, .8), rgba(8, 10, 22, .45) 50%, rgba(8, 10, 22, 0));
+}
+#app.painted-bg :is(.enemy, .talk-art, .shopkeeper):has(> .aloft)::before { width: 40%; margin-left: -20%; bottom: -30px; height: 24px; opacity: .55; }
+#app.painted-bg .enemy > :is(svg, canvas) { filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
+#app.painted-bg .talk-art { filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
+#app.painted-bg .talk-art.beaten > :is(svg, canvas) { transform: rotate(-5deg) scale(.95); transform-origin: 50% 100%; }
+/* разговор и встреча: текст и ответы внизу, собеседник во весь рост стоит над ними на дороге */
+#app.painted-bg #screen:is(.scr-talk, .scr-meet) { display: flex; flex-direction: column; justify-content: flex-end; padding: 66px 0 104px; }
+#app.painted-bg :is(.scr-talk, .scr-meet) > :is(.ev-box, .scrolls) { flex: none; }
+#app.painted-bg :is(.scr-talk, .scr-meet) .talk-art { flex: 0 1 290px; min-height: 140px; width: 260px; height: auto; margin: 0 auto 18px; }
+#app.painted-bg :is(.scr-talk, .scr-meet) .talk-art.tk-boss { width: 320px; flex-basis: 310px; }
+#app.painted-bg :is(.scr-talk, .scr-meet) .talk-art.hero { width: 220px; }
+/* сундук стоит на снегу, ниже середины экрана */
+#app.painted-bg .chest-wrap { padding-top: 320px; }
+#app.painted-bg .chest > svg.painted { transform: translateY(9%); }
