@@ -169,7 +169,7 @@
   }
   const codexCount = () => ACH.c.cxall || 0;
   const codexTotal = CODEX.h.length + CODEX.e.length + CODEX.c.length + CODEX.r.length;
-  const achArt = (a) => (a.art === 'h' ? heroArt() : a.art.startsWith('c:') ? Art.hero(CLASSES[a.art.slice(2)].look)
+  const achArt = (a) => (a.art === 'h' ? heroFace() : a.art.startsWith('c:') ? heroFace(a.art.slice(2))
     : a.art.startsWith('e:') ? Art.enemy(a.art.slice(2)) : Art.icon(a.art.slice(2)));
   const achStars = (a) => (a.stars ? ` <i class="astars">${'★'.repeat(a.stars)}</i>` : '');
   function achNextToast() {
@@ -204,6 +204,7 @@
   const heroId = () => (run && CLASSES[run.cls] ? run.cls : SETTINGS.cls);
   const hero = () => CLASSES[heroId()];
   const heroArt = (cls = heroId()) => Art.hero(CLASSES[cls].look);
+  const heroFace = (cls = heroId()) => (Art.face ? Art.face(CLASSES[cls].look) : heroArt(cls));
   I18N.gender = () => !!hero().f; // {f|она|он} в текстах — по герою забега
   const txt = (v) => (typeof v === 'function' ? v(hero()) : v);
   // сложность забега; у сохранений до её появления — «Обычный маршрут»
@@ -256,14 +257,23 @@
 
   /* Фон меняется после каждого уровня: палитра неба смешивается по ключевым кадрам,
      а сцена (город или окраина) задаётся стадией */
-  function setBg(titleT) {
+  // place: rest | shop | chest | talk | meet — нарисованная сцена вместо пути
+  function setBg(titleT, place) {
     const step = run ? run.step : 0;
     const t = titleT != null ? titleT : MAX_STEPS > 1 ? Math.min(1, step / (MAX_STEPS - 1)) : 0;
     const g = STAGES[stageOf(step)] || STAGES[0];
     const lamps = titleT != null ? 2 : run && STORY.lamps ? STORY.lamps(run) : 0;
     const approach = g.len > 1 ? (step - g.start) / (g.len - 1) : 1;
     const p = Art.sampleSky(SKY, t);
-    $('#bg').innerHTML = Art.background(p, lamps, g.scene, approach);
+    let painted = null;
+    if (Art.paintedBg) {
+      if (place) painted = Art.paintedBg({ place });
+      else if (titleT != null) painted = Art.paintedBg({ place: 'title' });
+      else if (run && isFinalStep(step) && STAGES.length > 1) painted = Art.paintedBg({ place: 'final' });
+      else painted = Art.paintedBg({ scene: STORY.sky === 'night' ? 'night' : g.scene, t: approach });
+    }
+    app.classList.toggle('painted-bg', !!painted);
+    $('#bg').innerHTML = painted || Art.background(p, lamps, g.scene, approach);
     app.style.setProperty('--sky-top', p.skyTop);
     app.style.setProperty('--sky-mid', p.skyMid);
     app.style.setProperty('--sky-bot', p.skyBot);
@@ -366,7 +376,7 @@
     return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${inst.sharp ? 'sharp' : ''} ${extra}" ${attrs}>
       <div class="cost ${cost == null ? 'none' : ''}"><span>${cost == null ? '✕' : cost}</span></div>
       <div class="ctitle"><span>${c.name}${inst.up ? '<i>+</i>' : ''}</span></div>
-      <div class="cart">${Art.icon(c.art)}</div>
+      <div class="cart">${Art.card(inst.id)}</div>
       <div class="cdesc ${plain.length > 64 ? 'xlong' : plain.length > 48 ? 'long' : ''}"><span>${desc}</span></div>
       <div class="ctype">${RARITY_GEM[c.rarity] ? `<i class="gem g-${c.rarity}"></i>` : ''}${TYPE_LABEL[c.type]}</div>
     </div>`;
@@ -393,12 +403,12 @@
     list.forEach((r) => codexMark('r', r));
     const shown = list.length > max ? list.slice(-(max - 1)) : list;
     const more = list.length - shown.length;
-    return shown.map((r) => `<button class="relic rt-${RELICS[r].tier}" data-relic="${r}">${Art.icon(RELICS[r].art)}</button>`).join('')
+    return shown.map((r) => `<button class="relic rt-${RELICS[r].tier}" data-relic="${r}">${Art.relic(r)}</button>`).join('')
       + (more > 0 ? `<button class="relic more" data-act="relics">+${more}</button>` : '');
   }
 
   function showRelics() {
-    showOverlay(`<h2>${tr('Талисманы')} · ${run.relics.length}</h2><div class="rlist">${run.relics.map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${TIER_LABEL[RELICS[r].tier]}${RELICS[r].cls ? ` · ${CLASSES[RELICS[r].cls].name}` : ''}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
+    showOverlay(`<h2>${tr('Талисманы')} · ${run.relics.length}</h2><div class="rlist">${run.relics.map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.relic(r)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${TIER_LABEL[RELICS[r].tier]}${RELICS[r].cls ? ` · ${CLASSES[RELICS[r].cls].name}` : ''}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
       <button class="btn" data-act="close">${tr('Закрыть')}</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
   }
 
@@ -406,7 +416,7 @@
     const hpPct = (run.hp / run.maxHp) * 100;
     const flame = inCombat ? C.flame : 0;
     return `<div class="herobar">
-      <div class="portrait" id="heroPortrait">${heroArt()}</div>
+      <div class="portrait" id="heroPortrait">${heroFace()}</div>
       <div class="hb-mid">
         <div class="hpbar"><div class="fill" style="width:${hpPct}%"></div><span>${run.hp}/${run.maxHp}</span>
           ${inCombat && C.block > 0 ? `<div class="hblk">${Art.intentIcon('block')}<b>${C.block}</b></div>` : ''}</div>
@@ -701,9 +711,9 @@
   function cxTile(kind, id) {
     const on = cxHas(kind, id);
     if (kind === 'c') return `<button class="cxtile t-c ${on ? '' : 'locked'}" data-cx="${id}">${on ? cardHTML(id, 'mini') : '<div class="card mini cxcardback"><b>?</b></div>'}</button>`;
-    const pic = kind === 'h' ? `<span class="cxpic hero">${heroArt(id)}</span>`
+    const pic = kind === 'h' ? `<span class="cxpic hero">${heroFace(id)}</span>`
       : kind === 'e' ? `<span class="cxpic foe f-${ENEMIES[id].tier}">${Art.enemy(id)}</span>`
-        : `<span class="cxpic relic rt-${RELICS[id].tier}">${Art.icon(RELICS[id].art)}</span>`;
+        : `<span class="cxpic relic rt-${RELICS[id].tier}">${Art.relic(id)}</span>`;
     return `<button class="cxtile t-${kind} ${on ? '' : 'locked'}" data-cx="${id}">${pic}<span class="cxname">${on ? cxName(kind, id) : '???'}</span></button>`;
   }
   function cxGrid(kind) {
@@ -727,7 +737,7 @@
   // строка-связь: картинка, имя и текст; если второго ещё не встречали — силуэт и подсказка
   function cxRow(kind, id, text, label = '') {
     const on = cxHas(kind, id);
-    const pic = kind === 'h' ? heroArt(id) : Art.enemy(id);
+    const pic = kind === 'h' ? heroFace(id) : Art.enemy(id);
     return `<div class="cxrow ${on ? '' : 'locked'}"><span class="cxmini ${kind === 'h' ? 'hero' : 'foe'}">${pic}</span>
       <p><b>${on ? cxName(kind, id) : '???'}${label ? ` <em>${label}</em>` : ''}</b>${on ? text : tr(kind === 'h' ? 'Встреть этого героя, чтобы узнать больше' : 'Встреть этого врага, чтобы узнать больше')}</p></div>`;
   }
@@ -740,7 +750,7 @@
     }).join('');
     const dk = `dk_${h}`;
     return `${cxBack()}
-      <div class="cxhead"><span class="cxport hero">${heroArt(h)}</span><div><h3>${c.name}</h3><p class="cxsub">${c.role} · ${c.build}</p><p>${c.about}</p></div></div>
+      <div class="cxhead"><span class="cxport hero">${heroFace(h)}</span><div><h3>${c.name}</h3><p class="cxsub">${c.role} · ${c.build}</p><p>${c.about}</p></div></div>
       <h4>${tr('О герое')}</h4><p>${tr(bio.who)}</p>
       <h4>${tr('Зачем в пути')}</h4><p>${tr(bio.why)}</p>
       <h4>${tr('Тайна')}</h4><p>${known ? tr(bio.secret) : `<i class="cxlock">${tr('Откроется после тайного разговора за этого героя')}</i>`}</p>
@@ -794,7 +804,7 @@
   function cxRelic(id) {
     const r = RELICS[id]; const owner = r.cls || CODEX.classRelic(id);
     return `${cxBack()}
-      <div class="cxhead"><span class="cxport relic rt-${r.tier}">${Art.icon(r.art)}</span><div><h3>${r.name}</h3><p class="cxsub">${TIER_LABEL[r.tier]}${owner ? ` · ${CLASSES[owner].name}` : ''}</p><p>${r.desc}</p></div></div>`;
+      <div class="cxhead"><span class="cxport relic rt-${r.tier}">${Art.relic(id)}</span><div><h3>${r.name}</h3><p class="cxsub">${TIER_LABEL[r.tier]}${owner ? ` · ${CLASSES[owner].name}` : ''}</p><p>${r.desc}</p></div></div>`;
   }
   function showCodex(back) {
     let tab = 'h'; let open = null; let keep = 0;
@@ -876,11 +886,11 @@
       <div class="clshead"><h2>${tr('Магазин')}</h2><p>${tr('Поддержите почту Медовой Горки')}</p></div>
       <div class="storelist">
         ${Store.paidHeroes.map((id) => { const h = CLASSES[id]; return `<div class="sitem">
-          <span class="cp ${id}">${heroArt(id)}</span>
+          <span class="cp ${id}">${heroFace(id)}</span>
           <span class="stext"><b>${h.name}<small>${h.role}</small></b><em>${h.build}</em><small>${RELICS[h.relic].desc}</small></span>
           ${Store.heroOwned(id) ? owned : `<button class="btn price" data-act="sbuy" data-p="hero_${id}">${P[`hero_${id}`].price}</button>`}</div>`; }).join('')}
         <div class="sitem pack ${allHeroes ? 'done' : ''}">
-          <span class="sico">${Store.paidHeroes.map((id) => `<i class="cp ${id}">${heroArt(id)}</i>`).join('')}</span>
+          <span class="sico">${Store.paidHeroes.map((id) => `<i class="cp ${id}">${heroFace(id)}</i>`).join('')}</span>
           <span class="stext"><b>${tr('Все три героя')}</b><small>${tr('Выгоднее, чем по одному')}</small></span>
           ${allHeroes ? owned : priceBtn('heroes')}</div>
         <div class="sitem noads">
@@ -916,7 +926,7 @@
     screen.innerHTML = `
       <div class="clshead"><h2>${tr('Кто понесёт письмо?')}</h2><p>${tr('У каждого героя свой путь к победе')}</p></div>
       <div class="clsrow">${Object.entries(CLASSES).map(([id, c]) => `<button class="clscard ${id === sel ? 'on' : ''} ${Store.heroOwned(id) ? '' : 'locked'}" data-act="pickcls" data-cls="${id}">
-        <span class="cp ${id}">${heroArt(id)}${Store.heroOwned(id) ? '' : `<i class="lockico">${ICO.lock}</i>`}</span><b>${c.name}</b><small>${c.role}</small></button>`).join('')}</div>
+        <span class="cp ${id}">${heroFace(id)}${Store.heroOwned(id) ? '' : `<i class="lockico">${ICO.lock}</i>`}</span><b>${c.name}</b><small>${c.role}</small></button>`).join('')}</div>
       <div class="clsinfo">
         <div class="clsbig ${sel}">${heroArt(sel)}</div>
         <div class="clstext">
@@ -926,8 +936,8 @@
           <p class="clsabout">${h.about}</p>
         </div>
       </div>
-      <div class="clsrelic">${Art.icon(r.art)}<span><small>${tr('Особенность')}</small><b>${r.name}</b>${r.desc}</span></div>
-      <button class="clscards" data-act="clscards"><span class="mini3">${own.slice(0, 4).map((k) => Art.icon(CARDS[k].art)).join('')}</span><span><b>${tr('Карты героя')}</b><small>${own.map((k) => CARDS[k].name).join(', ')}</small></span><i>›</i></button>
+      <div class="clsrelic">${Art.relic(h.relic)}<span><small>${tr('Особенность')}</small><b>${r.name}</b>${r.desc}</span></div>
+      <button class="clscards" data-act="clscards"><span class="mini3">${own.slice(0, 4).map((k) => Art.card(k)).join('')}</span><span><b>${tr('Карты героя')}</b><small>${own.map((k) => CARDS[k].name).join(', ')}</small></span><i>›</i></button>
       <div class="diffbox">
         <div class="diffhead"><button class="darrow" data-act="diffset" data-d="${Math.max(0, diff - 1)}" ${diff ? '' : 'disabled'}>‹</button>
           <span><small>${tr('Сложность {a} из {b}', { a: diff + 1, b: DIFFICULTIES.length })}</small><b>${d.name}${won.includes(diff) ? ' <i class="dwon">✓</i>' : ''}</b></span>
@@ -946,11 +956,21 @@
       <p class="ovhint">${tr('Свои карты: выпадают в наградах и лавке только этому герою')}</p>
       <div class="grid">${heroCards(id).map((k) => cardHTML(k, 'mini')).join('')}</div>
       <p class="ovhint">${tr('Особенность и свой талисман: он выпадает только этому герою')}</p>
-      <div class="rlist">${[h.relic, ...Object.keys(RELICS).filter((r) => RELICS[r].cls === id)].map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.icon(RELICS[r].art)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${r === h.relic ? tr('Особенность') : TIER_LABEL[RELICS[r].tier]}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
+      <div class="rlist">${[h.relic, ...Object.keys(RELICS).filter((r) => RELICS[r].cls === id)].map((r) => `<div class="rrow ${RELICS[r].tier}">${Art.relic(r)}<span><b>${RELICS[r].name}<em class="rtier ${RELICS[r].tier}">${r === h.relic ? tr('Особенность') : TIER_LABEL[RELICS[r].tier]}</em></b><small>${RELICS[r].desc}</small></span></div>`).join('')}</div>
       <p class="ovhint">${tr('Стартовая колода')} · ${start.length}</p>
       <div class="grid">${start.map((c) => cardHTML(c, 'mini')).join('')}</div>
       <button class="btn" data-act="close">${tr('Закрыть')}</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
   }
+
+  /* Иллюстрации книги и событий. На многих нарисована Ива, поэтому другим героям
+     достаются только картинки без неё, а вместо остальных остаётся сам герой */
+  const NO_IVA = ['ending_hollowpost', 'ev_coins', 'ev_lantern', 'ev_puppet', 'ev_smith', 'ev_snowman'];
+  const picFits = (key) => !!(Art.hasPic && Art.hasPic(key) && (hero().look === 'lamp' || NO_IVA.includes(key)));
+  function bookArt(key, cls = '') {
+    return picFits(key) ? `<div class="book-art pic">${Art.storyPic(key)}</div>` : `<div class="book-art ${cls}">${heroArt()}</div>`;
+  }
+  const EV_PIC = { well: 'ev_well', puppet: 'ev_puppet', lantern: 'ev_lantern', snowman: 'ev_snowman', coin: 'ev_coins', whetstone: 'ev_smith', stampbook: 'ev_postoffice', frostglass: 'ev_icemirror', showbooth: 'ev_showbooth' };
+  const evArt = (ev) => (picFits(EV_PIC[ev.art]) ? `<div class="ev-pic-wrap">${Art.storyPic(EV_PIC[ev.art])}</div>` : `<div class="ev-art">${Art.icon(ev.art)}</div>`);
 
   /* ---------- Вступление перед новым забегом ---------- */
   function goIntro() {
@@ -959,7 +979,7 @@
     screen.innerHTML = `
       <div class="book">
         <div class="page">
-          <div class="book-art">${heroArt()}</div>
+          ${bookArt('story_intro')}
           <h1${STORY.title.length > 14 ? ' class="long"' : ''}>${STORY.title}</h1>
           <p class="story">${txt(STORY.intro)}</p>
           <ul class="howto">
@@ -1249,9 +1269,10 @@
 
   /* ---------- Событие ---------- */
   function goEvent(ev) {
+    setBg();
     screen.className = 'scr-event';
     screen.innerHTML = `${topBar()}
-      <div class="ev-art">${Art.icon(ev.art)}</div>
+      ${evArt(ev)}
       <div class="ev-box"><h2>${ev.title}</h2><p>${ev.text}</p></div>
       <div class="scrolls">${ev.options.map((o, i) => {
         const ok = !o.can || o.can(run);
@@ -1363,6 +1384,7 @@
   // разговор до боя: враг говорит, герой выбирает ответ
   function goTalk(id, tier) {
     ensureLore();
+    setBg(null, 'talk');
     save({ t: 'talk', enemy: id, tier });
     codexMark('e', id);
     const e = ENEMIES[id];
@@ -1373,7 +1395,7 @@
     screen.className = 'scr-talk';
     screen.dataset.enemy = id; screen.dataset.tier = tier;
     screen.innerHTML = `${topBar()}
-      <div class="talk-art tk-${e.tier}">${Art.enemy(id)}</div>
+      <div class="talk-art tk-${e.tier}">${(Art.enemyLive || Art.enemy)(id)}</div>
       <div class="ev-box talk-box"><h2>${e.name}</h2><p>${quote(line)}</p>${tie ? `<small class="tienote">${tr(tie.text)}</small>` : ''}</div>
       <div class="scrolls">${opts.map((op) => `<button class="scroll ${op.can === false ? 'off' : ''} ${op.secret ? 'secret' : ''}" data-act="talkopt" data-k="${op.k}" ${op.can === false ? 'disabled' : ''}>${tr(op.text)}<small>${op.hint}</small></button>`).join('')}</div>
       ${heroBar(false)}`;
@@ -1431,7 +1453,7 @@
     if (next === 'bosspeace') save({ t: 'bossrelic', opts: null });
     $('.talk-box p').innerHTML = reply ? quote(reply) : narr;
     const note = $('.tienote'); if (note) note.remove();
-    if (fightId !== id) { $('.talk-box h2').textContent = ENEMIES[fightId].name; $('.talk-art').innerHTML = Art.enemy(fightId); }
+    if (fightId !== id) { $('.talk-box h2').textContent = ENEMIES[fightId].name; $('.talk-art').innerHTML = (Art.enemyLive || Art.enemy)(fightId); }
     const act = next === 'fight' ? 'talkgo' : next === 'bosspeace' ? 'talkboss' : 'next';
     $('.scrolls').innerHTML = `<button class="scroll" data-act="${act}">${tr(next === 'fight' ? 'В бой' : 'Дальше')}</button>`;
     $('.topbar').outerHTML = topBar();
@@ -1442,6 +1464,7 @@
   const wantsPlea = (id, tier) => mainStory() && SAY[id] && SAY[id].plea && (tier === 'boss' || Math.random() < 0.4);
   function goAfter(tier, id) {
     save({ t: 'after', tier, enemy: id });
+    setBg(null, 'talk');
     const e = ENEMIES[id];
     screen.className = 'scr-talk';
     screen.dataset.enemy = id; screen.dataset.tier = tier;
@@ -1499,6 +1522,7 @@
   }
   function goMeet(h) {
     ensureLore();
+    setBg(null, 'meet');
     const m = LORE.MEET[h];
     if (!run.met.includes(h)) run.met.push(h);
     ach.put('met', h); codexMark('h', h);
@@ -1577,6 +1601,7 @@
 
   /* ---------- Лавка ---------- */
   function goShop(saved) {
+    setBg(null, 'shop');
     const disc = (n) => Math.round(n * (hasRelic('coupon') ? 0.75 : 1));
     // на прилавке по карте каждой редкости
     // третья карта иногда эпическая или легендарная
@@ -1591,10 +1616,10 @@
     const render = () => {
       save({ t: 'shop', shop });
       screen.innerHTML = `${topBar()}
-        <div class="shopkeeper">${Art.enemy('hedgehog')}<div class="bubble">${tr(last ? 'Последняя лавка перед дверью! Бери, не стесняйся.' : 'Всё по-честному! Почти.')}</div></div>
+        <div class="shopkeeper">${(Art.enemyLive || Art.enemy)('hedgehog')}<div class="bubble">${tr(last ? 'Последняя лавка перед дверью! Бери, не стесняйся.' : 'Всё по-честному! Почти.')}</div></div>
         <div class="shop-cards">${shop.cards.map((c, i) => `<div class="ware ${c.sold ? 'sold' : ''}">${cardHTML(c.id, 'shopcard', `data-act="buy" data-i="${i}"`)}<div class="price ${run.gold < c.price ? 'poor' : ''}">${Art.icon('coin')}${c.price}</div></div>`).join('')}</div>
         <div class="shop-services">
-          ${shop.relic ? `<button class="svc ${shop.relic.sold ? 'sold' : ''}" data-act="buyrelic">${Art.icon(RELICS[shop.relic.id].art)}<span><b>${RELICS[shop.relic.id].name}<em class="rtier ${RELICS[shop.relic.id].tier}">${TIER_LABEL[RELICS[shop.relic.id].tier]}</em></b><small>${RELICS[shop.relic.id].desc}</small></span><i class="${run.gold < shop.relic.price ? 'poor' : ''}">${shop.relic.price}</i></button>` : ''}
+          ${shop.relic ? `<button class="svc ${shop.relic.sold ? 'sold' : ''}" data-act="buyrelic">${Art.relic(shop.relic.id)}<span><b>${RELICS[shop.relic.id].name}<em class="rtier ${RELICS[shop.relic.id].tier}">${TIER_LABEL[RELICS[shop.relic.id].tier]}</em></b><small>${RELICS[shop.relic.id].desc}</small></span><i class="${run.gold < shop.relic.price ? 'poor' : ''}">${shop.relic.price}</i></button>` : ''}
           <button class="svc ${shop.tea.sold ? 'sold' : ''}" data-act="buytea">${Art.icon('tea')}<span><b>${tr('Горячий сбитень')}</b><small>${tr('Восстановить {n} HP', { n: 12 })}</small></span><i class="${run.gold < shop.tea.price ? 'poor' : ''}">${shop.tea.price}</i></button>
           <button class="svc ${shop.up.sold ? 'sold' : ''}" data-act="buyup">${Art.icon('whetstone')}<span><b>${tr('лавка::Заточка')}</b><small>${tr('Улучшить карту')}</small></span><i class="${run.gold < shop.up.price ? 'poor' : ''}">${shop.up.price}</i></button>
           <button class="svc ${shop.remove.sold ? 'sold' : ''}" data-act="buyremove">${Art.icon('scissors')}<span><b>${tr('Распустить карту')}</b><small>${tr('Убрать карту из колоды')}</small></span><i class="${run.gold < shop.remove.price ? 'poor' : ''}">${shop.remove.price}</i></button>
@@ -1608,6 +1633,7 @@
       run.gold -= item.price; item.sold = true; ach.add('spent', item.price); SND.sfx('coin'); bought(); return true;
     };
     screen.onShop = (act, i) => {
+      const g0 = run.gold;
       if (act === 'buy' && pay(shop.cards[i])) { ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(tr('Куплено: {name}', { name: CARDS[shop.cards[i].id].name })); }
       if (act === 'buyrelic' && shop.relic && pay(shop.relic)) addRelic(shop.relic.id);
       if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
@@ -1622,12 +1648,14 @@
         return;
       }
       render();
+      if (run.gold < g0 && Art.act) Art.act($('.shopkeeper'), 'happy'); // ёж радуется покупке
     };
     render();
   }
 
   /* ---------- Сундук ---------- */
   function goChest() {
+    setBg(); // на нарисованной сцене сундука уже есть свой сундук, поэтому фон пути
     screen.className = 'scr-chest';
     screen.innerHTML = `${topBar()}
       <div class="chest-wrap"><div class="chest">${Art.icon('chest')}</div><p>${tr('Сундук-соня сладко храпит.')}</p></div>
@@ -1651,6 +1679,7 @@
   /* ---------- Привал ---------- */
   const restHeal = () => Math.round(run.maxHp * DIFF().rest) + (hasRelic('kettle') ? 10 : 0);
   function goRest() {
+    setBg(null, 'rest');
     const noHeal = hasRelic('bottomless');
     // у последнего костра собираются друзья, а обиженный герой мелькает в темноте
     const last = isFinalStep(run.step) && mainStory();
@@ -1658,7 +1687,7 @@
     if (last) {
       const fr = friendsOf();
       const shade = finalBoss().startsWith('dk_') ? CLASSES[ENEMIES[finalBoss()].dark] : null;
-      talk = fr.length ? `${tr('К костру подсели друзья:')}<span class="friends">${fr.map((h) => `<span class="frow"><span class="fport">${heroArt(h)}</span><span>${tr(LORE.FRIEND[h].line)}<small>${tr(LORE.FRIEND[h].bonus)}</small></span></span>`).join('')}</span>`
+      talk = fr.length ? `${tr('К костру подсели друзья:')}<span class="friends">${fr.map((h) => `<span class="frow"><span class="fport">${heroFace(h)}</span><span>${tr(LORE.FRIEND[h].line)}<small>${tr(LORE.FRIEND[h].bonus)}</small></span></span>`).join('')}</span>`
         : tr('У костра тихо. Только ты и последний огонь перед дверью.');
       if (shade) talk += ` <span class="shade">${tr('За деревьями мелькнула знакомая фигура: {name}. Но тень на ней гуще ночи.', { name: shade.name })}</span>`;
     }
@@ -1731,7 +1760,7 @@
     consumeFlame() { const n = C.flame; C.flame = 0; return n; },
     deliver(name, fn) { name = tr(name); C.deliveries.push({ name, fn }); FX.play('deliver'); floatText($('.hero-fx'), tr('{name} в пути', { name }), 'weakf'); },
     charm(id, n) {
-      C.charms[id] = (C.charms[id] || 0) + n; FX.play('sigil', CARDS[id].art); floatText($('.hero-fx'), CARDS[id].name, 'weakf');
+      C.charms[id] = (C.charms[id] || 0) + n; FX.play('sigil', `c:${id}`); floatText($('.hero-fx'), CARDS[id].name, 'weakf');
       if (Object.keys(C.charms).length >= 3) ach.flag('charms3');
     },
     freeTurn() { C.free = true; FX.play('clock'); floatText($('.hero-fx'), tr('Все карты бесплатно!'), 'burnf'); },
@@ -1830,7 +1859,7 @@
   // талисман сработал: его значок всплывает над героем (или врагом)
   function proc(id, where) {
     if (!hasRelic(id)) return false;
-    if (screen.className === 'scr-combat') FX.relic(RELICS[id].art, RELICS[id].name, where);
+    if (screen.className === 'scr-combat') FX.relic(`r:${id}`, RELICS[id].name, where);
     return true;
   }
 
@@ -1854,6 +1883,7 @@
   }
 
   function startCombat(enemyId, tier) {
+    setBg();
     snapFight = { run: JSON.stringify(run), enemyId, tier }; // для «начать бой заново»
     const e = ENEMIES[enemyId];
     run.seen[enemyId] = (run.seen[enemyId] || 0) + 1;
@@ -1890,7 +1920,7 @@
       <div class="topbar slim">${relicIcons(6)}<div class="spacer"></div><div class="stepl">${tier === 'boss' ? tr(isFinalStep(run.step) ? 'Финал' : 'Босс стадии') : tr('Уровень {a}/{b}', { a: run.step + 1, b: MAX_STEPS })}</div></div>
       <div class="enemy-zone">
         <div class="intent"></div>
-        <div class="enemy ${e.tier}" id="enemy">${Art.enemy(enemyId)}<div class="enemy-fx"></div></div>
+        <div class="enemy ${e.tier}" id="enemy">${(Art.enemyLive || Art.enemy)(enemyId)}<div class="enemy-fx"></div></div>
         <div class="nameplate"><div class="ename">${e.name}${e.tier !== 'normal' ? `<i>${tr(e.tier === 'boss' ? (isFinalStep(run.step) ? 'Финал' : 'Босс') : 'Элита')}</i>` : ''}</div>
           <div class="ehp"><div class="fill"></div><span></span><div class="eblk"></div></div>
           <div class="estatus"></div>
@@ -2012,6 +2042,7 @@
     return '';
   }
 
+  const sti = (k) => (Art.status ? Art.status(k) : '');
   function chip(cls, text, tipText, ico = '') {
     return `<i class="${cls}" data-tip="${tipText}">${ico}${text}</i>`;
   }
@@ -2026,11 +2057,11 @@
     $('.eblk').innerHTML = e.block > 0 ? `${Art.intentIcon('block')}<b>${e.block}</b>` : '';
     const g = (name) => GL[name];
     const st = [];
-    if (e.str) st.push(chip('s-str', tr('Сила {n}', { n: e.str }), g('Сила врага')));
-    if (e.weak) st.push(chip('s-weak', tr('Ослаблен {n}', { n: e.weak }), g('Ослаблен')));
-    if (e.vuln) st.push(chip('s-vuln', tr('Уязвим {n}', { n: e.vuln }), g('Уязвим')));
-    if (e.burn) st.push(chip('s-burn', tr('Поджог {n}', { n: e.burn }), g('Поджог')));
-    if (e.thorns) st.push(chip('s-thorns', tr('Колючки {n}', { n: e.thorns }), tr('Каждый ваш удар по врагу ранит вас на {n}', { n: e.thorns })));
+    if (e.str) st.push(chip('s-str', tr('Сила {n}', { n: e.str }), g('Сила врага'), sti('enemy_strength')));
+    if (e.weak) st.push(chip('s-weak', tr('Ослаблен {n}', { n: e.weak }), g('Ослаблен'), sti('weak')));
+    if (e.vuln) st.push(chip('s-vuln', tr('Уязвим {n}', { n: e.vuln }), g('Уязвим'), sti('vulnerable')));
+    if (e.burn) st.push(chip('s-burn', tr('Поджог {n}', { n: e.burn }), g('Поджог'), sti('burn')));
+    if (e.thorns) st.push(chip('s-thorns', tr('Колючки {n}', { n: e.thorns }), tr('Каждый ваш удар по врагу ранит вас на {n}', { n: e.thorns }), sti('thorns')));
     // особые приёмы врага
     const ed = ENEMIES[C.id];
     if (e.nest) st.push(chip('s-trait', tr('Матрёшка ×{n}', { n: e.nest }), tr('Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: {n}.', { n: e.nest })));
@@ -2041,21 +2072,21 @@
     if (e.mist) st.push(chip('s-weak', tr('Туман ≤{n}', { n: e.mist }), tr('Пока туман, любой удар по ней наносит не больше {n} урона. Поджог проходит. Туман рассеется, когда она снова сходит.', { n: e.mist })));
     const bi = ed.pattern.findIndex((p) => p.k === 'boom');
     if (bi >= 0) { const L = ed.pattern.length; const left = ((bi - (e.pi % L)) + L) % L + 1; st.push(chip('s-burn', tr('Фитиль {n}', { n: left }), tr('Через {n} {n|ход|хода|ходов} шутиха взорвётся: сильно ударит и исчезнет. Победите её раньше, если успеете.', { n: left }))); }
-    if (e.stun) st.push(chip('s-weak', tr('Спит'), g('Спит')));
-    if (C.stolen) st.push(chip('s-gold', tr('Украдено {n}', { n: C.stolen }), g('Кража')));
+    if (e.stun) st.push(chip('s-weak', tr('Спит'), g('Спит'), sti('asleep')));
+    if (C.stolen) st.push(chip('s-gold', tr('Украдено {n}', { n: C.stolen }), g('Кража'), sti('steal')));
     $('.estatus').innerHTML = st.join('');
     // статусы Ивы и активные чары
     const hs = [];
     const res = C.str + C.tmpStr;
-    if (res) hs.push(chip('h-res', tr('Решимость {n}', { n: res }), `${g('Решимость')}${C.tmpStr ? ` ${tr('До конца хода: {n}.', { n: C.tmpStr })}` : ''}`));
-    if (C.thorns) hs.push(chip('h-thorns', tr('Шипы {n}', { n: C.thorns }), g('Шипы')));
+    if (res) hs.push(chip('h-res', tr('Решимость {n}', { n: res }), `${g('Решимость')}${C.tmpStr ? ` ${tr('До конца хода: {n}.', { n: C.tmpStr })}` : ''}`, sti('resolve')));
+    if (C.thorns) hs.push(chip('h-thorns', tr('Шипы {n}', { n: C.thorns }), g('Шипы'), sti('thorns')));
     if (C.dog > 0) hs.push(chip('h-dog', `${C.dog}`, `${g('Дружок')} ${tr('Злость {n}: укус на {d}', { n: C.dog, d: dogDmg() })}${C.charms.wolfhound ? `, ${tr('{n} {n|раз|раза|раз} за ход', { n: 1 + C.charms.wolfhound })}` : ''}.`, Art.icon('dogfriend')));
     if (C.glaze) hs.push(chip('h-charm', '', `${CARDS.glaze.name}: ${tr('до конца боя все Пряники улучшены')}`, Art.icon('glaze')));
-    if (C.paid) hs.push(chip('h-paid', tr('Цена {n}', { n: C.paid }), `${g('Цена')} ${tr('В этом бою уже отдано {n} HP.', { n: C.paid })}`));
-    if (C.pWeak) hs.push(chip('h-weak', tr('Слабость {n}', { n: C.pWeak }), tr('Слабость: ваши атаки наносят на 25% меньше урона.')));
-    if (C.frail) hs.push(chip('h-weak', tr('Хрупкость {n}', { n: C.frail }), g('Хрупкость')));
-    if (C.deliveries.length) hs.push(chip('h-del', tr('Доставка {n}', { n: C.deliveries.length }), `${g('Доставка')} ${tr('В пути: {list}.', { list: C.deliveries.map((d) => d.name).join(', ') })}`));
-    for (const [id, n] of Object.entries(C.charms)) hs.push(chip('h-charm', `${n}`, `${CARDS[id].name}: ${CHARM_TIP[id](n)}`, Art.icon(CARDS[id].art)));
+    if (C.paid) hs.push(chip('h-paid', tr('Цена {n}', { n: C.paid }), `${g('Цена')} ${tr('В этом бою уже отдано {n} HP.', { n: C.paid })}`, sti('price')));
+    if (C.pWeak) hs.push(chip('h-weak', tr('Слабость {n}', { n: C.pWeak }), tr('Слабость: ваши атаки наносят на 25% меньше урона.'), sti('weak')));
+    if (C.frail) hs.push(chip('h-weak', tr('Хрупкость {n}', { n: C.frail }), g('Хрупкость'), sti('frail')));
+    if (C.deliveries.length) hs.push(chip('h-del', tr('Доставка {n}', { n: C.deliveries.length }), `${g('Доставка')} ${tr('В пути: {list}.', { list: C.deliveries.map((d) => d.name).join(', ') })}`, sti('delivery')));
+    for (const [id, n] of Object.entries(C.charms)) hs.push(chip('h-charm', `${n}`, `${CARDS[id].name}: ${CHARM_TIP[id](n)}`, Art.card(id)));
     $('.hstatus').innerHTML = hs.join('');
     $('.hb-slot').innerHTML = heroBar(true);
     renderHand(dealAnim);
@@ -2158,6 +2189,9 @@
     setTimeout(() => f.remove(), 1000);
   }
 
+  // кадры нарисованного врага: attack | hurt | death (если есть раскадровка)
+  const eAct = (k) => (Art.act ? Art.act($('#enemy'), k) : 0);
+
   function heroLunge() {
     const p = $('#heroPortrait'); if (!p) return;
     p.classList.remove('lunge'); void p.offsetWidth; p.classList.add('lunge');
@@ -2176,6 +2210,7 @@
     nestCheck();
     const el = $('#enemy');
     el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
+    eAct('hurt');
     if (real <= 0) SND.sfx('clank');
     else if (!quiet) SND.sfx('hit', Math.min(1.4, 0.6 + real / 15));
     floatText($('.enemy-fx'), real > 0 ? `-${real}` : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
@@ -2289,6 +2324,7 @@
       e.hp -= e.burn;
       floatText($('.enemy-fx'), `-${e.burn}`, 'burnf');
       $('#enemy').classList.add('hit');
+      eAct('hurt');
       e.burn--;
       if (e.hp > 0 && proc('stokerglove')) api.block(2);
       nestCheck();
@@ -2310,6 +2346,7 @@
           }
           for (let h = 0; h < (it.hits || 1); h++) {
             el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
+            eAct('attack');
             SND.sfx('enemy');
             await sleep(180);
             const real = await hitHero(enemyDmg(it.v));
@@ -2325,6 +2362,7 @@
           }
         } else if (it.k === 'boom') {
           el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
+          eAct('attack');
           SND.sfx('burst');
           floatText($('.enemy-fx'), tr('Бабах!'), 'burnf');
           await sleep(200);
@@ -2362,7 +2400,7 @@
     const el = $('#enemy');
     const dl = !C.boomed && lineOf(C.id, 'death');
     if (dl && SETTINGS.lines !== false) { say(dl, 1600); await sleep(800); }
-    if (el) el.classList.add('dying');
+    if (el) { el.classList.add('dying'); eAct('death'); }
     await sleep(800);
     const { tier, stolen, hpLost, id, turn, boomed, paid, tie } = C;
     // Ремень для правки: одна заточенная карта остаётся улучшенной
@@ -2414,13 +2452,14 @@
     screen.innerHTML = `${topBar()}
       <div class="ribbon">${tr('Трофей босса')}</div>
       <p class="pickhint">${tr('Выбери один талисман')}</p>
-      <div class="brelics">${opts.map((id, i) => `<button class="brelic" data-act="bossrelic" data-id="${id}" style="--d:${i * 120}ms">${Art.icon(RELICS[id].art)}<span><b>${RELICS[id].name}</b><small>${RELICS[id].desc}</small></span></button>`).join('')}</div>
+      <div class="brelics">${opts.map((id, i) => `<button class="brelic" data-act="bossrelic" data-id="${id}" style="--d:${i * 120}ms">${Art.relic(id)}<span><b>${RELICS[id].name}</b><small>${RELICS[id].desc}</small></span></button>`).join('')}</div>
       <button class="btn ghost" data-act="bossrelic-skip">${tr('Не брать')}</button>
       ${heroBar(false)}`;
   }
 
   /* ---------- Награда ---------- */
   function goReward(tier) {
+    setBg();
     const boss = tier === 'boss';
     const gold = Math.round(goldFor(tier) * ((run.fmod && run.fmod.goldMul) || 1));
     run.fmod = null;
@@ -2456,6 +2495,12 @@
   }
 
   /* ---------- Финалы ---------- */
+  // картинка финала: какой финальный босс был побеждён
+  function endingKey() {
+    const f = run && run.final;
+    const k = !f ? '' : f.startsWith('dk_') ? 'ending_darkhero' : `ending_${f}`;
+    return picFits(k) ? k : 'story_win';
+  }
   function goVictory() {
     clearSave();
     STATS.wins++; STATS.best = MAX_STEPS;
@@ -2470,7 +2515,7 @@
     screen.className = 'scr-end win';
     screen.innerHTML = `<div class="ribbon">${STORY.winRibbon}</div>
       <div class="book"><div class="page">
-        <div class="book-art moon">${heroArt()}</div>
+        ${bookArt(endingKey(), 'moon')}
         <h1>${STORY.winTitle}</h1>
         <p class="story">${txt(STORY.winText)}${saved && LORE.DARK[saved] ? ` ${tr(LORE.DARK[saved].saved)}` : ''}</p>
         <p class="stats">${DIFF().name} · ${tr('Побед: {n}', { n: run.fights })} · ${tr('Карт в колоде: {n}', { n: run.deck.length })} · ${tr('Талисманов: {n}', { n: run.relics.length })}</p>
@@ -2490,7 +2535,7 @@
     const tag = Store.noAds() ? '' : `<i class="adtag">${ICO.ad}${tr('Реклама')}</i>`;
     screen.className = 'scr-end lose revive';
     screen.innerHTML = `<div class="book"><div class="page">
-        <div class="book-art dim">${heroArt()}</div>
+        ${bookArt('story_lose', 'dim')}
         <h1>${tr('Тени настигли')}</h1>
         <p class="story">${tr('Но письмо ещё можно спасти. Попробуйте этот бой снова или вернитесь на развилку перед ним и выберите другой путь.')}</p>
       </div></div>
@@ -2529,7 +2574,7 @@
     SND.music(null); SND.sfx('defeat');
     screen.className = 'scr-end lose';
     screen.innerHTML = `<div class="book"><div class="page">
-        <div class="book-art dim">${heroArt()}</div>
+        ${bookArt('story_lose', 'dim')}
         <h1>${STORY.loseTitle}</h1>
         <p class="story">${txt(STORY.loseText)}</p>
         <p class="stats">${DIFF().name} · ${tr('Пройдено уровней: {a} из {b}', { a: run.step + 1, b: MAX_STEPS })} · ${tr('Побед: {n}', { n: run.fights })}</p>
@@ -2670,7 +2715,7 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id) };
+  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id) };
 
   achCheck(true);
   codexSeed();

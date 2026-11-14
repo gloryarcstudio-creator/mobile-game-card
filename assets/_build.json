@@ -1,0 +1,1758 @@
+{
+ "anim:clockmaker": [
+  "clockmaker",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    6,
+    238
+   ]
+  }
+ ],
+ "anim:bat": [
+  "bat",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    4,
+    243
+   ]
+  }
+ ],
+ "anim:cuckoo": [
+  "cuckoo",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    4,
+    233
+   ]
+  }
+ ],
+ "anim:blizzard": [
+  "blizzard",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    3,
+    239
+   ]
+  }
+ ],
+ "anim:dk_grinder": [
+  "dk_grinder",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    5,
+    240
+   ]
+  }
+ ],
+ "anim:dk_courier": [
+  "dk_courier",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    3,
+    236
+   ]
+  }
+ ],
+ "anim:dk_baker": [
+  "dk_baker",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    3,
+    232
+   ]
+  }
+ ],
+ "anim:dk_guard": [
+  "dk_guard",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    4,
+    242
+   ]
+  }
+ ],
+ "anim:dk_lamp": [
+  "dk_lamp",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    5,
+    240
+   ]
+  }
+ ],
+ "anim:dk_stoker": [
+  "dk_stoker",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    5,
+    242
+   ]
+  }
+ ],
+ "anim:dk_herbalist": [
+  "dk_herbalist",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    243,
+    3,
+    238
+   ]
+  }
+ ],
+ "anim:dk_shepherd": [
+  "dk_shepherd",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    4,
+    243
+   ]
+  }
+ ],
+ "anim:firecracker": [
+  "firecracker",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    243,
+    6,
+    236
+   ]
+  }
+ ],
+ "anim:frostfox": [
+  "frostfox",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    3,
+    235
+   ]
+  }
+ ],
+ "anim:ghoul": [
+  "ghoul",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    3,
+    232
+   ]
+  }
+ ],
+ "anim:golem": [
+  "golem",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    4,
+    243
+   ]
+  }
+ ],
+ "anim:hedgehog": [
+  "hedgehog",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "happy": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    }
+   },
+   "bg": [
+    245,
+    4,
+    243
+   ]
+  }
+ ],
+ "anim:hollowpost": [
+  "hollowpost",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    247,
+    4,
+    245
+   ]
+  }
+ ],
+ "anim:icebear": [
+  "icebear",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    3,
+    237
+   ]
+  }
+ ],
+ "anim:iceknight": [
+  "iceknight",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    3,
+    233
+   ]
+  }
+ ],
+ "anim:icicle": [
+  "icicle",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    243,
+    4,
+    229
+   ]
+  }
+ ],
+ "anim:lampghost": [
+  "lampghost",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    4,
+    230
+   ]
+  }
+ ],
+ "anim:laundress": [
+  "laundress",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    4,
+    237
+   ]
+  }
+ ],
+ "anim:inkcat": [
+  "inkcat",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    4,
+    244
+   ]
+  }
+ ],
+ "anim:magpie": [
+  "magpie",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    4,
+    235
+   ]
+  }
+ ],
+ "anim:matryoshka": [
+  "matryoshka",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    5,
+    229
+   ]
+  }
+ ],
+ "anim:mailbox": [
+  "mailbox",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    4,
+    237
+   ]
+  }
+ ],
+ "anim:mist": [
+  "mist",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    247,
+    3,
+    231
+   ]
+  }
+ ],
+ "anim:moth": [
+  "moth",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    3,
+    245
+   ]
+  }
+ ],
+ "anim:owl": [
+  "owl",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    4,
+    239
+   ]
+  }
+ ],
+ "anim:pigeon": [
+  "pigeon",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    4,
+    244
+   ]
+  }
+ ],
+ "anim:raven": [
+  "raven",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    5,
+    238
+   ]
+  }
+ ],
+ "anim:samovar": [
+  "samovar",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    6,
+    232
+   ]
+  }
+ ],
+ "anim:scarfsnake": [
+  "scarfsnake",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    242,
+    5,
+    237
+   ]
+  }
+ ],
+ "anim:shadowking": [
+  "shadowking",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    4,
+    242
+   ]
+  }
+ ],
+ "anim:shadowthief": [
+  "shadowthief",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    4,
+    243
+   ]
+  }
+ ],
+ "anim:skywhale": [
+  "skywhale",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    247,
+    3,
+    244
+   ]
+  }
+ ],
+ "anim:snowimp": [
+  "snowimp",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    5,
+    238
+   ]
+  }
+ ],
+ "anim:sootmouse": [
+  "sootmouse",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    4,
+    244
+   ]
+  }
+ ],
+ "anim:snowbrute": [
+  "snowbrute",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    247,
+    3,
+    240
+   ]
+  }
+ ],
+ "anim:stump": [
+  "stump",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    245,
+    4,
+    233
+   ]
+  }
+ ],
+ "anim:watchman": [
+  "watchman",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    4,
+    240
+   ]
+  }
+ ],
+ "anim:vane": [
+  "vane",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    244,
+    6,
+    239
+   ]
+  }
+ ],
+ "anim:troll": [
+  "troll",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    243,
+    3,
+    240
+   ]
+  }
+ ],
+ "hero:lamp": "h/lamp.webp",
+ "face:lamp": "h/lamp_face.webp",
+ "hero:courier": "h/courier.webp",
+ "face:courier": "h/courier_face.webp",
+ "hero:guard": "h/guard.webp",
+ "face:guard": "h/guard_face.webp",
+ "hero:stoker": "h/stoker.webp",
+ "face:stoker": "h/stoker_face.webp",
+ "hero:baker": "h/baker.webp",
+ "face:baker": "h/baker_face.webp",
+ "hero:grinder": "h/grinder.webp",
+ "face:grinder": "h/grinder_face.webp",
+ "hero:shepherd": "h/shepherd.webp",
+ "face:shepherd": "h/shepherd_face.webp",
+ "hero:herbalist": "h/herbalist.webp",
+ "face:herbalist": "h/herbalist_face.webp",
+ "enemy:bat": "e/bat.webp",
+ "bg:bg_final_house": "bg/bg_final_house.webp",
+ "bg:bg_stage1_town_day": "bg/bg_stage1_town_day.webp",
+ "bg:bg_stage1_town_mid": "bg/bg_stage1_town_mid.webp",
+ "bg:bg_stage1_town_sunset": "bg/bg_stage1_town_sunset.webp",
+ "bg:bg_stage2_outskirts_mid": "bg/bg_stage2_outskirts_mid.webp",
+ "bg:bg_stage2_outskirts_night": "bg/bg_stage2_outskirts_night.webp",
+ "anim:waxgiant": [
+  "waxgiant",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    249,
+    3,
+    245
+   ]
+  }
+ ],
+ "bg:bg_title": "bg/bg_title.webp",
+ "bg:bg_stage2_outskirts_start": "bg/bg_stage2_outskirts_start.webp",
+ "card:blotter": "c/blotter.webp",
+ "card:cancel": "c/cancel.webp",
+ "enemy:blizzard": "e/blizzard.webp",
+ "card:carbon": "c/carbon.webp",
+ "card:cloak": "c/cloak.webp",
+ "card:cocoa": "c/cocoa.webp",
+ "card:dread": "c/dread.webp",
+ "card:eveninglamp": "c/eveninglamp.webp",
+ "card:flue": "c/flue.webp",
+ "card:heavybag": "c/heavybag.webp",
+ "card:icy": "c/icy.webp",
+ "card:inkpen": "c/inkpen.webp",
+ "card:mittens": "c/mittens.webp",
+ "card:patch": "c/patch.webp",
+ "card:poste": "c/poste.webp",
+ "card:sealwax": "c/sealwax.webp",
+ "card:shadow": "c/shadow.webp",
+ "card:stale": "c/stale.webp",
+ "card:wolfhound": "c/wolfhound.webp",
+ "enemy:clockmaker": "e/clockmaker.webp",
+ "enemy:cuckoo": "e/cuckoo.webp",
+ "enemy:dk_baker": "e/dk_baker.webp",
+ "enemy:dk_courier": "e/dk_courier.webp",
+ "anim:wisp": [
+  "wisp",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    240,
+    6,
+    238
+   ]
+  }
+ ],
+ "enemy:dk_grinder": "e/dk_grinder.webp",
+ "enemy:dk_guard": "e/dk_guard.webp",
+ "enemy:dk_lamp": "e/dk_lamp.webp",
+ "enemy:dk_herbalist": "e/dk_herbalist.webp",
+ "enemy:dk_shepherd": "e/dk_shepherd.webp",
+ "anim:wolf": [
+  "wolf",
+  {
+   "fs": 320,
+   "cols": 8,
+   "idle": {
+    "n": 25,
+    "fps": 8
+   },
+   "act": {
+    "attack": {
+     "o": 0,
+     "n": 14,
+     "fps": 14
+    },
+    "hurt": {
+     "o": 14,
+     "n": 9,
+     "fps": 15
+    },
+    "death": {
+     "o": 23,
+     "n": 14,
+     "fps": 13
+    }
+   },
+   "bg": [
+    246,
+    5,
+    242
+   ]
+  }
+ ],
+ "pic:ending_darkhero": "pic/ending_darkhero.webp",
+ "pic:ending_hollowpost": "pic/ending_hollowpost.webp",
+ "enemy:dk_stoker": "e/dk_stoker.webp",
+ "pic:ending_shadowking": "pic/ending_shadowking.webp",
+ "pic:ending_skywhale": "pic/ending_skywhale.webp",
+ "pic:ev_coins": "pic/ev_coins.webp",
+ "pic:ev_icemirror": "pic/ev_icemirror.webp",
+ "pic:ev_lantern": "pic/ev_lantern.webp",
+ "pic:ev_postoffice": "pic/ev_postoffice.webp",
+ "pic:ev_puppet": "pic/ev_puppet.webp",
+ "pic:ev_showbooth": "pic/ev_showbooth.webp",
+ "pic:ev_smith": "pic/ev_smith.webp",
+ "pic:ev_snowman": "pic/ev_snowman.webp",
+ "pic:ev_well": "pic/ev_well.webp",
+ "enemy:firecracker": "e/firecracker.webp",
+ "enemy:frostfox": "e/frostfox.webp",
+ "enemy:ghoul": "e/ghoul.webp",
+ "enemy:golem": "e/golem.webp",
+ "enemy:hedgehog": "e/hedgehog.webp",
+ "enemy:hollowpost": "e/hollowpost.webp",
+ "enemy:icebear": "e/icebear.webp",
+ "enemy:iceknight": "e/iceknight.webp",
+ "icon:buddy": "i/buddy.webp",
+ "enemy:icicle": "e/icicle.webp",
+ "icon:puppet": "i/puppet.webp",
+ "icon:chest": "i/chest.webp",
+ "icon:coin": "i/coin.webp",
+ "icon:showbooth": "i/showbooth.webp",
+ "icon:scissors": "i/scissors.webp",
+ "icon:well": "i/well.webp",
+ "intent:bury": "it/bury.webp",
+ "enemy:inkcat": "e/inkcat.webp",
+ "intent:curse": "it/curse.webp",
+ "intent:frail": "it/frail.webp",
+ "intent:sleep": "it/sleep.webp",
+ "intent:steal": "it/steal.webp",
+ "intent:spikes": "it/spikes.webp",
+ "enemy:lampghost": "e/lampghost.webp",
+ "enemy:laundress": "e/laundress.webp",
+ "enemy:magpie": "e/magpie.webp",
+ "enemy:mailbox": "e/mailbox.webp",
+ "enemy:matryoshka": "e/matryoshka.webp",
+ "enemy:mist": "e/mist.webp",
+ "enemy:owl": "e/owl.webp",
+ "enemy:moth": "e/moth.webp",
+ "enemy:raven": "e/raven.webp",
+ "enemy:pigeon": "e/pigeon.webp",
+ "relic:bell": "r/bell.webp",
+ "relic:bellows": "r/bellows.webp",
+ "relic:bookmark": "r/bookmark.webp",
+ "relic:bottomless": "r/bottomless.webp",
+ "relic:brazier": "r/brazier.webp",
+ "relic:bridgerail": "r/bridgerail.webp",
+ "relic:buckle": "r/buckle.webp",
+ "relic:candybox": "r/candybox.webp",
+ "relic:clover": "r/clover.webp",
+ "relic:cocoatin": "r/cocoatin.webp",
+ "relic:chimneycap": "r/chimneycap.webp",
+ "relic:collar": "r/collar.webp",
+ "relic:coupon": "r/coupon.webp",
+ "relic:crown": "r/crown.webp",
+ "relic:dogfriend": "r/dogfriend.webp",
+ "relic:envelope": "r/envelope.webp",
+ "relic:feather": "r/feather.webp",
+ "relic:eternaloil": "r/eternaloil.webp",
+ "relic:flint": "r/flint.webp",
+ "relic:frostglass": "r/frostglass.webp",
+ "relic:frostring": "r/frostring.webp",
+ "relic:goldquill": "r/goldquill.webp",
+ "relic:grindwheel": "r/grindwheel.webp",
+ "relic:honeypot": "r/honeypot.webp",
+ "relic:herbbag": "r/herbbag.webp",
+ "relic:horn": "r/horn.webp",
+ "relic:horseshoe": "r/horseshoe.webp",
+ "relic:hotstone": "r/hotstone.webp",
+ "relic:hourglass": "r/hourglass.webp",
+ "relic:inkwell": "r/inkwell.webp",
+ "relic:ironshutter": "r/ironshutter.webp",
+ "relic:ivalamp": "r/ivalamp.webp",
+ "relic:jar": "r/jar.webp",
+ "relic:kettle": "r/kettle.webp",
+ "relic:lastcandle": "r/lastcandle.webp",
+ "relic:leatherstrop": "r/leatherstrop.webp",
+ "relic:luckystamp": "r/luckystamp.webp",
+ "relic:matchbox": "r/matchbox.webp",
+ "relic:magicbag": "r/magicbag.webp",
+ "relic:magnifier": "r/magnifier.webp",
+ "relic:medal": "r/medal.webp",
+ "relic:milestone": "r/milestone.webp",
+ "relic:moldform": "r/moldform.webp",
+ "relic:mirrorshard": "r/mirrorshard.webp",
+ "relic:moonstone": "r/moonstone.webp",
+ "relic:mortar": "r/mortar.webp",
+ "relic:mug": "r/mug.webp",
+ "relic:musicbox": "r/musicbox.webp",
+ "relic:oilcan": "r/oilcan.webp",
+ "relic:northstar": "r/northstar.webp",
+ "relic:pencil": "r/pencil.webp",
+ "relic:piggy": "r/piggy.webp",
+ "relic:pinecone": "r/pinecone.webp",
+ "relic:ribbon": "r/ribbon.webp",
+ "relic:scarf": "r/scarf.webp",
+ "relic:sled": "r/sled.webp",
+ "relic:snowglobe": "r/snowglobe.webp",
+ "relic:snowman": "r/snowman.webp",
+ "relic:sootbroom": "r/sootbroom.webp",
+ "relic:stamppad": "r/stamppad.webp",
+ "relic:stampbook": "r/stampbook.webp",
+ "relic:stokerglove": "r/stokerglove.webp",
+ "relic:sunstone": "r/sunstone.webp",
+ "relic:stub": "r/stub.webp",
+ "relic:thermos": "r/thermos.webp",
+ "relic:thimble": "r/thimble.webp",
+ "relic:vanefeather": "r/vanefeather.webp",
+ "relic:whetstone": "r/whetstone.webp",
+ "relic:wickcutter": "r/wickcutter.webp",
+ "relic:wingboots": "r/wingboots.webp",
+ "relic:wreath": "r/wreath.webp",
+ "enemy:samovar": "e/samovar.webp",
+ "enemy:scarfsnake": "e/scarfsnake.webp",
+ "bg:scene_chest": "bg/scene_chest.webp",
+ "bg:scene_campfire": "bg/scene_campfire.webp",
+ "bg:scene_meet": "bg/scene_meet.webp",
+ "bg:scene_shop": "bg/scene_shop.webp",
+ "bg:scene_talk": "bg/scene_talk.webp",
+ "enemy:shadowking": "e/shadowking.webp",
+ "enemy:shadowthief": "e/shadowthief.webp",
+ "enemy:skywhale": "e/skywhale.webp",
+ "enemy:snowbrute": "e/snowbrute.webp",
+ "enemy:snowimp": "e/snowimp.webp",
+ "enemy:sootmouse": "e/sootmouse.webp",
+ "st:asleep": "st/asleep.webp",
+ "st:block": "st/block.webp",
+ "st:buddy_rage": "st/buddy_rage.webp",
+ "st:burn": "st/burn.webp",
+ "st:clutter": "st/clutter.webp",
+ "st:charm": "st/charm.webp",
+ "st:combo": "st/combo.webp",
+ "st:enemy_strength": "st/enemy_strength.webp",
+ "st:flame": "st/flame.webp",
+ "st:delivery": "st/delivery.webp",
+ "st:exhaust": "st/exhaust.webp",
+ "st:frail": "st/frail.webp",
+ "st:gingerbread": "st/gingerbread.webp",
+ "st:price": "st/price.webp",
+ "st:resolve": "st/resolve.webp",
+ "st:retain": "st/retain.webp",
+ "st:sharpen": "st/sharpen.webp",
+ "st:steal": "st/steal.webp",
+ "st:thorns": "st/thorns.webp",
+ "st:vulnerable": "st/vulnerable.webp",
+ "st:weak": "st/weak.webp",
+ "pic:story_intro": "pic/story_intro.webp",
+ "pic:story_lose": "pic/story_lose.webp",
+ "pic:story_win": "pic/story_win.webp",
+ "enemy:stump": "e/stump.webp",
+ "enemy:troll": "e/troll.webp",
+ "enemy:vane": "e/vane.webp",
+ "enemy:watchman": "e/watchman.webp",
+ "enemy:waxgiant": "e/waxgiant.webp",
+ "enemy:wisp": "e/wisp.webp",
+ "enemy:wolf": "e/wolf.webp"
+}
