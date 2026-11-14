@@ -76,6 +76,13 @@
   // встряска экрана
   function shake(power = 1) {
     const s = $('#screen .enemy-zone'); if (!s) return;
+    // через Web Animations: CSS-анимация появления зоны (zonein) не перезапускается,
+    // иначе после каждой встряски враг пропадал и проявлялся заново
+    if (s.animate) {
+      const d = 6 * power; const tf = (x, y) => ({ transform: `translate(${x}px, ${y}px)` });
+      s.animate([tf(0, 0), { ...tf(d, 1), offset: 0.2 }, { ...tf(-d, -1), offset: 0.4 }, { ...tf(d * 0.6, 1), offset: 0.6 }, { ...tf(-d * 0.3, 0), offset: 0.8 }, tf(0, 0)], { duration: 340 });
+      return;
+    }
     s.style.setProperty('--shk', `${6 * power}px`);
     s.classList.remove('shk'); void s.offsetWidth; s.classList.add('shk');
     setTimeout(() => s.classList.remove('shk'), 360);

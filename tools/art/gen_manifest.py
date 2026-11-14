@@ -1,6 +1,6 @@
 """Scan assets/ and write js/assets.js (window.ASSETS manifest).
 usage: python3 -I gen_manifest.py REPO_DIR"""
-import sys, os, json, time
+import sys, os, json, time, re
 from PIL import Image
 import numpy as np
 
@@ -15,16 +15,17 @@ def names(d, suffix='.webp', strip=''):
 
 hero = [n for n in names('h') if not n.endswith('_face')]
 face = [n[:-5] for n in names('h') if n.endswith('_face')]
+EA = sorted(d for d in os.listdir(A) if re.fullmatch(r'ea\d*', d))[-1] if any(re.fullmatch(r'ea\d*', d) for d in os.listdir(A)) else 'ea'
 anim = {}
 for k, v in build.items():
     kind, cid = k.split(':', 1)
     if kind == 'anim' and isinstance(v, list):
         meta = v[1]
-        if os.path.exists(os.path.join(A, 'ea', f'{cid}_idle.webp')):
-            at = Image.open(os.path.join(A, 'ea', f'{cid}_idle.webp'))
+        if os.path.exists(os.path.join(A, EA, f'{cid}_idle.webp')):
+            at = Image.open(os.path.join(A, EA, f'{cid}_idle.webp'))
             meta['iw'], meta['ih'] = at.size
-        if os.path.exists(os.path.join(A, 'ea', f'{cid}_act.webp')):
-            at = Image.open(os.path.join(A, 'ea', f'{cid}_act.webp'))
+        if os.path.exists(os.path.join(A, EA, f'{cid}_act.webp')):
+            at = Image.open(os.path.join(A, EA, f'{cid}_act.webp'))
             meta['aw'], meta['ah'] = at.size
         meta.pop('bg', None)
         anim[cid] = meta
@@ -41,7 +42,7 @@ M = {
     'enemy': names('e'), 'anim': anim,
     'relic': names('r'), 'card': names('c'), 'st': names('st'),
     'intent': names('it'), 'icon': names('i'),
-    'bg': names('bg'), 'bgc': bgc, 'pic': names('pic'),
+    'bg': names('bg'), 'bgc': bgc, 'pic': names('pic'), 'ea': EA,
 }
 js = '/* Сгенерировано gen_manifest.py: какие нарисованные картинки есть в assets/ */\nwindow.ASSETS = ' + json.dumps(M, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(REPO, 'js', 'assets.js'), 'w').write(js)

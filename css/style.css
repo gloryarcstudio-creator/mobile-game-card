@@ -165,7 +165,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .card.inhand.drag { transition: box-shadow .15s; transform: translate(var(--dx), var(--dy)) scale(1.18); z-index: 60 !important; cursor: grabbing; }
 .card.inhand.drag.ready { box-shadow: inset 0 0 0 .22em var(--gold-hi), inset 0 0 0 .42em var(--ink), 0 0 1.4em rgba(255, 210, 120, .95), 0 0 3em rgba(255, 190, 90, .6); }
 .card.inhand.drag.fly { transition: transform .22s ease-in, opacity .22s; transform: translate(var(--dx), calc(var(--dy) - 60px)) scale(.45); opacity: 0; }
-#app.aim .enemy > svg { filter: drop-shadow(0 0 4px #ffd27a) drop-shadow(0 0 14px rgba(255, 120, 80, .9)); }
+#app.aim .enemy > :is(svg, canvas) { filter: drop-shadow(0 0 4px #ffd27a) drop-shadow(0 0 14px rgba(255, 120, 80, .9)); }
 
 /* ---------- Экран пути ---------- */
 .map-hint { position: absolute; top: 96px; width: 100%; text-align: center; font-family: var(--title); font-size: 22px; color: #e6edf8; text-shadow: 0 2px 6px #000; }
@@ -215,8 +215,8 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 @keyframes bob { to { transform: translateY(-4px); } }
 .enemy { position: absolute; left: 50%; top: 70px; width: 250px; height: 260px; margin-left: -125px; transform-origin: 50% 100%; animation: breathe 2.6s ease-in-out infinite; }
 .enemy.boss { width: 320px; height: 300px; margin-left: -160px; top: 56px; }
-.enemy > svg { filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
-.enemy.hit > svg { animation: hit .3s; }
+.enemy > :is(svg, canvas) { filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
+.enemy.hit > :is(svg, canvas) { animation: hit .3s; }
 .enemy.lunge { animation: elunge .3s; }
 .enemy.dying { animation: dying .8s forwards; }
 @keyframes breathe { 50% { transform: scale(1.02, .98); } }
@@ -344,7 +344,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .pendulum { transform-origin: 110px 152px; animation: swing 1.6s ease-in-out infinite alternate; }
 @keyframes swing { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
 
-.enemy.boss > svg { filter: drop-shadow(0 0 10px rgba(210, 200, 255, .35)) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
+.enemy.boss > :is(svg, canvas) { filter: drop-shadow(0 0 10px rgba(210, 200, 255, .35)) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
 
 /* Кнопка настроек */
 #gear { position: absolute; right: 8px; top: 68px; z-index: 12; width: 38px; height: 38px; padding: 3px; border-radius: 50%; background: rgba(20, 24, 38, .75); border: 2px solid var(--gold); }
@@ -653,7 +653,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
 /* ---------- Приёмы врагов ---------- */
 .estatus .s-trait { background: #2f4a6a; }
-.enemy > svg { scale: var(--nest, 1); transform-origin: 50% 100%; transition: scale .35s; }
+.enemy > :is(svg, canvas) { scale: var(--nest, 1); transform-origin: 50% 100%; transition: scale .35s; }
 .it.boom { animation: bob .5s infinite alternate; box-shadow: 0 0 10px rgba(255, 140, 60, .7); }
 /* заточенная карта: плюс голубой, до конца боя */
 .card.sharp .ctitle i { color: #9ad4ff; text-shadow: 0 0 6px rgba(150, 210, 255, .9); }
@@ -819,11 +819,11 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .relicpop .rays { position: absolute; top: -21px; left: 50%; width: 100px; height: 100px; margin-left: -50px; border-radius: 50%; background: repeating-conic-gradient(rgba(255, 220, 140, .55) 0 10deg, transparent 10deg 30deg); -webkit-mask: radial-gradient(closest-side, #000 35%, transparent); mask: radial-gradient(closest-side, #000 35%, transparent); animation: fxspin 3s linear infinite; }
 @keyframes fxrelic { 0% { transform: translateY(16px) scale(.4); opacity: 0; } 18% { transform: scale(1.08); opacity: 1; } 28% { transform: scale(1); } 80% { opacity: 1; } 100% { transform: translateY(-24px); opacity: 0; } }
 /* окраска врага: горит, мёрзнет, слабеет */
-.enemy > svg { transition: filter .25s; }
-.enemy.burning > svg { filter: sepia(.35) saturate(1.7) brightness(1.12) drop-shadow(0 0 10px rgba(255, 130, 40, .95)) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
-.enemy.frosty > svg { filter: sepia(.6) hue-rotate(170deg) saturate(1.4) brightness(1.15) drop-shadow(0 0 9px #bfe3ff) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
-.enemy.withered > svg { filter: sepia(.5) hue-rotate(220deg) saturate(1.2) brightness(.85) drop-shadow(0 0 9px #b08ae0) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
-.enemy-zone.shk { animation: fxshk .34s; }
+.enemy > :is(svg, canvas) { transition: filter .25s; }
+.enemy.burning > :is(svg, canvas) { filter: sepia(.35) saturate(1.7) brightness(1.12) drop-shadow(0 0 10px rgba(255, 130, 40, .95)) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
+.enemy.frosty > :is(svg, canvas) { filter: sepia(.6) hue-rotate(170deg) saturate(1.4) brightness(1.15) drop-shadow(0 0 9px #bfe3ff) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
+.enemy.withered > :is(svg, canvas) { filter: sepia(.5) hue-rotate(220deg) saturate(1.2) brightness(.85) drop-shadow(0 0 9px #b08ae0) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); }
+.enemy-zone.shk { animation: zonein .6s .35s backwards, fxshk .34s; } /* zonein в списке, чтобы не перезапускалась */
 @keyframes fxshk { 20% { transform: translate(var(--shk), 1px); } 40% { transform: translate(calc(var(--shk) * -1), -1px); } 60% { transform: translate(calc(var(--shk) * .6), 1px); } 80% { transform: translate(calc(var(--shk) * -.3), 0); } }
 /* язык в настройках: подпись над тремя вариантами */
 .langrow { flex-wrap: wrap; row-gap: 4px; }
@@ -836,10 +836,10 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
 /* ---------- Разговоры, встречи и реплики врагов (js/lore.js) ---------- */
 .talk-art { width: 170px; height: 170px; margin: 64px auto 0; filter: drop-shadow(0 0 18px rgba(255, 200, 120, .2)); }
-.talk-art > svg { width: 100%; height: 100%; }
+.talk-art > :is(svg, canvas) { width: 100%; height: 100%; }
 .talk-art.tk-boss { width: 210px; height: 190px; margin-top: 56px; filter: drop-shadow(0 0 14px rgba(210, 200, 255, .35)); }
 .talk-art.hero { width: 150px; height: 180px; margin-top: 56px; }
-.talk-art.beaten > svg { opacity: .85; transform: rotate(-7deg) translateY(10px) scale(.92); }
+.talk-art.beaten > :is(svg, canvas) { opacity: .85; transform: rotate(-7deg) translateY(10px) scale(.92); }
 .talk-box { margin-top: 8px; }
 .talk-box p { font-size: 17px; }
 .scr-talk .scrolls, .scr-meet .scrolls { gap: 8px; margin-top: 14px; }
@@ -933,15 +933,15 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 /* карта: картинка заполняет весь круг */
 .cart:has(> svg.card-pic) { padding: 0; overflow: hidden; }
 .cart svg.card-pic { border-radius: 50%; }
-/* живой враг: дыхание уже в раскадровке, удар и гибель тоже нарисованы */
-.enemy:where(:has(> svg.live)) { animation: none; }
-.enemy.hit > svg.live { animation: phit .3s; }
-@keyframes phit { 30% { transform: translateX(8px); filter: brightness(1.5) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); } 60% { transform: translateX(-5px); } }
-.enemy.lunge:has(> svg.live) { animation: plunge .45s; }
-@keyframes plunge { 45% { transform: translateY(22px) scale(1.06); } }
-.enemy.dying:has(> svg.live) { animation: pdying 1.05s forwards; }
+/* живой враг на холсте: дыхание, удар и гибель уже нарисованы в кадрах */
+canvas.live { display: block; width: 100%; height: 100%; }
+.enemy:where(:has(> canvas.live)) { animation: none; }
+.enemy.lunge:has(> canvas.live) { animation: none; }
+.enemy.hit > canvas.live { animation: phit .25s; }
+@keyframes phit { 35% { transform: translateX(5px); filter: brightness(1.35) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); } }
+.enemy.dying:has(> canvas.live) { animation: pdying 1.1s forwards; }
 @keyframes pdying { 80% { opacity: 1; } to { opacity: 0; } }
-svg.live > svg { overflow: hidden; }
+.shopkeeper canvas.live, .enc-char canvas.live { width: 100%; height: 100%; }
 /* иллюстрации событий */
 .ev-pic-wrap { width: 330px; height: 248px; margin: 64px auto 0; border-radius: 8px; overflow: hidden; border: 3px solid var(--ink); box-shadow: inset 0 0 0 2px var(--gold), 0 8px 18px rgba(0, 0, 0, .45); animation: rise .5s backwards; }
 .ev-pic-wrap img, .book-art.pic img { display: block; width: 100%; height: 100%; object-fit: cover; }

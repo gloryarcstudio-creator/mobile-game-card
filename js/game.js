@@ -2190,7 +2190,7 @@
   }
 
   // кадры нарисованного врага: attack | hurt | death (если есть раскадровка)
-  const eAct = (k) => (Art.act ? Art.act($('#enemy'), k) : 0);
+  const eAct = (k) => (Art.act ? Art.act($('#enemy'), k, SETTINGS.fast ? 2 : 1) : 0);
 
   function heroLunge() {
     const p = $('#heroPortrait'); if (!p) return;
@@ -2346,9 +2346,9 @@
           }
           for (let h = 0; h < (it.hits || 1); h++) {
             el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
-            eAct('attack');
+            const strikeMs = eAct('attack'); // урон приходит в момент нарисованного удара
             SND.sfx('enemy');
-            await sleep(180);
+            await sleep(Math.min(560, Math.max(180, strikeMs)));
             const real = await hitHero(enemyDmg(it.v));
             // Упырь пьёт тепло: лечится на прошедший урон
             if (it.leech && real > 0 && e.hp > 0) { const b = e.hp; e.hp = Math.min(e.max, e.hp + real); if (e.hp > b) { SND.sfx('heal'); floatText($('.enemy-fx'), `+${e.hp - b}`, 'healf'); } }
@@ -2362,10 +2362,10 @@
           }
         } else if (it.k === 'boom') {
           el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
-          eAct('attack');
+          const boomMs = eAct('attack');
           SND.sfx('burst');
           floatText($('.enemy-fx'), tr('Бабах!'), 'burnf');
-          await sleep(200);
+          await sleep(Math.min(560, Math.max(200, boomMs)));
           await hitHero(enemyDmg(it.v));
           e.hp = 0; C.boomed = true;
         } else if (it.k === 'sap') { C.sap += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), tr('−{n} {n|энергия|энергии|энергии}', { n: it.v }), 'weakf'); }
@@ -2401,7 +2401,7 @@
     const dl = !C.boomed && lineOf(C.id, 'death');
     if (dl && SETTINGS.lines !== false) { say(dl, 1600); await sleep(800); }
     if (el) { el.classList.add('dying'); eAct('death'); }
-    await sleep(800);
+    await sleep(el && el.querySelector('canvas.live') ? 1050 : 800); // нарисованной гибели нужно чуть больше времени
     const { tier, stolen, hpLost, id, turn, boomed, paid, tie } = C;
     // Ремень для правки: одна заточенная карта остаётся улучшенной
     const sharp = [...C.draw, ...C.hand, ...C.disc, ...C.exh].filter((c) => c.sharp).map((c) => c.uid);

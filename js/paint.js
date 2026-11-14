@@ -101,76 +101,89 @@
   };
 
   /* ---------- Живые враги: раскадровки из роликов ---------- */
+  // Кадры рисуются на <canvas>: холст хранит последний кадр, поэтому враг не мигает
+  // и не пропадает, пока браузер готовит картинку. Атласы грузятся заранее.
   const AN = A.anim || {};
-  const ready = {}; // url -> true, когда атлас загружен и расшифрован
-  function preload(u) {
-    if (ready[u] !== undefined) return;
-    ready[u] = false;
+  const imgs = {}; // url -> Image (готова, когда .ok)
+  function load(u) {
+    if (imgs[u]) return imgs[u];
     const im = new Image();
+    imgs[u] = im;
+    im.ok = false;
+    const done = () => { im.ok = true; };
+    im.onload = () => { if (im.decode) im.decode().then(done, done); else done(); };
     im.src = u;
-    const done = () => { ready[u] = true; };
-    if (im.decode) im.decode().then(done, () => { im.onload = done; if (im.complete) done(); });
-    else im.onload = done;
+    return im;
   }
-  function frameLayer(cls, u, w, h) {
-    return `<svg class="${cls}" x="0" y="0" width="100" height="100" viewBox="0 0 320 320" style="visibility:hidden"><image href="${u}" width="${w}" height="${h}"/></svg>`;
-  }
+  const atlasUrl = (id, part) => url(`${A.ea || 'ea'}/${id}_${part}`); // папка меняется при пересборке атласов
   Art.hasLive = (id) => !!(AN[id] && AN[id].idle);
   Art.enemyLive = (id) => {
     const m = AN[id];
     if (!m || !m.idle || !S.enemy.has(id)) return Art.enemy(id);
-    const iu = url(`ea/${id}_idle`);
-    const au = m.act ? url(`ea/${id}_act`) : '';
-    preload(iu);
-    if (au) preload(au);
-    return `<svg class="foe painted live" viewBox="0 0 100 100" preserveAspectRatio="xMidYMax meet" ${NS} data-live="${id}">
-      <image class="still" href="${url(`e/${id}`)}" width="100" height="100"/>
-      ${frameLayer('fi', iu, m.iw, m.ih)}${au ? frameLayer('fa', au, m.aw, m.ah) : ''}</svg>`;
+    load(url(`e/${id}`));
+    load(atlasUrl(id, 'idle'));
+    if (m.act) load(atlasUrl(id, 'act'));
+    return `<canvas class="foe painted live" data-live="${id}"></canvas>`;
   };
-  // разыграть движение у живого врага внутри el: attack | hurt | death | happy
-  Art.act = (el, kind) => {
-    const sv = el && (el.matches && el.matches('svg.live') ? el : el.querySelector && el.querySelector('svg.live'));
-    if (!sv) return 0;
-    const m = AN[sv.dataset.live];
+  // разыграть движение: attack | hurt | death | happy; speed 2 — ускоренный режим.
+  // Возвращает мс до самой сильной позы (удара) при обычной скорости
+  Art.act = (el, kind, speed = 1) => {
+    const cv = el && (el.matches && el.matches('canvas.live') ? el : el.querySelector && el.querySelector('canvas.live'));
+    if (!cv) return 0;
+    const id = cv.dataset.live; const m = AN[id];
     const a = m && m.act && m.act[kind];
-    if (!a || !ready[url(`ea/${sv.dataset.live}_act`)]) return 0;
-    const st = sv._sp || (sv._sp = {});
+    const st = cv._sp || (cv._sp = { t: performance.now() });
     if (st.dead) return 0;
-    st.act = kind; st.t0 = performance.now(); st.fade = 0;
-    if (kind === 'death') st.dead = true;
-    return (a.n / a.fps) * 1000;
+    if (kind === 'death') st.dead = true; // после гибели покой больше не играем
+    if (!a || !load(atlasUrl(id, 'act')).ok) return 0;
+    st.act = kind; st.t0 = performance.now(); st.sp = speed;
+    return Math.round(((a.hit || 0) / a.fps) * 1000);
   };
-  function setFrame(layerEl, m, i) {
-    const col = i % m.cols; const row = Math.floor(i / m.cols);
-    const vb = `${col * m.fs} ${row * m.fs} ${m.fs} ${m.fs}`;
-    if (layerEl._vb !== vb) { layerEl.setAttribute('viewBox', vb); layerEl._vb = vb; }
+  function fitCanvas(cv) {
+    const r = cv.getBoundingClientRect();
+    if (!r.width || !r.height) return false;
+    const k = Math.min(2, (r.width / (cv.clientWidth || r.width)) * (window.devicePixelRatio || 1));
+    const w = Math.round((cv.clientWidth || r.width) * k);
+    const h = Math.round((cv.clientHeight || r.height) * k);
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; cv._key = ''; }
+    return true;
   }
-  const show = (e, on) => { const v = on ? 'visible' : 'hidden'; if (e && e.style.visibility !== v) e.style.visibility = v; };
-  const FADE = 180;
+  function paint(cv, layers) {
+    // layers: [{im, sx, sy, s, alpha}] — кадр квадратный, вписан по ширине и прижат к низу
+    const key = layers.map((l) => `${l.im.src}|${l.sx}|${l.sy}|${l.alpha}`).join(';');
+    if (cv._key === key) return;
+    cv._key = key;
+    const W = cv.width; const H = cv.height; const d = Math.min(W, H);
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+    for (const l of layers) {
+      ctx.globalAlpha = l.alpha == null ? 1 : l.alpha;
+      ctx.drawImage(l.im, l.sx, l.sy, l.s, l.s, (W - d) / 2, H - d, d, d);
+    }
+    ctx.globalAlpha = 1;
+  }
+  const frameOf = (m, im, i) => ({ im, sx: (i % m.cols) * m.fs, sy: Math.floor(i / m.cols) * m.fs, s: m.fs });
   function tick(now) {
-    const list = document.querySelectorAll('svg.live');
-    for (const sv of list) {
-      const id = sv.dataset.live; const m = AN[id];
-      const st = sv._sp || (sv._sp = { t: now });
-      const fi = sv.querySelector('.fi'); const fa = sv.querySelector('.fa'); const still = sv.querySelector('.still');
-      const idleOk = ready[url(`ea/${id}_idle`)];
-      if (st.act && fa) {
+    const list = document.querySelectorAll('canvas.live');
+    for (const cv of list) {
+      if (!fitCanvas(cv)) continue;
+      const id = cv.dataset.live; const m = AN[id];
+      const st = cv._sp || (cv._sp = { t: now });
+      const idle = imgs[atlasUrl(id, 'idle')]; const act = imgs[atlasUrl(id, 'act')];
+      const still = imgs[url(`e/${id}`)];
+      if (st.act && act && act.ok) {
         const a = m.act[st.act];
-        const k = Math.floor(((now - st.t0) / 1000) * a.fps);
-        if (k < a.n) {
-          setFrame(fa, m, a.o + k); show(fa, true); fa.style.opacity = 1; show(fi, false); show(still, false);
-          continue;
-        }
-        if (st.dead) { setFrame(fa, m, a.o + a.n - 1); show(fa, true); show(fi, false); show(still, false); continue; }
-        // конец движения: короткий переход обратно к покою
-        const f = (now - st.t0 - (a.n / a.fps) * 1000) / FADE;
-        if (f < 1) { setFrame(fa, m, a.o + a.n - 1); show(fa, true); fa.style.opacity = (1 - f).toFixed(2); }
-        else { show(fa, false); fa.style.opacity = 1; st.act = null; }
+        const k = Math.floor(((now - st.t0) / 1000) * a.fps * (st.sp || 1));
+        if (k < a.n || st.dead) { paint(cv, [frameOf(m, act, a.o + Math.min(k, a.n - 1))]); continue; }
+        st.act = null;
       }
-      if (idleOk && fi) {
-        const k = Math.floor((((now - (st.t || 0)) / 1000) * m.idle.fps)) % m.idle.n;
-        setFrame(fi, m, k); show(fi, true); show(still, false);
-      } else show(still, true);
+      if (st.dead) continue;
+      if (idle && idle.ok) {
+        const k = Math.floor(((now - st.t) / 1000) * m.idle.fps) % m.idle.n;
+        paint(cv, [frameOf(m, idle, k)]);
+      } else if (still && still.ok) {
+        paint(cv, [{ im: still, sx: 0, sy: 0, s: still.naturalWidth }]);
+      }
     }
     requestAnimationFrame(tick);
   }

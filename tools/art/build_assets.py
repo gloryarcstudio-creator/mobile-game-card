@@ -93,37 +93,58 @@ def pick(lo, hi, n):
     return [int(round(x)) for x in np.linspace(lo, hi, n)]
 
 FS = 320       # frame size in atlases
+# atlas folder; bump the number when atlases are rebuilt, so browsers do not mix old cached files with new frame counts
+EA_DIR = 'ea2'
 COLS = 8
-ANIMS = {
-    # name: (n frames, fps, mode)
-    'idle': (25, 8, 'loop'),
-    'attack': (14, 14, 'active'),
-    'hurt': (9, 15, 'hurt'),
-    'death': (14, 13, 'active'),
+# idle: whole 3 s loop at 12 fps. One-shot moves are cut so they start and end in
+# the rest pose (forward to the strongest pose, then back), so no cross-fade is needed.
+IDLE_N, IDLE_FPS = 36, 12
+MOVES = {
+    # name: (frames forward, frames back, fps)
+    'attack': (9, 5, 16),
+    'hurt': (5, 3, 16),
+    'happy': (10, 5, 14),
+    'death': (16, 0, 15),
 }
 
-def keyed_frames(path, idx, B=None):
-    fr = vframes(path, 640)
-    if B is None:
-        B = bg_color(fr[0].astype(np.float32))
-    out = []
-    for i in idx:
-        k = key(Image.fromarray(fr[i]), bg=B)
-        out.append(k.resize((FS, FS), Image.LANCZOS))
-    return out, fr, B
+def flashes(fr):
+    """frames that flash white or lose the magenta backdrop (impact bursts look odd once keyed)"""
+    small = fr[:, ::8, ::8].astype(np.int16)
+    white = (small.min(-1) > 225).mean((1, 2))
+    base = np.median(white[:5])
+    B = bg_color(fr[0].astype(np.float32))
+    h, w = small.shape[1:3]; r = max(2, h // 12)
+    ring = np.ones((h, w), bool); ring[r:-r, r:-r] = False
+    off = np.sqrt(((small - B) ** 2).sum(-1)) > 70
+    lost = off[:, ring].mean(1) > 0.45
+    return (white > base * 2 + 0.01) | lost
 
-def select(fr, mode, n):
+def select_idle(fr):
     N = len(fr)
-    if mode == 'loop':
-        # drop the duplicated closing frame so the loop does not stutter
-        return pick(0, N - 1 - (N - 1) / n, n)
+    # drop the duplicated closing frame so the loop does not stutter
+    return pick(0, N - 1 - (N - 1) / IDLE_N, IDLE_N)
+
+def select_move(fr, an):
+    """indices for a one-shot move and the index (in the result) of its strongest pose"""
+    N = len(fr)
+    nf, nb, _ = MOVES.get(an, (10, 5, 14))
     e = energy(fr)
-    act = np.where(e > 1.2)[0]
+    ok = ~flashes(fr)
+    act = np.where((e > 1.2) & ok)[0]
     s = max(0, (act[0] - 2) if len(act) else 0)
-    if mode == 'hurt':
-        end = min(N - 1, s + 42)
-        return pick(s, end, n)
-    return pick(s, N - 1, n)
+    good = [i for i in range(s, N) if ok[i]] or list(range(s, N))
+    if an == 'death' or e[good[-1]] < 5:
+        # plays out fully (death) or already comes back to rest by itself
+        idx = [good[int(round(x))] for x in np.linspace(0, len(good) - 1, nf + nb)]
+        peak = int(np.argmax([e[i] for i in idx]))
+        return idx, peak
+    # strongest pose within the first 80% of the clip
+    lim = good[: max(2, int(len(good) * 0.8))]
+    pk = lim[int(np.argmax([e[i] for i in lim]))]
+    fw = [i for i in good if i <= pk]
+    fwd = [fw[int(round(x))] for x in np.linspace(0, len(fw) - 1, min(nf, len(fw)))]
+    back = [fw[int(round(x))] for x in np.linspace(len(fw) - 1, 0, nb + 2)][1:-1]
+    return fwd + back, len(fwd) - 1
 
 def atlas(frames):
     rows = (len(frames) + COLS - 1) // COLS
@@ -144,29 +165,30 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
         path = src(f'{cid}_{name}.mp4')
         if not os.path.exists(path):
             continue
-        n, fps, mode = ANIMS.get(an, (14, 14, 'active'))
         fr = vframes(path, 640)
         if B is None:
             B = bg_color(fr[0].astype(np.float32))
-        idx = select(fr, mode, n)
+        if an == 'idle':
+            idx, peak = select_idle(fr), 0
+        else:
+            idx, peak = select_move(fr, an)
         frames = [key(Image.fromarray(fr[i]), bg=B).resize((FS, FS), Image.LANCZOS) for i in idx]
         if an == 'death':
             # fade the remains out over the last frames
             for j in range(1, 6):
-                f = frames[-j]
-                a = np.asarray(f).copy()
+                a = np.asarray(frames[-j]).copy()
                 a[..., 3] = (a[..., 3] * (j - 1) / 5).astype(np.uint8)
                 frames[-j] = Image.fromarray(a, 'RGBA')
         if an == 'idle':
             idle_frames = frames
-            meta['idle'] = {'n': len(frames), 'fps': fps}
+            meta['idle'] = {'n': len(frames), 'fps': IDLE_FPS}
         else:
-            act_meta[an] = {'o': len(act_frames), 'n': len(frames), 'fps': fps}
+            act_meta[an] = {'o': len(act_frames), 'n': len(frames), 'fps': MOVES.get(an, (0, 0, 14))[2], 'hit': peak}
             act_frames += frames
     if idle_frames:
-        save(atlas(idle_frames), f'ea/{cid}_idle.webp', 76, 70)
+        save(atlas(idle_frames), f'{EA_DIR}/{cid}_idle.webp', 76, 70)
     if act_frames:
-        save(atlas(act_frames), f'ea/{cid}_act.webp', 76, 70)
+        save(atlas(act_frames), f'{EA_DIR}/{cid}_act.webp', 76, 70)
         meta['act'] = act_meta
     meta['bg'] = [round(float(x)) for x in B] if B is not None else None
     return cid, meta
