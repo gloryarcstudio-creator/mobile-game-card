@@ -147,25 +147,43 @@
   }
   const atlasUrl = (id, part) => url(`${A.ea || 'ea'}/${id}_${part}`); // папка меняется при пересборке атласов
   Art.hasLive = (id) => !!(AN[id] && AN[id].idle);
+  // атласы прежних врагов выгружаем: каждый занимает в памяти десятки мегабайт
+  function keepOnly(ids) {
+    for (const u of Object.keys(imgs)) {
+      if (u.includes(`/${A.ea || 'ea'}/`) && !ids.some((i) => u.includes(`/${i}_`))) delete imgs[u];
+    }
+  }
+  const parts = (m) => [...new Set(Object.values(m.act || {}).map((a) => a.f || 'act'))];
   Art.enemyLive = (id) => {
     const m = AN[id];
     if (!m || !m.idle || !S.enemy.has(id)) return Art.enemy(id);
+    keepOnly([id, ...[...document.querySelectorAll('canvas.live')].map((c) => c.dataset.live)]);
     load(url(`e/${id}`));
     load(atlasUrl(id, 'idle'));
-    if (m.act) load(atlasUrl(id, 'act'));
+    parts(m).forEach((p) => load(atlasUrl(id, p)));
     return `<canvas class="foe painted live${ALOFT.has(id) ? ' aloft' : ''}" data-live="${id}"></canvas>`;
+  };
+  const liveOf = (el) => el && (el.matches && el.matches('canvas.live') ? el : el.querySelector && el.querySelector('canvas.live'));
+  // длина движения в тиках: у гибели своя последовательность кадров (seq), кадр может держаться два тика
+  const ticks = (a) => (a.seq ? a.seq.length : a.n);
+  // сколько мс займёт движение целиком; 0, если его нет или атлас ещё не загрузился
+  Art.actDur = (el, kind, speed = 1) => {
+    const cv = liveOf(el); const m = cv && AN[cv.dataset.live];
+    const a = m && m.act && m.act[kind];
+    if (!a || !load(atlasUrl(cv.dataset.live, a.f || 'act')).ok) return 0;
+    return Math.round((ticks(a) / a.fps / speed) * 1000);
   };
   // разыграть движение: attack | hurt | death | happy; speed 2 — ускоренный режим.
   // Возвращает мс до самой сильной позы (удара) при обычной скорости
   Art.act = (el, kind, speed = 1) => {
-    const cv = el && (el.matches && el.matches('canvas.live') ? el : el.querySelector && el.querySelector('canvas.live'));
+    const cv = liveOf(el);
     if (!cv) return 0;
     const id = cv.dataset.live; const m = AN[id];
     const a = m && m.act && m.act[kind];
     const st = cv._sp || (cv._sp = { t: performance.now() });
     if (st.dead) return 0;
     if (kind === 'death') st.dead = true; // после гибели покой больше не играем
-    if (!a || !load(atlasUrl(id, 'act')).ok) return 0;
+    if (!a || !load(atlasUrl(id, a.f || 'act')).ok) return 0;
     st.act = kind; st.t0 = performance.now(); st.sp = speed;
     return Math.round(((a.hit || 0) / a.fps) * 1000);
   };
@@ -200,14 +218,16 @@
       if (!fitCanvas(cv)) continue;
       const id = cv.dataset.live; const m = AN[id];
       const st = cv._sp || (cv._sp = { t: now });
-      const idle = imgs[atlasUrl(id, 'idle')]; const act = imgs[atlasUrl(id, 'act')];
+      const idle = imgs[atlasUrl(id, 'idle')];
       const still = imgs[url(`e/${id}`)];
-      if (st.act && act && act.ok) {
-        const a = m.act[st.act];
+      const a = st.act && m.act[st.act];
+      const act = a && imgs[atlasUrl(id, a.f || 'act')];
+      if (act && act.ok) {
+        const T = ticks(a);
         const k = Math.floor(((now - st.t0) / 1000) * a.fps * (st.sp || 1));
-        if (k < a.n || st.dead) { paint(cv, [frameOf(m, act, a.o + Math.min(k, a.n - 1))]); continue; }
+        if (k < T || st.dead) { const j = Math.min(k, T - 1); paint(cv, [frameOf(m, act, a.o + (a.seq ? a.seq[j] : j))]); continue; }
         st.act = null;
-      }
+      } else if (st.act) st.act = null;
       if (st.dead) continue;
       if (idle && idle.ok) {
         const k = Math.floor(((now - st.t) / 1000) * m.idle.fps) % m.idle.n;

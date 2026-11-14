@@ -2415,8 +2415,11 @@
     const el = $('#enemy');
     const dl = !C.boomed && lineOf(C.id, 'death');
     if (dl && SETTINGS.lines !== false) { say(dl, 1600); await sleep(800); }
-    if (el) { el.classList.add('dying'); eAct('death'); }
-    await sleep(el && el.querySelector('canvas.live') ? 1050 : 800); // нарисованной гибели нужно чуть больше времени
+    // нарисованная гибель играет до конца (останки сами тают), иначе прежнее растворение
+    const sp = SETTINGS.fast ? 2 : 1;
+    const dur = el && Art.actDur ? Art.actDur(el, 'death', sp) : 0;
+    if (el && dur) { el.style.setProperty('--dd', `${dur}ms`); el.classList.add('dying', 'drawn'); eAct('death'); await sleep(dur + 200); }
+    else { if (el) el.classList.add('dying'); await sleep(800); }
     const { tier, stolen, hpLost, id, turn, boomed, paid, tie } = C;
     // Ремень для правки: одна заточенная карта остаётся улучшенной
     const sharp = [...C.draw, ...C.hand, ...C.disc, ...C.exh].filter((c) => c.sharp).map((c) => c.uid);

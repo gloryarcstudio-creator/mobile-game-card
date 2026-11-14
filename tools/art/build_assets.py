@@ -94,7 +94,7 @@ def pick(lo, hi, n):
 
 FS = 320       # frame size in atlases
 # atlas folder; bump the number when atlases are rebuilt, so browsers do not mix old cached files with new frame counts
-EA_DIR = 'ea2'
+EA_DIR = 'ea3'
 COLS = 8
 # idle: whole 3 s loop at 12 fps. One-shot moves are cut so they start and end in
 # the rest pose (forward to the strongest pose, then back), so no cross-fade is needed.
@@ -104,8 +104,9 @@ MOVES = {
     'attack': (9, 5, 16),
     'hurt': (5, 3, 16),
     'happy': (10, 5, 14),
-    'death': (16, 0, 15),
 }
+# death: only the action itself, at the clip's own 24 fps, at most 40 ticks (1.7 s), in its own atlas
+DEATH_TICKS, DEATH_FPS = 40, 24
 
 def flashes(fr):
     """frames that flash white or lose the magenta backdrop (impact bursts look odd once keyed)"""
@@ -146,6 +147,70 @@ def select_move(fr, an):
     back = [fw[int(round(x))] for x in np.linspace(len(fw) - 1, 0, nb + 2)][1:-1]
     return fwd + back, len(fwd) - 1
 
+def lost_backdrop(f, B):
+    """one frame: the magenta backdrop is gone from the border (a full-screen burst)"""
+    small = f[::8, ::8].astype(np.int16)
+    h, w = small.shape[:2]; r = max(2, h // 12)
+    ring = np.ones((h, w), bool); ring[r:-r, r:-r] = False
+    off = np.sqrt(((small - B) ** 2).sum(-1)) > 70
+    return off[ring].mean() > 0.45
+
+def edge_mask(n):
+    r = np.clip(np.minimum(np.arange(n), np.arange(n)[::-1]) / (n * 0.07), 0, 1)
+    return np.minimum.outer(r, r)
+
+def clean_death(im, mult):
+    a = np.asarray(im).copy()
+    al = a[..., 3].astype(np.float32)
+    al[al < 56] = 0                      # faint leftovers of the backdrop (showed as grey boxes)
+    al *= edge_mask(al.shape[0]) * mult  # no hard lines where pieces fly out of the frame; fade at the end
+    a[..., 3] = al.astype(np.uint8)
+    return Image.fromarray(a, 'RGBA')
+
+def select_death(fr, B0):
+    """unique frames, the tick sequence (DEATH_FPS) that plays them, and the tick of the strongest motion.
+    Skips the calm lead-in, keeps steam, snow and sparks (no flash filter), stops when the remains settle
+    or vanish, keys every frame against its own backdrop (the light changes during bursts)."""
+    N = len(fr)
+    Bs = []
+    for f in fr:
+        b = bg_color(f.astype(np.float32))
+        Bs.append(b if np.linalg.norm(b - B0) < 60 else B0)
+    small = fr[:, ::8, ::8].astype(np.float32)
+    d = np.r_[0, np.abs(np.diff(small, axis=0)).mean((1, 2, 3))]
+    ds = np.convolve(d, np.ones(5) / 5, 'same')
+    lost = np.array([lost_backdrop(f, b) for f, b in zip(fr, Bs)])
+    big = np.where(ds > ds.max() * 0.35)[0]
+    st = max(0, (big[0] if len(big) else 0) - 6)
+    cov = np.array([(np.sqrt(((s_ - b) ** 2).sum(-1)) > 60).mean() for s_, b in zip(small, Bs)])
+    c0 = cov[:st + 1].mean() or 1
+    act = np.where(ds > ds[st:].max() * 0.12)[0]
+    en = min(N - 1, (act[-1] + 4) if len(act) else N - 1)
+    gone = [i for i in range(st + 6, N) if cov[i] < c0 * 0.06]
+    if gone: en = min(en, gone[0] + 3)
+    src = list(range(st, en + 1))
+    if len(src) > DEATH_TICKS:
+        src = [src[int(round(x))] for x in np.linspace(0, len(src) - 1, DEATH_TICKS)]
+    # a run of bursts at the very end is cut (the remains fade before it);
+    # a burst frame in the middle is replaced by the previous good one
+    while len(src) > 8 and lost[src[-1]]: src.pop()
+    for k in range(len(src)):
+        if lost[src[k]] and k: src[k] = src[k - 1]
+    # the clips often repeat each frame twice: store a frame once, play it twice
+    uniq, seq = [], []
+    for i in src:
+        if uniq and (i == uniq[-1] or np.abs(small[i] - small[uniq[-1]]).mean() < 1.2):
+            seq.append(len(uniq) - 1)
+        else:
+            uniq.append(i); seq.append(len(uniq) - 1)
+    T = len(seq); fade = min(8, max(4, T // 5))
+    mult = {}
+    for k, u in enumerate(seq):
+        mult[u] = min(1, (T - 1 - k) / fade)
+    frames = [clean_death(key(Image.fromarray(fr[i]), bg=Bs[i]).resize((FS, FS), Image.LANCZOS), mult[u]) for u, i in enumerate(uniq)]
+    peak = int(np.argmax([ds[i] for i in src]))
+    return frames, seq, peak
+
 def atlas(frames):
     rows = (len(frames) + COLS - 1) // COLS
     at = Image.new('RGBA', (COLS * FS, rows * FS), (0, 0, 0, 0))
@@ -168,17 +233,16 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
         fr = vframes(path, 640)
         if B is None:
             B = bg_color(fr[0].astype(np.float32))
+        if an == 'death':
+            frames, seq, peak = select_death(fr, B)
+            save(atlas(frames), f'{EA_DIR}/{cid}_die.webp', 76, 70)
+            act_meta[an] = {'f': 'die', 'o': 0, 'n': len(frames), 'fps': DEATH_FPS, 'hit': peak, 'seq': seq}
+            continue
         if an == 'idle':
             idx, peak = select_idle(fr), 0
         else:
             idx, peak = select_move(fr, an)
         frames = [key(Image.fromarray(fr[i]), bg=B).resize((FS, FS), Image.LANCZOS) for i in idx]
-        if an == 'death':
-            # fade the remains out over the last frames
-            for j in range(1, 6):
-                a = np.asarray(frames[-j]).copy()
-                a[..., 3] = (a[..., 3] * (j - 1) / 5).astype(np.uint8)
-                frames[-j] = Image.fromarray(a, 'RGBA')
         if an == 'idle':
             idle_frames = frames
             meta['idle'] = {'n': len(frames), 'fps': IDLE_FPS}
@@ -189,6 +253,7 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
         save(atlas(idle_frames), f'{EA_DIR}/{cid}_idle.webp', 76, 70)
     if act_frames:
         save(atlas(act_frames), f'{EA_DIR}/{cid}_act.webp', 76, 70)
+    if act_meta:
         meta['act'] = act_meta
     meta['bg'] = [round(float(x)) for x in B] if B is not None else None
     return cid, meta

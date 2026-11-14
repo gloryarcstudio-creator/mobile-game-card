@@ -939,8 +939,9 @@ canvas.live { display: block; width: 100%; height: 100%; }
 .enemy.lunge:has(> canvas.live) { animation: none; }
 .enemy.hit > canvas.live { animation: phit .25s; }
 @keyframes phit { 35% { transform: translateX(5px); filter: brightness(1.35) drop-shadow(0 12px 10px rgba(0, 0, 0, .45)); } }
-.enemy.dying:has(> canvas.live) { animation: pdying 1.1s forwards; }
-@keyframes pdying { 80% { opacity: 1; } to { opacity: 0; } }
+/* нарисованная гибель: кадры сами тают, тень на снегу гаснет вместе с врагом */
+.enemy.dying.drawn, #app.fast .enemy.dying.drawn { animation: none; }
+.enemy.dying.drawn::before { opacity: 0; transition: opacity var(--dd, 1s) cubic-bezier(.6, 0, .9, .6); }
 .shopkeeper canvas.live, .enc-char canvas.live { width: 100%; height: 100%; }
 /* иллюстрации событий */
 .ev-pic-wrap { width: 330px; height: 248px; margin: 64px auto 0; border-radius: 8px; overflow: hidden; border: 3px solid var(--ink); box-shadow: inset 0 0 0 2px var(--gold), 0 8px 18px rgba(0, 0, 0, .45); animation: rise .5s backwards; }
