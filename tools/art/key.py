@@ -60,3 +60,64 @@ def fit(im, size, pad=0.04, anchor='bottom', box=None):
     y = (H - nh - round(size * pad)) if anchor == 'bottom' else (H - nh) // 2
     can.alpha_composite(c, (x, y))
     return can
+
+# ---------- effects keyed against the magenta backdrop ----------
+# Smoke, fog, dust and sparks in the clips are translucent, so they pick up the magenta
+# backdrop; the plain distance key then leaves them purple. The screen key reads every pixel
+# as a mix of a non-magenta colour and the backdrop (share = magenta excess min(R,B) - G).
+# The character's own colours (body palette from calm idle frames) keep the plain key, so
+# violet wings or a purple cloak stay as drawn.
+Q = 16
+
+def key_screen(img, bg):
+    a = np.asarray(img.convert('RGB')).astype(np.float32)
+    B = np.array(bg, np.float32)
+    SB = max(1.0, min(B[0], B[2]) - B[1])
+    s = np.clip(np.minimum(a[..., 0], a[..., 2]) - a[..., 1], 0, None)
+    k = np.clip(s / SB, 0, 1)
+    al = 1 - k
+    C = (a - k[..., None] * B) / np.maximum(al, 1e-3)[..., None]
+    C = np.clip(np.where(al[..., None] > 0.02, C, 0), 0, 255)
+    return Image.fromarray(np.dstack([C, al * 255]).astype(np.uint8), 'RGBA')
+
+def tint(raw):
+    """how much a raw pixel leans to the backdrop's own hue: magenta excess with R close to B"""
+    s = np.clip(np.minimum(raw[..., 0], raw[..., 2]) - raw[..., 1], 0, None)
+    return np.clip(1 - np.abs(raw[..., 0] - raw[..., 2]) / (0.5 * s + 12), 0, 1) * (s > 8)
+
+def body_palette(frames, bg, min_count=12):
+    """raw colours of the character's body in calm frames, without magenta-tinted edge pixels"""
+    cnt = np.zeros((256 // Q,) * 3, np.int32)
+    for f in frames:
+        k = np.asarray(key(Image.fromarray(f), bg=bg))[..., 3] > 230
+        k &= tint(f.astype(np.float32)) < 0.5
+        q = (f[k] // Q).astype(np.int32)
+        np.add.at(cnt, (q[:, 0], q[:, 1], q[:, 2]), 1)
+    return cnt >= min_count
+
+def key_fx(img, bg, pal):
+    """plain key for the body's own colours, screen key for everything else"""
+    raw = np.asarray(img.convert('RGB'))
+    q = (raw // Q).astype(np.int32)
+    # a magenta-tinted pixel is smoke or spill over the backdrop even when its colour bin is the body's
+    prot = pal[q[..., 0], q[..., 1], q[..., 2]] & (tint(raw.astype(np.float32)) < 0.5)
+    n = np.asarray(key(img, bg=bg)); s = np.asarray(key_screen(img, bg))
+    return Image.fromarray(np.where(prot[..., None], n, s), 'RGBA')
+
+def figure_tint(raw, bg):
+    """share of the non-backdrop pixels that lean to the backdrop's hue (rises when a body fades into it)"""
+    f = raw.astype(np.float32)
+    off = np.sqrt(((f - np.asarray(bg, np.float32)) ** 2).sum(-1)) > 60
+    return float((tint(f)[off] >= 0.5).mean()) if off.any() else 0.0
+
+def key_fade(img, bg, base):
+    """plain key while the body is solid; screen key once it turns see-through over the backdrop
+    (a see-through body mixes with magenta into colours no palette can tell from its own)"""
+    n = np.asarray(key(img, bg=bg)).astype(np.float32)
+    w = float(np.clip((figure_tint(np.asarray(img.convert("RGB")), bg) - base) / 0.08, 0, 1))
+    if w <= 0:
+        return Image.fromarray(n.astype(np.uint8), 'RGBA')
+    s = np.asarray(key_screen(img, bg)).astype(np.float32)
+    a = n[..., 3:] * (1 - w) + s[..., 3:] * w
+    c = (n[..., :3] * n[..., 3:] * (1 - w) + s[..., :3] * s[..., 3:] * w) / np.maximum(a, 1e-3)
+    return Image.fromarray(np.dstack([np.clip(c, 0, 255), a]).astype(np.uint8), 'RGBA')

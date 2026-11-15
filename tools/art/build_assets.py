@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 from multiprocessing import Pool
-from key import key, bbox, fit, bg_color
+from key import key, bbox, fit, bg_color, body_palette, key_fx, key_screen, key_fade, figure_tint
 
 SRC, REPO = sys.argv[1], sys.argv[2]
 ONLY = sys.argv[3:]
@@ -94,7 +94,7 @@ def pick(lo, hi, n):
 
 FS = 320       # frame size in atlases
 # atlas folder; bump the number when atlases are rebuilt, so browsers do not mix old cached files with new frame counts
-EA_DIR = 'ea3'
+EA_DIR = 'ea4'
 COLS = 8
 # idle: whole 3 s loop at 12 fps. One-shot moves are cut so they start and end in
 # the rest pose (forward to the strongest pose, then back), so no cross-fade is needed.
@@ -105,6 +105,11 @@ MOVES = {
     'hurt': (5, 3, 16),
     'happy': (10, 5, 14),
 }
+# dark heroes and the moth are violet by design: their moves keep the plain key everywhere,
+# their deaths switch to the screen key only while the body fades into the backdrop (it turned pink)
+PLAIN_KEY = ('dk_', 'moth')
+# the fog maiden's own lavender would shield her purple fog: her moves use the screen key everywhere
+SCREEN_KEY = ('mist',)
 # death: only the action itself, at the clip's own 24 fps, at most 40 ticks (1.7 s), in its own atlas
 DEATH_TICKS, DEATH_FPS = 40, 24
 
@@ -167,7 +172,7 @@ def clean_death(im, mult):
     a[..., 3] = al.astype(np.uint8)
     return Image.fromarray(a, 'RGBA')
 
-def select_death(fr, B0):
+def select_death(fr, B0, keyer=None):
     """unique frames, the tick sequence (DEATH_FPS) that plays them, and the tick of the strongest motion.
     Skips the calm lead-in, keeps steam, snow and sparks (no flash filter), stops when the remains settle
     or vanish, keys every frame against its own backdrop (the light changes during bursts)."""
@@ -207,7 +212,8 @@ def select_death(fr, B0):
     mult = {}
     for k, u in enumerate(seq):
         mult[u] = min(1, (T - 1 - k) / fade)
-    frames = [clean_death(key(Image.fromarray(fr[i]), bg=Bs[i]).resize((FS, FS), Image.LANCZOS), mult[u]) for u, i in enumerate(uniq)]
+    keyer = keyer or (lambda im, bg: key(im, bg=bg))
+    frames = [clean_death(keyer(Image.fromarray(fr[i]), Bs[i]).resize((FS, FS), Image.LANCZOS), mult[u]) for u, i in enumerate(uniq)]
     peak = int(np.argmax([ds[i] for i in src]))
     return frames, seq, peak
 
@@ -225,6 +231,7 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
     idle_frames = None
     act_frames, act_meta = [], {}
     B = None
+    pal = None
     for an in sets:
         name = alt.get(an, an)
         path = src(f'{cid}_{name}.mp4')
@@ -233,8 +240,18 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
         fr = vframes(path, 640)
         if B is None:
             B = bg_color(fr[0].astype(np.float32))
+        if an == 'idle':
+            pal = body_palette(fr[::4], B)
+        # moves and deaths: smoke and sparks lose the magenta tint, the body keeps its colours
+        if cid in SCREEN_KEY: keyer = lambda im, bg: key_screen(im, bg)
+        elif cid.startswith(PLAIN_KEY) or pal is None: keyer = lambda im, bg: key(im, bg=bg)
+        else: keyer = lambda im, bg, p=pal: key_fx(im, bg, p)
+        if an == 'death' and cid.startswith(PLAIN_KEY):
+            # the usual share while the body is solid: first 60% of the clip, upper quartile
+            base = float(np.percentile([figure_tint(f, B) for f in fr[: max(5, int(len(fr) * 0.6))]], 75))
+            keyer = lambda im, bg, b0=base: key_fade(im, bg, b0)
         if an == 'death':
-            frames, seq, peak = select_death(fr, B)
+            frames, seq, peak = select_death(fr, B, keyer)
             save(atlas(frames), f'{EA_DIR}/{cid}_die.webp', 76, 70)
             act_meta[an] = {'f': 'die', 'o': 0, 'n': len(frames), 'fps': DEATH_FPS, 'hit': peak, 'seq': seq}
             continue
@@ -242,7 +259,8 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
             idx, peak = select_idle(fr), 0
         else:
             idx, peak = select_move(fr, an)
-        frames = [key(Image.fromarray(fr[i]), bg=B).resize((FS, FS), Image.LANCZOS) for i in idx]
+        kf = (lambda im: key(im, bg=B)) if an == 'idle' else (lambda im: keyer(im, B))
+        frames = [kf(Image.fromarray(fr[i])).resize((FS, FS), Image.LANCZOS) for i in idx]
         if an == 'idle':
             idle_frames = frames
             meta['idle'] = {'n': len(frames), 'fps': IDLE_FPS}
@@ -321,5 +339,9 @@ if __name__ == '__main__':
         for j, r in p.imap_unordered(run, J):
             res[f'{j[0]}:{j[1]}'] = r
             if isinstance(r, str) and r.startswith('ERR'): print(j, r, flush=True)
-    json.dump(res, open(os.path.join(OUT, '_build.json'), 'w'), indent=1)
+    # a filtered run keeps the records of everything it did not rebuild
+    bj = os.path.join(OUT, '_build.json')
+    old = json.load(open(bj)) if ONLY and os.path.exists(bj) else {}
+    old.update(res)
+    json.dump(old, open(bj, 'w'), indent=1)
     print('done', len(res))
