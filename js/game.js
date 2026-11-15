@@ -131,6 +131,11 @@
   const STATS_DEF = { runs: 0, wins: 0, losses: 0, best: 0, fights: 0, elites: 0, bosses: 0, cards: 0 };
   const STATS = loadJSON(STATS_KEY, STATS_DEF);
   const saveStats = () => { saveJSON(STATS_KEY, STATS); achCheck(); };
+  // итоги законченных забегов, новые сверху (экран «Статистика»)
+  const RUNS_KEY = 'lastray.runs';
+  const RUNS_MAX = 30;
+  const RUNS = loadJSON(RUNS_KEY, { list: [] });
+  if (!Array.isArray(RUNS.list)) RUNS.list = [];
 
   /* ---------- Достижения ---------- */
   // c — счётчики и флаги, s — наборы (разные карты, талисманы, противники), got — когда получено,
@@ -300,6 +305,38 @@
   let busy = false; // блокировка ввода на время анимаций
   let selected = -1;
 
+  /* ---------- Итоги забега: счётчики текущего забега (run.st) ----------
+     ms — время в пути (пауза больше 2 минут считается за 2), dmg — урон врагам, hit — сильнейший удар,
+     taken — потеряно HP, healed — вылечено, cards — сыграно карт, gold и spent — монеты собраны и потрачены,
+     by — кто остановил героя, revives — сколько раз бой начинали заново */
+  const stNew = () => ({ ms: 0, last: Date.now(), dmg: 0, hit: 0, taken: 0, healed: 0, cards: 0, gold: 0, spent: 0, elites: 0, bosses: 0, revives: 0 });
+  const stAdd = (k, n = 1) => { if (run && run.st && n > 0) run.st[k] = (run.st[k] || 0) + n; };
+  function stTick() {
+    const s = run && run.st;
+    if (!s) return;
+    const now = Date.now();
+    s.ms += Math.max(0, Math.min(now - (s.last || now), 120000));
+    s.last = now;
+  }
+  const gain = (n) => { run.gold += n; if (n > 0) stAdd('gold', n); else stAdd('spent', -n); };
+  const spend = (n) => { run.gold -= n; stAdd('spent', n); };
+  // монеты, которые событие поменяло само (в data.js: r.gold -= 15), без уже учтённых gain и spend
+  const stMark = () => ({ g: run.gold, a: run.st ? run.st.gold : 0, b: run.st ? run.st.spent : 0 });
+  function stGoldSince(m) {
+    if (!run || !run.st) return;
+    const rest = (run.gold - m.g) - ((run.st.gold - m.a) - (run.st.spent - m.b));
+    if (rest > 0) stAdd('gold', rest); else stAdd('spent', -rest);
+  }
+  // после «Начать бой заново» забег возвращается к снимку, но время, урон и сыгранные карты остаются
+  function keepSt(prev) {
+    if (!prev) return;
+    const s = run.st || (run.st = stNew());
+    ['ms', 'dmg', 'hit', 'taken', 'healed', 'cards'].forEach((k) => { s[k] = Math.max(s[k] || 0, prev[k] || 0); });
+    s.revives = (prev.revives || 0) + 1;
+    s.last = Date.now();
+    delete s.by;
+  }
+
   function newRun(cls = SETTINGS.cls, diff = SETTINGS.diff) {
     snapFight = null; snapStep = null;
     STATS.runs++; saveStats();
@@ -319,6 +356,7 @@
       meetPlan: planMeetings(cls),
       // враги, которых победили, и те, с кем обошлись по-доброму (связи врагов, js/lore.js ETIES)
       killed: [], kind: [],
+      st: stNew(),
     };
     codexMark('h', cls);
     setBg();
@@ -333,6 +371,7 @@
   const SAVE_KEY = `lastray.save.${STORY_ID}`;
   function save(pending = null) {
     if (!run) return;
+    stTick();
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 1, run, pending, at: Date.now() })); } catch (e) { /* хранилище недоступно */ }
   }
   function loadSave() {
@@ -344,6 +383,8 @@
     const s = loadSave();
     if (!s) { goTitle(); return; }
     run = s.run; C = null;
+    if (!run.st) run.st = stNew();
+    run.st.last = Date.now();
     // сохранения до появления героев — это забег Ивы
     if (!run.cls) { run.cls = 'lamp'; if (!run.relics.includes('ivalamp')) run.relics.unshift('ivalamp'); }
     uidSeq = Math.max(uidSeq, ...run.deck.map((c) => c.uid + 1));
@@ -490,12 +531,13 @@
     screen.className = 'scr-title';
     screen.innerHTML = `
       <div class="logo"><small>${tr('почтовая сказка')}</small><h1${STORY.title.length > 14 ? ' class="long"' : ''}>${STORY.title}</h1></div>
-      <div class="title-hero">${heroArt(s ? (s.run.cls || 'lamp') : SETTINGS.cls)}</div>
+      <div class="title-hero${s ? ' small' : ''}">${heroArt(s ? (s.run.cls || 'lamp') : SETTINGS.cls)}</div>
       <div class="menu">
         ${s ? `<button class="btn big" data-act="continue">${tr('Продолжить')}<small>${info}</small></button>` : ''}
         <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">${tr('Новая игра')}</button>
         <button class="btn ghost achbtn" data-act="ach">${ICO.medal}<span>${tr('Достижения')}<small>${tr('{a} из {b}', { a: achCount(), b: ACH_LIST.length })}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
         <button class="btn ghost achbtn" data-act="codex">${ICO.book}<span>${tr('База знаний')}<small>${tr('{a} из {b}', { a: codexCount(), b: codexTotal })}</small></span></button>
+        <button class="btn ghost achbtn" data-act="stats">${ICO.stats}<span>${tr('Статистика')}<small>${RUNS.list.length ? tr('Забегов: {a} · доставлено писем: {b}', { a: STATS.runs, b: STATS.wins }) : tr('Итоги твоих забегов')}</small></span></button>
         <button class="btn ghost achbtn storebtn" data-act="store">${ICO.gift}<span>${tr('Магазин')}<small>${tr('Герои и режим без рекламы')}</small></span></button>
         <div class="menu-row"><button class="btn ghost" data-act="gloss">${tr('Справочник')}</button><button class="btn ghost" data-act="settings">${tr('Настройки')}</button></div>
       </div>
@@ -631,7 +673,7 @@
       if (act === 's-close') hideOverlay();
       if (act === 's-gloss') showGlossary(showSettings);
       if (act === 's-ach') showAchievements(showSettings);
-      if (act === 's-stats') showStats();
+      if (act === 's-stats') showStats(showSettings);
       if (act === 's-reset') askReset();
     };
     render();
@@ -855,15 +897,66 @@
     render(0);
   }
 
-  function showStats() {
-    const rows = [
-      ['Забегов начато', STATS.runs], ['Писем доставлено', STATS.wins], ['Поражений', STATS.losses],
-      ['Лучший уровень', STATS.best ? tr('{a} из {b}', { a: STATS.best, b: MAX_STEPS }) : '—'], ['Побед в боях', STATS.fights],
-      ['Побеждено элит', STATS.elites], ['Побеждено боссов', STATS.bosses], ['Сыграно карт', STATS.cards],
-    ];
-    showOverlay(`<div class="settings small"><div class="sribbon">${tr('Статистика')}</div>
-      <dl class="statlist">${rows.map(([k, v]) => `<dt>${tr(k)}</dt><dd>${v}</dd>`).join('')}</dl>
-      <button class="btn" data-act="back">${tr('Назад')}</button></div>`, (e) => { if (e.target.closest('[data-act="back"]')) showSettings(); });
+  /* Статистика: общие итоги и рекорды, а во второй вкладке — прошлые забеги с подробными итогами */
+  function showStats(back) {
+    let tab = 'sum';
+    let open = -1;
+    const close = () => { if (back) back(); else { hideOverlay(); if (screen.className === 'scr-title') goTitle(); } };
+    const list = RUNS.list;
+    const best = (k) => list.reduce((m, r) => Math.max(m, r[k] || 0), 0);
+    const totals = () => {
+      const rows = [
+        ['Забегов начато', fmt(STATS.runs)], ['Писем доставлено', fmt(STATS.wins)], ['Поражений', fmt(STATS.losses)],
+        ['Лучший уровень', STATS.best ? tr('{a} из {b}', { a: STATS.best, b: MAX_STEPS }) : '—'], ['Побед в боях', fmt(STATS.fights)],
+        ['Побеждено элит', fmt(STATS.elites)], ['Побеждено боссов', fmt(STATS.bosses)], ['Сыграно карт', fmt(STATS.cards)],
+        ['Урон врагам', fmt(STATS.dmg || 0)], ['Монет собрано', fmt(STATS.gold || 0)], ['Время в пути', STATS.ms ? fmtTime(STATS.ms) : '—'],
+      ];
+      const recs = [
+        ['Самая быстрая доставка', STATS.fast ? fmtTime(STATS.fast) : '—'],
+        ['Сильнейший удар', fmt(Math.max(ACH.c.maxhit || 0, best('hit')))],
+        ['Больше всего урона за забег', fmt(Math.max(STATS.runDmg || 0, best('dmg')))],
+        ['Больше всего побед за забег', fmt(best('fights'))],
+      ];
+      const dl = (r) => `<dl class="statlist">${r.map(([k, v]) => `<dt>${tr(k)}</dt><dd>${v}</dd>`).join('')}</dl>`;
+      return `<h4 class="cxgroup">${tr('Всего')}</h4>${dl(rows)}<h4 class="cxgroup">${tr('Рекорды')}</h4>${dl(recs)}`;
+    };
+    const runRow = (r, i) => {
+      const cls = CLASSES[r.cls] ? r.cls : 'lamp';
+      const d = DIFFICULTIES[r.diff] || DIFFICULTIES[1];
+      return `<button class="runrow ${r.win ? 'win' : 'lose'}" data-run="${i}" style="--d:${Math.min(i, 8) * 40}ms">
+        <span class="runface">${heroFace(cls)}</span>
+        <span class="runtext"><b>${CLASSES[cls].name}</b><small>${d.name}</small><small>${tr('Уровень {a} из {b}', { a: r.lvl, b: MAX_STEPS })} · ${fmtTime(r.ms)}</small></span>
+        <span class="runres"><em>${r.win ? tr('Доставлено') : tr('Поражение')}</em><small>${fmtDate(r.at)}</small></span>
+      </button>`;
+    };
+    const runs = () => (open >= 0 && list[open]
+      ? `<button class="cxback" data-act="st-back">← ${tr('Все забеги')}</button>${summaryHTML(list[open])}`
+      : list.length ? list.map(runRow).join('') : `<p class="stempty">${tr('Здесь появятся итоги законченных забегов.')}</p>`);
+    showOverlay(`<div class="achp statp">
+      <div class="achhead">
+        <span class="achtag">${ICO.stats}${tr('Статистика')}</span>
+        <button class="sclose" data-act="st-close" aria-label="${tr('Закрыть')}">✕</button>
+      </div>
+      <div class="achlist"></div>
+      <div class="achtabs">
+        <button data-tab="sum"><span>${tr('Итоги')}</span><small>${tr('всё время')}</small></button>
+        <button data-tab="runs"><span>${tr('Забеги')}</span><small>${tr('последние {n}', { n: list.length })}</small></button>
+      </div>
+    </div>`, (e) => {
+      const b = e.target.closest('[data-act], [data-tab], [data-run]');
+      if (!b) return;
+      if (b.dataset.tab) { tab = b.dataset.tab; open = -1; render(); return; }
+      if (b.dataset.run) { open = +b.dataset.run; render(); return; }
+      if (b.dataset.act === 'st-back') { open = -1; render(); return; }
+      if (b.dataset.act === 'st-close') close();
+    });
+    const render = () => {
+      const el = overlay.querySelector('.achlist');
+      el.innerHTML = tab === 'sum' ? totals() : runs();
+      el.scrollTop = 0;
+      overlay.querySelectorAll('.achtabs button').forEach((t) => t.classList.toggle('on', t.dataset.tab === tab));
+    };
+    render();
   }
 
   function askReset() {
@@ -876,7 +969,9 @@
       if (b.dataset.act === 'r-no') { showSettings(); return; }
       clearSave();
       Object.assign(ACH, { c: {}, s: {}, got: {}, seenAt: 0, k: {} });
+      Object.keys(STATS).forEach((k) => { if (!(k in STATS_DEF)) delete STATS[k]; });
       Object.assign(STATS, STATS_DEF); saveStats();
+      RUNS.list = []; saveJSON(RUNS_KEY, RUNS);
       hideOverlay();
       toast(tr('Прогресс сброшен'));
       goTitle();
@@ -1189,13 +1284,13 @@
 
   /* ---------- API для событий ---------- */
   const evApi = {
-    heal: (n) => { run.hp = Math.min(run.maxHp, run.hp + n); },
-    damage: (n) => { run.hp = Math.max(1, run.hp - n); },
+    heal: (n) => { const b = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); stAdd('healed', run.hp - b); },
+    damage: (n) => { const b = run.hp; run.hp = Math.max(1, run.hp - n); stAdd('taken', b - run.hp); },
     giveCard: (id) => run.deck.push(mk(id)),
     giveRandomCard: (rarity) => { const id = pickCard(rarity); run.deck.push(mk(id)); toast(tr('Новая карта: {name}', { name: CARDS[id].name })); return id; },
     giveRelic: () => {
       const free = freeRelics();
-      if (!free.length) { run.gold += 40; toast(coins(40)); return; }
+      if (!free.length) { gain(40); toast(coins(40)); return; }
       addRelic(pickRelic(free));
     },
     removeCardPrompt: () => removeCardFlow(() => advance()),
@@ -1311,7 +1406,9 @@
     let fought = false;
     evApi.startFight = (id) => { fought = id; };
     const gold0 = run.gold;
+    const mark = stMark();
     const res = tr(ev.options[i].act(run, evApi)); // итог события — русский текст, он же ключ перевода
+    stGoldSince(mark);
     ach.add('spent', gold0 - run.gold);
     if (res === null) return; // опция сама ведёт дальше (например, удаление карты)
     if (fought) { save({ t: 'fight', enemy: fought }); toast(res); setTimeout(() => startCombat(fought, 'fight'), 600); return; }
@@ -1427,28 +1524,28 @@
       mod.str = k === 'sass' ? 3 : 2; mod.goldMul = k === 'sass' ? 2 : 1.5;
       reply = pick(LORE.TAUNTED); run.tone.anger++; ach.add('taunts');
     } else if (k === 'calm') {
-      run.gold -= calmPrice(tier); mod.calm = true; if (run.grudge) delete run.grudge[id]; reply = 'Ладно, ладно. Уже не злюсь.';
+      spend(calmPrice(tier)); mod.calm = true; if (run.grudge) delete run.grudge[id]; reply = 'Ладно, ладно. Уже не злюсь.';
     } else if (k === 'heart') {
       mod.weak = 2; reply = lineOf(id, 'peace') || 'Ладно… только ради тебя.'; run.tone.peace++;
     } else if (k === 'regards') {
       ach.add('regards'); run.tone.peace++;
       if (tier === 'boss') { mod.weak = 2; reply = LORE.TIE_SAY.regardsBoss; } else {
         next = 'peace'; beKind(id); ach.add('peace'); reply = pick(LORE.TIE_SAY.regards);
-        const g = goldFor('fight'); run.gold += g; evApi.heal(6); toast(`${coins(g)} · +6 HP`);
+        const g = goldFor('fight'); gain(g); evApi.heal(6); toast(`${coins(g)} · +6 HP`);
       }
     } else if (k === 'peace') {
       next = 'peace'; beKind(id); reply = lineOf(id, 'peace') || 'Ладно, иди с миром.'; run.tone.peace++; ach.add('peace');
-      if (tier === 'elite') evApi.giveRelic(); else { const g = goldFor('fight'); run.gold += g; evApi.heal(6); toast(`${coins(g)} · +6 HP`); }
+      if (tier === 'elite') evApi.giveRelic(); else { const g = goldFor('fight'); gain(g); evApi.heal(6); toast(`${coins(g)} · +6 HP`); }
     } else if (k === 'scare') {
-      next = 'peace'; ach.add('scares'); const g = Math.ceil(goldFor(tier) / 2); run.gold += g;
+      next = 'peace'; ach.add('scares'); const g = Math.ceil(goldFor(tier) / 2); gain(g);
       narr = tr('{name} убегает, бросив {n} {n|монету|монеты|монет}.', { name: e.name, n: g });
     } else if (k === 'bribe') {
-      run.gold -= bribePrice(); next = 'peace'; narr = tr('Монеты звякнули, и {name} уступает дорогу.', { name: e.name });
+      spend(bribePrice()); next = 'peace'; narr = tr('Монеты звякнули, и {name} уступает дорогу.', { name: e.name });
     } else if (k === 'secret') {
       const sc = secretOf(id); const fx = sc.effect;
       run.secrets.push(id); ach.put('secrets', run.cls); ach.add('peace'); run.tone.peace++;
       narr = tr(sc.res);
-      if (fx.gold) run.gold += fx.gold;
+      if (fx.gold) gain(fx.gold);
       if (fx.maxHp) { run.maxHp += fx.maxHp; run.hp += fx.maxHp; }
       if (fx.heal) evApi.heal(fx.heal);
       if (fx.peace) { next = tier === 'boss' ? 'bosspeace' : 'peace'; beKind(id); if (tier === 'elite') evApi.giveRelic(); }
@@ -1501,7 +1598,7 @@
       if (tier === 'boss') evApi.giveRelic();
       else {
         const gift = rnd(0, 2);
-        if (gift === 0) { evApi.heal(8); toast('+8 HP'); } else if (gift === 1 && upgradeRandom(1)) { /* всплывашка уже показана */ } else { run.gold += 15; toast(coins(15)); }
+        if (gift === 0) { evApi.heal(8); toast('+8 HP'); } else if (gift === 1 && upgradeRandom(1)) { /* всплывашка уже показана */ } else { gain(15); toast(coins(15)); }
       }
       SND.sfx('heal');
       msg = tr('Ты {f|отпустила|отпустил} врага, и на прощание он оставил тебе подарок.');
@@ -1561,7 +1658,7 @@
     const o = meetOptions(h).find((x) => x.k === k);
     if (!o || !o.can) return;
     const fx = o.fx || {};
-    if (fx.gold) run.gold += fx.gold;
+    if (fx.gold) gain(fx.gold);
     if (fx.hp) evApi.damage(fx.hp);
     if (fx.heal) evApi.heal(fx.heal);
     if (fx.maxHp) { run.maxHp += fx.maxHp; run.hp = Math.min(run.hp, run.maxHp); }
@@ -1645,7 +1742,7 @@
     const pay = (item) => {
       if (item.sold) return false;
       if (run.gold < item.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return false; }
-      run.gold -= item.price; item.sold = true; ach.add('spent', item.price); SND.sfx('coin'); bought(); return true;
+      spend(item.price); item.sold = true; ach.add('spent', item.price); SND.sfx('coin'); bought(); return true;
     };
     screen.onShop = (act, i) => {
       const g0 = run.gold;
@@ -1654,12 +1751,12 @@
       if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
       if (act === 'buyup' && !shop.up.sold) {
         if (run.gold < shop.up.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
-        upgradeFlow((ok) => { if (ok) { run.gold -= shop.up.price; shop.up.sold = true; ach.add('spent', shop.up.price); bought(); } render(); });
+        upgradeFlow((ok) => { if (ok) { spend(shop.up.price); shop.up.sold = true; ach.add('spent', shop.up.price); bought(); } render(); });
         return;
       }
       if (act === 'buyremove' && !shop.remove.sold) {
         if (run.gold < shop.remove.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
-        removeCardFlow((ok) => { if (ok) { run.gold -= shop.remove.price; shop.remove.sold = true; ach.add('spent', shop.remove.price); bought(); } render(); });
+        removeCardFlow((ok) => { if (ok) { spend(shop.remove.price); shop.remove.sold = true; ach.add('spent', shop.remove.price); bought(); } render(); });
         return;
       }
       render();
@@ -1682,7 +1779,7 @@
     const free = freeRelics();
     let msg;
     if (free.length && Math.random() < 0.5) { const id = pickRelic(free); addRelic(id); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
-    else { const g = rnd(28, 45); run.gold += g; SND.sfx('coin'); msg = tr('Внутри {n} {n|монета|монеты|монет}.', { n: g }); }
+    else { const g = rnd(28, 45); gain(g); SND.sfx('coin'); msg = tr('Внутри {n} {n|монета|монеты|монет}.', { n: g }); }
     save({ t: 'next' });
     $('.chest').classList.add('open');
     $('.chest-wrap p').textContent = msg;
@@ -1758,7 +1855,7 @@
       }
     },
     draw(n) { drawCards(n); },
-    heal(n) { SND.sfx('heal'); FX.play('heal'); const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
+    heal(n) { SND.sfx('heal'); FX.play('heal'); const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); stAdd('healed', run.hp - before); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
     burn(n) { const v = n + (proc('matchbox', 'enemy') ? 2 : 0); FX.play('fire', 'enemy'); C.enemy.burn += v; floatText($('.enemy-fx'), tr('Поджог {n}', { n: v }), 'burnf'); },
     weak(n) { FX.play('weak', 'enemy'); C.enemy.weak += n; floatText($('.enemy-fx'), tr('Ослаблен'), 'weakf'); },
     vuln(n) { FX.play('vuln', 'enemy'); C.enemy.vuln += n + (proc('stamppad', 'enemy') ? 1 : 0); floatText($('.enemy-fx'), tr('Уязвим'), 'weakf'); },
@@ -1768,7 +1865,7 @@
     resolve(n) { C.str += n; FX.play('aura'); floatText($('.hero-fx'), tr('Решимость +{n}', { n }), 'burnf'); },
     rush(n) { C.tmpStr += n; FX.play('aura'); floatText($('.hero-fx'), tr('Решимость +{n}', { n }), 'burnf'); },
     thorns(n) { if (proc('wreath')) n *= 2; C.thorns += n; FX.play('thorns'); floatText($('.hero-fx'), tr('Шипы +{n}', { n }), 'blockf'); },
-    gold(n) { run.gold += n; FX.play('gold'); floatText($('.hero-fx'), coins(n), 'burnf'); },
+    gold(n) { gain(n); FX.play('gold'); floatText($('.hero-fx'), coins(n), 'burnf'); },
     maxHp(n) { run.maxHp += n; run.hp += n; SND.sfx('heal'); FX.play('heart'); floatText($('.hero-fx'), tr('+{n} к макс. HP', { n }), 'healf'); },
     doubleBlock() { if (C.block > 0) api.block(C.block); },
     async burstNow() { await burst(); },
@@ -1984,7 +2081,7 @@
       + (first && C.friends.includes('courier') ? 2 : 0);
     if (C.bury) { n = Math.max(1, n - C.bury); toast(tr('Метелица замела: −{n} {n|карта|карты|карт}', { n: C.bury })); C.bury = 0; }
     drawCards(n);
-    if (first && proc('mug')) { run.hp = Math.min(run.maxHp, run.hp + 3); FX.play('heal'); }
+    if (first && proc('mug')) { evApi.heal(3); FX.play('heal'); }
     SND.sfx(C.turn === 1 ? 'draw' : 'turn');
     renderCombat(true);
     // особенности героев в начале хода
@@ -2168,7 +2265,7 @@
     if (cd.type === 'charm') C.exh.push(c);
     else if (cd.exhaust) exhaustCard(c);
     else C.disc.push(c);
-    C.playedTurn++; C.playedTotal++; STATS.cards++;
+    C.playedTurn++; C.playedTotal++; STATS.cards++; stAdd('cards');
     if (cd.rarity !== 'status') ach.put('played', c.id);
     if (cd.rarity === 'rare') ach.put('rareplayed', c.id);
     if (cd.rarity === 'legendary') ach.flag('legendcard');
@@ -2221,6 +2318,7 @@
     const real = dmg - absorbed;
     e.hp -= real;
     ach.max('maxhit', dmg);
+    stAdd('dmg', real); if (run.st && dmg > run.st.hit) run.st.hit = dmg;
     if (real > 0 && ENEMIES[C.id].boil && e.hp > 0 && e.boil < 5) e.boil++;
     nestCheck();
     const el = $('#enemy');
@@ -2287,6 +2385,7 @@
 
   function loseHp(n) {
     if (n <= 0) return;
+    stAdd('taken', Math.min(n, run.hp));
     run.hp = Math.max(0, run.hp - n);
     // Последняя свеча: один раз за забег спасает от гибели
     if (run.hp <= 0 && !run.candle && proc('lastcandle')) {
@@ -2336,7 +2435,7 @@
     e.mist = 0; // туман рассеивается, когда враг снова ходит
     if (e.burn > 0) {
       FX.play('fire', 'enemy');
-      e.hp -= e.burn;
+      e.hp -= e.burn; stAdd('dmg', e.burn);
       floatText($('.enemy-fx'), `-${e.burn}`, 'burnf');
       $('#enemy').classList.add('hit');
       eAct('hurt');
@@ -2430,8 +2529,8 @@
     }
     if (hasRelic('herbbag') && paid > 1) { evApi.heal(Math.floor(paid / 2)); toast(`${RELICS.herbbag.name}: +${Math.floor(paid / 2)} HP`); }
     STATS.fights++;
-    if (tier === 'elite') STATS.elites++;
-    if (tier === 'boss') STATS.bosses++;
+    if (tier === 'elite') { STATS.elites++; stAdd('elites'); }
+    if (tier === 'boss') { STATS.bosses++; stAdd('bosses'); }
     ACH.k[id] = (ACH.k[id] || 0) + 1; // для базы знаний
     if (run.killed && !run.killed.includes(id)) run.killed.push(id);
     if (tie === 'avenge') ach.add('avenged');
@@ -2445,7 +2544,7 @@
     saveStats();
     run.fights++; run.lit++;
     if (stolen) { run.gold += stolen; toast(tr('Монеты возвращены: +{n}', { n: stolen })); }
-    if (hasRelic('piggy') && !hpLost) { run.gold += 15; toast(`${RELICS.piggy.name}: ${coins(15)}`); }
+    if (hasRelic('piggy') && !hpLost) { gain(15); toast(`${RELICS.piggy.name}: ${coins(15)}`); }
     setBg();
     if (hasRelic('snowman')) evApi.heal(4);
     if (hasRelic('candybox') && tier === 'elite') { evApi.heal(10); toast(`${RELICS.candybox.name}: +10 HP`); }
@@ -2481,12 +2580,12 @@
     const boss = tier === 'boss';
     const gold = Math.round(goldFor(tier) * ((run.fmod && run.fmod.goldMul) || 1));
     run.fmod = null;
-    run.gold += gold;
+    gain(gold);
     if (!boss) { SND.sfx('win'); SND.music(mapTrack()); }
     if (tier === 'elite') evApi.giveRelic();
     // после босса стадии Ива переводит дух
     const healed = boss ? Math.min(run.maxHp - run.hp, Math.round(run.maxHp * DIFF().bossHeal)) : 0;
-    run.hp += healed;
+    run.hp += healed; stAdd('healed', healed);
     // пороги [легендарная, эпическая, редкая, необычная]: после элит и боссов редкие выпадают чаще
     const odds = boss ? [0.1, 0.4, 1, 1] : tier === 'elite' ? [0.02, 0.12, 0.35, 0.75] : [0, 0.03, 0.11, 0.43];
     const count = Math.max(2, 3 + (hasRelic('clover') ? 1 : 0) - (hasRelic('crown') ? 1 : 0));
@@ -2528,6 +2627,7 @@
     const saved = run.finalDark || run.forgiven;
     ach.put('winsCls', run.cls);
     ach.put('winsDiff', diffOf(run));
+    finishRun(true);
     saveStats();
     SND.music('title'); SND.sfx('victory');
     screen.className = 'scr-end win';
@@ -2538,7 +2638,7 @@
         <p class="story">${txt(STORY.winText)}${saved && LORE.DARK[saved] ? ` ${tr(LORE.DARK[saved].saved)}` : ''}</p>
         <p class="stats">${DIFF().name} · ${tr('Побед: {n}', { n: run.fights })} · ${tr('Карт в колоде: {n}', { n: run.deck.length })} · ${tr('Талисманов: {n}', { n: run.relics.length })}</p>
       </div></div>
-      <button class="btn big" data-act="title">${tr('В главное меню')}</button>`;
+      <div class="endbtns"><button class="btn big" data-act="summary">${tr('Итоги забега')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
     fitBook();
   }
   /* После поражения можно начать бой заново или вернуться на развилку перед боем:
@@ -2547,6 +2647,7 @@
   let snapFight = null;
   function goDefeat() {
     if (!snapFight) { endRun(); return; }
+    if (C && run.st) run.st.by = C.id;
     C = null; busy = false;
     clearSave();
     SND.music(null); SND.sfx('defeat');
@@ -2572,23 +2673,29 @@
     if (!Store.noAds()) { STATS.ads = (STATS.ads || 0) + 1; }
     STATS.revives = (STATS.revives || 0) + 1; saveStats();
     SND.sfx('heal');
+    const prevSt = run.st;
     if (kind === 'fight') {
       const f = snapFight;
       run = JSON.parse(f.run);
+      keepSt(prevSt);
       save({ t: f.tier, enemy: f.enemyId });
       setBg();
       startCombat(f.enemyId, f.tier);
     } else {
       run = JSON.parse(snapStep);
+      keepSt(prevSt);
       goMap();
     }
     toast(tr('Ещё одна попытка!'));
   }
   function endRun() {
     snapFight = null; snapStep = null;
+    if (C && run.st) run.st.by = C.id;
     C = null;
     clearSave();
-    STATS.losses++; saveStats();
+    STATS.losses++;
+    finishRun(false);
+    saveStats();
     SND.music(null); SND.sfx('defeat');
     screen.className = 'scr-end lose';
     screen.innerHTML = `<div class="book"><div class="page">
@@ -2597,8 +2704,83 @@
         <p class="story">${txt(STORY.loseText)}</p>
         <p class="stats">${DIFF().name} · ${tr('Пройдено уровней: {a} из {b}', { a: run.step + 1, b: MAX_STEPS })} · ${tr('Побед: {n}', { n: run.fights })}</p>
       </div></div>
-      <div class="endbtns"><button class="btn big" data-act="retry">${tr('Попробовать снова')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
+      <div class="endbtns"><button class="btn big" data-act="summary">${tr('Итоги забега')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
     fitBook();
+  }
+
+  /* ---------- Итоги забега: запись в историю и экран итогов ---------- */
+  let lastRec = null;
+  function finishRun(win) {
+    if (run.done) return lastRec;
+    run.done = true;
+    stTick();
+    const s = run.st || stNew();
+    const rec = {
+      at: Date.now(), win, cls: run.cls || 'lamp', diff: diffOf(run), lvl: win ? MAX_STEPS : Math.min(MAX_STEPS, run.step + 1),
+      ms: s.ms, fights: run.fights, elites: s.elites || 0, bosses: s.bosses || 0, dmg: s.dmg, hit: s.hit, taken: s.taken, healed: s.healed,
+      cards: s.cards, gold: s.gold, spent: s.spent, deck: run.deck.length, ups: run.deck.filter((c) => c.up).length,
+      relics: run.relics.slice(), by: win ? null : s.by || null, fin: win ? run.final || null : null,
+      met: (run.met || []).length, fallen: (run.fallen || []).length, revives: s.revives || 0,
+    };
+    RUNS.list.unshift(rec);
+    if (RUNS.list.length > RUNS_MAX) RUNS.list.length = RUNS_MAX;
+    saveJSON(RUNS_KEY, RUNS);
+    STATS.dmg = (STATS.dmg || 0) + rec.dmg;
+    STATS.ms = (STATS.ms || 0) + rec.ms;
+    STATS.gold = (STATS.gold || 0) + rec.gold;
+    STATS.runDmg = Math.max(STATS.runDmg || 0, rec.dmg);
+    if (win) STATS.fast = STATS.fast ? Math.min(STATS.fast, rec.ms) : rec.ms;
+    lastRec = rec;
+    return rec;
+  }
+  // время в пути: минуты, а с часа — часы и минуты
+  const fmtTime = (ms) => {
+    const m = Math.max(1, Math.round((ms || 0) / 60000));
+    return m < 60 ? tr('{n} мин', { n: m }) : tr('{h} ч {m} мин', { h: Math.floor(m / 60), m: m % 60 });
+  };
+  const fmtDate = (ts) => new Date(ts).toLocaleDateString(I18N.locale, { day: 'numeric', month: 'long' });
+  const foeName = (id) => (id && ENEMIES[id] ? ENEMIES[id].name : '');
+  function summaryHTML(rec) {
+    const cls = CLASSES[rec.cls] ? rec.cls : 'lamp';
+    const d = DIFFICULTIES[rec.diff] || DIFFICULTIES[1];
+    const last = rec.win ? (foeName(rec.fin) && tr('Финальный бой: {name}', { name: foeName(rec.fin) }))
+      : (foeName(rec.by) && tr('Последний бой: {name}', { name: foeName(rec.by) }));
+    const tile = (label, value, sub) => `<div class="sumtile"><small>${label}</small><b>${value}</b>${sub ? `<i>${sub}</i>` : ''}</div>`;
+    const relics = rec.relics.filter((r) => RELICS[r]);
+    const notes = [
+      rec.met ? tr('Встречено героев: {n}', { n: rec.met }) : '',
+      rec.fallen ? tr('Ушли в Тень: {n}', { n: rec.fallen }) : '',
+      rec.revives ? tr('Повторных боёв: {n}', { n: rec.revives }) : '',
+    ].filter(Boolean);
+    return `<div class="sumcard ${rec.win ? 'win' : 'lose'}">
+      <div class="sumhead">
+        <span class="sumface">${heroFace(cls)}</span>
+        <span class="sumwho"><b>${CLASSES[cls].name}</b><small>${d.name}</small><small>${fmtDate(rec.at)}</small></span>
+        <span class="sumres">${rec.win ? tr('Письмо доставлено') : tr('Тени настигли')}</span>
+      </div>
+      ${last ? `<p class="sumlast">${last}</p>` : ''}
+      <div class="sumgrid">
+        ${tile(tr('Уровень'), tr('{a} из {b}', { a: rec.lvl, b: MAX_STEPS }))}
+        ${tile(tr('Время в пути'), fmtTime(rec.ms))}
+        ${tile(tr('Побед в боях'), fmt(rec.fights), tr('элит: {a} · боссов: {b}', { a: rec.elites, b: rec.bosses }))}
+        ${tile(tr('Сыграно карт'), fmt(rec.cards))}
+        ${tile(tr('Урон врагам'), fmt(rec.dmg), tr('сильнейший удар: {n}', { n: fmt(rec.hit) }))}
+        ${tile(tr('Потеряно HP'), fmt(rec.taken), tr('вылечено: {n}', { n: fmt(rec.healed) }))}
+        ${tile(tr('Монет собрано'), fmt(rec.gold), tr('потрачено: {n}', { n: fmt(rec.spent) }))}
+        ${tile(tr('Колода'), tr('{n} {n|карта|карты|карт}', { n: rec.deck }), tr('улучшено: {n}', { n: rec.ups }))}
+      </div>
+      <div class="sumrel"><small>${tr('Талисманы')} · ${relics.length}</small><div>${relics.map((r) => `<span class="sumr" title="${RELICS[r].name}">${Art.relic(r)}</span>`).join('')}</div></div>
+      ${notes.length ? `<p class="sumnote">${notes.join(' · ')}</p>` : ''}
+    </div>`;
+  }
+  function goSummary(rec = lastRec) {
+    if (!rec) { goTitle(); return; }
+    C = null; busy = false;
+    hideOverlay();
+    screen.className = 'scr-summary';
+    screen.innerHTML = `<div class="ribbon">${tr('Итоги забега')}</div>
+      ${summaryHTML(rec)}
+      <div class="endbtns"><button class="btn big" data-act="retry">${tr('Новый забег')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
   }
 
   /* ---------- Обработка нажатий ---------- */
@@ -2700,6 +2882,8 @@
       case 'clsgo': if (!Store.heroOwned(screen.dataset.cls)) break; SETTINGS.cls = screen.dataset.cls; SETTINGS.diff = +screen.dataset.diff; saveJSON(SETTINGS_KEY, SETTINGS); if (SETTINGS.skipIntro) newRun(); else goIntro(); break;
       case 'clscards': showClassCards(screen.dataset.cls); break;
       case 'title': goTitle(); break;
+      case 'summary': goSummary(); break;
+      case 'stats': showStats(); break;
       case 'continue': continueRun(); break;
       case 'newgame': askNewGame(); break;
       case 'gloss': showGlossary(); break;
