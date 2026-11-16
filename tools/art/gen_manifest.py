@@ -46,6 +46,13 @@ for n in names('e'):
     rows = np.where(al.any(1))[0]
     if len(rows): foot[n] = round((rows[-1] + 1) / al.shape[0], 3)
 
+# music: newest assets/m<N> folder with loops.json (written by tools/audio/build_music.py)
+MUS = ([d for d in sorted(os.listdir(A), key=lambda d: (len(d), d)) if re.fullmatch(r'm\d+', d) and os.path.exists(os.path.join(A, d, 'loops.json'))] or [None])[-1]
+music = None
+if MUS:
+    loops = json.load(open(os.path.join(A, MUS, 'loops.json')))
+    music = {'dir': MUS, 'tracks': {k: v for k, v in loops.items() if os.path.exists(os.path.join(A, MUS, k + '.mp3'))}}
+
 M = {
     'hero': hero, 'face': face,
     'enemy': names('e'), 'foot': foot, 'anim': anim,
@@ -54,6 +61,7 @@ M = {
     'bg': names('bg'), 'bgc': bgc, 'pic': names('pic'), 'ea': EA,
     'ui': names(UI), 'uid': UI,
 }
+if music: M['music'] = music
 js = '/* Сгенерировано gen_manifest.py: какие нарисованные картинки есть в assets/ */\nwindow.ASSETS = ' + json.dumps(M, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(REPO, 'js', 'assets.js'), 'w').write(js)
 print('assets.js', len(js), 'bytes;', {k: len(v) for k, v in M.items() if isinstance(v, (list, dict))})

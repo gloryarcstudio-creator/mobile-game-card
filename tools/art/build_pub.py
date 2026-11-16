@@ -28,7 +28,7 @@ src = root + 'assets'
 n = 0
 for d, _, fs in os.walk(src):
     for f in fs:
-        if not f.endswith('.webp'): continue
+        if not f.endswith(('.webp', '.mp3')): continue
         rel = os.path.relpath(os.path.join(d, f), src)
         dst = os.path.join(pub, 'assets', rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)

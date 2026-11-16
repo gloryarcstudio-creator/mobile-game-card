@@ -2154,7 +2154,8 @@
     // Закладка: одна случайная карта улучшена до конца боя
     if (hasRelic('bookmark')) { const list = C.draw.filter(canUpgrade); if (list.length) pick(list).up = true; }
     selected = -1;
-    SND.music(tier === 'boss' ? 'boss' : 'battle');
+    // у финального босса своя тема; в обычных боях два трека идут по очереди, меняются после каждой победы
+    SND.music(tier === 'boss' ? (final ? 'final' : 'boss') : run.fights % 2 ? 'battle2' : 'battle');
     screen.className = 'scr-combat';
     screen.innerHTML = `
       <div class="topbar slim">${relicIcons(6)}<div class="spacer"></div><div class="stepl">${tier === 'boss' ? tr(isFinalStep(run.step) ? 'Финал' : 'Босс стадии') : tr('Уровень {a}/{b}', { a: run.step + 1, b: MAX_STEPS })}</div></div>

@@ -1,6 +1,8 @@
-/* Музыка и звуки. Всё синтезируется Web Audio API прямо в браузере, без звуковых файлов.
-   Музыка: зацикленные пьесы из музыкальной шкатулки, пэда, баса и лёгких барабанов.
-   Мелодии генерируются один раз с фиксированным зерном, поэтому каждая пьеса узнаваема.
+/* Музыка и звуки на Web Audio API.
+   Музыка: готовые треки из assets/m<N>/ (список в window.ASSETS.music). Если файла нет или он
+   не загрузился, играет синтезированная пьеса: шкатулка, пэд, бас и лёгкие барабаны, мелодия
+   с фиксированным зерном, поэтому каждая пьеса узнаваема.
+   Звуки синтезируются прямо в браузере, без файлов.
    Звук включается после первого касания экрана (так требуют браузеры). */
 (function () {
   const KEY = 'last-ray-audio';
@@ -12,9 +14,10 @@
     prefs.sfxVol = typeof s.sfxVol === 'number' ? s.sfxVol : s.sfx === false ? 0 : 1;
   } catch (e) { /* хранилище недоступно */ }
   const MUSIC_GAIN = 0.5, SFX_GAIN = 0.55;
+  const FILE_GAIN = 0.7; // громкость треков из файлов относительно синтезированных пьес
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) { /* хранилище недоступно */ } };
 
-  let ctx = null, master, musicBus, sfxBus, reverbIn, noiseBuf;
+  let ctx = null, master, musicBus, fileBus, sfxBus, reverbIn, noiseBuf;
   const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
   function ensure() {
@@ -27,6 +30,7 @@
     comp.connect(ctx.destination);
     master = ctx.createGain(); master.gain.value = 0.9; master.connect(comp);
     musicBus = ctx.createGain(); musicBus.gain.value = MUSIC_GAIN * prefs.musicVol; musicBus.connect(master);
+    fileBus = ctx.createGain(); fileBus.gain.value = FILE_GAIN; fileBus.connect(musicBus);
     sfxBus = ctx.createGain(); sfxBus.gain.value = SFX_GAIN * prefs.sfxVol; sfxBus.connect(master);
     // реверберация из сгенерированного импульса: «зимний воздух»
     const conv = ctx.createConvolver();
@@ -171,7 +175,8 @@
   };
   for (const t of Object.values(TRACKS)) t.melody = makeMelody(t);
 
-  let current = null, step = 0, nextT = 0, timer = null;
+  // current: имя дорожки, которую просит игра; synth: пьеса, которую сейчас играет синтезатор
+  let current = null, synth = null, step = 0, nextT = 0, timer = null;
 
   function scheduleStep(tr, i, t) {
     const spb = 60 / tr.bpm / 4; // длительность шестнадцатой
@@ -206,8 +211,8 @@
   }
 
   function tick() {
-    if (!ctx || !current) return;
-    const tr = TRACKS[current];
+    if (!ctx || !synth) return;
+    const tr = synth;
     const spb = 60 / tr.bpm / 4;
     while (nextT < ctx.currentTime + 0.15) {
       scheduleStep(tr, step, nextT);
@@ -215,14 +220,100 @@
     }
   }
 
+  // у синтезатора нет своих пьес для второго боевого трека и финального босса
+  const SYNTH_OF = { battle2: 'battle', final: 'boss' };
+  function startSynth(name) {
+    synth = TRACKS[SYNTH_OF[name] || name] || null;
+    if (!synth) return;
+    step = 0; nextT = ctx.currentTime + 0.08;
+    if (!timer) timer = setInterval(tick, 30);
+  }
+
+  /* ---------- Музыка из файлов ----------
+     Файл дорожки: вступление, потом петля. Границы петли в секундах лежат в ASSETS.music.tracks
+     (их считает tools/audio/build_music.py). Дорожка играет с начала и дальше крутит петлю.
+     В памяти лежат сжатые файлы и одна-две раскодированные дорожки: раскодированная минута
+     стерео занимает около 23 МБ. */
+  const MF = (window.ASSETS && window.ASSETS.music) || null;
+  const hasFile = (name) => !!(MF && MF.tracks && MF.tracks[name]);
+  const fileUrl = (name) => `${window.ASSETS.base || 'assets/'}${MF.dir}/${name}.mp3`;
+  // темы меню и дороги после боя продолжаются с того же места, бой каждый раз начинается сначала
+  const RESUME = new Set(['title', 'stage1', 'stage2', 'night']);
+  // что понадобится следом: эти файлы скачиваются заранее, пока играет текущая дорожка
+  const NEXT = { title: ['stage1'], stage1: ['battle', 'battle2', 'boss'], stage2: ['battle', 'battle2', 'boss'], night: ['final'], battle: ['battle2'], battle2: ['battle'], boss: ['stage2', 'night'], final: ['title'] };
+  // сколько раскодированных дорожек держать: две на телефонах с памятью от 4 ГБ, иначе одну
+  const KEEP = (navigator.deviceMemory || 2) >= 4 ? 2 : 1;
+  const packed = {}, decoded = new Map(), pos = {};
+  let voice = null, seq = 0;
+
+  function fetchTrack(name) {
+    if (!packed[name]) {
+      packed[name] = fetch(fileUrl(name))
+        .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+        .catch((e) => { delete packed[name]; throw e; });
+    }
+    return packed[name];
+  }
+  function loadTrack(name) {
+    if (decoded.has(name)) { const b = decoded.get(name); decoded.delete(name); decoded.set(name, b); return Promise.resolve(b); }
+    return fetchTrack(name)
+      .then((bytes) => new Promise((ok, bad) => {
+        // старые Safari понимают только вызов с функциями; новые браузеры вдобавок возвращают обещание
+        const pr = ctx.decodeAudioData(bytes.slice(0), ok, bad);
+        if (pr && pr.catch) pr.catch(() => {});
+      }))
+      .then((buf) => {
+        decoded.set(name, buf);
+        while (decoded.size > KEEP) decoded.delete(decoded.keys().next().value);
+        return buf;
+      });
+  }
+  // место в файле, где дорожка звучит в момент t
+  function where(v, t) {
+    const p = v.off + Math.max(0, t - v.t0);
+    return p < v.b ? p : v.a + ((p - v.a) % (v.b - v.a));
+  }
+  function stopFile(fade) {
+    seq++;
+    if (!voice) return;
+    const v = voice, t = ctx.currentTime;
+    voice = null;
+    if (RESUME.has(v.name)) pos[v.name] = where(v, t);
+    v.g.gain.cancelScheduledValues(t);
+    v.g.gain.setValueAtTime(v.g.gain.value, t);
+    v.g.gain.linearRampToValueAtTime(0, t + fade);
+    try { v.src.stop(t + fade + 0.05); } catch (e) { /* уже остановлена */ }
+  }
+  function playFile(name) {
+    const my = seq;
+    loadTrack(name).then((buf) => {
+      if (my !== seq || current !== name) return;
+      let [a, b] = MF.tracks[name];
+      b = Math.min(b, buf.duration);
+      if (!(a < b)) { a = 0; b = buf.duration; }
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      src.loop = true; src.loopStart = a; src.loopEnd = b;
+      const g = ctx.createGain(); src.connect(g); g.connect(fileBus);
+      const off = RESUME.has(name) && pos[name] < b ? pos[name] : 0;
+      const t = ctx.currentTime + 0.03;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(1, t + (off ? 0.8 : 0.04));
+      src.start(t, off);
+      voice = { name, src, g, t0: t, off, a, b };
+      (NEXT[name] || []).filter(hasFile).reduce((q, n) => q.then(() => fetchTrack(n)).catch(() => {}), Promise.resolve());
+    }).catch(() => { if (my === seq && current === name) startSynth(name); });
+  }
+
   let wanted = null;
   function music(name) {
     wanted = name;
-    if (!ctx || name === current) return;
+    if (!ctx) { if (name && hasFile(name)) fetchTrack(name).catch(() => {}); return; }
+    if (name === current) return;
     current = name;
+    synth = null; // расписанные ноты доиграют сами: они стоят не дальше 0,15 с вперёд
+    stopFile(name ? 0.6 : 1.2);
     if (!name) return;
-    step = 0; nextT = ctx.currentTime + 0.08;
-    if (!timer) timer = setInterval(tick, 30);
+    if (hasFile(name)) playFile(name); else startSynth(name);
   }
 
   /* ---------- Звуковые эффекты ---------- */
@@ -308,6 +399,12 @@
     SFX[name](ctx.currentTime + 0.005, v);
   }
 
+  // игра свёрнута или вкладка спрятана: звук встаёт на паузу и продолжается с того же места
+  document.addEventListener('visibilitychange', () => {
+    if (!ctx) return;
+    if (document.hidden) ctx.suspend(); else ctx.resume();
+  });
+
   function unlock() {
     if (!ensure()) return;
     if (wanted && wanted !== current) music(wanted);
@@ -327,5 +424,5 @@
   }
 
   const publicPrefs = () => ({ ...prefs, music: prefs.musicVol > 0, sfx: prefs.sfxVol > 0 });
-  window.Sound = { unlock, music, sfx, setVolume, get prefs() { return publicPrefs(); }, _probe: () => ctx && { ctx, master } };
+  window.Sound = { unlock, music, sfx, setVolume, get prefs() { return publicPrefs(); }, _probe: () => ctx && { ctx, master, musicBus, voice, synth, pos, decoded: [...decoded.keys()] } };
 })();
