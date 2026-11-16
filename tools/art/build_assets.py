@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 from multiprocessing import Pool
 from key import key, bbox, fit, bg_color, body_palette, key_fx, key_screen, key_fade, figure_tint
+from calm import CALM, DESPILL, calm_idle, despill
 
 SRC, REPO = sys.argv[1], sys.argv[2]
 ONLY = sys.argv[3:]
@@ -94,7 +95,7 @@ def pick(lo, hi, n):
 
 FS = 320       # frame size in atlases
 # atlas folder; bump the number when atlases are rebuilt, so browsers do not mix old cached files with new frame counts
-EA_DIR = 'ea4'
+EA_DIR = 'ea5'
 COLS = 8
 # idle: whole 3 s loop at 12 fps. One-shot moves are cut so they start and end in
 # the rest pose (forward to the strongest pose, then back), so no cross-fade is needed.
@@ -262,6 +263,9 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
         kf = (lambda im: key(im, bg=B)) if an == 'idle' else (lambda im: keyer(im, B))
         frames = [kf(Image.fromarray(fr[i])).resize((FS, FS), Image.LANCZOS) for i in idx]
         if an == 'idle':
+            # vapour that kept a pink tint turns white; loops that drip are rebuilt from one breathing frame
+            if cid in DESPILL: frames = [despill(f) for f in frames]
+            if cid in CALM: frames = calm_idle(frames[0], **CALM[cid])
             idle_frames = frames
             meta['idle'] = {'n': len(frames), 'fps': IDLE_FPS}
         else:

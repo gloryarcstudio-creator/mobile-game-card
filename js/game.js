@@ -544,6 +544,69 @@
       <p class="savehint">${s ? tr('Прогресс сохраняется после каждого уровня') : ''}</p>`;
   }
 
+  /* ---------- Заставка ----------
+     Чёрный экран, в кадре медленно едет картинка, под ней по одной проступают строки. Касание листает сцену,
+     «Пропустить» закрывает. Показывается при первом запуске, пересмотреть можно из настроек. */
+  const CINE_KEY = 'lastray.cinema';
+  const cinemaSeen = () => { try { return localStorage.getItem(CINE_KEY) === '1'; } catch (e) { return true; } };
+  const hasCinema = () => !!(STORY.cinema && Art.bgUrl && STORY.cinema.every((sc) => Art.bgUrl(sc.bg)));
+  function goCinema(done) {
+    const scenes = STORY.cinema;
+    run = null; C = null; busy = false;
+    hideOverlay();
+    SND.music('title');
+    screen.className = 'scr-cinema';
+    screen.innerHTML = `<div class="cine" data-act="cine-next"><div class="cine-band"></div><div class="cine-cap"></div>
+      <button class="btn ghost cine-skip" data-act="cine-skip">${tr('Пропустить')}</button></div>`;
+    const band = $('.cine-band'), cap = $('.cine-cap');
+    const BW = 400, BH = band.clientHeight || 236;
+    let i = -1, timer = 0, over = false;
+    // экран сменился (например, игру открыли заново) — заставка молча останавливается
+    const alive = () => !over && screen.className === 'scr-cinema';
+    const finish = () => {
+      if (over) return;
+      over = true; clearTimeout(timer);
+      try { localStorage.setItem(CINE_KEY, '1'); } catch (e) { /* недоступно */ }
+      const c = $('.cine'); if (c) c.classList.add('out');
+      setTimeout(() => { if (screen.className === 'scr-cinema') done(); }, 550);
+    };
+    // где стоит картинка, чтобы точка (fx, fy) оказалась в середине кадра при увеличении k
+    const place = ([fx, fy, k], h) => {
+      const x = Math.min(0, Math.max(BW - BW * k, BW / 2 - fx * BW * k));
+      const y = Math.min(0, Math.max(BH - h * k, BH / 2 - fy * h * k));
+      return `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${k})`;
+    };
+    const show = () => {
+      if (!alive()) return;
+      clearTimeout(timer);
+      i++;
+      if (i >= scenes.length) { finish(); return; }
+      const sc = scenes[i], n = i;
+      const dur = sc.lines.length > 1 ? 6400 : 4600;
+      const im = new Image();
+      const start = () => {
+        if (!alive() || n !== i || im._shown) return;
+        im._shown = true;
+        const h = im.naturalWidth ? (BW * im.naturalHeight) / im.naturalWidth : 715;
+        const old = [...band.children];
+        const layer = document.createElement('div');
+        layer.className = 'cine-layer';
+        layer.innerHTML = `<div class="cine-img" style="height:${h.toFixed(1)}px;background-image:url('${im.src}');--t0:${place(sc.from, h)};--t1:${place(sc.to, h)};animation-duration:${dur + 1200}ms"></div>
+          ${(sc.shadows || []).map((id, k) => `<img class="cine-shadow s${k}" src="${Art.enemyUrl(id)}" alt="">`).join('')}`;
+        band.appendChild(layer);
+        setTimeout(() => old.forEach((o) => o.remove()), 1000);
+        cap.innerHTML = sc.lines.map((l, k) => `<p style="animation-delay:${500 + k * 2300}ms">${tr(l)}</p>`).join('');
+        timer = setTimeout(show, dur);
+      };
+      im.onload = start; im.onerror = start;
+      im.src = Art.bgUrl(sc.bg);
+      timer = setTimeout(start, 2500); // картинка не пришла вовремя — сцена всё равно идёт
+      if (scenes[i + 1]) new Image().src = Art.bgUrl(scenes[i + 1].bg);
+    };
+    screen.onCine = (act) => { if (act === 'cine-skip') finish(); else if (alive()) show(); };
+    show();
+  }
+
   function askNewGame() {
     const s = loadSave();
     const begin = () => goClassSelect();
@@ -629,6 +692,7 @@
       <div class="sline"></div>
       ${langRow}
       ${TOGGLES.map(toggle).join('')}
+      ${!run && hasCinema() ? `<button class="slink" data-act="s-cinema">${tr('Посмотреть заставку')}</button>` : ''}
       <div class="sline"></div>
       <p class="sfoot"><span>${tr('Версия {v}', { v: VERSION })}</span><span>${tr('Сохранение в этом браузере')}</span></p>
     </div>`;
@@ -675,6 +739,7 @@
       if (act === 's-ach') showAchievements(showSettings);
       if (act === 's-stats') showStats(showSettings);
       if (act === 's-reset') askReset();
+      if (act === 's-cinema') goCinema(() => goTitle());
     };
     render();
   }
@@ -1718,9 +1783,15 @@
     // на прилавке по карте каждой редкости
     // третья карта иногда эпическая или легендарная
     const base = { common: 38, uncommon: 54, rare: 72, epic: 95, legendary: 130 };
-    const cards = ['common', 'uncommon', rollRarity([0.05, 0.25, 1, 1])].map((r) => pickCard(r)).map((id) => ({ id, price: disc(base[CARDS[id].rarity] + rnd(-4, 6)), sold: false }));
-    const rid = pickRelic();
-    const shop = saved || { cards, relic: rid ? { id: rid, price: disc({ common: 90, uncommon: 108, rare: 125, epic: 150, legendary: 190 }[RELICS[rid].tier]), sold: false } : null, tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false } };
+    // товар на прилавке: три карты и талисман. Его можно обновить за монеты, услуги при этом остаются как были
+    const stock = (skip = []) => {
+      const cards = ['common', 'uncommon', rollRarity([0.05, 0.25, 1, 1])].map((r) => pickCard(r)).map((id) => ({ id, price: disc(base[CARDS[id].rarity] + rnd(-4, 6)), sold: false }));
+      let rid = pickRelic();
+      for (let k = 0; k < 6 && rid && skip.includes(rid); k++) rid = pickRelic(); // не тот же талисман, что лежал
+      return { cards, relic: rid ? { id: rid, price: disc({ common: 90, uncommon: 108, rare: 125, epic: 150, legendary: 190 }[RELICS[rid].tier]), sold: false } : null };
+    };
+    const shop = saved || { ...stock(), tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false }, rerolls: 0 };
+    const rerollPrice = () => disc(20 + 12 * (shop.rerolls || 0)); // каждое обновление дороже
     screen.className = 'scr-shop';
     if (shop.relic) codexMark('r', shop.relic.id);
     const last = isFinalStep(run.step); // лавка у последней двери
@@ -1728,7 +1799,7 @@
     const render = () => {
       save({ t: 'shop', shop });
       screen.innerHTML = `${topBar()}
-        <div class="shopkeeper">${(Art.enemyLive || Art.enemy)('hedgehog')}<div class="bubble">${tr(last ? 'Последняя лавка перед дверью! Бери, не стесняйся.' : 'Всё по-честному! Почти.')}</div></div>
+        <div class="shopkeeper">${(Art.enemyLive || Art.enemy)('hedgehog')}<div class="bubble">${tr(shop.rerolls ? 'Свежий товар! Только что с саней.' : last ? 'Последняя лавка перед дверью! Бери, не стесняйся.' : 'Всё по-честному! Почти.')}</div></div>
         <div class="shop-cards">${shop.cards.map((c, i) => `<div class="ware ${c.sold ? 'sold' : ''}">${cardHTML(c.id, 'shopcard', `data-act="buy" data-i="${i}"`)}<div class="price ${run.gold < c.price ? 'poor' : ''}">${Art.icon('coin')}${c.price}</div></div>`).join('')}</div>
         <div class="shop-services">
           ${shop.relic ? `<button class="svc ${shop.relic.sold ? 'sold' : ''}" data-act="buyrelic">${Art.relic(shop.relic.id)}<span><b>${RELICS[shop.relic.id].name}<em class="rtier ${RELICS[shop.relic.id].tier}">${TIER_LABEL[RELICS[shop.relic.id].tier]}</em></b><small>${RELICS[shop.relic.id].desc}</small></span><i class="${run.gold < shop.relic.price ? 'poor' : ''}">${shop.relic.price}</i></button>` : ''}
@@ -1736,6 +1807,7 @@
           <button class="svc ${shop.up.sold ? 'sold' : ''}" data-act="buyup">${Art.icon('whetstone')}<span><b>${tr('лавка::Заточка')}</b><small>${tr('Улучшить карту')}</small></span><i class="${run.gold < shop.up.price ? 'poor' : ''}">${shop.up.price}</i></button>
           <button class="svc ${shop.remove.sold ? 'sold' : ''}" data-act="buyremove">${Art.icon('scissors')}<span><b>${tr('Распустить карту')}</b><small>${tr('Убрать карту из колоды')}</small></span><i class="${run.gold < shop.remove.price ? 'poor' : ''}">${shop.remove.price}</i></button>
         </div>
+        <button class="btn ghost reroll" data-act="reroll">${tr('Обновить товар')}<i class="${run.gold < rerollPrice() ? 'poor' : ''}">${Art.icon('coin')}${rerollPrice()}</i></button>
         <button class="btn leave" data-act="next">${tr('Уйти')}</button>
         ${heroBar(false)}`;
     };
@@ -1749,6 +1821,15 @@
       if (act === 'buy' && pay(shop.cards[i])) { ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(tr('Куплено: {name}', { name: CARDS[shop.cards[i].id].name })); }
       if (act === 'buyrelic' && shop.relic && pay(shop.relic)) addRelic(shop.relic.id);
       if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
+      if (act === 'reroll') {
+        const price = rerollPrice();
+        if (run.gold < price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
+        spend(price); ach.add('spent', price); SND.sfx('coin');
+        Object.assign(shop, stock(shop.relic ? [shop.relic.id] : []));
+        shop.rerolls = (shop.rerolls || 0) + 1;
+        if (shop.relic) codexMark('r', shop.relic.id);
+        toast(tr('Товар обновлён'));
+      }
       if (act === 'buyup' && !shop.up.sold) {
         if (run.gold < shop.up.price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
         upgradeFlow((ok) => { if (ok) { spend(shop.up.price); shop.up.sold = true; ach.add('spent', shop.up.price); bought(); } render(); });
@@ -2865,9 +2946,10 @@
     }
     if (!t) return;
     const act = t.dataset.act;
-    if (!['buy', 'buyrelic', 'buytea', 'buyremove', 'buyup', 'takecard', 'bossrelic'].includes(act)) SND.sfx('click');
+    if (!['buy', 'buyrelic', 'buytea', 'buyremove', 'buyup', 'reroll', 'takecard', 'bossrelic', 'cine-next'].includes(act)) SND.sfx('click');
     switch (act) {
       case 'start': newRun(); break;
+      case 'cine-next': case 'cine-skip': if (screen.onCine) screen.onCine(act); break;
       case 'retry': goClassSelect(); break;
       case 'pickcls': goClassSelect(t.dataset.cls, +screen.dataset.diff); break;
       case 'diffset': goClassSelect(screen.dataset.cls, +t.dataset.d); break;
@@ -2912,16 +2994,16 @@
       case 'takecard': SND.sfx('card'); run.deck.push(mk(t.dataset.id)); toast(tr('В колоду: {name}', { name: CARDS[t.dataset.id].name })); advance(); break;
       case 'bossrelic': addRelic(t.dataset.id); goReward('boss'); break;
       case 'bossrelic-skip': goReward('boss'); break;
-      case 'buy': case 'buyrelic': case 'buytea': case 'buyremove': case 'buyup': screen.onShop(act, +t.dataset.i); break;
+      case 'buy': case 'buyrelic': case 'buytea': case 'buyremove': case 'buyup': case 'reroll': screen.onShop(act, +t.dataset.i); break;
     }
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id) };
+  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id), cinema: () => goCinema(() => goTitle()) };
 
   achCheck(true);
   codexSeed();
-  goTitle();
+  if (hasCinema() && !cinemaSeen()) goCinema(() => goTitle()); else goTitle();
   try {
     if (sessionStorage.getItem('lastray.reopen') === 'settings') { sessionStorage.removeItem('lastray.reopen'); showSettings(); }
   } catch (e) { /* недоступно */ }

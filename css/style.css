@@ -328,6 +328,9 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .svc i { font-style: normal; font-size: 18px; color: var(--gold-hi); }
 .svc.sold { opacity: .3; pointer-events: none; }
 .btn.leave { position: absolute; right: 18px; bottom: 104px; font-size: 17px; padding: 7px 18px; }
+.btn.reroll { position: absolute; left: 18px; bottom: 104px; display: flex; align-items: center; gap: 8px; font-size: 16px; padding: 7px 14px; }
+.btn.reroll i { display: inline-flex; align-items: center; gap: 3px; font-style: normal; color: var(--gold-hi); }
+.btn.reroll i svg { width: 18px; height: 18px; }
 
 /* ---------- Оверлей колоды ---------- */
 .ov-inner { position: absolute; inset: 0; overflow-y: auto; padding: 40px 10px 30px; text-align: center; }
@@ -1025,6 +1028,32 @@ canvas.live { display: block; width: 100%; height: 100%; }
 .runres small { font-size: 13px; color: #a89cbc; }
 .stempty { margin: 30px 16px; font-size: 16px; line-height: 1.3; text-align: center; color: #c9c0d8; }
 
+/* ---------- Заставка ---------- */
+.scr-cinema ~ #gear, .scr-cinema ~ #menu { display: none; }
+.cine { position: absolute; inset: 0; background: #05060b; animation: fadein .6s; transition: opacity .5s; }
+.cine.out { opacity: 0; }
+.cine::before, .cine::after { content: ''; position: absolute; left: 24px; right: 24px; height: 1px; background: linear-gradient(90deg, transparent, rgba(216, 169, 74, .75) 18%, rgba(216, 169, 74, .75) 82%, transparent); }
+.cine::before { top: 188px; }
+.cine::after { top: 440px; }
+.cine-band { position: absolute; left: 0; right: 0; top: 196px; height: 236px; overflow: hidden; -webkit-mask-image: linear-gradient(transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(transparent, #000 9%, #000 91%, transparent); }
+.cine-layer { position: absolute; inset: 0; overflow: hidden; animation: cine-in 1s both; }
+.cine-img { position: absolute; left: 0; top: 0; width: 400px; background-size: 100% 100%; transform-origin: 0 0; transform: var(--t0); animation: cine-kb linear both; will-change: transform; }
+.cine-shadow { position: absolute; bottom: -30px; opacity: 0; filter: brightness(.5) saturate(.8) drop-shadow(0 0 10px rgba(110, 80, 200, .5)); animation: cine-rise 2.4s ease-out forwards; }
+.cine-shadow.s0 { left: 20px; height: 124px; animation-delay: .9s; }
+.cine-shadow.s1 { left: 116px; height: 168px; animation-delay: 1.9s; }
+.cine-shadow.s2 { right: 20px; height: 124px; transform: scaleX(-1); animation-delay: 2.8s; }
+.cine-cap { position: absolute; left: 26px; right: 26px; top: 470px; text-align: center; }
+.cine-cap p { margin: 0 0 12px; font-family: var(--body); font-size: 21px; line-height: 1.3; color: #f4ead2; text-shadow: 0 0 14px rgba(255, 200, 120, .25); opacity: 0; animation: cine-line 1.1s ease-out forwards; }
+.cine-skip { position: absolute; left: 0; right: 0; bottom: 44px; width: max-content; margin: 0 auto; font-size: 16px; padding: 7px 22px; }
+@keyframes cine-in { from { opacity: 0; } }
+@keyframes cine-kb { from { transform: var(--t0); } to { transform: var(--t1); } }
+@keyframes cine-rise { to { opacity: 1; bottom: 0; } }
+@keyframes cine-line { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+#app.skin .sfoot { font-size: 11px; }
+#app.skin .sfoot span { max-width: 122px; }
+#app.skin .sfoot span + span { text-align: right; }
+.slink { display: block; margin: 8px auto 4px; padding: 4px 10px; font-family: var(--title); font-size: 15px; color: var(--gold-hi); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; }
+
 /* ---------- Нарисованный интерфейс (assets/ui) ----------
    js/paint.js ставит на #app класс .skin и переменные --ui-<имя> с картинками.
    Без папки assets/ui всё остаётся как выше. Куски рамок растягиваются через border-image:
@@ -1137,6 +1166,7 @@ canvas.live { display: block; width: 100%; height: 100%; }
 #app.skin .btn:active { box-shadow: none; }
 /* у «Уйти» в лавке фонарь справа не должен уходить за край экрана */
 #app.skin .btn.leave { right: 34px; }
+#app.skin .btn.reroll { left: 20px; }
 
 /* окно настроек: тёмная панель с фонарём и нарисованным крестиком. Картинка 720×1020, тело x 4–716, y 100–1000,
    крестик в кружке с центром (668, 158): кнопка закрытия встаёт прямо на него */
@@ -1238,13 +1268,24 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 #app.skin .svc { min-height: 60px; }
 #app.skin .svc > i { margin-right: 4px; }
 
-/* справочник: тёмная панель с фонарём, текст листается внутри рамки. Картинка 720×1020, тело x 4–716, y 100–1000 */
+/* справочник: тёмная панель с фонарём. Заголовок и крестик стоят на рамке, текст листается только в чистом поле
+   между завитками. Картинка 720×1020, тело x 4–716, y 100–1000, нарисованный крестик в круге (668, 158) */
 #app.skin #overlay .ov-inner:has(> .gloss) {
-  --s: .53; inset: 58px 9px 10px; padding: 4px 16px 10px;
-  border-style: solid; border-color: transparent; border-width: 22px 12px 36px;
-  border-image: var(--ui-panel_plain) 250 90 170 90 fill / calc(250px * var(--s)) calc(90px * var(--s)) calc(170px * var(--s)) calc(90px * var(--s)) / calc(100px * var(--s)) calc(4px * var(--s)) calc(20px * var(--s)) calc(4px * var(--s)) stretch;
+  --s: .53; inset: 58px 9px 10px; padding: 0; overflow: visible; display: flex; flex-direction: column; border: 0;
+  border-image: var(--ui-panel) 250 90 170 90 fill / calc(250px * var(--s)) calc(90px * var(--s)) calc(170px * var(--s)) calc(90px * var(--s)) / calc(100px * var(--s)) calc(4px * var(--s)) calc(20px * var(--s)) calc(4px * var(--s)) stretch;
 }
-#app.skin #overlay .ov-inner:has(> .gloss) > h2 { margin: 0 40px 6px; }
+#app.skin #overlay .ov-inner:has(> .gloss) > h2 { flex: none; margin: 23px 96px 0; line-height: 30px; white-space: nowrap; }
+#app.skin #overlay .ov-inner:has(> .gloss) > .gloss {
+  flex: 1; min-height: 0; margin: 8px 38px 90px; padding: 4px 0 16px; overflow-y: auto; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(transparent, #000 8px, #000 calc(100% - 18px), transparent);
+  mask-image: linear-gradient(transparent, #000 8px, #000 calc(100% - 18px), transparent);
+}
+#app.skin #overlay .ov-inner:has(> .gloss) > .gloss::-webkit-scrollbar { display: none; }
+#app.skin #overlay .ov-inner:has(> .gloss) > .gloss dt:first-child { margin-top: 4px; }
+#app.skin #overlay .ov-inner:has(> .gloss) > .btn {
+  position: absolute; right: 4px; top: 10px; width: 42px; height: 42px; min-width: 0; margin: 0; padding: 0; border: 0; border-image: none;
+  border-radius: 50%; background: none; box-shadow: none; font-size: 0; color: transparent; text-shadow: none;
+}
 
 /* остальные таблички: выбор героя, сложность, магазин, шапки и вкладки списков */
 #app.skin :is(.clsinfo, .clsrelic, .clscards, .diffbox, .sitem, .achtag, .achtabs) { border: 0; border-radius: 0; background: none; box-shadow: none; border-image: var(--ui-btn_dark) 24 30 24 30 fill / 13px 15px 13px 15px / 3px stretch; }

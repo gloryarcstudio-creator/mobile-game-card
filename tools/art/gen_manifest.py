@@ -16,6 +16,7 @@ def names(d, suffix='.webp', strip=''):
 hero = [n for n in names('h') if not n.endswith('_face')]
 face = [n[:-5] for n in names('h') if n.endswith('_face')]
 EA = sorted(d for d in os.listdir(A) if re.fullmatch(r'ea\d*', d))[-1] if any(re.fullmatch(r'ea\d*', d) for d in os.listdir(A)) else 'ea'
+UI = ([d for d in sorted(os.listdir(A), key=lambda d: (len(d), d)) if re.fullmatch(r'ui\d*', d)] or ['ui'])[-1]
 anim = {}
 for k, v in build.items():
     kind, cid = k.split(':', 1)
@@ -51,7 +52,7 @@ M = {
     'relic': names('r'), 'card': names('c'), 'st': names('st'),
     'intent': names('it'), 'icon': names('i'),
     'bg': names('bg'), 'bgc': bgc, 'pic': names('pic'), 'ea': EA,
-    'ui': names('ui'),
+    'ui': names(UI), 'uid': UI,
 }
 js = '/* Сгенерировано gen_manifest.py: какие нарисованные картинки есть в assets/ */\nwindow.ASSETS = ' + json.dumps(M, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(REPO, 'js', 'assets.js'), 'w').write(js)

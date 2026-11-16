@@ -47,7 +47,7 @@
   if (UI.size && app) {
     app.classList.add('skin');
     // полный адрес: относительный в переменной браузер считал бы от папки css/
-    UI.forEach((n) => app.style.setProperty(`--ui-${n}`, `url("${new URL(url(`ui/${n}`), document.baseURI).href}")`));
+    UI.forEach((n) => app.style.setProperty(`--ui-${n}`, `url("${new URL(url(`${A.uid || 'ui'}/${n}`), document.baseURI).href}")`));
   }
 
   /* ---------- Значки ---------- */
@@ -88,6 +88,9 @@
   };
   Art.storyPic = (k) => (S.pic.has(k) ? `<img class="story-pic" src="${url(`pic/${k}`)}" alt="">` : '');
   Art.hasPic = (k) => S.pic.has(k);
+  // заставка сама раскладывает фон в кадре, ей нужен только адрес картинки
+  Art.bgUrl = (n) => (S.bg.has(n) ? url(`bg/${n}`) : '');
+  Art.enemyUrl = (id) => (S.enemy.has(id) ? url(`e/${id}`) : '');
 
   /* ---------- Фон ---------- */
   // ключевые кадры по стадиям; между соседними кадрами плавный переход

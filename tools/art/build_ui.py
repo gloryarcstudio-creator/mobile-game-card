@@ -9,7 +9,8 @@ from PIL import Image, ImageDraw, ImageFilter
 from key import key, bbox
 
 SRC, REPO = sys.argv[1], sys.argv[2]
-OUT = os.path.join(REPO, 'assets', 'ui')
+UI_DIR = 'ui2'    # bump when a piece changes under the same name: the published page keeps old files by path
+OUT = os.path.join(REPO, 'assets', UI_DIR)
 os.makedirs(OUT, exist_ok=True)
 
 def save(im, name, q=82):
@@ -213,6 +214,12 @@ def topbar():
     c = disc(c, 706, 99, 35)
     save(c, 'topbar')
 
+def splash():
+    """the lantern with the letter: a background for the opening cinematic, same size as the other backgrounds"""
+    im = Image.open(os.path.join(SRC, 'ui_splash.png')).convert('RGB')
+    im.save(os.path.join(REPO, 'assets', 'bg', 'splash.webp'), 'WEBP', quality=76, method=6)
+    print('bg/splash', im.size)
+
 def dark(name, out, width):
     im = cut_dark(os.path.join(SRC, f'ui_{name}.png'))
     c = im.crop(bbox(im, 40))
@@ -233,11 +240,10 @@ if __name__ == '__main__':
     topbar()
     magenta('speech_bubble', 'bubble', 520)
     magenta('panel_dark', 'panel', 720)
-    # the same panel without the painted cross, for windows that close with their own button
-    save(disc(keyed('panel_dark', 720), 668, 158, 25), 'panel_plain')
     magenta('achievement_tile', 'tile', 760)
     # list rows of any width: the same tile without the centre ornaments and the stamp slot
     magenta('achievement_tile', 'row', 760, plains=[((0, 52), (258, 484), (202, 258)), ((178, 212), (325, 430), (220, 325)), ((52, 178), (584, 708), (440, 564))])
-        magenta('button_round', 'round', 132)
+    magenta('button_round', 'round', 132)
     for l in ('ru', 'en', 'uk'):
         magenta(f'logo_{l}', f'logo_{l}', 760)
+    splash()
