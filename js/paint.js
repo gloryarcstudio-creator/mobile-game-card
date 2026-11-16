@@ -63,6 +63,8 @@
     const c = (D().CARDS || {})[id];
     return orig.icon(c ? c.art : id);
   };
+  // есть ли нарисованная картинка с таким именем (значок, талисман или карта)
+  Art.hasIcon = (k) => S.icon.has(k) || S.relic.has(k) || S.card.has(k);
   Art.icon = (name) => {
     if (typeof name === 'string') {
       if (name.startsWith('r:')) return Art.relic(name.slice(2));

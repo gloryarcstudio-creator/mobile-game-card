@@ -559,10 +559,10 @@
       <div class="menu">
         ${s ? `<button class="btn big" data-act="continue">${tr('Продолжить')}<small>${info}</small></button>` : ''}
         <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">${tr('Новая игра')}</button>
-        <button class="btn ghost achbtn" data-act="ach">${ICO.medal}<span>${tr('Достижения')}<small>${tr('{a} из {b}', { a: achCount(), b: ACH_LIST.length })}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
-        <button class="btn ghost achbtn" data-act="codex">${ICO.book}<span>${tr('База знаний')}<small>${tr('{a} из {b}', { a: codexCount(), b: codexTotal })}</small></span></button>
-        <button class="btn ghost achbtn" data-act="stats">${ICO.stats}<span>${tr('Статистика')}<small>${RUNS.list.length ? tr('Забегов: {a} · доставлено писем: {b}', { a: STATS.runs, b: STATS.wins }) : tr('Итоги твоих забегов')}</small></span></button>
-        <button class="btn ghost achbtn storebtn" data-act="store">${ICO.gift}<span>${tr('Магазин')}<small>${tr('Герои и режим без рекламы')}</small></span></button>
+        <button class="btn ghost achbtn" data-act="ach">${menuIco('medal')}<span>${tr('Достижения')}<small>${tr('{a} из {b}', { a: achCount(), b: ACH_LIST.length })}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
+        <button class="btn ghost achbtn" data-act="codex">${menuIco('book')}<span>${tr('База знаний')}<small>${tr('{a} из {b}', { a: codexCount(), b: codexTotal })}</small></span></button>
+        <button class="btn ghost achbtn" data-act="stats">${menuIco('stats')}<span>${tr('Статистика')}<small>${RUNS.list.length ? tr('Забегов: {a} · доставлено писем: {b}', { a: STATS.runs, b: STATS.wins }) : tr('Итоги твоих забегов')}</small></span></button>
+        <button class="btn ghost achbtn storebtn" data-act="store">${menuIco('gift')}<span>${tr('Магазин')}<small>${tr('Герои и режим без рекламы')}</small></span></button>
         <div class="menu-row"><button class="btn ghost" data-act="gloss">${tr('Справочник')}</button><button class="btn ghost" data-act="settings">${tr('Настройки')}</button></div>
       </div>
       <p class="savehint">${s ? tr('Прогресс сохраняется после каждого уровня') : ''}</p>`;
@@ -679,6 +679,9 @@
     medal: '<svg viewBox="0 0 40 40"><path d="M11 3 h7 l5 13 h-7z" fill="#c8423a" stroke="#17121f" stroke-width="2" stroke-linejoin="round"/><path d="M29 3 h-7 l-5 13 h7z" fill="#8a2a24" stroke="#17121f" stroke-width="2" stroke-linejoin="round"/><circle cx="20" cy="25" r="11" fill="#f3d27c" stroke="#17121f" stroke-width="2.2"/><circle cx="20" cy="25" r="7.5" fill="none" stroke="#b08a2a" stroke-width="1.5"/><path d="M14.5 21.5 h11 v7.5 h-11z" fill="#fff4d6" stroke="#17121f" stroke-width="1.4"/><path d="M14.5 21.5 l5.5 4 l5.5 -4" fill="none" stroke="#17121f" stroke-width="1.4"/></svg>',
     reset: '<svg viewBox="0 0 40 40"><path d="M31 20 a11 11 0 1 1 -4 -8.5" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/><path d="M28 5 l1 8 l-8 1" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
+  // значки кнопок главного меню: нарисованные картинки из набора, без набора остаются векторные
+  const MENU_PIC = { medal: 'medal', book: 'bookmark', stats: 'hourglass', gift: 'ribbon' };
+  const menuIco = (k) => (Art.hasIcon && Art.hasIcon(MENU_PIC[k]) ? `<span class="mico">${Art.relic(MENU_PIC[k])}</span>` : ICO[k]);
   const TOGGLES = [
     ['skipIntro', 'Вступление', 'Показывать', 'Пропускать', false],
     ['fast', 'Анимации', 'Обычные', 'Быстрые', false],
