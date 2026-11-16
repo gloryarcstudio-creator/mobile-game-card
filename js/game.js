@@ -431,7 +431,7 @@
     const plain = desc.replace(/<[^>]+>/g, '');
     return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${inst.sharp ? 'sharp' : ''} ${extra}" ${attrs}>
       <div class="cost ${cost == null ? 'none' : ''}"><span>${cost == null ? '✕' : cost}</span></div>
-      <div class="ctitle"><span>${c.name}${inst.up ? '<i>+</i>' : ''}</span></div>
+      <div class="ctitle ${c.name.length > 12 ? 'long' : ''}"><span>${c.name}${inst.up ? '<i>+</i>' : ''}</span></div>
       <div class="cart">${Art.card(inst.id)}</div>
       <div class="cdesc ${plain.length > 64 ? 'xlong' : plain.length > 48 ? 'long' : ''}"><span>${desc}</span></div>
       <div class="ctype">${RARITY_GEM[c.rarity] ? `<i class="gem g-${c.rarity}"></i>` : ''}${TYPE_LABEL[c.type]}</div>

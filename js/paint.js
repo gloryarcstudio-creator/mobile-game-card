@@ -39,8 +39,20 @@
     return `<svg class="foe painted${ALOFT.has(id) ? ' aloft' : ''}" viewBox="0 0 100 100" ${NS}><image href="${url(`e/${id}`)}" y="${dy}" width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg>`;
   };
 
+  /* ---------- Нарисованный интерфейс (assets/ui) ----------
+     Рамки карт, свитки ответов, кнопки и панели. CSS берёт картинки из переменных --ui-<имя>
+     и включает их только при классе .skin на #app (раздел «Нарисованный интерфейс» в style.css). */
+  const UI = new Set(A.ui || []);
+  const app = document.getElementById('app');
+  if (UI.size && app) {
+    app.classList.add('skin');
+    // полный адрес: относительный в переменной браузер считал бы от папки css/
+    UI.forEach((n) => app.style.setProperty(`--ui-${n}`, `url("${new URL(url(`ui/${n}`), document.baseURI).href}")`));
+  }
+
   /* ---------- Значки ---------- */
-  const ICON_ALIAS = { dogfriend: 'buddy' };
+  // значки без своей картинки берут нарисованный талисман или карту с тем же смыслом
+  const ICON_ALIAS = { dogfriend: 'buddy', lantern: 'r:ivalamp' };
   Art.relic = (id) => {
     if (S.relic.has(id)) return pic(`r/${id}`, '0 0 100 100', 'icon');
     const r = (D().RELICS || {})[id];
@@ -56,7 +68,11 @@
       if (name.startsWith('r:')) return Art.relic(name.slice(2));
       if (name.startsWith('c:')) return Art.card(name.slice(2));
       const k = ICON_ALIAS[name] || name;
+      if (k !== name && /^[rc]:/.test(k)) return Art.icon(k);
       if (S.icon.has(k)) return pic(`i/${k}`, '0 0 100 100', 'icon');
+      // значок с именем талисмана или карты (достижения, события, лавка): их нарисованная картинка
+      if (S.relic.has(k)) return Art.relic(k);
+      if (S.card.has(k)) return Art.card(k);
     }
     return orig.icon(name);
   };

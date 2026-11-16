@@ -51,6 +51,7 @@ M = {
     'relic': names('r'), 'card': names('c'), 'st': names('st'),
     'intent': names('it'), 'icon': names('i'),
     'bg': names('bg'), 'bgc': bgc, 'pic': names('pic'), 'ea': EA,
+    'ui': names('ui'),
 }
 js = '/* Сгенерировано gen_manifest.py: какие нарисованные картинки есть в assets/ */\nwindow.ASSETS = ' + json.dumps(M, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(REPO, 'js', 'assets.js'), 'w').write(js)
