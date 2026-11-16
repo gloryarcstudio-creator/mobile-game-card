@@ -449,7 +449,7 @@
         <div class="candle"><div class="wax" style="width:${pct}%"></div><div class="wick" style="left:${pct}%">${Art.flame(0.9)}</div></div>
         <div class="ch-sub">${STORY.countdown({ left, level: run.step + 1, total: MAX_STEPS, stage: si, final: isFinalStep(run.step) })}</div>
       </div>
-      <div class="relics">${relicIcons(2)}</div>
+      <div class="relics">${relicIcons(app.classList.contains('skin') ? 1 : 2)}</div>
     </div>`;
   }
 
@@ -457,7 +457,7 @@
   function relicIcons(max) {
     const list = run.relics;
     list.forEach((r) => codexMark('r', r));
-    const shown = list.length > max ? list.slice(-(max - 1)) : list;
+    const shown = list.length > max ? list.slice(-Math.max(1, max - 1)) : list;
     const more = list.length - shown.length;
     return shown.map((r) => `<button class="relic rt-${RELICS[r].tier}" data-relic="${r}">${Art.relic(r)}</button>`).join('')
       + (more > 0 ? `<button class="relic more" data-act="relics">+${more}</button>` : '');

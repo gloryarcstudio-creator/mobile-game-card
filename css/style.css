@@ -1081,20 +1081,31 @@ canvas.live { display: block; width: 100%; height: 100%; }
 #app.skin .enc-tag { top: calc(91px * var(--s)); bottom: auto; transform: translateY(-50%); padding: 0 6px; font-size: 12.5px; line-height: 1.2; background: none !important; border: 0; color: #fff1cc; text-shadow: 0 1px 2px #000, 0 0 6px rgba(0, 0, 0, .8); }
 #app.skin .t-boss .enc-tag { font-size: 16px; }
 
-/* ответы в событиях и разговорах: свиток. Картинка 720×260, тело свитка x 40–680, y 72–226 */
+/* ответы в событиях и разговорах: свиток. Картинка 720×181 (навершия валиков срезаны, чтобы свитки
+   в столбике не наезжали друг на друга), тело свитка x 40–680, y 15–169 */
 #app.skin .scroll {
-  width: 320px; padding: 10px 36px 9px; border: 0; border-radius: 0; background: none; box-shadow: none;
-  border-image: var(--ui-scroll) 92 125 52 125 fill / 46px 62.5px 26px 62.5px / 36px 20px 17px 20px stretch;
+  width: 320px; padding: 8px 40px 7px; border: 0; border-radius: 0; background: none; box-shadow: none; line-height: 1.12;
+  border-image: var(--ui-scroll) 35 125 30 125 fill / 17.5px 62.5px 15px 62.5px / 7.5px 20px 6px 20px stretch;
 }
 #app.skin .scroll::before, #app.skin .scroll::after { display: none; }
-#app.skin .scrolls { gap: 16px; margin-top: 26px; }
-#app.skin :is(.scr-talk, .scr-meet) .scrolls { gap: 14px; margin-top: 22px; }
-#app.skin :is(.scr-talk, .scr-meet) .scroll { padding: 8px 36px 7px; }
+#app.skin .scroll small { font-size: 13.5px; line-height: 1.1; }
+#app.skin .scrolls { gap: 13px; margin-top: 16px; }
+#app.skin :is(.scr-talk, .scr-meet) .scrolls { gap: 13px; margin-top: 14px; }
+#app.skin :is(.scr-talk, .scr-meet) .scroll { padding: 7px 40px 6px; }
+/* событие: картинка сжимается, если ответов много, и все свитки остаются над нижней панелью */
+#app.skin #screen.scr-event { display: flex; flex-direction: column; padding: 86px 0 98px; }
+#app.skin .scr-event > :is(.ev-box, .scrolls) { flex: none; }
+#app.skin .scr-event > .ev-pic-wrap { flex: 0 1 248px; min-height: 96px; margin-top: 0; }
+#app.skin .scr-event > .ev-art { flex: 0 1 150px; min-height: 84px; margin-top: 10px; }
+#app.skin .scr-event > .ev-art > svg { width: 100%; height: 100%; }
 #app.skin .scroll.secret, #app.skin .scroll.adopt { background: none; box-shadow: none; filter: drop-shadow(0 0 7px rgba(255, 210, 110, .85)); }
 
-/* рамка с текстом события и разговора: пергамент с фонарём. Картинка 760×463, тело x 10–750, y 76–445 */
+/* рамка с текстом события и разговора: пергамент с фонарём. Картинка 760×463, тело x 10–750, y 76–445.
+   Завитки в нижних углах листа закрашены, текст держится внутри листа */
+#app.skin .ev-box h2 { margin: 0 34px 5px; line-height: 1.05; }
+#app.skin .ev-box p { font-size: 17px; line-height: 1.18; }
 #app.skin .ev-box {
-  --s: .47; position: relative; margin-top: 34px; padding: 16px 22px 14px; border: 0; border-radius: 0; background: none;
+  --s: .47; position: relative; margin-top: 34px; padding: 16px 28px 15px; border: 0; border-radius: 0; background: none;
   border-image: var(--ui-parch) 150 130 145 130 fill / calc(150px * var(--s)) calc(130px * var(--s)) calc(145px * var(--s)) calc(130px * var(--s)) / calc(76px * var(--s)) calc(10px * var(--s)) calc(18px * var(--s)) calc(10px * var(--s)) stretch;
 }
 
@@ -1155,13 +1166,93 @@ canvas.live { display: block; width: 100%; height: 100%; }
 #app.skin .achtoast .aport { width: calc(136px * var(--s)); height: calc(124px * var(--s)); border: 0; border-radius: 3px; box-shadow: none; }
 
 /* энергия в бою: бирюзовый шар в оправе; шестерёнка и меню: круглые кнопки */
-#app.skin .energy { position: relative; border: 0; background: none; box-shadow: none; overflow: visible; }
-#app.skin .energy::before { content: ''; position: absolute; z-index: -1; left: -14px; right: -14px; top: -27px; bottom: -14px; background: var(--ui-orb) 50% 100% / contain no-repeat; }
-#app.skin .energy { isolation: isolate; }
 #app.skin :is(#gear, #menu) { border: 0; background: var(--ui-round) 50% 60% / 112% auto no-repeat; }
+
+/* нижняя панель: нарисованная планка 800×164 (на экране 400×82, прижата к низу). Портрет героя встаёт в круг
+   (центр 82, 85, радиус 65), здоровье в прорезь с сердцем (x 216–436, y 80–118), энергия на бирюзовый камень
+   (центр 520, 100), колода или конец хода в правое окошко (x 603–737, y 65–135). Имя, огоньки и стопки над планкой */
+#app.skin .herobar { display: block; height: 92px; padding: 0; background: var(--ui-herobar) 0 100% / 100% auto no-repeat, linear-gradient(rgba(14, 16, 28, 0), rgba(14, 16, 28, .8) 50%); }
+#app.skin .herobar .portrait { position: absolute; left: 9px; top: 20px; width: 65px; height: 65px; border: 0; box-shadow: none; background: radial-gradient(circle at 50% 35%, #3f5578, #18283a 75%); }
+#app.skin .herobar .hb-mid { position: absolute; left: 108px; top: 50px; width: 110px; height: 19px; }
+#app.skin .herobar .hpbar { height: 19px; border: 0; border-radius: 9px; background: none; }
+#app.skin .herobar .hpbar .fill { border-radius: 9px; background: linear-gradient(#ff7a66, #c2302a 60%, #8e1f1c); box-shadow: inset 0 1px 0 rgba(255, 220, 200, .45); }
+#app.skin .herobar .hpbar span { font-size: 13.5px; line-height: 19px; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+#app.skin .herobar .hb-row { position: absolute; left: -22px; bottom: calc(100% + 19px); margin: 0; min-height: 0; white-space: nowrap; }
+#app.skin .herobar .hero-name { font-size: 17px; text-shadow: 0 2px 2px #000, 0 0 8px rgba(0, 0, 0, .9); }
+#app.skin .herobar .lamp { padding: 1px 6px; background: rgba(20, 16, 28, .85); border: 1.5px solid #b8893a; }
+#app.skin .herobar .pip { width: 19px; height: 19px; }
+#app.skin .herobar .energy { position: absolute; left: 238px; top: 38px; width: 44px; height: 44px; border: 0; background: none; box-shadow: none; }
+#app.skin .herobar .energy b { font-size: 23px; text-shadow: 0 2px 0 #06302e, 0 0 6px #06302e; }
+#app.skin .herobar .energy small { font-size: 11px; margin-bottom: 11px; opacity: .9; text-shadow: 0 1px 2px #06302e; }
+#app.skin .herobar .piles { position: absolute; right: 10px; top: 4px; flex-direction: row; gap: 4px; }
+#app.skin .herobar .pile { padding: 1px 7px; font-size: 11.5px; border-radius: 9px; background: rgba(20, 16, 28, .88); border: 1.5px solid #b8893a; }
+#app.skin .herobar .btn:is(.end, .deckbtn) { position: absolute; left: 301px; top: 42px; width: 68px; height: 36px; padding: 0; border: 0; border-radius: 4px; background: none; box-shadow: none; line-height: 1; text-shadow: 0 1px 2px #000; }
+#app.skin .herobar .btn.end { font-size: 13.5px; color: #a8f5e6; }
+#app.skin .herobar .btn.deckbtn { font-size: 12.5px; color: #e8dcc0; }
+#app.skin .herobar .btn.deckbtn b { font-size: 16px; line-height: 1; }
+#app.skin .herobar .btn:is(.end, .deckbtn):active { transform: scale(.94); }
+
+/* верхняя панель: нарисованная планка 800×159 (на экране 400×80). Монеты в левом круге (центр 120, 100),
+   стадия и свеча-полоска посередине (x 180–512), последний талисман в правом круге (центр 706, 99) */
+#app.skin .topbar:not(.slim) { display: block; height: 80px; padding: 0; background: var(--ui-topbar) 0 0 / 100% auto no-repeat; }
+#app.skin .topbar:not(.slim) .gold { position: absolute; left: 41px; top: 31px; width: 38px; height: 38px; flex-direction: column; justify-content: center; gap: 0; font-size: 14px; line-height: 1; }
+#app.skin .topbar:not(.slim) .gold .icon { width: 17px; height: 17px; }
+#app.skin .topbar:not(.slim) .gold b { font-weight: normal; text-shadow: 0 1px 2px #000; }
+#app.skin .topbar:not(.slim) .chapter { position: absolute; left: 93px; top: 27px; width: 168px; }
+#app.skin .topbar:not(.slim) .ch-title { font-size: 13.5px; line-height: 1.1; white-space: nowrap; text-shadow: 0 1px 2px #000; }
+#app.skin .topbar:not(.slim) .candle { height: 8px; margin: 5px 10px 0; background: #0e1220; border: 1.5px solid #8a6a2e; }
+#app.skin .topbar:not(.slim) .candle .wick { display: none; }
+#app.skin .topbar:not(.slim) .candle .wax { box-shadow: 0 0 6px 1px rgba(255, 190, 90, .6); }
+#app.skin .topbar.slim { height: 46px; margin: 3px 3px 0; padding: 0 16px 0 14px; background: none; border: 0; border-image: var(--ui-btn_dark) 24 30 24 30 fill / 13px 15px 13px 15px / 0 stretch; }
+#app.skin .topbar.slim .relic { width: 29px; height: 29px; padding: 2.5px; }
+#app.skin .topbar.slim .stepl { text-shadow: 0 1px 2px #000; }
+#app.skin .topbar:not(.slim) .ch-sub { margin-top: 3px; font-size: 10.5px; line-height: 1.1; white-space: nowrap; opacity: .85; }
+#app.skin .topbar:not(.slim) .relics { position: absolute; left: 334px; top: 30px; width: 39px; height: 39px; min-width: 0; display: block; }
+#app.skin .topbar:not(.slim) .relic:not(.more) { display: block; width: 39px; height: 39px; padding: 5px; border: 0; background: none; box-shadow: none; }
+#app.skin .topbar:not(.slim) .relic.more { position: absolute; right: -9px; bottom: -7px; width: 23px; height: 23px; font-size: 11.5px; line-height: 1; background: #1a1524; border: 1.5px solid #d8a94a; }
+#app.skin .scr-class ~ #gear { top: 12px; }
+#app.skin #gear { top: 84px; }
+#app.skin #menu { top: 128px; }
+#app.skin .map-hint { top: 104px; }
+#app.skin .encs { top: 158px; }
 
 /* название на главном экране: нарисованная вывеска на языке игры */
 #app.skin .logo { width: 360px; height: 150px; margin: 40px auto 0; background: var(--ui-logo_ru) 50% 50% / contain no-repeat; }
 html[lang="en"] #app.skin .logo { background-image: var(--ui-logo_en); }
 html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 #app.skin .logo > * { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* кружки в настройках: круглые нарисованные кнопки */
+#app.skin .sicons span { width: 56px; height: 62px; padding: 19px 15px 15px; border: 0; border-radius: 0; background: var(--ui-round) 50% 50% / 100% 100% no-repeat; box-shadow: none; }
+#app.skin .sicons button { gap: 1px; }
+
+/* строки списков (талисманы, услуги лавки): плитка с окошком для значка. Картинка 760×212 без украшений посередине,
+   тело x 18–748, y 30–195, окошко x 68–200, y 55–175 */
+#app.skin :is(.rrow, .svc, .brelic) {
+  --s: .41; min-height: 68px; padding: 4px 14px 4px calc(50px * var(--s)); gap: 10px; border: 0; border-radius: 0; background: none; box-shadow: none;
+  border-image: var(--ui-row) 60 70 40 215 fill / calc(60px * var(--s)) calc(70px * var(--s)) calc(40px * var(--s)) calc(215px * var(--s)) / calc(30px * var(--s)) calc(12px * var(--s)) calc(17px * var(--s)) calc(18px * var(--s)) stretch;
+}
+#app.skin :is(.rrow, .svc, .brelic) > :is(svg, .icon):first-child { width: calc(132px * var(--s)); height: 42px; flex: none; padding: 0 5px; }
+#app.skin .rlist { gap: 9px; }
+#app.skin .shop-services { gap: 8px; margin-top: 8px; }
+#app.skin .svc { min-height: 60px; }
+#app.skin .svc > i { margin-right: 4px; }
+
+/* справочник: тёмная панель с фонарём, текст листается внутри рамки. Картинка 720×1020, тело x 4–716, y 100–1000 */
+#app.skin #overlay .ov-inner:has(> .gloss) {
+  --s: .53; inset: 58px 9px 10px; padding: 4px 16px 10px;
+  border-style: solid; border-color: transparent; border-width: 22px 12px 36px;
+  border-image: var(--ui-panel_plain) 250 90 170 90 fill / calc(250px * var(--s)) calc(90px * var(--s)) calc(170px * var(--s)) calc(90px * var(--s)) / calc(100px * var(--s)) calc(4px * var(--s)) calc(20px * var(--s)) calc(4px * var(--s)) stretch;
+}
+#app.skin #overlay .ov-inner:has(> .gloss) > h2 { margin: 0 40px 6px; }
+
+/* остальные таблички: выбор героя, сложность, магазин, шапки и вкладки списков */
+#app.skin :is(.clsinfo, .clsrelic, .clscards, .diffbox, .sitem, .achtag, .achtabs) { border: 0; border-radius: 0; background: none; box-shadow: none; border-image: var(--ui-btn_dark) 24 30 24 30 fill / 13px 15px 13px 15px / 3px stretch; }
+#app.skin .achtag { padding: 0 20px 0 12px; }
+#app.skin .achtabs { clip-path: none; margin: 0 9px 11px; }
+#app.skin .achhead .sclose { border: 0; border-radius: 50%; box-shadow: none; font-size: 20px; background: var(--ui-round) 50% 60% / 112% auto no-repeat; }
+#app.skin :is(.clsrelic, .clscards) { padding: 9px 13px; }
+#app.skin .diffbox { padding: 10px 13px 9px; }
+#app.skin .clsinfo { padding: 10px 12px; }
+#app.skin .sitem { padding: 9px 12px; }
+#app.skin .clsbtns { gap: 26px; }
