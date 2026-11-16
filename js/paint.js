@@ -132,10 +132,10 @@
     }
     const keys = (KEYS[opts.scene] || KEYS.town).filter((k) => S.bg.has(k));
     if (!keys.length) return null;
-    if (keys.length === 1) return paintBg(keys[0]);
-    const x = Math.max(0, Math.min(1, opts.t || 0)) * (keys.length - 1);
-    const i = Math.min(keys.length - 2, Math.floor(x));
-    return paintBg(keys[i], keys[i + 1], x - i);
+    // Картинки стадии нарисованы с разных точек: наплыв одной на другую давал двойное изображение
+    // (два ряда фонарей и домов сразу). Поэтому стадия делится на равные отрезки, в каждом своя картинка целиком.
+    const i = Math.min(keys.length - 1, Math.floor(Math.max(0, Math.min(1, opts.t || 0)) * keys.length));
+    return paintBg(keys[i]);
   };
 
   // Опустить камеру: снег с картинки встаёт под ноги персонажа на высоте y (экран 400×860).

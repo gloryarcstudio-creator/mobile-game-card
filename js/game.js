@@ -1561,7 +1561,7 @@
   // разговор до боя: враг говорит, герой выбирает ответ
   function goTalk(id, tier) {
     ensureLore();
-    setBg(null, 'talk');
+    setBg(); // разговор идёт там же, где будет бой: тот же фон пути
     save({ t: 'talk', enemy: id, tier });
     codexMark('e', id);
     const e = ENEMIES[id];
@@ -1641,7 +1641,7 @@
   const wantsPlea = (id, tier) => mainStory() && SAY[id] && SAY[id].plea && (tier === 'boss' || Math.random() < 0.4);
   function goAfter(tier, id) {
     save({ t: 'after', tier, enemy: id });
-    setBg(null, 'talk');
+    setBg(); // разговор идёт там же, где будет бой: тот же фон пути
     const e = ENEMIES[id];
     screen.className = 'scr-talk';
     screen.dataset.enemy = id; screen.dataset.tier = tier;
@@ -2999,7 +2999,7 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id), cinema: () => goCinema(() => goTitle()) };
+  window.Game = { get run() { return run; }, get combat() { return C; }, get busy() { return busy; }, play: (i) => playCard(i), endTurn: () => endTurn(), playCost: (c) => playCost(c), newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id), cinema: () => goCinema(() => goTitle()) };
 
   achCheck(true);
   codexSeed();
