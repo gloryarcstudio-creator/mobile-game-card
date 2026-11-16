@@ -37,6 +37,28 @@
   const FLAME_MAX = 3;      // при стольких Огоньках лампа вспыхивает
   const BURST_DMG = 8;
   const HAND_MAX = 10;
+  /* Баланс длинного сюжета (подобран прогонами бота: tools/sim/sim.js): враги крепнут с каждым уровнем,
+     боссы стадий намного крепче обычных врагов и на половине HP впадают в Ярость */
+  const LONG = MAX_STEPS > 20;
+  const BAL = {
+    hpStep: 0.055,           // прирост HP обычных врагов и элит за уровень
+    strEvery: [10, 5],        // +1 Силы врагам каждые столько уровней: в городе и на окраине
+    eliteHp: [0.95, 1.2],    // множитель HP элит по стадиям
+    eliteW: [10, 12],        // вес элиты на развилке по стадиям
+    bossHp: [2.2, 2.3, 2.2],   // множители HP боссов: стадия I, стадия II, финал
+    bossStr: [0, 4, 5],      // Сила боссов с начала боя
+    rageStr: [2, 3, 4],      // Ярость босса: Сила на половине HP
+    rageBlock: [8, 12, 16],  // и защита
+    eliteAfterCalm: 0.3,     // шанс элиты среди боёв после мирной остановки
+    chestRelic: 0.33,        // шанс талисмана в сундуке
+    relicPrice: { common: 125, uncommon: 150, rare: 180, epic: 215, legendary: 270 },
+  };
+  // Сила обычных врагов и элит по уровню: на окраине растёт быстрее
+  const lvlStr = (s) => {
+    if (!LONG) return Math.floor(s / 3);
+    const a = STAGES[0].len;
+    return s < a ? Math.floor(s / BAL.strEvery[0]) : Math.floor(a / BAL.strEvery[0]) + Math.floor((s - a) / BAL.strEvery[1]);
+  };
   // талисманы босса меняют базовые правила боя
   const maxEnergy = () => MAX_ENERGY + ['hourglass', 'bottomless', 'crown', 'sunstone'].filter((r) => hasRelic(r)).length;
   const handSize = () => HAND_SIZE - (hasRelic('hourglass') ? 1 : 0) + (hasRelic('moonstone') ? 2 : 0)
@@ -54,6 +76,7 @@
     ['Шипы', 'Когда враг бьёт вас, он сам получает столько урона. Колючие враги так же ранят вас за каждый удар по ним.'],
     ['Хрупкость', 'Карты и талисманы дают вам на 25% меньше защиты. Число — сколько ходов это продлится.'],
     ['Сила врага', 'Каждое очко добавляет врагу +1 урона. Её можно отнять морозом.'],
+    ['Ярость босса', 'Когда у босса остаётся половина HP, он впадает в Ярость: получает Силу и защиту. Приберегите к этому сильный ход.'],
     ['Спит', 'Враг пропускает свой следующий ход.'],
     ['Доставка', 'Эффект карты сработает в начале вашего следующего хода.'],
     ['Серия', 'Карта сильнее за каждую карту, сыгранную до неё в этот ход.'],
@@ -70,6 +93,7 @@
     ['Талисманы босса', 'После босса стадии можно выбрать один из трёх сильных талисманов. У многих есть цена.'],
     ['Редкость', 'Карты и талисманы бывают пяти редкостей: обычные (серый камень), необычные (зелёный), редкие (синий), эпические (фиолетовый) и легендарные (золотой). Чем сильнее противник, тем чаще после него выпадают редкие. Легендарную карту можно взять в колоду только одну.'],
     ['Приёмы врагов', 'У многих врагов есть свои хитрости: матрёшки раскрываются, самовар закипает, туман глушит удары, шутиха взрывается. Приёмы видны значками под именем врага, нажмите на значок, чтобы прочитать.'],
+    ['Передышка', 'После привала, лавки, сундука, события или встречи дорога ведёт только через бой: на следующей развилке одни противники.'],
     ['Разговоры', 'Некоторые враги заговаривают с героем до боя: кого-то можно уговорить, прогнать или разозлить, а побеждённые иногда просят пощады. В пути встречаются другие герои. Друзья помогут в финале, а обиженный герой может уйти в Тень и стать финальным боссом.'],
     ['Герои', 'У каждого героя своя колода, особенность, карты и талисманы, которые выпадают только ему. Общие карты под его билд в наградах и лавке встречаются чаще.'],
   ];
@@ -891,7 +915,12 @@
       const k = it.k === 'attack' ? (it.leech ? 'leech' : it.hits ? 'hits' : 'attack') : it.k;
       if (MOVE_LABEL[k] && !moves.includes(k)) moves.push(k);
     }));
+    // в длинном сюжете босс крепче своей записи, начинает с Силой и впадает в Ярость (BAL)
+    const bsi = LONG && e.tier === 'boss' ? (final ? 2 : Math.max(0, MAIN_STAGES.indexOf(stage))) : -1;
+    const hpShown = bsi >= 0 ? Math.round(e.hp * BAL.bossHp[bsi]) : e.hp;
     const traits = [
+      bsi >= 0 && BAL.bossStr[bsi] > 0 && tr('Начинает бой с Силой {n}.', { n: BAL.bossStr[bsi] }),
+      bsi >= 0 && tr('Ярость: на половине HP получает Силу +{n} и {b} защиты.', { n: BAL.rageStr[bsi], b: BAL.rageBlock[bsi] }),
       e.thorns && tr('Каждый ваш удар по врагу ранит вас на {n}', { n: e.thorns }),
       e.nest && tr('Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: {n}.', { n: e.nest }),
       e.boil && tr('Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После его хода кипяток остывает. Поджог его не злит.'),
@@ -905,7 +934,7 @@
     const said = SAY[id] && (Array.isArray(SAY[id].start) ? SAY[id].start[0] : SAY[id].start);
     return `${cxBack()}
       <div class="cxhead"><span class="cxport foe f-${e.tier}">${Art.enemy(id)}</span><div><h3>${e.name}</h3><p class="cxsub">${tierName}${stage && !e.dark ? ` · ${stage.name}` : ''}</p><p>${e.line}</p></div></div>
-      <div class="cxstats"><span>${e.hp} HP</span><span>${tr('Побед над этим врагом: {n}', { n: ACH.k[id] || 0 })}</span></div>
+      <div class="cxstats"><span>${hpShown} HP</span><span>${tr('Побед над этим врагом: {n}', { n: ACH.k[id] || 0 })}</span></div>
       ${said ? `<p class="cxquote">${quote(said)}</p>` : ''}
       <h4>${tr('Приёмы')}</h4><div class="cxmoves">${moves.map((k) => `<span>${Art.intentIcon(k === 'hits' ? 'attack' : k)}${tr(MOVE_LABEL[k])}</span>`).join('')}</div>
       ${traits.length ? `<h4>${tr('Особенности')}</h4>${traits.map((t) => `<p>${t}</p>`).join('')}` : ''}
@@ -1201,7 +1230,10 @@
     if (s === 0) return done([fight(), fight(), { t: 'event', ev: pick(EVENTS).id }]);
     if (s === g.end - 1) return done([{ t: 'rest' }, { t: 'shop' }, eliteOk ? elite() : fight()]);
     const pool = [];
-    const weights = [['fight', 40], ['event', 18], ['shop', 10], ['chest', 10], ['rest', 12], ['elite', eliteOk ? (si > 0 ? 16 : 10) : 0]];
+    // после привала, лавки, сундука, события или встречи дорога ведёт только через бой
+    run.forced = LONG && ['event', 'shop', 'chest', 'rest', 'meet'].includes(run.prev);
+    if (run.forced) { pool.push(fight(), fight(), eliteOk && Math.random() < BAL.eliteAfterCalm ? elite() : fight()); }
+    const weights = [['fight', 40], ['event', 18], ['shop', 10], ['chest', 10], ['rest', 12], ['elite', eliteOk ? (LONG ? BAL.eliteW[Math.min(1, si)] : si > 0 ? 16 : 10) : 0]];
     const total = weights.reduce((a, w) => a + w[1], 0);
     while (pool.length < 3) {
       let r = Math.random() * total; let t = 'fight';
@@ -1319,12 +1351,14 @@
     const g = STAGES[si];
     if (run.step === g.start && STORY.stageIntro) return `<b>${g.name}</b><small>${STORY.stageIntro[si] || ''}</small>`;
     if (run.step === 0) return tr('Выбери, куда идти');
+    if (run.forced && run.choices && run.choices.every((o) => o.t === 'fight' || o.t === 'elite')) return `<b>${tr('Уровень {n}', { n: run.step + 1 })}</b><small>${tr('После передышки дорога ведёт через бой')}</small>`;
     return tr('Уровень {n}', { n: run.step + 1 });
   }
 
   function chooseEncounter(i) {
     const o = run.choices[i];
     run.choices = null;
+    run.prev = o.t;
     save(o);
     if (o.t === 'fight' || o.t === 'elite' || o.t === 'boss') { if (!preFight(o)) startCombat(o.enemy, o.t); }
     else if (o.t === 'meet') goMeet(o.hero);
@@ -1788,7 +1822,7 @@
       const cards = ['common', 'uncommon', rollRarity([0.05, 0.25, 1, 1])].map((r) => pickCard(r)).map((id) => ({ id, price: disc(base[CARDS[id].rarity] + rnd(-4, 6)), sold: false }));
       let rid = pickRelic();
       for (let k = 0; k < 6 && rid && skip.includes(rid); k++) rid = pickRelic(); // не тот же талисман, что лежал
-      return { cards, relic: rid ? { id: rid, price: disc({ common: 90, uncommon: 108, rare: 125, epic: 150, legendary: 190 }[RELICS[rid].tier]), sold: false } : null };
+      return { cards, relic: rid ? { id: rid, price: disc((LONG ? BAL.relicPrice : { common: 90, uncommon: 108, rare: 125, epic: 150, legendary: 190 })[RELICS[rid].tier]), sold: false } : null };
     };
     const shop = saved || { ...stock(), tea: { price: disc(22), sold: false }, remove: { price: disc(50), sold: false }, up: { price: disc(55), sold: false }, rerolls: 0 };
     const rerollPrice = () => disc(20 + 12 * (shop.rerolls || 0)); // каждое обновление дороже
@@ -1859,7 +1893,7 @@
     ach.add('chests');
     const free = freeRelics();
     let msg;
-    if (free.length && Math.random() < 0.5) { const id = pickRelic(free); addRelic(id); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
+    if (free.length && Math.random() < (LONG ? BAL.chestRelic : 0.5)) { const id = pickRelic(free); addRelic(id); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
     else { const g = rnd(28, 45); gain(g); SND.sfx('coin'); msg = tr('Внутри {n} {n|монета|монеты|монет}.', { n: g }); }
     save({ t: 'next' });
     $('.chest').classList.add('open');
@@ -2081,7 +2115,9 @@
     const e = ENEMIES[enemyId];
     run.seen[enemyId] = (run.seen[enemyId] || 0) + 1;
     run.recent = [...run.recent, enemyId].slice(-4);
-    const scale = tier === 'boss' ? 1 : 1 + run.step * (MAX_STEPS > 20 ? 0.035 : 0.08);
+    const si = Math.min(2, stageOf(run.step));
+    const scale = !LONG ? (tier === 'boss' ? 1 : 1 + run.step * 0.08)
+      : tier === 'boss' ? BAL.bossHp[si] : (1 + run.step * BAL.hpStep) * (tier === 'elite' ? BAL.eliteHp[Math.min(1, si)] : 1);
     const hp = Math.round(e.hp * scale * DIFF().hp);
     // отношение к герою и разговор до боя (js/lore.js): кто не терпит — злее, кто боится — слабее
     const mod = run.fmod || {};
@@ -2089,7 +2125,7 @@
     const tie = !e.dark && run.killed ? tieOf(enemyId) : null;
     codexMark('e', enemyId);
     const angry = ((att === 'hate' || att === 'grudge') && !mod.calm ? 2 : 0) + (tie && tie.kind === 'avenge' && !mod.calm ? 1 : 0);
-    const str = (tier === 'boss' ? 0 : Math.floor(run.step / (MAX_STEPS > 20 ? 8 : 3))) - (hasRelic('frostglass') ? 2 : 0) + angry + (mod.str || 0);
+    const str = (tier === 'boss' ? (LONG ? BAL.bossStr[si] : 0) : lvlStr(run.step)) - (hasRelic('frostglass') ? 2 : 0) + angry + (mod.str || 0);
     const weak = (hasRelic('inkwell') ? 2 : 0) + (hasRelic('frostring') ? 2 : 0) + (att === 'fear' ? 2 : 0) + (tie && tie.kind === 'rival' ? 2 : 0) + (mod.weak || 0);
     const final = tier === 'boss' && isFinalStep(run.step);
     C = {
@@ -2168,7 +2204,7 @@
     // особенности героев в начале хода
     if (first && proc('honeypot')) api.ginger(2);
     if (proc('moldform')) api.ginger(1);
-    if (proc('grindwheel')) api.sharpen(1, true);
+    if (proc('grindwheel')) api.sharpen(2, true);
     if (C.charms.apprentice) api.sharpen(2 * C.charms.apprentice, true);
     if (first) await friendHelp();
     if (proc('bridgerail')) { C.thorns += hasRelic('wreath') ? 2 : 1; FX.play('thorns'); }
@@ -2251,6 +2287,8 @@
     const g = (name) => GL[name];
     const st = [];
     if (e.str) st.push(chip('s-str', tr('Сила {n}', { n: e.str }), g('Сила врага'), sti('enemy_strength')));
+    if (e.raged) st.push(chip('s-rage', tr('Ярость'), g('Ярость босса'), sti('enemy_strength')));
+    $('#enemy').classList.toggle('rage', !!e.raged);
     if (e.weak) st.push(chip('s-weak', tr('Ослаблен {n}', { n: e.weak }), g('Ослаблен'), sti('weak')));
     if (e.vuln) st.push(chip('s-vuln', tr('Уязвим {n}', { n: e.vuln }), g('Уязвим'), sti('vulnerable')));
     if (e.burn) st.push(chip('s-burn', tr('Поджог {n}', { n: e.burn }), g('Поджог'), sti('burn')));
@@ -2402,6 +2440,7 @@
     stAdd('dmg', real); if (run.st && dmg > run.st.hit) run.st.hit = dmg;
     if (real > 0 && ENEMIES[C.id].boil && e.hp > 0 && e.boil < 5) e.boil++;
     nestCheck();
+    rageCheck();
     const el = $('#enemy');
     el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
     eAct('hurt');
@@ -2410,6 +2449,17 @@
     floatText($('.enemy-fx'), real > 0 ? `-${real}` : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
     await sleep(260);
+  }
+
+  // Ярость: босс, потерявший половину HP, получает Силу и защиту (один раз за бой)
+  function rageCheck() {
+    const e = C.enemy;
+    if (!LONG || C.tier !== 'boss' || e.raged || e.hp <= 0 || e.hp > e.max / 2) return;
+    e.raged = true;
+    const si = Math.min(2, stageOf(run.step));
+    e.str += BAL.rageStr[si]; e.block += BAL.rageBlock[si];
+    SND.sfx('buff');
+    floatText($('.enemy-fx'), tr('Ярость! Сила +{n}', { n: BAL.rageStr[si] }), 'burnf');
   }
 
   // Матрёшка: вместо гибели раскрывается, внутри новая, поменьше
@@ -2523,6 +2573,7 @@
       e.burn--;
       if (e.hp > 0 && proc('stokerglove')) api.block(2);
       nestCheck();
+      rageCheck();
       renderCombat();
       await sleep(400);
       if (e.hp <= 0) { ach.flag('burnkill'); await winCombat(); return; }
@@ -2618,9 +2669,9 @@
     if (tie === 'rival') ach.add('rivals');
     ach.put('beaten', id);
     if (tier === 'boss') ach.put('bosses', id);
-    if (!hpLost) ach.flag('flawless');
+    if (!hpLost) ach.add('flawless');
     if (!hpLost && tier === 'elite') ach.flag('flawlesselite');
-    if (turn === 1) ach.flag('oneturn');
+    if (turn === 1) ach.add('oneturn');
     if (id === 'firecracker' && !boomed) ach.flag('defuse');
     saveStats();
     run.fights++; run.lit++;
@@ -2999,7 +3050,7 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, get busy() { return busy; }, play: (i) => playCard(i), endTurn: () => endTurn(), playCost: (c) => playCost(c), newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id), cinema: () => goCinema(() => goTitle()) };
+  window.Game = { get run() { return run; }, get combat() { return C; }, get busy() { return busy; }, bal: BAL, play: (i) => playCard(i), endTurn: () => endTurn(), playCost: (c) => playCost(c), newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id), cinema: () => goCinema(() => goTitle()) };
 
   achCheck(true);
   codexSeed();

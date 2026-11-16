@@ -791,7 +791,7 @@
     clockmaker: {
       name: 'Сумеречный Часовщик', hp: 140, tier: 'boss',
       line: 'Подводит часы, чтобы ночь наступила раньше.',
-      pattern: [{ k: 'attack', v: 14 }, { k: 'block', v: 16 }, { k: 'snuff', v: 9 }, { k: 'attack', v: 4, hits: 4 }, { k: 'buff', v: 3, then: { k: 'block', v: 8 } }],
+      pattern: [{ k: 'attack', v: 14 }, { k: 'sap', v: 1, then: { k: 'block', v: 16 } }, { k: 'snuff', v: 9 }, { k: 'attack', v: 4, hits: 4 }, { k: 'buff', v: 3, then: { k: 'attack', v: 6 } }],
     },
     waxgiant: {
       name: 'Сургучный Великан', hp: 90, tier: 'boss',
@@ -806,12 +806,12 @@
     wolf: {
       name: 'Сумеречный Волк', hp: 130, tier: 'boss',
       line: 'В его шерсти застряли первые звёзды.',
-      pattern: [{ k: 'attack', v: 7, hits: 2 }, { k: 'buff', v: 2 }, { k: 'attack', v: 18 }, { k: 'snuff', v: 8 }],
+      pattern: [{ k: 'attack', v: 7, hits: 2 }, { k: 'buff', v: 2, then: { k: 'attack', v: 5 } }, { k: 'attack', v: 18 }, { k: 'snuff', v: 8 }, { k: 'frail', v: 2, then: { k: 'attack', v: 4, hits: 3 } }],
     },
     troll: {
       name: 'Мостовой Тролль', hp: 160, tier: 'boss',
       line: 'Берёт плату за мост. Больше всего любит чужие письма.',
-      pattern: [{ k: 'block', v: 18 }, { k: 'steal', v: 16, gold: 20 }, { k: 'debuff', v: 2, then: { k: 'attack', v: 8 } }, { k: 'block', v: 12, then: { k: 'buff', v: 3 } }],
+      pattern: [{ k: 'block', v: 18, then: { k: 'attack', v: 6 } }, { k: 'steal', v: 16, gold: 20 }, { k: 'debuff', v: 2, then: { k: 'attack', v: 8 } }, { k: 'attack', v: 6, hits: 2 }, { k: 'block', v: 12, then: { k: 'buff', v: 3 } }],
     },
     hollowpost: {
       name: 'Пустой Почтальон', hp: 175, tier: 'boss',
@@ -941,7 +941,7 @@
     collar: { tier: 'uncommon', cls: 'shepherd', name: 'Ошейник с бубенцом', art: 'collar', desc: 'Каждый укус Дружка даёт вам 2 защиты.' },
     herbbag: { tier: 'uncommon', cls: 'herbalist', name: 'Мешочек трав', art: 'herbbag', desc: 'После боя восстановить половину HP, заплаченных Ценой.' },
     moldform: { tier: 'class', name: 'Расписная формочка', art: 'moldform', desc: 'В начале каждого хода в руку ложится Пряник.' },
-    grindwheel: { tier: 'class', name: 'Точильный круг', art: 'grindwheel', desc: 'В начале каждого хода одна карта в руке затачивается: улучшается до конца боя.' },
+    grindwheel: { tier: 'class', name: 'Точильный круг', art: 'grindwheel', desc: 'В начале каждого хода две карты в руке затачиваются: улучшаются до конца боя.' },
     dogfriend: { tier: 'class', name: 'Пёс Дружок', art: 'dogfriend', desc: 'В конце каждого хода Дружок кусает врага на свою Злость. В начале боя Злость 3.' },
     mortar: { tier: 'class', name: 'Ступка знахарки', art: 'mortar', desc: 'Когда вы платите Цену, враг получает столько же урона.' },
     // талисманы босса
@@ -1046,45 +1046,45 @@
   const CLASSES = {
     lamp: {
       name: 'Ива', role: 'Фонарщица', f: true, who: 'фонарщица Ива', whom: 'фонарщице Иве', look: 'lamp',
-      hp: 36, gold: 20, relic: 'ivalamp', build: 'Огоньки и Вспышки',
+      hp: 44, gold: 20, relic: 'ivalamp', build: 'Огоньки и Вспышки',
       about: 'Копит Огоньки и чаще всех зажигает Вспышки лампы.',
-      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'kindle', 'spark', 'firefly'],
-      favored: ['kindle', 'spark', 'oil', 'mirror', 'palm', 'flashpoint', 'drafts', 'eveninglamp', 'rhythm', 'sparks', 'icelantern', 'snowstorm', 'starfall', 'lastlight', 'firebird'],
+      deck: ['strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'kindle', 'spark', 'spark', 'firefly', 'lampglass'],
+      favored: ['kindle', 'spark', 'oil', 'mirror', 'cloak', 'mittens', 'palm', 'flashpoint', 'drafts', 'eveninglamp', 'rhythm', 'sparks', 'icelantern', 'snowstorm', 'starfall', 'lastlight', 'firebird'],
     },
     courier: {
       name: 'Тиша', role: 'Скороход', f: false, who: 'скороход Тиша', whom: 'скороходу Тише', look: 'courier',
-      hp: 32, gold: 35, relic: 'wingboots', build: 'Доставка и серии',
+      hp: 35, gold: 35, relic: 'wingboots', build: 'Доставка и серии',
       about: 'Играет много дешёвых карт за ход и шлёт Доставки на следующий.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'urgent', 'telegram', 'wind'],
       favored: ['wind', 'parcel', 'telegram', 'surprise', 'flurry', 'finale', 'breath', 'compass', 'inkpen', 'blotter', 'spark', 'cocoa', 'sledram', 'carbon', 'poste', 'moneyorder', 'avalanche', 'registered', 'chimes'],
     },
     guard: {
       name: 'Марфа', role: 'Сторожиха моста', f: true, who: 'сторожиха моста Марфа', whom: 'сторожихе моста Марфе', look: 'guard',
-      hp: 44, gold: 15, relic: 'ironshutter', build: 'Защита, Шипы и мороз',
+      hp: 40, gold: 15, relic: 'ironshutter', build: 'Защита, Шипы и мороз',
       about: 'Держит удар за ударом и отвечает врагу его же силой.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'guard', 'snowkick'],
       favored: ['cloak', 'wax', 'snowkick', 'payback', 'prickly', 'frostlace', 'umbrella', 'mittens', 'drift', 'pockethog', 'lullaby', 'icethrow', 'heavybag', 'patch', 'nightshift', 'frostbite', 'iceprison', 'eternalwinter'],
     },
     stoker: {
       name: 'Фома', role: 'Трубочист', f: false, who: 'трубочист Фома', whom: 'трубочисту Фоме', look: 'stoker',
-      hp: 38, gold: 20, relic: 'sootbroom', build: 'Поджог и частые удары',
+      hp: 42, gold: 20, relic: 'sootbroom', build: 'Поджог и частые удары',
       about: 'Разжигает врага каждым ударом и даёт огню сделать остальное.',
-      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'ember', 'poker'],
-      favored: ['ember', 'blaze', 'hearth', 'sparks', 'flurry', 'whistle', 'cocoa', 'stubborn', 'stamp', 'redseal', 'kindling', 'snowstorm', 'hornblow', 'cancel', 'bonfire', 'firebird'],
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'ember', 'poker', 'flue'],
+      favored: ['ember', 'blaze', 'hearth', 'sparks', 'flurry', 'whistle', 'cocoa', 'stubborn', 'stamp', 'redseal', 'kindling', 'snowstorm', 'hornblow', 'wax', 'mittens', 'cancel', 'bonfire', 'firebird'],
     },
     baker: {
       name: 'Груня', role: 'Пряничница', f: true, who: 'пряничница Груня', whom: 'пряничнице Груне', look: 'baker',
-      hp: 36, gold: 25, relic: 'moldform', build: 'Пряники и быстрые ходы',
+      hp: 42, gold: 25, relic: 'moldform', build: 'Пряники и быстрые ходы',
       about: 'Печёт Пряники прямо в бою. Они ничего не стоят, бьют и защищают.',
       deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'dough', 'rollingpin'],
-      favored: ['wind', 'cocoa', 'flurry', 'finale', 'inkpen', 'rhythm', 'carbon', 'sbiten', 'compass', 'breath', 'drafts', 'mittens', 'chimes'],
+      favored: ['wind', 'cocoa', 'flurry', 'finale', 'inkpen', 'rhythm', 'carbon', 'sbiten', 'compass', 'breath', 'drafts', 'mittens', 'wax', 'chimes'],
     },
     grinder: {
       name: 'Савва', role: 'Точильщик', f: false, who: 'точильщик Савва', whom: 'точильщику Савве', look: 'grinder', paid: true,
-      hp: 40, gold: 20, relic: 'grindwheel', build: 'Заточка и Решимость',
+      hp: 44, gold: 20, relic: 'grindwheel', build: 'Заточка и Решимость',
       about: 'Точит карты прямо в бою: заточенная карта до конца боя работает как улучшенная.',
-      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'hone', 'gritsparks'],
-      favored: ['heavy', 'heavybag', 'snowball', 'whistle', 'cocoa', 'hornblow', 'stubborn', 'secret', 'lastword', 'carbon', 'returnaddr', 'snowkick', 'registered', 'lastlight'],
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'hone', 'gritsparks', 'oselok'],
+      favored: ['heavy', 'heavybag', 'snowball', 'whistle', 'cocoa', 'hornblow', 'umbrella', 'cloak', 'stubborn', 'secret', 'lastword', 'carbon', 'returnaddr', 'snowkick', 'registered', 'lastlight'],
     },
     shepherd: {
       name: 'Луша', role: 'Пастушка', f: true, who: 'пастушка Луша', whom: 'пастушке Луше', look: 'shepherd', paid: true,
@@ -1095,9 +1095,9 @@
     },
     herbalist: {
       name: 'Ульяна', role: 'Знахарка', f: true, who: 'знахарка Ульяна', whom: 'знахарке Ульяне', look: 'herbalist', paid: true,
-      hp: 44, gold: 15, relic: 'mortar', build: 'Цена здоровья и травы',
+      hp: 46, gold: 15, relic: 'mortar', build: 'Цена здоровья и травы',
       about: 'Платит за сильные карты своим здоровьем, а потом лечится травами.',
-      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'guard', 'bitterroot', 'chamomile'],
+      deck: ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'bitterroot', 'chamomile', 'chamomile'],
       favored: ['tea', 'sbiten', 'heavy', 'lastword', 'cocoa', 'whistle', 'stubborn', 'snowkick', 'cloak', 'payback', 'bonfire', 'breath', 'lullaby', 'returnaddr'],
     },
   };
@@ -1106,16 +1106,16 @@
      gold — множитель монет за бои, rest — доля HP, которую лечит костёр, bossHeal — доля после босса стадии,
      curses — помехи в колоде с самого начала забега. */
   const DIFFICULTIES = [
-    { name: 'Прогулка', hp: 0.75, dmg: 0.8, heroHp: 12, gold: 1.25, rest: 0.4, bossHeal: 0.7, curses: [],
+    { name: 'Прогулка', hp: 0.75, dmg: 0.8, heroHp: 12, gold: 1.25, rest: 0.5, bossHeal: 0.7, curses: [],
       hint: 'Враги слабее на четверть, у героя +12 HP, больше монет и лечения.' },
-    { name: 'Обычный маршрут', hp: 1, dmg: 1, heroHp: 0, gold: 1, rest: 0.3, bossHeal: 0.5, curses: [],
+    { name: 'Обычный маршрут', hp: 1, dmg: 1, heroHp: 0, gold: 1, rest: 0.4, bossHeal: 0.5, curses: [],
       hint: 'Задуманный баланс игры.' },
-    { name: 'Ранние сумерки', hp: 1.15, dmg: 1.1, heroHp: 0, gold: 1, rest: 0.3, bossHeal: 0.4, curses: [],
+    { name: 'Ранние сумерки', hp: 1.15, dmg: 1.1, heroHp: 0, gold: 1, rest: 0.35, bossHeal: 0.4, curses: [],
       hint: 'Враги крепче на 15% и бьют на 10% сильнее. После босса меньше лечения.' },
-    { name: 'Метель', hp: 1.3, dmg: 1.2, heroHp: -4, gold: 0.85, rest: 0.25, bossHeal: 0.35, curses: ['blot'],
-      hint: 'Враги крепче на 30%, бьют на 20% сильнее. Меньше HP, монет и отдыха. В колоде Клякса.' },
-    { name: 'Полярная ночь', hp: 1.45, dmg: 1.3, heroHp: -8, gold: 0.75, rest: 0.2, bossHeal: 0.25, curses: ['blot', 'dread'],
-      hint: 'Враги крепче на 45%, бьют на 30% сильнее. Ещё меньше HP, монет и отдыха. В колоде Клякса и Недоставленное письмо.' },
+    { name: 'Метель', hp: 1.25, dmg: 1.15, heroHp: -4, gold: 0.85, rest: 0.3, bossHeal: 0.35, curses: ['blot'],
+      hint: 'Враги крепче на 25%, бьют на 15% сильнее. Меньше HP, монет и отдыха. В колоде Клякса.' },
+    { name: 'Полярная ночь', hp: 1.35, dmg: 1.2, heroHp: -6, gold: 0.75, rest: 0.25, bossHeal: 0.25, curses: ['blot', 'dread'],
+      hint: 'Враги крепче на 35%, бьют на 20% сильнее. Ещё меньше HP, монет и отдыха. В колоде Клякса и Недоставленное письмо.' },
   ];
 
   // перевод на язык игры: поля подменяются переведёнными (js/i18n.js, js/lang/*.js)

@@ -170,7 +170,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 /* ---------- Экран пути ---------- */
 .map-hint { position: absolute; top: 96px; width: 100%; text-align: center; font-family: var(--title); font-size: 22px; color: #e6edf8; text-shadow: 0 2px 6px #000; }
 .map-hint b { display: block; font-weight: normal; }
-.map-hint small { display: block; margin-top: 2px; font-family: var(--body); font-size: 15px; opacity: .9; }
+.map-hint small { display: block; margin-top: 2px; font-family: var(--body); font-size: 15px; text-shadow: 0 1px 2px #000, 0 0 7px rgba(8, 12, 30, .95), 0 0 14px rgba(8, 12, 30, .8); }
 .encs { position: absolute; top: 150px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; }
 .enc {
   width: 124px; height: 300px; position: relative; display: flex; flex-direction: column; align-items: center;
@@ -246,6 +246,10 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .estatus .s-burn { background: #8a3a1a; }
 .estatus .s-weak { background: #4a3466; }
 .estatus .s-str { background: #7a2f2a; }
+.estatus .s-rage { background: #a3261c; color: #ffe2c4; }
+/* Ярость босса: вспышка в момент, когда он её получает, потом ровное красное свечение до конца боя */
+@keyframes rage { 0% { filter: none; } 22% { filter: drop-shadow(0 0 16px #ff4a2e) brightness(1.3); } 100% { filter: drop-shadow(0 0 6px rgba(255, 74, 46, .6)); } }
+.enemy.rage { animation: rage 1.2s ease-out forwards; }
 .burst { position: absolute; left: 50%; top: 120px; width: 160px; height: 160px; margin-left: -80px; z-index: 6; text-align: center; animation: burst .9s forwards; pointer-events: none; }
 .burst span { position: absolute; left: 0; right: 0; bottom: -10px; font-family: var(--title); font-size: 30px; color: #ffe38a; text-shadow: 0 3px 0 var(--ink); }
 @keyframes burst { 0% { transform: scale(.3); opacity: 0; } 30% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1.4) translateY(-30px); opacity: 0; } }
