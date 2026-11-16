@@ -95,7 +95,7 @@ def pick(lo, hi, n):
 
 FS = 320       # frame size in atlases
 # atlas folder; bump the number when atlases are rebuilt, so browsers do not mix old cached files with new frame counts
-EA_DIR = 'ea5'
+EA_DIR = 'ea6'
 COLS = 8
 # idle: whole 3 s loop at 12 fps. One-shot moves are cut so they start and end in
 # the rest pose (forward to the strongest pose, then back), so no cross-fade is needed.

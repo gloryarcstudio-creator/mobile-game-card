@@ -224,7 +224,7 @@
     const t = document.createElement('div');
     t.className = 'achtoast';
     t.innerHTML = a.summary
-      ? `<span class="aport collect">${ICO.medal}</span><span><small>${tr('Достижения получены')}</small><b>${tr('И ещё {n}', { n: a.summary })}</b></span>`
+      ? `<span class="aport collect">${pico('medal') || ICO.medal}</span><span><small>${tr('Достижения получены')}</small><b>${tr('И ещё {n}', { n: a.summary })}</b></span>`
       : `<span class="aport ${a.cat}">${achArt(a)}</span><span><small>${tr('Достижение получено')}</small><b>${a.name}${achStars(a)}</b></span>`;
     app.appendChild(t);
     SND.sfx('achieve');
@@ -680,8 +680,11 @@
     reset: '<svg viewBox="0 0 40 40"><path d="M31 20 a11 11 0 1 1 -4 -8.5" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/><path d="M28 5 l1 8 l-8 1" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
   // значки кнопок главного меню: нарисованные картинки из набора, без набора остаются векторные
-  const MENU_PIC = { medal: 'medal', book: 'bookmark', stats: 'hourglass', gift: 'ribbon' };
-  const menuIco = (k) => (Art.hasIcon && Art.hasIcon(MENU_PIC[k]) ? `<span class="mico">${Art.relic(MENU_PIC[k])}</span>` : ICO[k]);
+  const MENU_PIC = { medal: 'medal', book: 'bookmark', stats: 'hourglass', gift: 'ribbon', gloss: 'magnifier', reset: 'sootbroom', sfx: 'horn', note: 'musicbox' };
+  const pico = (k) => (Art.hasIcon && Art.hasIcon(MENU_PIC[k]) ? Art.relic(MENU_PIC[k]) : '');
+  const menuIco = (k) => (pico(k) ? `<span class="mico">${pico(k)}</span>` : ICO[k]);
+  // кружок в настройках: картинка занимает весь кружок, старый значок рисуется с полями
+  const sIco = (k, old) => (pico(k) ? `<span class="pic">${pico(k)}</span>` : `<span>${old}</span>`);
   const TOGGLES = [
     ['skipIntro', 'Вступление', 'Показывать', 'Пропускать', false],
     ['fast', 'Анимации', 'Обычные', 'Быстрые', false],
@@ -708,14 +711,14 @@
       <div class="sribbon">${tr('Настройки')}</div>
       <button class="sclose" data-act="s-close" aria-label="${tr('Закрыть')}">✕</button>
       <div class="sicons">
-        <button data-act="s-ach"><span>${ICO.medal}</span>${tr('Достижения')}</button>
-        <button data-act="s-gloss"><span>${ICO.book}</span>${tr('Справочник')}</button>
-        <button data-act="s-stats"><span>${ICO.stats}</span>${tr('Статистика')}</button>
-        <button data-act="s-reset"><span>${ICO.reset}</span>${tr('Сбросить')}</button>
+        <button data-act="s-ach">${sIco('medal', ICO.medal)}${tr('Достижения')}</button>
+        <button data-act="s-gloss">${sIco('gloss', ICO.book)}${tr('Справочник')}</button>
+        <button data-act="s-stats">${sIco('stats', ICO.stats)}${tr('Статистика')}</button>
+        <button data-act="s-reset">${sIco('reset', ICO.reset)}${tr('Сбросить')}</button>
       </div>
       <div class="sline"></div>
-      ${slider('sfx', tr('Звуки'), Art.soundIcon('all'), p.sfxVol)}
-      ${slider('music', tr('Музыка'), ICO.note, p.musicVol)}
+      ${slider('sfx', tr('Звуки'), pico('sfx') || Art.soundIcon('all'), p.sfxVol)}
+      ${slider('music', tr('Музыка'), pico('note') || ICO.note, p.musicVol)}
       <div class="sline"></div>
       ${langRow}
       ${TOGGLES.map(toggle).join('')}
@@ -809,7 +812,7 @@
     showOverlay(`<div class="achp">
       <svg style="position:absolute;width:0;height:0"><defs><path id="ach-arc" d="M28.5 40 a25.5 25.5 0 0 1 51 0"/></defs></svg>
       <div class="achhead">
-        <span class="achtag">${ICO.medal}${tr('Достижения')}</span>
+        <span class="achtag">${pico('medal') || ICO.medal}${tr('Достижения')}</span>
         <button class="sclose" data-act="a-close" aria-label="${tr('Закрыть')}">✕</button>
         <div class="achbar"><i style="width:${(got / total) * 100}%"></i><b>${got}/${total}</b></div>
       </div>
@@ -966,7 +969,7 @@
     const close = () => { if (back) back(); else { hideOverlay(); if (screen.className === 'scr-title') goTitle(); } };
     showOverlay(`<div class="achp cxp">
       <div class="achhead">
-        <span class="achtag">${ICO.book}${tr('База знаний')}</span>
+        <span class="achtag">${pico('book') || ICO.book}${tr('База знаний')}</span>
         <button class="sclose" data-act="x-close" aria-label="${tr('Закрыть')}">✕</button>
         <div class="achbar"><i style="width:${(got / codexTotal) * 100}%"></i><b>${got}/${codexTotal}</b></div>
       </div>
@@ -1031,7 +1034,7 @@
       : list.length ? list.map(runRow).join('') : `<p class="stempty">${tr('Здесь появятся итоги законченных забегов.')}</p>`);
     showOverlay(`<div class="achp statp">
       <div class="achhead">
-        <span class="achtag">${ICO.stats}${tr('Статистика')}</span>
+        <span class="achtag">${pico('stats') || ICO.stats}${tr('Статистика')}</span>
         <button class="sclose" data-act="st-close" aria-label="${tr('Закрыть')}">✕</button>
       </div>
       <div class="achlist"></div>
@@ -1173,6 +1176,8 @@
      достаются только картинки без неё, а вместо остальных остаётся сам герой */
   const NO_IVA = ['ending_hollowpost', 'ev_coins', 'ev_lantern', 'ev_puppet', 'ev_smith', 'ev_snowman'];
   const picFits = (key) => !!(Art.hasPic && Art.hasPic(key) && (hero().look === 'lamp' || NO_IVA.includes(key)));
+  // лента-заголовок; длинная надпись пишется мельче, чтобы свиток не заходил под кнопки в углу
+  const ribbon = (t) => `<div class="ribbon${t.length > 13 ? ' long' : ''}">${t}</div>`;
   function bookArt(key, cls = '') {
     return picFits(key) ? `<div class="book-art pic">${Art.storyPic(key)}</div>` : `<div class="book-art ${cls}">${heroArt()}</div>`;
   }
@@ -2702,7 +2707,7 @@
     opts.forEach((r) => codexMark('r', r));
     screen.className = 'scr-bossrelic';
     screen.innerHTML = `${topBar()}
-      <div class="ribbon">${tr('Трофей босса')}</div>
+      ${ribbon(tr('Трофей босса'))}
       <p class="pickhint">${tr('Выбери один талисман')}</p>
       <div class="brelics">${opts.map((id, i) => `<button class="brelic" data-act="bossrelic" data-id="${id}" style="--d:${i * 120}ms">${Art.relic(id)}<span><b>${RELICS[id].name}</b><small>${RELICS[id].desc}</small></span></button>`).join('')}</div>
       <button class="btn ghost" data-act="bossrelic-skip">${tr('Не брать')}</button>
@@ -2738,7 +2743,7 @@
     const count = ids.length;
     screen.className = 'scr-reward';
     screen.innerHTML = `${topBar()}
-      <div class="ribbon">${boss ? tr('Босс повержен!') : tr('Победа!')}</div>
+      ${ribbon(boss ? tr('Босс повержен!') : tr('Победа!'))}
       <div class="loot">${Art.icon('coin')} ${coins(gold)}${healed ? ` · +${healed} HP` : ''}</div>
       <p class="pickhint">${tr('Возьми одну карту в колоду')}</p>
       <div class="reward-cards n${count}">${ids.map((id, i) => cardHTML(id, 'reward', `data-act="takecard" data-id="${id}" style="--d:${i * 120}ms"`)).join('')}</div>
@@ -2766,7 +2771,7 @@
     saveStats();
     SND.music('title'); SND.sfx('victory');
     screen.className = 'scr-end win';
-    screen.innerHTML = `<div class="ribbon">${STORY.winRibbon}</div>
+    screen.innerHTML = `${ribbon(STORY.winRibbon)}
       <div class="book"><div class="page">
         ${bookArt(endingKey(), 'moon')}
         <h1>${STORY.winTitle}</h1>
@@ -2913,7 +2918,7 @@
     C = null; busy = false;
     hideOverlay();
     screen.className = 'scr-summary';
-    screen.innerHTML = `<div class="ribbon">${tr('Итоги забега')}</div>
+    screen.innerHTML = `${ribbon(tr('Итоги забега'))}
       ${summaryHTML(rec)}
       <div class="endbtns"><button class="btn big" data-act="retry">${tr('Новый забег')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
   }

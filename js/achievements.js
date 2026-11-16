@@ -77,7 +77,7 @@
   diff(3, 'Сквозь метель', 'i:frostlace');
   diff(4, 'Свет в полярной ночи', 'i:lullaby');
   add('path', 'events', 'Любопытная', 'Побывать во всех событиях пути: {p}.', 's', 'events', EVENTS.length, 'i:well');
-  tiers('path', 'chest', 'Будильник', 'Разбудить {p} сундуков-сонь.', 'c', 'chests', [10, 60, 250], ['i:chest', 'i:bell', 'i:key']);
+  tiers('path', 'chest', 'Будильник', 'Разбудить {p} сундуков-сонь.', 'c', 'chests', [10, 60, 250], ['i:chest', 'i:bell', 'i:candybox']);
   const boss = (id, name, desc) => add('path', `boss-${id}`, name, desc, 'has', 'bosses', 1, `e:${id}`, id);
   boss('magpie', 'Перехват перехвачен', 'Победить Сороку-Перехватчицу.');
   boss('waxgiant', 'Сургуч растаял', 'Победить Сургучного Великана.');
