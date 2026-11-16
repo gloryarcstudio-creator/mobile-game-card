@@ -677,12 +677,15 @@
     stats: '<svg viewBox="0 0 40 40"><path d="M8 32 h26" stroke="#17121f" stroke-width="3" stroke-linecap="round"/><rect x="10" y="18" width="5" height="13" fill="#f3d27c" stroke="#17121f" stroke-width="2"/><rect x="18" y="10" width="5" height="21" fill="#f3d27c" stroke="#17121f" stroke-width="2"/><rect x="26" y="22" width="5" height="9" fill="#f3d27c" stroke="#17121f" stroke-width="2"/></svg>',
     book: '<svg viewBox="0 0 40 40"><path d="M6 10 q7 -3 14 1 v22 q-7 -4 -14 -1z M34 10 q-7 -3 -14 1 v22 q7 -4 14 -1z" fill="#f3d27c" stroke="#17121f" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 16 h6 M10 21 h6 M24 16 h6 M24 21 h6" stroke="#8a6a2a" stroke-width="1.8"/></svg>',
     medal: '<svg viewBox="0 0 40 40"><path d="M11 3 h7 l5 13 h-7z" fill="#c8423a" stroke="#17121f" stroke-width="2" stroke-linejoin="round"/><path d="M29 3 h-7 l-5 13 h7z" fill="#8a2a24" stroke="#17121f" stroke-width="2" stroke-linejoin="round"/><circle cx="20" cy="25" r="11" fill="#f3d27c" stroke="#17121f" stroke-width="2.2"/><circle cx="20" cy="25" r="7.5" fill="none" stroke="#b08a2a" stroke-width="1.5"/><path d="M14.5 21.5 h11 v7.5 h-11z" fill="#fff4d6" stroke="#17121f" stroke-width="1.4"/><path d="M14.5 21.5 l5.5 4 l5.5 -4" fill="none" stroke="#17121f" stroke-width="1.4"/></svg>',
+    menu: '<svg viewBox="0 0 40 40"><path d="M10 12 h20 M10 20 h20 M10 28 h20" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/></svg>',
     reset: '<svg viewBox="0 0 40 40"><path d="M31 20 a11 11 0 1 1 -4 -8.5" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/><path d="M28 5 l1 8 l-8 1" fill="none" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
   // значки кнопок главного меню: нарисованные картинки из набора, без набора остаются векторные
   const MENU_PIC = { medal: 'medal', book: 'bookmark', stats: 'hourglass', gift: 'ribbon', gloss: 'magnifier', reset: 'sootbroom', sfx: 'horn', note: 'musicbox' };
   const pico = (k) => (Art.hasIcon && Art.hasIcon(MENU_PIC[k]) ? Art.relic(MENU_PIC[k]) : '');
   const menuIco = (k) => (pico(k) ? `<span class="mico">${pico(k)}</span>` : ICO[k]);
+  // служебные значки (gear, menu, lock, ad): нарисованный файл assets/i/<имя>.webp, пока его нет, старый значок
+  const uiIco = (k) => (Art.hasIcon && Art.hasIcon(k) ? Art.icon(k) : ICO[k]);
   // кружок в настройках: картинка занимает весь кружок, старый значок рисуется с полями
   const sIco = (k, old) => (pico(k) ? `<span class="pic">${pico(k)}</span>` : `<span>${old}</span>`);
   const TOGGLES = [
@@ -1079,7 +1082,7 @@
   }
 
   /* ---------- Магазин: платные герои и режим без рекламы (js/store.js) ---------- */
-  const adTag = () => (Store.noAds() ? `<i class="adtag free">${tr('Бонус')}</i>` : `<i class="adtag">${ICO.ad}${tr('Реклама')}</i>`);
+  const adTag = () => (Store.noAds() ? `<i class="adtag free">${tr('Бонус')}</i>` : `<i class="adtag">${uiIco('ad')}${tr('Реклама')}</i>`);
   let storeBackCls = null; // какой герой был выбран, если в магазин пришли с экрана героя
   function goStore(back = 'title') {
     C = null; busy = false; setBg(0.45);
@@ -1104,7 +1107,7 @@
           <span class="stext"><b>${tr('Все три героя')}</b><small>${tr('Выгоднее, чем по одному')}</small></span>
           ${allHeroes ? owned : priceBtn('heroes')}</div>
         <div class="sitem noads">
-          <span class="sico big">${ICO.ad}</span>
+          <span class="sico big">${uiIco('ad')}</span>
           <span class="stext"><b>${tr('Без рекламы')}</b><small>${tr('Бонусы событий и возрождение после поражения сразу, без роликов')}</small></span>
           ${priceBtn('noads')}</div>
       </div>
@@ -1136,7 +1139,7 @@
     screen.innerHTML = `
       <div class="clshead"><h2>${tr('Кто понесёт письмо?')}</h2><p>${tr('У каждого героя свой путь к победе')}</p></div>
       <div class="clsrow">${Object.entries(CLASSES).map(([id, c]) => `<button class="clscard ${id === sel ? 'on' : ''} ${Store.heroOwned(id) ? '' : 'locked'}" data-act="pickcls" data-cls="${id}">
-        <span class="cp ${id}">${heroFace(id)}${Store.heroOwned(id) ? '' : `<i class="lockico">${ICO.lock}</i>`}</span><b>${c.name}</b><small>${c.role}</small></button>`).join('')}</div>
+        <span class="cp ${id}">${heroFace(id)}${Store.heroOwned(id) ? '' : `<i class="lockico">${uiIco('lock')}</i>`}</span><b>${c.name}</b><small>${c.role}</small></button>`).join('')}</div>
       <div class="clsinfo">
         <div class="clsbig ${sel}">${heroArt(sel)}</div>
         <div class="clstext">
@@ -1156,7 +1159,7 @@
         <p class="diffhint">${d.hint}</p>
       </div>
       ${Store.heroOwned(sel) ? `<div class="clsbtns"><button class="btn ghost" data-act="title">${tr('Назад')}</button><button class="btn big" data-act="clsgo">${tr('В путь')}</button></div>`
-        : `<div class="clsbtns locked"><button class="btn ghost" data-act="title">${tr('Назад')}</button><button class="btn big buyhero" data-act="sbuy" data-p="hero_${sel}">${ICO.lock}<span>${tr('герой::Открыть')}<small>${Store.PRODUCTS[`hero_${sel}`].price}</small></span></button><button class="btn ghost" data-act="store" data-back="cls">${tr('Магазин')}</button></div>`}`;
+        : `<div class="clsbtns locked"><button class="btn ghost" data-act="title">${tr('Назад')}</button><button class="btn big buyhero" data-act="sbuy" data-p="hero_${sel}">${uiIco('lock')}<span>${tr('герой::Открыть')}<small>${Store.PRODUCTS[`hero_${sel}`].price}</small></span></button><button class="btn ghost" data-act="store" data-back="cls">${tr('Магазин')}</button></div>`}`;
   }
   // стартовая колода и собственные карты героя
   function showClassCards(id) {
@@ -2791,7 +2794,7 @@
     C = null; busy = false;
     clearSave();
     SND.music(null); SND.sfx('defeat');
-    const tag = Store.noAds() ? '' : `<i class="adtag">${ICO.ad}${tr('Реклама')}</i>`;
+    const tag = Store.noAds() ? '' : `<i class="adtag">${uiIco('ad')}${tr('Реклама')}</i>`;
     screen.className = 'scr-end lose revive';
     screen.innerHTML = `<div class="book"><div class="page">
         ${bookArt('story_lose', 'dim')}
@@ -2928,13 +2931,13 @@
   window.addEventListener('pointerdown', () => SND.unlock(), { capture: true });
   app.classList.toggle('fast', SETTINGS.fast);
   const gearBtn = $('#gear');
-  gearBtn.innerHTML = ICO.gear;
+  gearBtn.innerHTML = uiIco('gear');
   gearBtn.setAttribute('aria-label', tr('Настройки'));
   gearBtn.addEventListener('click', (e) => { e.stopPropagation(); SND.unlock(); SND.sfx('click'); showSettings(); });
 
   const menuBtn = $('#menu');
   menuBtn.setAttribute('aria-label', tr('Меню'));
-  menuBtn.innerHTML = '<svg viewBox="0 0 40 40"><path d="M10 12 h20 M10 20 h20 M10 28 h20" stroke="#f3d27c" stroke-width="3.5" stroke-linecap="round"/></svg>';
+  menuBtn.innerHTML = uiIco('menu');
   menuBtn.addEventListener('click', (e) => { e.stopPropagation(); SND.unlock(); SND.sfx('click'); if (run) showPause(); else showGlossary(); });
 
   /* ---------- Карту можно вытянуть из руки: отпущенная выше руки, она разыгрывается ---------- */
