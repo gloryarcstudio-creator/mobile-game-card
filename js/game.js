@@ -2606,7 +2606,7 @@
             el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
             const strikeMs = eAct('attack'); // урон приходит в момент нарисованного удара
             SND.sfx('enemy');
-            await sleep(Math.min(560, Math.max(180, strikeMs)));
+            await sleep(Math.min(600, Math.max(180, strikeMs)));
             const real = await hitHero(enemyDmg(it.v));
             // Упырь пьёт тепло: лечится на прошедший урон
             if (it.leech && real > 0 && e.hp > 0) { const b = e.hp; e.hp = Math.min(e.max, e.hp + real); if (e.hp > b) { SND.sfx('heal'); floatText($('.enemy-fx'), `+${e.hp - b}`, 'healf'); } }
@@ -2623,7 +2623,7 @@
           const boomMs = eAct('attack');
           SND.sfx('burst');
           floatText($('.enemy-fx'), tr('Бабах!'), 'burnf');
-          await sleep(Math.min(560, Math.max(200, boomMs)));
+          await sleep(Math.min(600, Math.max(200, boomMs)));
           await hitHero(enemyDmg(it.v));
           e.hp = 0; C.boomed = true;
         } else if (it.k === 'sap') { C.sap += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), tr('−{n} {n|энергия|энергии|энергии}', { n: it.v }), 'weakf'); }

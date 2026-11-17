@@ -12,6 +12,7 @@ from calm import CALM, DESPILL, calm_idle, despill
 SRC, REPO = sys.argv[1], sys.argv[2]
 ONLY = sys.argv[3:]
 OUT = os.path.join(REPO, 'assets')
+_OLD = json.load(open(os.path.join(OUT, '_build.json'))) if os.environ.get('MOVES_ONLY') == '1' and os.path.exists(os.path.join(OUT, '_build.json')) else {}
 REDO = set(open(os.path.join(os.path.dirname(SRC.rstrip('/')), 'redo_ids.txt')).read().split()) if os.path.exists(os.path.join(os.path.dirname(SRC.rstrip('/')), 'redo_ids.txt')) else set()
 
 def save(im, rel, q=80, aq=80):
@@ -97,15 +98,22 @@ FS = 320       # frame size in atlases
 # atlas folder; bump the number when atlases are rebuilt, so browsers do not mix old cached files with new frame counts
 EA_DIR = 'ea6'
 COLS = 8
-# idle: whole 3 s loop at 12 fps. One-shot moves are cut so they start and end in
-# the rest pose (forward to the strongest pose, then back), so no cross-fade is needed.
+# idle: whole 3 s loop at 12 fps (the game blends neighbouring frames, so it reads as smooth).
+# One-shot moves start and end in the rest pose: forward to the strongest pose, then the same
+# frames backwards. Their frames are spaced evenly along the path of motion (arc_pick), so no step
+# between two frames is a big jump of the pose.
 IDLE_N, IDLE_FPS = 36, 12
+# Restless idles (hopping, flapping) whose clips really hold 24 different pictures a second keep every
+# frame: 72 frames at 24 fps, in <id>_rest.webp (a new name: published pages cache files by path).
+HI_IDLE = {'snowimp', 'snowbrute', 'firecracker', 'magpie'}
+# name: (frames forward to the strongest pose, ticks back to rest, ticks per second).
+# Only the forward frames take room in the atlas: attack 22 + hurt 10 fill exactly four rows of eight.
+# The tick rate sets the pace: the blow lands 0.58 s after the start, as the fight code expects.
 MOVES = {
-    # name: (frames forward, frames back, fps)
-    'attack': (9, 5, 16),
-    'hurt': (5, 3, 16),
-    'happy': (10, 5, 14),
+    'attack': (22, 13, 36), 'hurt': (10, 6, 36), 'happy': (16, 10, 30),
 }
+# MOVES_ONLY=1 rebuilds only the move atlases (<id>_mv.webp); idle and death keep their files and records
+MOVES_ONLY = os.environ.get('MOVES_ONLY') == '1'
 # dark heroes and the moth are violet by design: their moves keep the plain key everywhere,
 # their deaths switch to the screen key only while the body fades into the backdrop (it turned pink)
 PLAIN_KEY = ('dk_', 'moth')
@@ -126,32 +134,78 @@ def flashes(fr):
     lost = off[:, ring].mean(1) > 0.45
     return (white > base * 2 + 0.01) | lost
 
-def select_idle(fr):
+def select_idle(fr, n=IDLE_N):
     N = len(fr)
     # drop the duplicated closing frame so the loop does not stutter
-    return pick(0, N - 1 - (N - 1) / IDLE_N, IDLE_N)
+    return pick(0, N - 1 - (N - 1) / n, n)
+
+def arc_pick(d, n):
+    """n positions out of len(d)+1 frames, spaced evenly along the path of motion.
+    d[i] is how much the picture changes from frame i to i+1. Slow stretches are passed quickly,
+    quick ones keep every frame, so the pose never jumps between two neighbouring picks."""
+    m = len(d) + 1
+    if m <= n: return list(range(m))
+    w = d + 0.35 * d.mean() + 1e-6   # a still stretch also takes some time
+    cum = np.concatenate([[0], np.cumsum(w)])
+    idx = [int(np.argmin(np.abs(cum - t))) for t in np.linspace(0, cum[-1], n)]
+    for k in range(1, n): idx[k] = max(idx[k], idx[k - 1] + 1)
+    idx[-1] = min(idx[-1], m - 1)
+    for k in range(n - 2, -1, -1): idx[k] = min(idx[k], idx[k + 1] - 1)
+    return idx
+
+def unique_frames(small, g):
+    """the clips often hold one picture for two frames (12 pictures a second inside a 24 fps file):
+    keep one frame of each such pair, so that every stored frame is a new pose"""
+    if len(g) < 3: return g
+    d = np.array([np.abs(small[g[i + 1]] - small[g[i]]).mean() for i in range(len(g) - 1)])
+    out = [g[0]]
+    for i in range(len(d)):
+        ref = np.percentile(d[max(0, i - 4): i + 5], 75)
+        if d[i] < 0.4 * ref and d[i] < 8: continue   # the same picture again
+        out.append(g[i + 1])
+    return out
 
 def select_move(fr, an):
-    """indices for a one-shot move and the index (in the result) of its strongest pose"""
+    """source frames of a one-shot move, the tick sequence that plays them and the tick of the strongest pose"""
     N = len(fr)
-    nf, nb, _ = MOVES.get(an, (10, 5, 14))
+    nf, nb = MOVES[an][:2]
     e = energy(fr)
     ok = ~flashes(fr)
     act = np.where((e > 1.2) & ok)[0]
     s = max(0, (act[0] - 2) if len(act) else 0)
-    good = [i for i in range(s, N) if ok[i]] or list(range(s, N))
-    if an == 'death' or e[good[-1]] < 5:
-        # plays out fully (death) or already comes back to rest by itself
-        idx = [good[int(round(x))] for x in np.linspace(0, len(good) - 1, nf + nb)]
-        peak = int(np.argmax([e[i] for i in idx]))
-        return idx, peak
+    small = fr[:, ::8, ::8].astype(np.float32)
+    good = unique_frames(small, [i for i in range(s, N) if ok[i]] or list(range(s, N)))
+    motion = lambda g: np.array([np.abs(small[g[i + 1]] - small[g[i]]).mean() for i in range(len(g) - 1)])
+    if an == 'hurt' and len(good) > 6:
+        # a hit must answer at once: drop the slow lead-in, start one frame before the body really moves
+        m = motion(good)
+        quick = np.where(m > 0.3 * np.percentile(m, 90))[0]
+        if len(quick) and len(good) - quick[0] > 5: good = good[max(0, quick[0] - 1):]
+    if e[good[-1]] < 5:
+        # already comes back to rest by itself: plays out fully
+        idx = [good[p] for p in arc_pick(motion(good), nf + nb)]
+        return idx, list(range(len(idx))), int(np.argmax([e[i] for i in idx]))
     # strongest pose within the first 80% of the clip
     lim = good[: max(2, int(len(good) * 0.8))]
     pk = lim[int(np.argmax([e[i] for i in lim]))]
     fw = [i for i in good if i <= pk]
-    fwd = [fw[int(round(x))] for x in np.linspace(0, len(fw) - 1, min(nf, len(fw)))]
-    back = [fw[int(round(x))] for x in np.linspace(len(fw) - 1, 0, nb + 2)][1:-1]
-    return fwd + back, len(fwd) - 1
+    idx = [fw[p] for p in arc_pick(motion(fw), nf)]
+    n = len(idx)
+    after = [i for i in good if i > pk]
+    if an == 'hurt' and n <= 5 and len(after) >= 4:
+        # The blow itself is often hidden by a white burst, so only a few frames lead up to the recoil.
+        # Then the clip's own recovery plays on: from the recoil to its calmest frame, real motion
+        # instead of the same two or three frames run backwards. The game dissolves the rest into idle.
+        ea = np.array([e[i] for i in after])
+        j = int(np.argmin(ea))
+        if j >= 3 and ea[j] < 0.7 * e[pk]:
+            rec = [pk] + after[: j + 1]
+            idx += [rec[p] for p in arc_pick(motion(rec), nf - n + 1)[1:]]
+            return idx, list(range(len(idx))), n - 1
+    # back to the rest pose over the same frames; the last tick is the rest frame itself
+    back = [int(round(x)) for x in np.linspace(n - 1, 0, nb + 1)][1:]
+    if n - 1 <= nb // 2: back = list(range(n - 2, -1, -1))   # a very short move: no frame is held twice
+    return idx, list(range(n)) + back, n - 1
 
 def lost_backdrop(f, B):
     """one frame: the magenta backdrop is gone from the border (a full-screen burst)"""
@@ -233,6 +287,8 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
     act_frames, act_meta = [], {}
     B = None
     pal = None
+    old = _OLD.get(f'anim:{cid}') if MOVES_ONLY else None
+    old = old[1] if isinstance(old, list) else {}
     for an in sets:
         name = alt.get(an, an)
         path = src(f'{cid}_{name}.mp4')
@@ -251,15 +307,20 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
             # the usual share while the body is solid: first 60% of the clip, upper quartile
             base = float(np.percentile([figure_tint(f, B) for f in fr[: max(5, int(len(fr) * 0.6))]], 75))
             keyer = lambda im, bg, b0=base: key_fade(im, bg, b0)
+        if MOVES_ONLY and an in ('idle', 'death'):
+            # the palette for the keyer comes from the idle clip; the files and records stay as they are
+            if an == 'idle' and 'idle' in old: meta['idle'] = old['idle']
+            if an == 'death' and 'death' in old.get('act', {}): act_meta[an] = old['act']['death']
+            continue
         if an == 'death':
             frames, seq, peak = select_death(fr, B, keyer)
             save(atlas(frames), f'{EA_DIR}/{cid}_die.webp', 76, 70)
             act_meta[an] = {'f': 'die', 'o': 0, 'n': len(frames), 'fps': DEATH_FPS, 'hit': peak, 'seq': seq}
             continue
         if an == 'idle':
-            idx, peak = select_idle(fr), 0
+            idx, seq, peak = select_idle(fr, len(fr) - 1 if cid in HI_IDLE else IDLE_N), None, 0
         else:
-            idx, peak = select_move(fr, an)
+            idx, seq, peak = select_move(fr, an)
         kf = (lambda im: key(im, bg=B)) if an == 'idle' else (lambda im: keyer(im, B))
         frames = [kf(Image.fromarray(fr[i])).resize((FS, FS), Image.LANCZOS) for i in idx]
         if an == 'idle':
@@ -268,13 +329,19 @@ def char_anim(cid, sets=('idle', 'attack', 'hurt', 'death'), alt=None):
             if cid in CALM: frames = calm_idle(frames[0], **CALM[cid])
             idle_frames = frames
             meta['idle'] = {'n': len(frames), 'fps': IDLE_FPS}
+            if cid in HI_IDLE: meta['idle'] = {'n': len(frames), 'fps': 24, 'f': 'rest'}
         else:
-            act_meta[an] = {'o': len(act_frames), 'n': len(frames), 'fps': MOVES.get(an, (0, 0, 14))[2], 'hit': peak}
+            act_meta[an] = {'f': 'mv', 'o': len(act_frames), 'n': len(frames), 'fps': MOVES[an][2], 'hit': peak, 'seq': seq}
             act_frames += frames
     if idle_frames:
-        save(atlas(idle_frames), f'{EA_DIR}/{cid}_idle.webp', 76, 70)
+        part = meta['idle'].get('f', 'idle')
+        save(atlas(idle_frames), f'{EA_DIR}/{cid}_{part}.webp', 76, 70)
+        stale = os.path.join(OUT, EA_DIR, f'{cid}_idle.webp')
+        if part != 'idle' and os.path.exists(stale): os.remove(stale)
     if act_frames:
-        save(atlas(act_frames), f'{EA_DIR}/{cid}_act.webp', 76, 70)
+        save(atlas(act_frames), f'{EA_DIR}/{cid}_mv.webp', 76, 70)
+        stale = os.path.join(OUT, EA_DIR, f'{cid}_act.webp')   # the earlier, sparser atlas
+        if os.path.exists(stale): os.remove(stale)
     if act_meta:
         meta['act'] = act_meta
     meta['bg'] = [round(float(x)) for x in B] if B is not None else None
@@ -346,6 +413,9 @@ if __name__ == '__main__':
     # a filtered run keeps the records of everything it did not rebuild
     bj = os.path.join(OUT, '_build.json')
     old = json.load(open(bj)) if ONLY and os.path.exists(bj) else {}
-    old.update(res)
+    bad = lambda r: isinstance(r, str) and r.startswith('ERR')
+    for k, r in res.items():
+        if bad(r) and k in old and not bad(old[k]): continue   # a failed job keeps the earlier good record
+        old[k] = r
     json.dump(old, open(bj, 'w'), indent=1)
     print('done', len(res))

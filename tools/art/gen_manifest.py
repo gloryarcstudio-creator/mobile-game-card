@@ -22,12 +22,16 @@ for k, v in build.items():
     kind, cid = k.split(':', 1)
     if kind == 'anim' and isinstance(v, list):
         meta = v[1]
-        if os.path.exists(os.path.join(A, EA, f'{cid}_idle.webp')):
-            at = Image.open(os.path.join(A, EA, f'{cid}_idle.webp'))
+        idle = (meta.get('idle') or {}).get('f', 'idle')
+        if os.path.exists(os.path.join(A, EA, f'{cid}_{idle}.webp')):
+            at = Image.open(os.path.join(A, EA, f'{cid}_{idle}.webp'))
             meta['iw'], meta['ih'] = at.size
-        if os.path.exists(os.path.join(A, EA, f'{cid}_act.webp')):
-            at = Image.open(os.path.join(A, EA, f'{cid}_act.webp'))
-            meta['aw'], meta['ah'] = at.size
+        # moves atlas: <id>_mv.webp (dense frames), earlier builds wrote <id>_act.webp
+        for part in ('mv', 'act'):
+            if os.path.exists(os.path.join(A, EA, f'{cid}_{part}.webp')):
+                at = Image.open(os.path.join(A, EA, f'{cid}_{part}.webp'))
+                meta['aw'], meta['ah'] = at.size
+                break
         meta.pop('bg', None)
         anim[cid] = meta
 

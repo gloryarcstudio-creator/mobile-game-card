@@ -180,13 +180,26 @@
     if (!m || !m.idle || !S.enemy.has(id)) return Art.enemy(id);
     keepOnly([id, ...[...document.querySelectorAll('canvas.live')].map((c) => c.dataset.live)]);
     load(url(`e/${id}`));
-    load(atlasUrl(id, 'idle'));
+    load(atlasUrl(id, m.idle.f || 'idle'));
     parts(m).forEach((p) => load(atlasUrl(id, p)));
     return `<canvas class="foe painted live${ALOFT.has(id) ? ' aloft' : ''}" data-live="${id}"></canvas>`;
   };
   const liveOf = (el) => el && (el.matches && el.matches('canvas.live') ? el : el.querySelector && el.querySelector('canvas.live'));
-  // длина движения в тиках: у гибели своя последовательность кадров (seq), кадр может держаться два тика
+  // длина движения в тиках: кадры идут по списку seq (вперёд к удару и обратно, у гибели кадр может держаться два тика)
   const ticks = (a) => (a.seq ? a.seq.length : a.n);
+  // Плавность. Положение в раскадровке дробное: между соседними кадрами рисуется их смесь, поэтому покой
+  // из 12 кадров в секунду и движения из 30–36 идут без ступенек на экране с любой частотой. При смене
+  // движения прежняя картинка растворяется в новой: нет скачка из позы покоя в начало атаки и обратно.
+  const FADE_IN = 80; const FADE_OUT = 160; // мс при обычной скорости
+  function snapshot(cv, st, ms) {
+    if (!cv._key || !cv.width || !cv.height) return; // на холсте ещё ничего нет
+    const s = st.snap || (st.snap = document.createElement('canvas'));
+    if (s.width !== cv.width || s.height !== cv.height) { s.width = cv.width; s.height = cv.height; }
+    const c = s.getContext('2d');
+    c.clearRect(0, 0, s.width, s.height);
+    c.drawImage(cv, 0, 0);
+    st.x0 = performance.now(); st.xd = ms;
+  }
   // сколько мс займёт движение целиком; 0, если его нет или атлас ещё не загрузился
   Art.actDur = (el, kind, speed = 1) => {
     const cv = liveOf(el); const m = cv && AN[cv.dataset.live];
@@ -205,6 +218,7 @@
     if (st.dead) return 0;
     if (kind === 'death') st.dead = true; // после гибели покой больше не играем
     if (!a || !load(atlasUrl(id, a.f || 'act')).ok) return 0;
+    snapshot(cv, st, FADE_IN / speed);
     st.act = kind; st.t0 = performance.now(); st.sp = speed;
     return Math.round(((a.hit || 0) / a.fps) * 1000);
   };
@@ -217,44 +231,69 @@
     if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; cv._key = ''; }
     return true;
   }
-  function paint(cv, layers) {
-    // layers: [{im, sx, sy, s, alpha}] — кадр квадратный, вписан по ширине, ноги на нижнем краю
-    const key = layers.map((l) => `${l.im.src}|${l.sx}|${l.sy}|${l.alpha}`).join(';');
+  function paint(cv, st, now, layers) {
+    // layers: [{im, sx, sy, s, w}] — кадр квадратный, вписан по ширине, ноги на нижнем краю; w — доля кадра в смеси
+    let old = 0; // доля прежней картинки, пока идёт переход
+    if (st.xd) {
+      const u = (now - st.x0) / st.xd;
+      if (u >= 1 || !st.snap) st.xd = 0; else old = 1 - u * u * (3 - 2 * u);
+    }
+    layers = layers.filter((l) => l.w > 0.004);
+    const key = `${old.toFixed(3)};${layers.map((l) => `${l.im.src}|${l.sx}|${l.sy}|${l.w.toFixed(3)}`).join(';')}`;
     if (cv._key === key) return;
     cv._key = key;
+    st.pt = now;
     const W = cv.width; const H = cv.height; const d = Math.min(W, H);
     const fy = H - d * footOf(cv.dataset.live);
     const ctx = cv.getContext('2d');
     ctx.clearRect(0, 0, W, H);
+    // сложение с весами даёт честную смесь и цвета, и прозрачности (обычное наложение оставляло бы «призрак» старого кадра)
+    const mix = old > 0 || layers.length > 1;
+    if (mix) ctx.globalCompositeOperation = 'lighter';
+    if (old > 0) { ctx.globalAlpha = old; ctx.drawImage(st.snap, 0, 0, W, H); }
     for (const l of layers) {
-      ctx.globalAlpha = l.alpha == null ? 1 : l.alpha;
+      ctx.globalAlpha = mix ? l.w * (1 - old) : 1;
       ctx.drawImage(l.im, l.sx, l.sy, l.s, l.s, (W - d) / 2, fy, d, d);
     }
     ctx.globalAlpha = 1;
+    if (mix) ctx.globalCompositeOperation = 'source-over';
   }
-  const frameOf = (m, im, i) => ({ im, sx: (i % m.cols) * m.fs, sy: Math.floor(i / m.cols) * m.fs, s: m.fs });
+  const frameOf = (m, im, i, w = 1) => ({ im, sx: (i % m.cols) * m.fs, sy: Math.floor(i / m.cols) * m.fs, s: m.fs, w });
+  // два соседних кадра с долями (1 − f) и f
+  const blend = (m, im, i, j, f) => (f > 0 && i !== j ? [frameOf(m, im, i, 1 - f), frameOf(m, im, j, f)] : [frameOf(m, im, i)]);
   function tick(now) {
     const list = document.querySelectorAll('canvas.live');
     for (const cv of list) {
       if (!fitCanvas(cv)) continue;
       const id = cv.dataset.live; const m = AN[id];
       const st = cv._sp || (cv._sp = { t: now });
-      const idle = imgs[atlasUrl(id, 'idle')];
+      const idle = imgs[atlasUrl(id, m.idle.f || 'idle')];
       const still = imgs[url(`e/${id}`)];
       const a = st.act && m.act[st.act];
       const act = a && imgs[atlasUrl(id, a.f || 'act')];
       if (act && act.ok) {
         const T = ticks(a);
-        const k = Math.floor(((now - st.t0) / 1000) * a.fps * (st.sp || 1));
-        if (k < T || st.dead) { const j = Math.min(k, T - 1); paint(cv, [frameOf(m, act, a.o + (a.seq ? a.seq[j] : j))]); continue; }
-        st.act = null;
+        const p = Math.max(0, ((now - st.t0) / 1000) * a.fps * (st.sp || 1));
+        if (p < T || st.dead) {
+          const i = Math.min(Math.floor(p), T - 1);
+          const fr = (j) => a.o + (a.seq ? a.seq[j] : j);
+          paint(cv, st, now, i < T - 1 ? blend(m, act, fr(i), fr(i + 1), p - i) : [frameOf(m, act, fr(i))]);
+          continue;
+        }
+        // движение кончилось: его последний кадр растворяется в покое, покой идёт с начала
+        snapshot(cv, st, FADE_OUT / (st.sp || 1));
+        st.act = null; st.t = now;
       } else if (st.act) st.act = null;
       if (st.dead) continue;
       if (idle && idle.ok) {
-        const k = Math.floor(((now - st.t) / 1000) * m.idle.fps) % m.idle.n;
-        paint(cv, [frameOf(m, idle, k)]);
+        // спокойному покою (12 кадров в секунду) хватает 30 обновлений в секунду, подвижный (24) рисуется каждый раз
+        if (!st.xd && now - (st.pt || 0) < 360 / m.idle.fps) continue;
+        const n = m.idle.n;
+        const p = Math.max(0, ((now - st.t) / 1000) * m.idle.fps);
+        const i = Math.floor(p);
+        paint(cv, st, now, blend(m, idle, i % n, (i + 1) % n, p - i));
       } else if (still && still.ok) {
-        paint(cv, [{ im: still, sx: 0, sy: 0, s: still.naturalWidth }]);
+        paint(cv, st, now, [{ im: still, sx: 0, sy: 0, s: still.naturalWidth, w: 1 }]);
       }
     }
     requestAnimationFrame(tick);
