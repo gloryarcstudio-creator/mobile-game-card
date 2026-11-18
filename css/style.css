@@ -226,14 +226,24 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .ghosty > * { opacity: .95; }
 .enemy-fx, .hero-fx { position: absolute; pointer-events: none; }
 .enemy-fx { inset: 0; z-index: 5; }
-.hero-fx { left: 0; right: 0; top: 700px; height: 60px; z-index: 9; }
-.float { position: absolute; top: 40%; font-family: var(--title); font-size: 32px; font-weight: bold; text-shadow: 0 3px 0 var(--ink), 0 0 6px #000; animation: floatup 1s forwards; white-space: nowrap; transform: translateX(-50%); }
-.dmgf { color: #ff6a5a; }
-.blockf { color: #9fc3ff; font-size: 24px; }
+.hero-fx { left: 0; width: 300px; top: 732px; height: 60px; z-index: 9; }   /* числа героя всплывают у его портрета и полоски здоровья */
+/* всплывающие числа и слова: тёмная обводка со всех сторон, чтобы читались поверх вспышек и карт;
+   появляются толчком, держатся и только потом тают */
+.float { position: absolute; top: 40%; z-index: 3; font-family: var(--title); font-size: 34px; font-weight: bold; line-height: 1; white-space: nowrap; transform: translateX(-50%); animation: floatup 1.15s both;
+  text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 1.5px 1.5px 0 var(--ink), -1.5px 1.5px 0 var(--ink), 1.5px -1.5px 0 var(--ink), -1.5px -1.5px 0 var(--ink), 0 4px 0 var(--ink), 0 5px 8px rgba(0, 0, 0, .7); }
+.dmgf { color: #ff6250; font-size: 46px; }
+.float.small { font-size: 24px; }
+.blockf { color: #a9cbff; font-size: 26px; }
 .healf { color: #8dff9a; }
-.burnf { color: #ffb23e; font-size: 22px; }
-.weakf { color: #d6b0ff; font-size: 20px; }
-@keyframes floatup { to { transform: translate(-50%, -70px); opacity: 0; } }
+.burnf { color: #ffb845; font-size: 24px; }
+.weakf { color: #dcbcff; font-size: 22px; }
+@keyframes floatup {
+  0% { transform: translate(-50%, 8px) scale(.5); opacity: 0; }
+  12% { transform: translate(-50%, -6px) scale(1.22); opacity: 1; }
+  24% { transform: translate(-50%, -10px) scale(1); }
+  62% { transform: translate(-50%, -34px) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -72px) scale(.96); opacity: 0; }
+}
 .nameplate { position: absolute; top: 352px; left: 50%; width: 300px; margin-left: -150px; text-align: center; }
 .ename { display: inline-block; padding: 0 12px; border-radius: 12px; background: rgba(20, 24, 38, .55); font-family: var(--title); font-size: 21px; color: #f6ecd2; text-shadow: 0 2px 4px #000; }
 .ename i { font-style: normal; font-size: 12px; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: #a0742a; vertical-align: middle; }

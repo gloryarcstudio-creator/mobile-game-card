@@ -30,7 +30,7 @@ ONLY = args[2:]
 
 FS, COLS = 200, 5      # frame size and columns of a clip atlas
 WORK = 720             # frames are keyed at this size, then reduced
-DIR = 'fx2'            # bump when clips change: published pages cache files by path
+DIR = 'fx3'            # bump when clips change: published pages cache files by path
 
 def V(kind, **o): return dict(src=kind, sheet=False, **o)
 def S(kind, **o): return dict(src=kind, sheet=True, **o)
@@ -39,6 +39,7 @@ def S(kind, **o): return dict(src=kind, sheet=True, **o)
 #   a, b   first and last source frame (default: the whole visible part)
 #   n      frames kept (default 16)
 #   fade   last frames that fade out (default 3); head = first frames that fade in
+#   soft   a round patch: the picture fades towards the rim over this share of the radius (rain, snow streaks)
 #   one    a single still (projectiles): the content is centred and enlarged to `fill` of the frame
 #   mode   magenta clips: 'screen' reads translucent smoke and glow correctly, 'plain' keeps pink and violet paint
 #   k      frames drawn in a sheet; left = frames are aligned by their left edge (the jaws stay in place while dust flies)
@@ -47,10 +48,10 @@ CLIPS = {
     'fire': V('fire', base=True, a=0, b=60, n=20, head=2, fade=5, floor=4.0),
     'snow': S('snow'),
     'snowball_p': V('snowball', a=10, one=True, fill=0.6), 'snowball': V('snowball', a=24, b=70, fade=4),
-    'blizzard': V('blizzard'), 'avalanche': S('avalanche', base=True),
+    'blizzard': V('blizzard', soft=0.55), 'avalanche': S('avalanche', base=True),
     'icicle_p': V('icicle', a=14, one=True, fill=0.9), 'icicle': V('icicle', a=24, fade=4),
     'shatter': S('shatter'),
-    'stamp': V('stamp', b=60, fade=4),
+    'stamp': S('stamp', base=True, fade=2),
     'letter_p': V('letter', a=20, one=True, fill=0.9), 'letter': V('letter', a=42, b=70, n=14),
     'starfall': V('starfall'), 'beam': V('beam', base=True), 'roots': V('roots', base=True, fade=4),
     'coin_p': V('coin', a=0, b=22, n=8, centre=True, fade=0), 'coin': V('coin', a=34, b=66, fade=4),
@@ -58,7 +59,7 @@ CLIPS = {
     'ink': V('ink', b=45, fade=5, mode='plain'), 'spikes': V('spikes', b=58, fade=4),
     'flash': S('flash'), 'shield': V('shield'), 'heal': S('heal', base=True), 'heart': V('heart'),
     'flamelet_p': V('flamelet', a=44, one=True, fill=0.8), 'flamelet': V('flamelet', a=30, b=66, n=12),
-    'burnApply': V('burnApply', base=True), 'weak': S('weak'), 'vuln': V('vuln'), 'frost': V('frost'), 'sleep': V('sleep'),
+    'burnApply': V('burnApply', base=True), 'weak': S('weak'), 'vuln': S('vuln', mode='screen', fade=2), 'frost': V('frost'), 'sleep': V('sleep'),
     'energy': V('energy'), 'aura': V('aura'), 'thorns': V('thorns', b=62, fade=4), 'gold': V('gold', base=True, b=58, fade=4),
     'deliver_p': V('deliver', a=40, one=True, fill=0.9),
     'sigil': V('sigil'), 'clock': S('clock'), 'mirror': V('mirror'), 'cards': S('cards', k=7),
@@ -114,6 +115,15 @@ def recentre(rgba, fill=None):
     can = Image.new('RGBa', (S_, S_), (0, 0, 0, 0))
     can.paste(im, (round(S_ / 2 - cx), round(S_ / 2 - cy)))
     return np.asarray(can.convert('RGBA'))
+
+def soften(rgba, share):
+    """a round patch: the picture fades towards the rim of the circle inscribed in its frame, from 1 - share of the radius"""
+    n = rgba.shape[0]; c = (n - 1) / 2
+    y, x = np.mgrid[0:n, 0:n].astype(np.float32)
+    r = np.sqrt((x - c) ** 2 + (y - c) ** 2) / (n / 2 * (1 - PAD))
+    t = np.clip((1 - r) / share, 0, 1); t = t * t * (3 - 2 * t)
+    out = rgba.copy(); out[..., 3] = (out[..., 3].astype(np.float32) * t).astype(np.uint8)
+    return out
 
 def feather(rgba, share=0.07):
     """the picture fades out at the very edge of its frame, so a cut glow or streak leaves no straight line"""
@@ -252,6 +262,7 @@ def build(name):
     for i in range(min(fade, n - 1)):        # the tail fades out
         f = frames[n - 1 - i]; f[..., 3] = (f[..., 3].astype(np.float32) * (i + 1) / (fade + 1)).astype(np.uint8)
     frames = [feather(f) for f in frames]
+    if c.get('soft'): frames = [soften(f, c['soft']) for f in frames]
     for i in range(min(c.get('head', 0), n - 1)):
         f = frames[i]; f[..., 3] = (f[..., 3].astype(np.float32) * (i + 1) / (c['head'] + 1)).astype(np.uint8)
     return frames, info

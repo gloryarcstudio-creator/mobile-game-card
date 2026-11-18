@@ -614,7 +614,7 @@
     },
     async parcel() {
       sfx('paper');
-      await fly(icon('parcel', 44), 'hero', { x: 430, y: 330 }, 520, { arc: 90, spin: 40 });
+      await fly(icon('parcel', 62), 'hero', { x: 430, y: 330 }, 520, { arc: 90, spin: 40 });
     },
   };
 
@@ -658,14 +658,14 @@
       sfx('snow'); shake(1.6);
     },
     async icicle(t) {
-      await fly(sprite('icicle_p', 124, { rot: 9 }), 'hero', t, 240, { aim: true, linger: 40 });
+      await fly(sprite('icicle_p', 150, { rot: 9 }), 'hero', t, 240, { aim: true, linger: 40 });
       tint('frosty', 700);
       put('icicle', anchor(t), 260, { dur: 560 }); sfx('ice'); shake(0.5);
     },
     async shatter(t) { tint('frosty', 700); put('shatter', anchor(t), 260, { dur: 520 }); sfx('ice'); shake(0.5); },
     async stamp(t) {
-      put('stamp', anchor(t), 230, { dx: rnd(-10, 10), dy: rnd(-20, 0), dur: 800 });
-      await wait(150);
+      put('stamp', feet(anchor(t)), 260, { ay: BASE, dx: rnd(-8, 8), dur: 760 });
+      await wait(120);
       sfx('stamp'); shake(1);
     },
     // письмо летит остриём в цель; справа налево — отражённое, чтобы не перевернулось
@@ -699,10 +699,10 @@
       put('coin', anchor(t), 250, { dur: 600 }); sfx('bonk'); shake(0.5);
     },
     async flour(t) { put('flour', anchor(t), 250, { dy: 14, dur: 640 }); sfx('thud'); shake(1.4); },
-    async confetti(t) { put('confetti', anchor(t), 320, { dur: 800 }); sfx('fair'); return P.bonk(t); },
-    async crumbs(t) { put('crumbs', anchor(t), 290, { dur: 640 }); sfx('crunch'); return P.bonk(t); },
+    async confetti(t) { put('confetti', anchor(t), 320, { dur: 800 }); sfx('fair'); sfx('bonk'); shake(0.5); },
+    async crumbs(t) { put('crumbs', anchor(t), 290, { dur: 640 }); sfx('crunch'); sfx('bonk'); shake(0.5); },
     async ink(t) { put('ink', anchor(t), 200, { dy: -14, dur: 640 }); sfx('splat'); },
-    async spikes(t) { put('spikes', anchor(t), 250, { dur: 600 }); sfx('thorns'); return P.bonk(t); },
+    async spikes(t) { put('spikes', anchor(t), 270, { dur: 600 }); sfx('thorns'); sfx('bonk'); shake(0.5); },
     async flash(t) { put('flash', anchor(t), 340, { dur: 620 }); shake(1.2); },
 
     async shield() { put('shield', anchor('hero'), 130, { dx: 22, dy: -50, dur: 800 }); },
@@ -725,8 +725,8 @@
       put('weak', { x: a.x, y: a.y - 40 }, 190, { dur: 800 });
       sfx('weak');
     },
-    async vuln(t = 'enemy') { put('vuln', anchor(t), 240, { dur: 760 }); sfx('crack'); },
-    async frost(t = 'enemy') { tint('frosty', 1000); put('frost', anchor(t), 250, { dur: 860 }); sfx('frost'); },
+    async vuln(t = 'enemy') { put('vuln', anchor(t), 200, { dur: 760 }); sfx('crack'); },
+    async frost(t = 'enemy') { tint('frosty', 1000); put('frost', anchor(t), 170, { dy: -14, dur: 860 }); sfx('frost'); },
     async sleep(t = 'enemy') { const a = anchor(t); put('sleep', { x: a.x + 56, y: a.y - 84 }, 140, { dur: 1200 }); sfx('sleep'); },
     async energy() { put('energy', anchor('energy'), 120, { dur: 520 }); sfx('zap'); },
     async aura() { put('aura', anchor('hero'), 160, { dx: 10, dy: -20, dur: 760 }); sfx('aura'); },
@@ -745,7 +745,7 @@
     },
     async clock() { put('clock', { x: 200, y: 480 }, 210, { dur: 1000 }); sfx('chime'); },
     async mirror() { put('mirror', { x: 200, y: 480 }, 320, { dur: 700 }); sfx('mirror'); },
-    async cards() { put('cards', { x: 318, y: 742 }, 150, { dur: 620 }); sfx('paper'); },
+    async cards() { put('cards', { x: 312, y: 730 }, 190, { dur: 620 }); sfx('paper'); },
     async ginger() { put('ginger', { x: 200, y: 520 }, 160, { dur: 720 }); sfx('oven'); },
     async sugar() { put('sugar', { x: 200, y: 640 }, 320, { dur: 800 }); sfx('sugar'); },
     async grind() { put('grind', { x: 200, y: 590 }, 260, { dur: 760 }); sfx('grind'); },
@@ -763,7 +763,7 @@
     async claw() { put('claw', anchor('hero'), 160, { dur: 480 }); },
     async notes(snd) { const a = anchor('hero'); put('notes', { x: a.x + 26, y: a.y - 50 }, 160, { dur: 1000 }); if (snd) sfx(snd); },
     async steam() { put('steam', anchor('hero'), 130, { dx: 26, dy: -62, dur: 1100 }); sfx('sip'); },
-    async wind() { put('wind', { x: 200, y: 600 }, 400, { dur: 720 }); sfx('wind'); },
+    async wind() { put('wind', { x: 200, y: 600 }, 470, { dur: 720 }); sfx('wind'); },
   };
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
 

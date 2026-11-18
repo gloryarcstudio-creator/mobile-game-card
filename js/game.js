@@ -2076,7 +2076,7 @@
     // Знахарка: заплатить Цену здоровьем
     async price(n) {
       loseHp(n); C.paid += n; ach.max('pricefight', C.paid);
-      FX.play('price'); floatText($('.hero-fx'), tr('Цена −{n} HP', { n }), 'dmgf');
+      FX.play('price'); floatText($('.hero-fx'), tr('Цена −{n} HP', { n }), 'dmgf small');
       renderCombat();
       if (C.enemy.hp > 0 && proc('mortar', 'enemy')) { await sleep(120); await strike(n, 'roots'); }
     },
@@ -2431,13 +2431,21 @@
     busy = false;
   }
 
+  // всплывающее число или слово. Живёт в слое эффектов, поверх вспышек: урон виден сразу, а не из-под удара
   function floatText(host, text, cls) {
     if (!host) return;
     const f = document.createElement('div');
     f.className = `float ${cls}`; f.textContent = text;
-    f.style.left = `${40 + Math.random() * 20}%`;
-    host.appendChild(f);
-    setTimeout(() => f.remove(), 1000);
+    const layer = $('#screen .fxlayer');
+    const at = 0.4 + Math.random() * 0.2;
+    if (layer) {
+      const r = host.getBoundingClientRect(); const s = layer.getBoundingClientRect(); const k = 400 / (s.width || 400);
+      f.style.top = `${Math.round((r.top - s.top + r.height * 0.4) * k)}px`;
+      layer.appendChild(f);
+      const half = f.offsetWidth / 2 + 6;          // длинная надпись не уходит за край экрана
+      f.style.left = `${Math.round(Math.max(half, Math.min(400 - half, (r.left - s.left + r.width * at) * k)))}px`;
+    } else { f.style.left = `${at * 100}%`; host.appendChild(f); }
+    setTimeout(() => f.remove(), 1150);
   }
 
   // кадры нарисованного врага: attack | hurt | death (если есть раскадровка)
