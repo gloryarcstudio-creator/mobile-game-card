@@ -1391,3 +1391,11 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 #app.skin .clsinfo { padding: 10px 12px; }
 #app.skin .sitem { padding: 9px 12px; }
 #app.skin .clsbtns { gap: 26px; }
+
+/* ---------- Отклик на нажатие там, где его не было ----------
+   Плитки героев, строки лавки, карты на продажу, талисманы в шапке, вкладки, переключатели, стопки колоды.
+   Через свойство scale, а не transform: у карт и плиток transform уже занят наклоном и размером. */
+:is(.clscard, .clscards, .dpip, .relic, .shopcard, .svc, .cxtile, .pile, .radio, .sreset, .achtabs button) { transition: scale .08s ease-out, filter .08s ease-out; }
+:is(.clscard, .clscards, .relic, .shopcard, .svc, .cxtile, .pile, .sreset):active { scale: .95; filter: brightness(1.18); }
+:is(.radio, .achtabs button):active { scale: .94; }
+.dpip:active { scale: 1.12 1.5; }
