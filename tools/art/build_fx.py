@@ -30,7 +30,7 @@ ONLY = args[2:]
 
 FS, COLS = 200, 5      # frame size and columns of a clip atlas
 WORK = 720             # frames are keyed at this size, then reduced
-DIR = 'fx1'            # bump when clips change: published pages cache files by path
+DIR = 'fx2'            # bump when clips change: published pages cache files by path
 
 def V(kind, **o): return dict(src=kind, sheet=False, **o)
 def S(kind, **o): return dict(src=kind, sheet=True, **o)
@@ -63,7 +63,7 @@ CLIPS = {
     'deliver_p': V('deliver', a=40, one=True, fill=0.9),
     'sigil': V('sigil'), 'clock': S('clock'), 'mirror': V('mirror'), 'cards': S('cards', k=7),
     'ginger': V('ginger'), 'sugar': S('sugar'), 'grind': V('grind'), 'growl': V('growl'),
-    'bite': S('bite', k=7, left=True), 'price': V('price', b=62, fade=4), 'claw': V('claw'),
+    'bite_p': S('bite', k=7, pick=0, fill=0.86), 'bite': S('bite', k=7, take=(1, 5), anchor=2, fade=1), 'price': V('price', b=62, fade=4), 'claw': V('claw'),
     'notes': V('notes'), 'steam': V('steam'), 'wind': V('wind'),
 }
 
@@ -210,27 +210,45 @@ def sheet_clip(c):
     for j in range(k):
         cols = np.where((own == j) & (al.max(0) > 40))[0]
         spans.append((cols[0], cols[-1] + 1) if len(cols) else (int(cen[j]), int(cen[j]) + 1))
-    side = int(max(max(x1 - x0 for x0, x1 in spans), y1 - y0) / (1 - 2 * PAD))
+    pick = c.get('pick')
+    if pick is not None:                     # one drawing of the sheet as a still picture (a projectile)
+        x0, x1 = spans[pick]
+        part = rgba[y0:y1, x0:x1].copy(); part[:, own[x0:x1] != pick, 3] = 0
+        sq = int(max(x1 - x0, y1 - y0) * 1.4)
+        can = np.zeros((sq, sq, 4), np.uint8)
+        can[(sq - (y1 - y0)) // 2:][:y1 - y0, (sq - (x1 - x0)) // 2:][:, :x1 - x0] = part
+        return [resize(recentre(can, c.get('fill', 0.85)), FS)], dict(src=[int(cen[pick])])
+    use = list(range(*c.get('take', (0, k))))
+    an = c.get('anchor')
+    if an is not None:
+        # frames keep their left edge in one place, and the drawing `an` sits in the middle of the frame:
+        # what the other frames add (a burst, dust) spreads from it
+        wa = spans[an][1] - spans[an][0]
+        half = max(max(wa / 2, (spans[j][1] - spans[j][0]) - wa / 2) for j in use)
+        side = int(max(2 * half, y1 - y0) / (1 - 2 * PAD))
+    else:
+        side = int(max(max(spans[j][1] - spans[j][0] for j in use), y1 - y0) / (1 - 2 * PAD))
     frames = []
     for j, (x0, x1) in enumerate(spans):
+        if j not in use: continue
         part = rgba.copy()
         part[:, own != j, 3] = 0             # nothing from the neighbouring frame
         can = np.zeros((side, side, 4), np.uint8)
         # where this frame sits in its square: by its left edge, or by its centre
-        ox = (side - max(s1 - s0 for s0, s1 in spans)) // 2 - x0 if c.get('left') else side // 2 - (x0 + x1) // 2
+        ox = (side // 2 - wa // 2 - x0 if an is not None else (side - max(spans[i][1] - spans[i][0] for i in use)) // 2 - x0 if c.get('left') else side // 2 - (x0 + x1) // 2)
         oy = side - int(side * PAD) - y1 if c.get('base') else side // 2 - (y0 + y1) // 2
         sx0, sx1 = max(x0, -ox), min(x1, side - ox)
         sy0, sy1 = max(y0, -oy), min(y1, side - oy)
         can[sy0 + oy: sy1 + oy, sx0 + ox: sx1 + ox] = part[sy0:sy1, sx0:sx1]
         frames.append(resize(can, FS))
-    return frames, dict(src=[int(x) for x in cen])
+    return frames, dict(src=[int(cen[j]) for j in use], side=side, spans=[spans[j][1] - spans[j][0] for j in use])
 
 def build(name):
     c = CLIPS[name]
     frames, info = (sheet_clip if c['sheet'] else video_clip)(c)
     frames = [f.copy() for f in frames]
     n = len(frames)
-    fade = 0 if c.get('one') else c.get('fade', 0 if c['sheet'] else 3)
+    fade = 0 if c.get('one') or c.get('pick') is not None else c.get('fade', 0 if c['sheet'] else 3)
     for i in range(min(fade, n - 1)):        # the tail fades out
         f = frames[n - 1 - i]; f[..., 3] = (f[..., 3].astype(np.float32) * (i + 1) / (fade + 1)).astype(np.uint8)
     frames = [feather(f) for f in frames]

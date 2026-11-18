@@ -158,7 +158,7 @@
   const NEED = {
     snowball: ['snowball_p', 'snowball'], blizzard: ['blizzard', 'snow'], icicle: ['icicle_p', 'icicle'],
     letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], confetti: ['confetti', 'bonk'],
-    crumbs: ['crumbs', 'bonk'], spikes: ['spikes', 'bonk'], heart: ['heart', 'heal'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'],
+    crumbs: ['crumbs', 'bonk'], spikes: ['spikes', 'bonk'], heart: ['heart', 'heal'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'], bite: ['bite_p', 'bite'],
   };
   // готовы ли ролики эффекта; недолго ждём расшифровку, но не скачивание
   async function ready(kind) {
@@ -750,12 +750,13 @@
     async sugar() { put('sugar', { x: 200, y: 640 }, 320, { dur: 800 }); sfx('sugar'); },
     async grind() { put('grind', { x: 200, y: 590 }, 260, { dur: 760 }); sfx('grind'); },
     async growl() { put('growl', anchor('hero'), 140, { dx: 30, dy: -90, dur: 900 }); sfx('growl'); },
-    // Дружок прыгает на врага, челюсти смыкаются
+    // укус Дружка: раскрытая пасть летит от героя и смыкается на враге
     async bite(t = 'enemy') {
       sfx('bark');
-      await fly(window.Art.hasIcon('buddy') ? icon('buddy', 76) : sized(window.Art.dog({ bark: true }), 70), 'hero', t, 330, { arc: 120, spin: 20, r0: -20, linger: 40 });
-      put('bite', anchor(t), 250, { dur: 600 });
-      await wait(150);
+      const a = anchor(t);
+      await fly(sprite('bite_p', 200), 'hero', a, 300, { arc: 100, r0: -60, spin: -8, linger: 0 });
+      put('bite', a, 300, { dur: 460, rot: -8 });
+      await wait(110);
       sfx('bite'); shake(0.9);
     },
     async price() { put('price', anchor('hero'), 140, { dy: -20, dur: 760 }); sfx('heartbeat'); },
