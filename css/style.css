@@ -187,6 +187,9 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
   animation: rise .45s backwards; animation-delay: var(--d);
 }
 .enc:active { transform: scale(.97); }
+/* выбор на карте пути: выбранная подаётся вперёд и светится, остальные гаснут */
+.enc.picked { transform: scale(1.07); filter: brightness(1.25) drop-shadow(0 0 14px rgba(255, 214, 130, .85)); transition: transform .2s cubic-bezier(.3, 1.6, .6, 1), filter .15s; z-index: 2; }
+.enc.passed { opacity: .35; transform: scale(.96); transition: opacity .2s, transform .2s; }
 @keyframes rise { from { transform: translateY(40px); opacity: 0; } }
 .enc::before { content: ''; position: absolute; top: -12px; left: 50%; width: 26px; height: 14px; margin-left: -13px; background: var(--ink); clip-path: polygon(0 100%, 20% 0, 50% 60%, 80% 0, 100% 100%); }
 .enc-title { font-family: var(--title); font-size: 15px; line-height: 1.1; min-height: 34px; display: flex; align-items: center; color: var(--gold-hi); }

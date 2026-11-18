@@ -296,17 +296,28 @@
   const snow = (function () {
     const cv = $('#snow'); const ctx = cv.getContext('2d');
     cv.width = 400; cv.height = 860;
-    const flakes = Array.from({ length: 70 }, () => ({ x: Math.random() * 400, y: Math.random() * 860, r: 0.8 + Math.random() * 2.2, v: 0.3 + Math.random() * 0.9, d: Math.random() * 6 }));
+    // три слоя глубины: дальние снежинки мелкие, тусклые и медленные, ближние крупные и яркие;
+    // всех сносит один и тот же ветер, который то усиливается, то стихает
+    const flakes = Array.from({ length: 76 }, (_, i) => {
+      const z = i < 34 ? 0 : i < 62 ? 1 : 2;
+      return { z, x: Math.random() * 400, y: Math.random() * 860, r: [0.7, 1.3, 2.3][z] + Math.random() * [0.6, 0.9, 1.3][z], v: [0.22, 0.5, 0.95][z] + Math.random() * [0.2, 0.35, 0.5][z], d: Math.random() * 6 };
+    });
+    const ALPHA = [0.42, 0.7, 0.92];
     let running = false;
     function tick(t) {
       ctx.clearRect(0, 0, 400, 860);
       if (!SETTINGS.snow) { running = false; return; }
-      ctx.fillStyle = 'rgba(235,242,255,0.85)';
+      ctx.fillStyle = 'rgb(235,242,255)';
+      const wind = Math.sin(t / 7300) * 0.22 + Math.sin(t / 2900 + 1.7) * 0.1;
+      let layer = -1;
       for (const f of flakes) {
-        f.y += f.v; f.x += Math.sin(t / 1400 + f.d) * 0.35;
+        if (f.z !== layer) { layer = f.z; ctx.globalAlpha = ALPHA[layer]; }
+        f.y += f.v; f.x += Math.sin(t / 1400 + f.d) * (0.2 + f.z * 0.12) + wind * (0.5 + f.z * 0.6);
         if (f.y > 870) { f.y = -10; f.x = Math.random() * 400; }
+        if (f.x < -8) f.x += 416; else if (f.x > 408) f.x -= 416;
         ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 7); ctx.fill();
       }
+      ctx.globalAlpha = 1;
       requestAnimationFrame(tick);
     }
     const start = () => { if (!running) { running = true; requestAnimationFrame(tick); } };
@@ -1413,6 +1424,7 @@
     return tr('Уровень {n}', { n: run.step + 1 });
   }
 
+  let pickedEnc = false;   // карта пути уже выбрана и показывает это: второй тап не считается
   function chooseEncounter(i) {
     const o = run.choices[i];
     run.choices = null;
@@ -3120,7 +3132,15 @@
       case 'settings': showSettings(); break;
       case 'ach': showAchievements(); break;
       case 'codex': showCodex(); break;
-      case 'choose': chooseEncounter(+t.dataset.i); break;
+      case 'choose': {
+        // выбранная карта пути вспыхивает и подаётся вперёд, остальные гаснут; потом уже переход
+        if (pickedEnc) break;
+        pickedEnc = true;
+        screen.querySelectorAll('.enc').forEach((x) => x.classList.add(x === t ? 'picked' : 'passed'));
+        const i = +t.dataset.i;
+        setTimeout(() => { pickedEnc = false; if (screen.className === 'scr-map' && run && run.choices) chooseEncounter(i); }, SETTINGS.fast ? 110 : 230);
+        break;
+      }
       case 'next': advance(); break;
       case 'deck': showDeck(run.deck, `${tr('Колода')} · ${run.deck.length}`); break;
       case 'relics': showRelics(); break;
