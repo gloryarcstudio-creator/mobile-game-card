@@ -648,13 +648,13 @@
 
   /* Пауза во время забега: справочник и выход в главное меню */
   function showPause() {
-    showOverlay(`<div class="pause"><h2>${tr('Пауза')}</h2>
+    showOverlay(`<div class="settings pausebox"><button class="sclose" data-act="p-resume" aria-label="${tr('Закрыть')}">✕</button><div class="sribbon">${tr('Пауза')}</div><div class="pause">
       <p class="ovhint">${hero().name} · ${DIFF().name}</p>
       <p class="ovhint">${C ? tr('Прогресс сохранён до начала этого боя. Если выйти, бой начнётся заново.') : tr('Прогресс сохранён. Можно выйти и вернуться позже.')}</p>
       <button class="btn" data-act="p-resume">${tr('Вернуться в игру')}</button>
       <button class="btn ghost" data-act="p-gloss">${tr('Справочник')}</button>
       <button class="btn ghost" data-act="p-settings">${tr('Настройки')}</button>
-      <button class="btn ghost" data-act="p-title">${tr('Главное меню')}</button></div>`, (e) => {
+      <button class="btn ghost" data-act="p-title">${tr('Главное меню')}</button></div></div>`, (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       if (b.dataset.act === 'p-resume') hideOverlay();
