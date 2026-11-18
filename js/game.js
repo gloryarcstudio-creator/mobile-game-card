@@ -1813,7 +1813,7 @@
     if (fr.length >= 3) ach.flag('friends3');
     if (fr.includes('guard')) api.block(12);
     if (fr.includes('baker')) { evApi.heal(10); FX.play('heal'); }
-    if (fr.includes('stoker')) { C.enemy.burn += 6; FX.play('fire', 'enemy'); }
+    if (fr.includes('stoker')) { C.enemy.burn += 6; FX.play('burnApply', 'enemy'); }
     if (fr.includes('herbalist')) { C.enemy.weak += 3; FX.play('weak', 'enemy'); }
     if (fr.includes('shepherd')) { C.dog = Math.max(C.dog, 3); FX.play('growl'); }
     if (fr.includes('grinder')) api.sharpen(2, true);
@@ -1982,7 +1982,7 @@
     },
     draw(n) { drawCards(n); },
     heal(n) { SND.sfx('heal'); FX.play('heal'); const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); stAdd('healed', run.hp - before); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
-    burn(n) { const v = n + (proc('matchbox', 'enemy') ? 2 : 0); FX.play('fire', 'enemy'); C.enemy.burn += v; floatText($('.enemy-fx'), tr('Поджог {n}', { n: v }), 'burnf'); },
+    burn(n) { const v = n + (proc('matchbox', 'enemy') ? 2 : 0); FX.play('burnApply', 'enemy'); C.enemy.burn += v; floatText($('.enemy-fx'), tr('Поджог {n}', { n: v }), 'burnf'); },
     weak(n) { FX.play('weak', 'enemy'); C.enemy.weak += n; floatText($('.enemy-fx'), tr('Ослаблен'), 'weakf'); },
     vuln(n) { FX.play('vuln', 'enemy'); C.enemy.vuln += n + (proc('stamppad', 'enemy') ? 1 : 0); floatText($('.enemy-fx'), tr('Уязвим'), 'weakf'); },
     chill(n) { FX.play('frost', 'enemy'); C.enemy.str -= n; floatText($('.enemy-fx'), tr('Сила −{n}', { n }), 'blockf'); },
@@ -2187,6 +2187,14 @@
       if (C.hand.length >= HAND_MAX) break;
       C.hand.push(C.draw.pop());
     }
+    // нарисованные эффекты карт в руке расшифровываются заранее, чтобы первый удар не ждал
+    const kinds = [];
+    C.hand.forEach((c) => {
+      const k = ATK_FX[c.id];
+      if (k) kinds.push(k, ATK_FX_NEXT[k]);
+      if (CAST_FX[c.id]) kinds.push(CAST_FX[c.id][0]);
+    });
+    FX.warm(kinds.filter(Boolean));
   }
 
   async function startPlayerTurn() {
@@ -2250,7 +2258,7 @@
   function startProcs() {
     const at = { inkwell: 'enemy', frostring: 'enemy', frostglass: 'enemy', chimneycap: 'enemy' };
     ['feather', 'eternaloil', 'pinecone', 'dogfriend', 'bookmark', 'inkwell', 'frostring', 'frostglass', 'chimneycap'].forEach((id) => proc(id, at[id]));
-    if (hasRelic('chimneycap')) FX.play('fire', 'enemy');
+    if (hasRelic('chimneycap')) FX.play('burnApply', 'enemy');
     if (hasRelic('frostring') || hasRelic('frostglass')) FX.play('frost', 'enemy');
     if (hasRelic('inkwell')) FX.play('weak', 'enemy');
     if (hasRelic('dogfriend')) FX.play('growl');

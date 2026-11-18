@@ -57,6 +57,13 @@ if MUS:
     loops = json.load(open(os.path.join(A, MUS, 'loops.json')))
     music = {'dir': MUS, 'tracks': {k: v for k, v in loops.items() if os.path.exists(os.path.join(A, MUS, k + '.mp3'))}}
 
+# painted effect clips: newest assets/fx<N> folder with index.json (written by tools/art/build_fx.py)
+FXD = ([d for d in sorted(os.listdir(A), key=lambda d: (len(d), d)) if re.fullmatch(r'fx\d+', d) and os.path.exists(os.path.join(A, d, 'index.json'))] or [None])[-1]
+fx = None
+if FXD:
+    fx = json.load(open(os.path.join(A, FXD, 'index.json')))
+    if not all(os.path.exists(os.path.join(A, f)) for f in fx['files']): fx = None
+
 M = {
     'hero': hero, 'face': face,
     'enemy': names('e'), 'foot': foot, 'anim': anim,
@@ -66,6 +73,7 @@ M = {
     'ui': names(UI), 'uid': UI,
 }
 if music: M['music'] = music
+if fx: M['fx'] = fx
 js = '/* Сгенерировано gen_manifest.py: какие нарисованные картинки есть в assets/ */\nwindow.ASSETS = ' + json.dumps(M, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(REPO, 'js', 'assets.js'), 'w').write(js)
 print('assets.js', len(js), 'bytes;', {k: len(v) for k, v in M.items() if isinstance(v, (list, dict))})

@@ -739,6 +739,9 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .fx { position: absolute; width: 0; height: 0; }
 .fx > * { position: absolute; left: 0; top: 0; translate: -50% -50%; display: block; }
 .fx svg { overflow: visible; display: block; }
+/* нарисованные ролики эффектов: холст на весь свой квадрат */
+.fx .sp > canvas { display: block; width: 100%; height: 100%; }
+.fx .sigil.plain { background: none; }
 .fx .glow { border-radius: 50%; }
 .fx.pt > * { animation: fxpt var(--t) var(--dl) cubic-bezier(.2, .7, .4, 1) both; }
 @keyframes fxpt {

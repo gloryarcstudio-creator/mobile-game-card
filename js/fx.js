@@ -41,6 +41,7 @@
     d.style.left = `${x}px`; d.style.top = `${y}px`;
     d.innerHTML = html;
     host.appendChild(d);
+    if (PX) d.querySelectorAll('canvas.spr').forEach(runSprite);
     setTimeout(() => d.remove(), life);
     return d;
   }
@@ -61,14 +62,15 @@
       });
     }
   }
-  // снаряд от одной точки к другой; arc — высота дуги, spin — поворот за полёт
+  // снаряд от одной точки к другой; arc — высота дуги, spin — поворот за полёт, linger — сколько мс он ещё виден в цели
   function fly(html, from, to, ms, o = {}) {
     const a = anchor(from); const b = anchor(to);
     const tx = b.x + (o.ox || 0); const ty = b.y + (o.oy || 0);
-    const d = spawn(a.x, a.y, html, `proj ${o.cls || ''}`, ms + 160);
+    const k = fast() ? 0.5 : 1;   // в быстром режиме снаряд долетает к тому же моменту, что и удар
+    const d = spawn(a.x, a.y, html, `proj ${o.cls || ''}`, ms * k + (o.linger == null ? 160 : o.linger));
     // aim: снаряд смотрит остриём в цель
     const ang = o.aim ? Math.atan2(ty - a.y, tx - a.x) * 180 / Math.PI : 0;
-    vars(d, { dx: `${tx - a.x}px`, dy: `${ty - a.y}px`, arc: `${o.arc || 0}px`, r: `${o.aim ? ang : o.spin || 0}deg`, r0: `${o.aim ? ang : o.r0 || 0}deg`, t: `${ms / 1000}s` });
+    vars(d, { dx: `${tx - a.x}px`, dy: `${ty - a.y}px`, arc: `${o.arc || 0}px`, r: `${o.aim ? ang : o.spin || 0}deg`, r0: `${o.aim ? ang : o.r0 || 0}deg`, t: `${(ms * k) / 1000}s` });
     return wait(ms);
   }
   // одиночная картинка с анимацией из CSS (класс cls задаёт движение)
@@ -94,8 +96,151 @@
     setTimeout(() => e.classList.remove(cls), ms);
   }
 
+  /* ---------- нарисованные ролики эффектов ----------
+     Ролики лежат в нескольких текстовых файлах (base64, tools/art/build_fx.py): страница отдаёт только обычные веб-файлы,
+     а на 57 отдельных картинок не хватило бы места. ASSETS.fx = { files, fs, cols, pad, clips: { имя: [файл, смещение, длина, кадров] } }.
+     Ролик — атлас из кадров fs×fs; он расшифровывается, когда эффект понадобился, и хранится недолго (KEEP последних).
+     Пока ролик не готов (файл ещё качается, старый телефон не успел), эффект рисуется кодом, как раньше. */
+  const PX = (window.ASSETS && window.ASSETS.fx) || null;
+  const BASE = PX ? 1 - (PX.pad || 0.08) : 0.92;   // у роликов «на земле» низ рисунка стоит на этой доле высоты кадра
+  const KEEP = (navigator.deviceMemory || 4) >= 4 ? 18 : 10;
+  const clips = new Map();     // готовые ролики: имя -> { bmp, n, used }; порядок — от давно не нужных к свежим
+  const pending = new Map();
+  const packs = []; const packText = [];
+  function pack(i) {
+    if (!packs[i]) {
+      packs[i] = fetch(`${window.ASSETS.base || 'assets/'}${PX.files[i]}`).then((r) => (r.ok ? r.text() : null)).catch(() => null);
+      packs[i].then((t) => { if (t) packText[i] = t; else setTimeout(() => { packs[i] = null; }, 15000); });   // не скачался — попробуем позже
+    }
+    return packs[i];
+  }
+  // байты одного ролика: каждый начинается на границе четырёх букв base64
+  function bytes(txt, off, len) {
+    const a = (off / 3) * 4;
+    const bin = atob(txt.slice(a, a + Math.ceil(len / 3) * 4));
+    const u = new Uint8Array(len);
+    for (let i = 0; i < len; i++) u[i] = bin.charCodeAt(i);
+    return u;
+  }
+  function picture(u) {
+    const blob = new Blob([u], { type: 'image/webp' });
+    if (window.createImageBitmap) return createImageBitmap(blob);
+    return new Promise((res, rej) => {
+      const im = new Image(); const url = URL.createObjectURL(blob);
+      im.onload = () => { URL.revokeObjectURL(url); res(im); }; im.onerror = rej; im.src = url;
+    });
+  }
+  function touch(name) { const c = clips.get(name); if (c) { clips.delete(name); clips.set(name, c); } }
+  function trim() {
+    for (const [name, c] of clips) {
+      if (clips.size <= KEEP) break;
+      if (c.used) continue;
+      clips.delete(name);
+      if (c.bmp.close) c.bmp.close();
+    }
+  }
+  function decode(name) {
+    const m = PX && PX.clips[name];
+    if (!m) return Promise.resolve(null);
+    if (clips.has(name)) { touch(name); return Promise.resolve(clips.get(name)); }
+    if (!pending.has(name)) {
+      pending.set(name, pack(m[0]).then((txt) => (txt ? picture(bytes(txt, m[1], m[2])) : null)).then((bmp) => {
+        pending.delete(name);
+        if (!bmp) return null;
+        const c = { bmp, n: m[3], used: 0 };
+        clips.set(name, c); trim();
+        return c;
+      }).catch(() => { pending.delete(name); return null; }));
+    }
+    return pending.get(name);
+  }
+  // какие ролики нужны эффекту (если не тот же, что и название)
+  const NEED = {
+    snowball: ['snowball_p', 'snowball'], blizzard: ['blizzard', 'snow'], icicle: ['icicle_p', 'icicle'],
+    letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], confetti: ['confetti', 'bonk'],
+    crumbs: ['crumbs', 'bonk'], spikes: ['spikes', 'bonk'], heart: ['heart', 'heal'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'],
+  };
+  // готовы ли ролики эффекта; недолго ждём расшифровку, но не скачивание
+  async function ready(kind) {
+    if (!PX || !P[kind]) return false;
+    const list = NEED[kind] || [kind];
+    if (list.every((n) => clips.has(n))) { list.forEach(touch); return true; }
+    const here = list.every((n) => PX.clips[n] && packText[PX.clips[n][0]]);
+    const all = Promise.all(list.map(decode));
+    if (!here) return false;
+    await Promise.race([all, new Promise((r) => setTimeout(r, fast() ? 120 : 240))]);
+    return list.every((n) => clips.has(n));
+  }
+  // заранее расшифровать ролики эффектов, которые скоро понадобятся (карты в руке)
+  function warm(kinds) {
+    if (!PX) return;
+    let left = KEEP - 4;
+    for (const k of kinds) {
+      if (!P[k]) continue;
+      for (const n of NEED[k] || [k]) if (left-- > 0) decode(n);
+    }
+  }
+  if (PX) setTimeout(() => { PX.files.forEach((_, i) => pack(i)); warm(['bonk', 'shield', 'claw']); }, 2500);
+
+  // рисунок ролика для spawn и fly. w — сторона кадра на экране; ay — какая доля высоты кадра стоит в точке
+  // (по умолчанию середина, BASE — рисунок стоит на земле); dur — длительность, delay — задержка, loop — по кругу
+  function sprite(name, w, o = {}) {
+    const st = `width:${w}px;height:${w}px;${o.ay != null ? `translate:-50% ${(-o.ay * 100).toFixed(1)}%;` : ''}`;
+    const tf = `${o.rot ? `rotate(${o.rot}deg) ` : ''}${o.flip ? 'scaleX(-1) ' : ''}${o.flipY ? 'scaleY(-1)' : ''}`;
+    return `<div class="sp" style="${st}"><canvas class="spr" data-c="${name}" data-d="${o.dur || 0}" data-w="${o.delay || 0}"${o.loop ? ' data-l="1"' : ''}${tf ? ` style="transform:${tf}"` : ''}></canvas></div>`;
+  }
+  const natural = (n) => (n >= 12 ? n * 42 : n * 68);   // длительность ролика, если не задана
+  // ролик в точке; dx, dy — сдвиг
+  function put(name, at, w, o = {}) {
+    const c = clips.get(name);
+    if (!c) return null;
+    return spawn(at.x + (o.dx || 0), at.y + (o.dy || 0), sprite(name, w, o), 'spx', (o.delay || 0) + (o.dur || natural(c.n)) + 120);
+  }
+  // один проигрыватель на все ролики: соседние кадры смешиваются, поэтому 16 кадров идут плавно
+  const live = new Set();
+  let raf = 0;
+  function frame(s, i, w, add) {
+    const F = PX.fs; const g = s.g;
+    g.globalCompositeOperation = add ? 'lighter' : 'source-over';
+    g.globalAlpha = w;
+    g.drawImage(s.c.bmp, (i % PX.cols) * F, Math.floor(i / PX.cols) * F, F, F, 0, 0, F, F);
+  }
+  function runSprite(cv) {
+    const c = clips.get(cv.dataset.c);
+    if (!c) return;
+    touch(cv.dataset.c);
+    const k = fast() ? 0.5 : 1;
+    cv.width = cv.height = PX.fs;
+    const s = { cv, c, g: cv.getContext('2d'), t0: performance.now() + (+cv.dataset.w || 0) * k, dur: Math.max(80, (+cv.dataset.d || natural(c.n)) * k), loop: !!cv.dataset.l };
+    if (c.n === 1) { frame(s, 0, 1); return; }
+    c.used++; live.add(s);
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+  function tick(now) {
+    raf = 0;
+    for (const s of live) {
+      const gone = !s.cv.isConnected; const p = (now - s.t0) / s.dur;
+      if (gone || (!s.loop && p >= 1)) {
+        if (!gone) s.g.clearRect(0, 0, PX.fs, PX.fs);
+        live.delete(s); s.c.used--;
+        continue;
+      }
+      if (p < 0) continue;
+      const n = s.c.n; const f = (s.loop ? p % 1 : p) * n;
+      const i = Math.min(n - 1, Math.floor(f));
+      // у коротких раскадровок соседние кадры — разные рисунки: кадр держится и лишь под конец переходит в следующий
+      const k = n < 12 ? (s.loop ? 0 : Math.max(0, (f - i - 0.5) / 0.5)) : f - i;
+      const j = s.loop ? (i + 1) % n : i + 1;
+      s.g.clearRect(0, 0, PX.fs, PX.fs);
+      frame(s, i, 1 - k);                       // последний кадр растворяется в пустоту
+      if (j < n && k > 0.02) frame(s, j, k, true);
+    }
+    if (live.size) raf = requestAnimationFrame(tick);
+  }
+
   /* ---------- рисунки ---------- */
-  const sized = (html, w) => html.replace('class="icon"', `class="icon" style="width:${w}px;height:${w}px"`);
+  // значок нужного размера (у нарисованных значков к классу icon добавлены другие)
+  const sized = (html, w) => html.replace(/class="icon\b/, `style="width:${w}px;height:${w}px" class="icon`);
   const flame = (k = 1) => sized(window.Art.flame(k), 44 * k);
   const star = (r, fill = '#ffe38a') => svg('-12 -12 24 24', `<path d="M0 -10 L2.6 -2.6 L10 0 L2.6 2.6 L0 10 L-2.6 2.6 L-10 0 L-2.6 -2.6z" fill="${fill}" stroke="${O}" stroke-width="1.6" stroke-linejoin="round"/>`, r * 2);
   const dot = (r, fill, stroke = O) => svg('-10 -10 20 20', `<circle r="7" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`, r * 2);
@@ -472,6 +617,153 @@
       await fly(icon('parcel', 44), 'hero', { x: 430, y: 330 }, 520, { arc: 90, spin: 40 });
     },
   };
+
+  /* ---------- те же эффекты, нарисованные художником ----------
+     Снаряды, звуки, встряска и окраска врага остаются как в K; вспышки, брызги и значки — ролики из ASSETS.fx.
+     Размеры — сторона кадра ролика на экране (рисунок занимает кадр почти целиком). */
+  const feet = (a) => ({ x: a.x, y: (a.foot || a.y + 60) + 8 });
+  const P = {
+    async lantern(t) { put('lantern', anchor(t), 220, { dur: 600 }); sfx('lantern'); shake(0.6); },
+    async bonk(t) { put('bonk', anchor(t), 230, { dx: rnd(-14, 14), dy: rnd(-24, 10), dur: 480 }); sfx('bonk'); shake(0.5); },
+    async heavy(t) { put('heavy', anchor(t), 280, { dy: -10, dur: 640 }); sfx('thud'); shake(1.4); },
+    async slash(t) {
+      put('slash', anchor(t), 270, { dur: 560 });
+      sfx('slash');
+      await wait(120);
+      shake(0.5);
+    },
+    async sparks(t) { put('sparks', anchor(t), 280, { dur: 640 }); sfx('sparks'); shake(0.4); },
+    // огонь: языки пламени встают вдоль ног врага
+    async fire(t) {
+      const a = anchor(t); const f = feet(a);
+      tint('burning', 900);
+      [[-0.36, 160, 60], [0.34, 170, 150], [-0.13, 230, 0], [0.12, 200, 100]].forEach(([k, w, dl], i) => put('fire', { x: f.x + a.w * k, y: f.y + (w < 180 ? 6 : 0) }, w, { ay: BASE, dur: 900, delay: dl, flip: i % 2 === 1 }));
+      sfx('fire');
+    },
+    async snow(t) { put('snow', anchor(t), 230, { dur: 560 }); sfx('snow'); shake(0.5); },
+    async snowball(t) {
+      await fly(sprite('snowball_p', 38), 'hero', t, 300, { arc: 90, spin: 360, linger: 40 });
+      put('snowball', anchor(t), 210, { dur: 600 }); sfx('snow'); shake(0.5);
+    },
+    async blizzard(t) {
+      put('blizzard', anchor(t), 340, { dur: 820 });
+      await wait(200);
+      return P.snow(t);
+    },
+    // лавина: снег рушится сверху и оседает сугробом
+    async avalanche(t) {
+      const a = anchor(t);
+      put('avalanche', feet(a), 320, { ay: BASE, dur: 800 });
+      await wait(300);
+      sfx('snow'); shake(1.6);
+    },
+    async icicle(t) {
+      await fly(sprite('icicle_p', 124, { rot: 9 }), 'hero', t, 240, { aim: true, linger: 40 });
+      tint('frosty', 700);
+      put('icicle', anchor(t), 260, { dur: 560 }); sfx('ice'); shake(0.5);
+    },
+    async shatter(t) { tint('frosty', 700); put('shatter', anchor(t), 260, { dur: 520 }); sfx('ice'); shake(0.5); },
+    async stamp(t) {
+      put('stamp', anchor(t), 230, { dx: rnd(-10, 10), dy: rnd(-20, 0), dur: 800 });
+      await wait(150);
+      sfx('stamp'); shake(1);
+    },
+    // письмо летит остриём в цель; справа налево — отражённое, чтобы не перевернулось
+    async letter(t, from = 'hero') {
+      sfx('paper');
+      const a = anchor(t);
+      await fly(sprite('letter_p', 96, { flipY: a.x < anchor(from).x }), from, t, 320, { arc: 40, aim: true, linger: 40 });
+      put('letter', a, 260, { dur: 560 }); sfx('bonk', 0.7); shake(0.4);
+    },
+    async starfall(t) {
+      put('starfall', anchor(t), 320, { dy: -30, dur: 760 });
+      sfx('star');
+      await wait(400);
+      shake(0.8);
+    },
+    async beam(t) {
+      put('beam', feet(anchor(t)), 380, { ay: BASE, dur: 800 });
+      sfx('beam');
+      await wait(260);
+      shake(0.8);
+    },
+    async roots(t) {
+      put('roots', feet(anchor(t)), 250, { ay: BASE, dur: 900 });
+      sfx('root');
+      await wait(260);
+      shake(0.5);
+    },
+    async coin(t) {
+      sfx('coin');
+      await fly(sprite('coin_p', 84, { loop: true, dur: 280 }), 'hero', t, 300, { arc: 110, linger: 40 });
+      put('coin', anchor(t), 250, { dur: 600 }); sfx('bonk'); shake(0.5);
+    },
+    async flour(t) { put('flour', anchor(t), 250, { dy: 14, dur: 640 }); sfx('thud'); shake(1.4); },
+    async confetti(t) { put('confetti', anchor(t), 320, { dur: 800 }); sfx('fair'); return P.bonk(t); },
+    async crumbs(t) { put('crumbs', anchor(t), 290, { dur: 640 }); sfx('crunch'); return P.bonk(t); },
+    async ink(t) { put('ink', anchor(t), 200, { dy: -14, dur: 640 }); sfx('splat'); },
+    async spikes(t) { put('spikes', anchor(t), 250, { dur: 600 }); sfx('thorns'); return P.bonk(t); },
+    async flash(t) { put('flash', anchor(t), 340, { dur: 620 }); shake(1.2); },
+
+    async shield() { put('shield', anchor('hero'), 130, { dx: 22, dy: -50, dur: 800 }); },
+    async heal(t = 'hero') { const a = anchor(t); put('heal', { x: a.x, y: a.y + 34 }, 170, { ay: BASE, dur: 800 }); },
+    async heart() { put('heart', anchor('hero'), 180, { dy: -50, dur: 1000 }); P.heal(); },
+    async flamelet() {
+      const lamp = anchor('lamp');
+      await fly(sprite('flamelet_p', 52), { x: 200, y: 520 }, lamp, 300, { arc: 40, linger: 40 });
+      put('flamelet', lamp, 100, { dur: 460 });
+    },
+    // поджог: враг вспыхивает одним большим пламенем
+    async burnApply(t = 'enemy') {
+      tint('burning', 900);
+      put('burnApply', feet(anchor(t)), 190, { ay: BASE, dur: 850 });
+      sfx('fire');
+    },
+    async weak(t = 'enemy') {
+      const a = anchor(t);
+      tint('withered', 900);
+      put('weak', { x: a.x, y: a.y - 40 }, 190, { dur: 800 });
+      sfx('weak');
+    },
+    async vuln(t = 'enemy') { put('vuln', anchor(t), 240, { dur: 760 }); sfx('crack'); },
+    async frost(t = 'enemy') { tint('frosty', 1000); put('frost', anchor(t), 250, { dur: 860 }); sfx('frost'); },
+    async sleep(t = 'enemy') { const a = anchor(t); put('sleep', { x: a.x + 56, y: a.y - 84 }, 140, { dur: 1200 }); sfx('sleep'); },
+    async energy() { put('energy', anchor('energy'), 120, { dur: 520 }); sfx('zap'); },
+    async aura() { put('aura', anchor('hero'), 160, { dx: 10, dy: -20, dur: 760 }); sfx('aura'); },
+    async thorns() { put('thorns', anchor('hero'), 160, { dy: -6, dur: 800 }); sfx('thorns'); },
+    async gold(t = 'hero') { const a = anchor(t); put('gold', { x: a.x + 10, y: a.y + 34 }, 160, { ay: BASE, dur: 900 }); sfx('coin'); },
+    async deliver() {
+      sfx('paper');
+      await fly(sprite('deliver_p', 66), 'hero', { x: 430, y: 330 }, 520, { arc: 80, spin: 30 });
+    },
+    async arrive(t) { return P.letter(t, { x: 430, y: 300 }); },
+    async sigil(art) {
+      const a = anchor('hero'); const at = { x: a.x + 40, y: a.y - 110 };
+      put('sigil', at, 140, { dur: 1000 });
+      if (art) pop(at, `<div class="sigil plain">${icon(art, 46)}</div>`, 'sigilpop', 1000);
+      sfx('sigil');
+    },
+    async clock() { put('clock', { x: 200, y: 480 }, 210, { dur: 1000 }); sfx('chime'); },
+    async mirror() { put('mirror', { x: 200, y: 480 }, 320, { dur: 700 }); sfx('mirror'); },
+    async cards() { put('cards', { x: 318, y: 742 }, 150, { dur: 620 }); sfx('paper'); },
+    async ginger() { put('ginger', { x: 200, y: 520 }, 160, { dur: 720 }); sfx('oven'); },
+    async sugar() { put('sugar', { x: 200, y: 640 }, 320, { dur: 800 }); sfx('sugar'); },
+    async grind() { put('grind', { x: 200, y: 590 }, 260, { dur: 760 }); sfx('grind'); },
+    async growl() { put('growl', anchor('hero'), 140, { dx: 30, dy: -90, dur: 900 }); sfx('growl'); },
+    // Дружок прыгает на врага, челюсти смыкаются
+    async bite(t = 'enemy') {
+      sfx('bark');
+      await fly(window.Art.hasIcon('buddy') ? icon('buddy', 76) : sized(window.Art.dog({ bark: true }), 70), 'hero', t, 330, { arc: 120, spin: 20, r0: -20, linger: 40 });
+      put('bite', anchor(t), 250, { dur: 600 });
+      await wait(150);
+      sfx('bite'); shake(0.9);
+    },
+    async price() { put('price', anchor('hero'), 140, { dy: -20, dur: 760 }); sfx('heartbeat'); },
+    async claw() { put('claw', anchor('hero'), 160, { dur: 480 }); },
+    async notes(snd) { const a = anchor('hero'); put('notes', { x: a.x + 26, y: a.y - 50 }, 160, { dur: 1000 }); if (snd) sfx(snd); },
+    async steam() { put('steam', anchor('hero'), 130, { dx: 26, dy: -62, dur: 1100 }); sfx('sip'); },
+    async wind() { put('wind', { x: 200, y: 600 }, 400, { dur: 720 }); sfx('wind'); },
+  };
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
   /* Талисман сработал: его значок всплывает над героем или врагом. Очередь, чтобы не налезали друг на друга. */
@@ -495,8 +787,9 @@
   async function play(kind, target) {
     const f = K[kind];
     if (!f || !$('#screen .fxlayer')) return;
-    try { await f(target); } catch (e) { /* анимация не должна ломать бой */ }
+    // нарисованный ролик, если он уже расшифрован; иначе прежний рисунок кодом
+    try { await ((await ready(kind)) ? P[kind] : f)(target); } catch (e) { /* анимация не должна ломать бой */ }
   }
 
-  window.FX = { play, relic, shake, kinds: Object.keys(K) };
+  window.FX = { play, relic, shake, warm, kinds: Object.keys(K), _probe: () => ({ packs: packText.map((t) => (t ? t.length : 0)), clips: [...clips.keys()], live: live.size, keep: KEEP }) };
 })();

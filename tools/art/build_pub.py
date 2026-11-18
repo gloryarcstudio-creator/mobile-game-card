@@ -28,8 +28,9 @@ src = root + 'assets'
 n = 0
 for d, _, fs in os.walk(src):
     for f in fs:
-        if not f.endswith(('.webp', '.mp3')): continue
         rel = os.path.relpath(os.path.join(d, f), src)
+        # картинки, музыка и текстовые пакеты нарисованных эффектов (assets/fx<N>/p<i>.txt)
+        if not (f.endswith(('.webp', '.mp3')) or re.fullmatch(r'fx\d+/p\d+\.txt', rel)): continue
         dst = os.path.join(pub, 'assets', rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(os.path.join(d, f)):
