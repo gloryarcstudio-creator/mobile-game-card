@@ -1189,16 +1189,19 @@
     const h = CLASSES[sel];
     const r = RELICS[h.relic];
     const own = heroCards(sel);
+    // экран уже открыт (сменили героя или сложность): шапка не въезжает заново, оживает только то, что изменилось
+    const again = screen.className === 'scr-class';
+    const newHero = again && screen.dataset.cls !== sel;
     screen.className = 'scr-class';
     screen.dataset.cls = sel;
     screen.dataset.diff = diff;
     const d = DIFFICULTIES[diff];
     const won = ACH.s.winsDiff || [];
     screen.innerHTML = `
-      <div class="clshead"><h2>${tr('Кто понесёт письмо?')}</h2><p>${tr('У каждого героя свой путь к победе')}</p></div>
+      <div class="clshead ${again ? 'still' : ''}"><h2>${tr('Кто понесёт письмо?')}</h2><p>${tr('У каждого героя свой путь к победе')}</p></div>
       <div class="clsrow">${Object.entries(CLASSES).map(([id, c]) => `<button class="clscard ${id === sel ? 'on' : ''} ${Store.heroOwned(id) ? '' : 'locked'}" data-act="pickcls" data-cls="${id}">
         <span class="cp ${id}">${heroFace(id)}${Store.heroOwned(id) ? '' : `<i class="lockico">${uiIco('lock')}</i>`}</span><b>${c.name}</b><small>${c.role}</small></button>`).join('')}</div>
-      <div class="clsinfo">
+      <div class="clsinfo ${newHero ? 'swap' : ''}">
         <div class="clsbig ${sel}">${heroArt(sel)}</div>
         <div class="clstext">
           <h3>${h.name}<small>${h.role}</small></h3>
