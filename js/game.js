@@ -2725,8 +2725,15 @@
     // нарисованная гибель играет до конца (останки сами тают), иначе прежнее растворение
     const sp = SETTINGS.fast ? 2 : 1;
     const dur = el && Art.actDur ? Art.actDur(el, 'death', sp) : 0;
-    if (el && dur) { el.style.setProperty('--dd', `${dur}ms`); el.classList.add('dying', 'drawn'); eAct('death'); await sleep(dur + 200); }
-    else { if (el) el.classList.add('dying'); await sleep(800); }
+    // пока враг тает, из него сыплются монеты (над боссом ещё конфетти и звёзды): победа ощущается, а не просто сменяется экран
+    const prize = C.tier === 'boss' ? 'triumph' : 'loot';
+    const juice = Math.round(900 / sp);
+    if (el && dur) {
+      el.style.setProperty('--dd', `${dur}ms`); el.classList.add('dying', 'drawn'); eAct('death');
+      const lead = Math.round(dur * 0.4);
+      await sleep(lead); FX.play(prize, 'enemy');
+      await sleep(Math.max(dur + 200 - lead, juice));
+    } else { if (el) el.classList.add('dying'); await sleep(250); FX.play(prize, 'enemy'); await sleep(Math.max(550, juice)); }
     const { tier, stolen, hpLost, id, turn, boomed, paid, tie } = C;
     // Ремень для правки: одна заточенная карта остаётся улучшенной
     const sharp = [...C.draw, ...C.hand, ...C.disc, ...C.exh].filter((c) => c.sharp).map((c) => c.uid);

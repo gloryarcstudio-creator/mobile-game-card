@@ -157,8 +157,8 @@
   // какие ролики нужны эффекту (если не тот же, что и название)
   const NEED = {
     snowball: ['snowball_p', 'snowball'], blizzard: ['blizzard', 'snow'], icicle: ['icicle_p', 'icicle'],
-    letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], confetti: ['confetti', 'bonk'],
-    crumbs: ['crumbs', 'bonk'], spikes: ['spikes', 'bonk'], heart: ['heart', 'heal'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'], bite: ['bite_p', 'bite'],
+    letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], loot: ['gold'], triumph: ['confetti', 'starfall', 'gold'],
+    heart: ['heart', 'heal'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'], bite: ['bite_p', 'bite'],
   };
   // готовы ли ролики эффекта; недолго ждём расшифровку, но не скачивание
   async function ready(kind) {
@@ -527,6 +527,9 @@
       particles({ x: a.x + 10, y: a.y - 20 }, 8, { html: () => `<div><i class="flip">${coin(rnd(24, 32))}</i></div>`, ang: [235, 305], dist: [70, 120], up: 70, grav: 90, dur: 0.9, stagger: 0.04 });
       sfx('coin');
     },
+    // победа: монеты сыплются из поверженного врага; над боссом ещё и конфетти
+    async loot(t = 'enemy') { return K.gold(t); },
+    async triumph(t = 'enemy') { K.confetti(t); return K.gold(t); },
     async deliver() {
       sfx('paper');
       await fly(envelope(40), 'hero', { x: 430, y: 330 }, 520, { arc: 80, spin: 30 });
@@ -732,6 +735,14 @@
     async aura() { put('aura', anchor('hero'), 160, { dx: 10, dy: -20, dur: 760 }); sfx('aura'); },
     async thorns() { put('thorns', anchor('hero'), 160, { dy: -6, dur: 800 }); sfx('thorns'); },
     async gold(t = 'hero') { const a = anchor(t); put('gold', { x: a.x + 10, y: a.y + 34 }, 160, { ay: BASE, dur: 900 }); sfx('coin'); },
+    async loot(t = 'enemy') { put('gold', feet(anchor(t)), 250, { ay: BASE, dur: 950 }); sfx('coin'); },
+    async triumph(t = 'enemy') {
+      const a = anchor(t);
+      put('confetti', a, 390, { dy: -20, dur: 1000 });
+      put('starfall', a, 320, { dy: -50, dur: 950, delay: 140 });
+      put('gold', feet(a), 280, { ay: BASE, dur: 1000 });
+      sfx('fair'); sfx('coin'); shake(0.6);
+    },
     async deliver() {
       sfx('paper');
       await fly(sprite('deliver_p', 66), 'hero', { x: 430, y: 330 }, 520, { arc: 80, spin: 30 });
