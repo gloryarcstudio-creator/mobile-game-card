@@ -2420,6 +2420,20 @@
   }
 
   // dragEl — карта, которую вытянули из руки: она улетает с того места, где её отпустили
+  // Сыгранная карта летит к цели, а не просто вверх: атака во врага, навык и чары к герою.
+  // Конечное положение считаем от того места, где карта сейчас (в руке, выбранная или под пальцем).
+  function aimCard(el, type) {
+    const to = type === 'atk' ? $('#enemy') : type === 'skill' || type === 'charm' ? $('#heroPortrait') : null;
+    if (!to) return;
+    const k = 400 / (app.getBoundingClientRect().width || 400);
+    const a = el.getBoundingClientRect(); const b = to.getBoundingClientRect();
+    const cs = getComputedStyle(el); const num = (v) => parseFloat(cs.getPropertyValue(v)) || 0;
+    const drag = el.classList.contains('drag');
+    const tx = drag ? num('--dx') : 0; const ty = drag ? num('--dy') : el.classList.contains('sel') ? -70 : num('--lift');
+    const dx = (b.left + b.width / 2 - a.left - a.width / 2) * k; const dy = (b.top + b.height / 2 - a.top - a.height / 2) * k;
+    el.style.transform = `translate(${Math.round(tx + dx)}px, ${Math.round(ty + dy)}px) scale(${type === 'atk' ? 0.4 : 0.26})`;
+  }
+
   async function playCard(i, dragEl) {
     const c = C.hand[i];
     const cd = CARDS[c.id];
@@ -2430,7 +2444,7 @@
     busy = true; selected = -1;
     const el = dragEl || $(`.hand [data-hi="${i}"]`);
     SND.sfx('card');
-    if (el) { el.classList.add('fly'); await sleep(220); }
+    if (el) { aimCard(el, cd.type); el.classList.add('fly'); await sleep(220); }
     C.energy -= cost;
     C.hand.splice(i, 1);
     renderCombat();

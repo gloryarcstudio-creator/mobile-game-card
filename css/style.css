@@ -165,12 +165,13 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 @keyframes deal { from { transform: translate(-200px, 160px) rotate(-30deg); opacity: 0; } }
 .card.inhand.sel { transform: translateY(-70px) scale(1.32) rotate(0deg); box-shadow: inset 0 0 0 .22em var(--gold-hi), inset 0 0 0 .42em var(--ink), 0 0 1.6em rgba(255, 210, 120, .8); }
 .card.inhand.nope { filter: grayscale(.6) brightness(.75); }
-.card.inhand.fly { transition: transform .22s ease-in, opacity .22s; transform: translateY(-330px) scale(.6); opacity: 0; }
+/* сыгранная карта: вспыхивает и летит к цели (куда именно, считает aimCard в game.js), гаснет ближе к концу пути */
+.card.inhand.fly { transition: transform .22s cubic-bezier(.5, 0, .8, .6), opacity .12s .1s, filter .1s; transform: translateY(-330px) scale(.6); opacity: 0; filter: brightness(1.5) drop-shadow(0 0 10px rgba(255, 214, 130, .9)); z-index: 70 !important; }
 /* карту тянут пальцем: она идёт за ним, выше руки загорается и сыграет, если отпустить */
 .hand { touch-action: none; }
 .card.inhand.drag { transition: box-shadow .15s; transform: translate(var(--dx), var(--dy)) scale(1.18); z-index: 60 !important; cursor: grabbing; }
 .card.inhand.drag.ready { box-shadow: inset 0 0 0 .22em var(--gold-hi), inset 0 0 0 .42em var(--ink), 0 0 1.4em rgba(255, 210, 120, .95), 0 0 3em rgba(255, 190, 90, .6); }
-.card.inhand.drag.fly { transition: transform .22s ease-in, opacity .22s; transform: translate(var(--dx), calc(var(--dy) - 60px)) scale(.45); opacity: 0; }
+.card.inhand.drag.fly { transition: transform .22s cubic-bezier(.5, 0, .8, .6), opacity .12s .1s, filter .1s; transform: translate(var(--dx), calc(var(--dy) - 60px)) scale(.45); opacity: 0; }
 #app.aim .enemy > :is(svg, canvas) { filter: drop-shadow(0 0 4px #ffd27a) drop-shadow(0 0 14px rgba(255, 120, 80, .9)); }
 
 /* ---------- Экран пути ---------- */
@@ -514,7 +515,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .statlist dd { margin: 0; font-family: var(--title); font-size: 17px; color: var(--gold-hi); text-align: right; }
 
 /* быстрые анимации */
-#app.fast .card.inhand.fly { transition-duration: .11s; }
+#app.fast .card.inhand.fly { transition-duration: .11s, .06s, .05s; transition-delay: 0s, .05s, 0s; }
 #app.fast .card.inhand.deal { animation-duration: .18s; }
 #app.fast .enemy.dying { animation-duration: .4s; }
 
