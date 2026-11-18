@@ -522,13 +522,30 @@
       <button class="btn" data-act="close">${tr('Закрыть')}</button>`, (e) => { if (e.target.closest('[data-act="close"]')) hideOverlay(); });
   }
 
+  // Полоска здоровья героя рисуется заново при каждой перерисовке, поэтому её движение помним здесь:
+  // красная часть доезжает до нового значения, а за ней тает светлый след потерянного здоровья.
+  // Повторная перерисовка посреди движения продолжает его с того же места (отрицательная задержка).
+  let hpMove = { from: null, to: null, at: 0 };
+  function hpAnim(pct) {
+    const now = performance.now();
+    if (hpMove.to == null) hpMove = { from: pct, to: pct, at: 0 };
+    if (Math.abs(pct - hpMove.to) > 0.01) hpMove = { from: hpMove.to, to: pct, at: now };
+    const el = Math.round(now - hpMove.at);
+    if (el > 900 || hpMove.from === hpMove.to) return { fill: '', trail: '' };
+    const k = SETTINGS.fast ? 0.5 : 1;
+    return {
+      fill: `--from:${hpMove.from}%;animation:hpmove ${280 * k}ms ${-el}ms backwards ease-out;`,
+      trail: hpMove.from > hpMove.to ? `<div class="trail" style="width:${pct}%;--from:${hpMove.from}%;animation:hpmove ${520 * k}ms ${Math.round(260 * k) - el}ms backwards ease-out"></div>` : '',
+    };
+  }
   function heroBar(inCombat) {
     const hpPct = (run.hp / run.maxHp) * 100;
+    const mv = hpAnim(hpPct);
     const flame = inCombat ? C.flame : 0;
     return `<div class="herobar">
       <div class="portrait" id="heroPortrait">${heroFace()}</div>
       <div class="hb-mid">
-        <div class="hpbar"><div class="fill" style="width:${hpPct}%"></div><span>${run.hp}/${run.maxHp}</span>
+        <div class="hpbar">${mv.trail}<div class="fill" style="${mv.fill}width:${hpPct}%"></div><span>${run.hp}/${run.maxHp}</span>
           ${inCombat && C.block > 0 ? `<div class="hblk">${Art.intentIcon('block')}<b>${C.block}</b></div>` : ''}</div>
         <div class="hb-row">
           ${inCombat ? `<div class="lamp" data-tip="${GLOSS[0][1]}">${Array.from({ length: flameMax() }, (_, i) => `<i class="pip ${i < flame ? 'on' : ''}">${Art.flame(1)}</i>`).join('')}</div>` : `<div class="hero-name">${hero().name}</div>`}
@@ -2193,7 +2210,7 @@
         <div class="intent"></div>
         <div class="enemy ${e.tier}" id="enemy">${(Art.enemyLive || Art.enemy)(enemyId)}<div class="enemy-fx"></div></div>
         <div class="nameplate"><div class="ename">${e.name}${e.tier !== 'normal' ? `<i>${tr(e.tier === 'boss' ? (isFinalStep(run.step) ? 'Финал' : 'Босс') : 'Элита')}</i>` : ''}</div>
-          <div class="ehp"><div class="fill"></div><span></span><div class="eblk"></div></div>
+          <div class="ehp"><div class="trail"></div><div class="fill"></div><span></span><div class="eblk"></div></div>
           <div class="estatus"></div>
         </div>
       </div>
@@ -2332,6 +2349,7 @@
     if (!C.saidHurt && e.hp > 0 && e.hp <= e.max / 2) { C.saidHurt = true; say(lineOf(C.id, 'hurt')); }
     $('.intent').innerHTML = e.hp > 0 ? currentIntents().map(intentHTML).join('') : '';
     $('.ehp .fill').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
+    $('.ehp .trail').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
     $('.ehp span').textContent = `${Math.max(0, e.hp)}/${e.max}`;
     $('.eblk').innerHTML = e.block > 0 ? `${Art.intentIcon('block')}<b>${e.block}</b>` : '';
     const g = (name) => GL[name];

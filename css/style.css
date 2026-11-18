@@ -256,6 +256,12 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .ehp { position: relative; height: 16px; margin-top: 4px; border-radius: 8px; background: #2a1a20; border: 2px solid var(--ink); }
 .ehp .fill { height: 100%; border-radius: 6px; background: linear-gradient(#ff6a5a, #b82d28); transition: width .3s; }
 .ehp span { position: absolute; inset: 0; font-size: 13px; line-height: 13px; text-shadow: 0 1px 2px #000; }
+/* светлый след потерянного здоровья: красная часть уходит сразу, след догоняет её чуть позже */
+.ehp .fill, .hpbar .fill { position: relative; }
+.ehp .trail, .hpbar .trail { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: linear-gradient(#fff3d6, #ffc98a); }
+.ehp .trail { border-radius: 6px; transition: width .5s .26s ease-out; }
+.hpbar .trail { border-radius: 9px; }
+@keyframes hpmove { from { width: var(--from); } }
 .eblk { position: absolute; left: -16px; top: -10px; width: 32px; height: 32px; }
 .estatus { display: flex; justify-content: center; gap: 4px; margin-top: 6px; min-height: 20px; }
 .estatus i { font-style: normal; font-size: 12px; padding: 1px 7px; border-radius: 8px; background: #3b4664; }
