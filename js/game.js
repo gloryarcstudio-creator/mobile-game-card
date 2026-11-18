@@ -507,7 +507,7 @@
       ${inCombat ? `<div class="energy"><b>${C.energy}</b><small>/${maxEnergy()}</small></div>
         <div class="piles"><button class="pile" data-act="pile-draw">${tr('Колода')}<b>${C.draw.length}</b></button><button class="pile" data-act="pile-disc">${tr('Сброс')}<b>${C.disc.length}</b></button></div>
         <button class="btn end" data-act="end">${tr('Конец<br>хода')}</button>`
-        : `<button class="btn deckbtn" data-act="deck">${tr('Колода')}<b>${run.deck.length}</b></button>`}
+        : `<div class="energy idle"><b>${maxEnergy()}</b></div><button class="btn deckbtn" data-act="deck">${tr('Колода')}<b>${run.deck.length}</b></button>`}
     </div>`;
   }
 
