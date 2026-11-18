@@ -268,12 +268,28 @@
   }
 
   /* ---------- Масштабирование под экран телефона ---------- */
+  // Вокруг игры на экранах других пропорций (широкий телефон, планшет) не пустые тёмные поля,
+  // а та же сцена, размытая и притемнённая. Слой неподвижен и включается, только если поля есть.
+  const backdrop = document.createElement('div');
+  backdrop.id = 'backdrop';
+  document.body.insertBefore(backdrop, app);
   function fit() {
     const s = Math.min(window.innerWidth / 400, window.innerHeight / 860);
     app.style.transform = `translate(-50%, -50%) scale(${s})`;
+    const bands = Math.max(window.innerWidth - 400 * s, window.innerHeight - 860 * s);
+    backdrop.hidden = bands < 12;
+    app.classList.toggle('framed', bands >= 12);
   }
   window.addEventListener('resize', fit);
   fit();
+
+  // новый экран проявляется мягко. Срабатывает только когда экран действительно сменился
+  // (другой класс), а не при каждой перерисовке боя; только прозрачность, чтобы не сбивать замеры эффектов.
+  // Класс экрану не добавляем: по точному имени класса игра узнаёт, какой экран открыт
+  new MutationObserver((list) => {
+    if (!list.some((m) => (m.oldValue || '') !== screen.className)) return;
+    if (screen.animate) screen.animate([{ opacity: 0 }, { opacity: 1 }], { duration: SETTINGS.fast ? 120 : 260, easing: 'ease-out' });
+  }).observe(screen, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
 
   /* ---------- Снег ---------- */
   // снегопад можно выключить в настройках: тогда анимация останавливается совсем
@@ -316,8 +332,22 @@
       else painted = Art.paintedBg({ scene: STORY.sky === 'night' ? 'night' : g.scene, t: approach });
     }
     app.classList.toggle('painted-bg', !!painted);
-    $('#bg').innerHTML = painted || Art.background(p, lamps, g.scene, approach);
+    const bgEl = $('#bg');
+    const was = bgEl.querySelector('image'); const wasHref = was && was.getAttribute('href'); const wasHTML = wasHref ? bgEl.innerHTML : '';
+    bgEl.innerHTML = painted || Art.background(p, lamps, g.scene, approach);
     if (painted) groundCam();
+    const pic = painted && $('#bg image');
+    // сцена сменилась: прежняя картинка тает поверх новой, а не обрывается
+    if (pic && wasHref && wasHref !== pic.getAttribute('href')) {
+      app.querySelectorAll('.bg-ghost').forEach((x) => x.remove());
+      const ghost = document.createElement('div');
+      ghost.className = 'bg-ghost'; ghost.innerHTML = wasHTML;
+      if (SETTINGS.fast) ghost.style.animationDuration = '.2s';
+      bgEl.after(ghost);
+      setTimeout(() => ghost.remove(), SETTINGS.fast ? 220 : 480);
+    }
+    backdrop.style.backgroundImage = pic ? `url("${pic.getAttribute('href')}")` : '';
+    backdrop.style.backgroundColor = p.skyMid || '';
     app.style.setProperty('--sky-top', p.skyTop);
     app.style.setProperty('--sky-mid', p.skyMid);
     app.style.setProperty('--sky-bot', p.skyBot);
