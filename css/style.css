@@ -1696,3 +1696,18 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 /* края сцены чуть темнее середины: взгляд собирается на фигуре, у фона появляется глубина. Неподвижный слой над фоном, под снегом и интерфейсом */
 #app::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
   background: radial-gradient(ellipse 88% 70% at 50% 40%, rgba(6, 10, 30, 0) 52%, rgba(6, 10, 30, var(--vig)) 100%); }
+
+/* ---------- v99: отклик руки ----------
+   Ручки на #app: --cardglow (светится кристалл цены у карт, которые можно сыграть; 0 — убрать) и --endglow (свечение
+   кнопки «Конец хода», когда сыграть больше нечего; 0 — убрать). Только CSS: чтобы убрать совсем, удалить этот блок. */
+#app { --cardglow: 1; --endglow: 1; }
+/* свет идёт от кристалла цены: свечение самой карты уже занято редкостью */
+#app.skin .card.inhand:not(.nope) .cost:not(.none) { border-radius: 50%; box-shadow: 0 0 .32em .06em rgba(150, 255, 235, calc(.85 * var(--cardglow))), 0 0 .9em .1em rgba(110, 235, 215, calc(.45 * var(--cardglow))); }
+/* в руке есть карты, но ни одну нельзя сыграть: кнопка конца хода мягко дышит светом */
+.herobar .btn.end { position: relative; }
+.herobar .btn.end::after { content: ''; position: absolute; inset: -7px -9px; border-radius: 10px; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(120, 255, 225, .62) 0%, rgba(120, 255, 225, .3) 48%, rgba(120, 255, 225, 0) 74%); }
+#screen:has(.hand .card.inhand):not(:has(.hand .card.inhand:not(.nope))) .herobar .btn.end { color: #f2fffc; text-shadow: 0 1px 2px #000, 0 0 8px rgba(120, 255, 225, calc(.9 * var(--endglow))); }
+#screen:has(.hand .card.inhand):not(:has(.hand .card.inhand:not(.nope))) .herobar .btn.end::after { animation: endglow 1.5s ease-in-out infinite alternate; }
+@keyframes endglow { from { opacity: calc(.25 * var(--endglow)); } to { opacity: var(--endglow); } }
+@media (prefers-reduced-motion: reduce) { #screen .herobar .btn.end::after { animation: none; } }
