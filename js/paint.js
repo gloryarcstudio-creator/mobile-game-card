@@ -118,7 +118,7 @@
   function paintBg(a, b, mix) {
     const c = (A.bgc || {})[mix > 0.5 && b ? b : a] || '#2a3350';
     const fa = FEET[a] || 690; const feet = b && mix > 0.001 ? fa + ((FEET[b] || 690) - fa) * mix : fa;
-    return `<svg class="bg-svg painted" viewBox="0 0 400 860" data-feet="${feet.toFixed(0)}" ${NS}>
+    return `<svg class="bg-svg painted" viewBox="0 0 400 860" data-feet="${feet.toFixed(0)}" data-k="${a}" ${NS}>
       <defs><linearGradient id="bgFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}"/></linearGradient></defs>
       <g class="bg-cam">
         <rect y="-300" width="400" height="1600" fill="${c}"/>

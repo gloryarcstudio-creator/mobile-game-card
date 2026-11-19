@@ -360,6 +360,9 @@
     const was = bgEl.querySelector('image'); const wasHref = was && was.getAttribute('href'); const wasHTML = wasHref ? bgEl.innerHTML : '';
     bgEl.innerHTML = painted || Art.background(p, lamps, g.scene, approach);
     if (painted) groundCam();
+    // свет сцены: по нему враги в бою слегка тонируются под закат или ночь (см. data-light в style.css)
+    const bk = painted ? ($('#bg svg.painted') || {}).dataset.k || '' : '';
+    app.dataset.light = /night|final/.test(bk) ? 'night' : /outskirts/.test(bk) ? 'dusk' : /sunset/.test(bk) ? 'sunset' : /town_mid/.test(bk) ? 'eve' : 'day';
     const pic = painted && $('#bg image');
     // сцена сменилась: прежняя картинка тает поверх новой, а не обрывается
     if (pic && wasHref && wasHref !== pic.getAttribute('href')) {

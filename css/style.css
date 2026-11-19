@@ -1537,3 +1537,11 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 @keyframes plunge { 45% { transform: translateY(-5px) scale(1.15); filter: brightness(1.25); } }
 @keyframes pbite { 40% { transform: translateX(6px) rotate(4deg) scale(1.08); } }
 @keyframes phurt { 15% { transform: translateX(-6px) scale(1.07); filter: brightness(1.5) sepia(.6) saturate(2.4) hue-rotate(-35deg); } 40% { transform: translateX(5px); filter: none; } 65% { transform: translateX(-3px); } 85% { transform: translateX(2px); } }
+
+/* ---------- v70: свет сцены на врагах: под закат теплее, в сумерках и ночью темнее и приглушённее ----------
+   Тень под врагом (drop-shadow) повторена в каждом правиле: filter заменяется целиком. Пока карту наводят
+   на врага (#app.aim) или он получает удар (.hit), работает прежняя подсветка. */
+#app.painted-bg[data-light="eve"]:not(.aim) .enemy:not(.hit) > canvas.live { filter: sepia(.1) saturate(1.06) brightness(.98) drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
+#app.painted-bg[data-light="sunset"]:not(.aim) .enemy:not(.hit) > canvas.live { filter: sepia(.24) saturate(1.22) brightness(.97) drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
+#app.painted-bg[data-light="dusk"]:not(.aim) .enemy:not(.hit) > canvas.live { filter: brightness(.9) saturate(.93) sepia(.1) drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
+#app.painted-bg[data-light="night"]:not(.aim) .enemy:not(.hit) > canvas.live { filter: brightness(.84) saturate(.86) contrast(1.05) drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
