@@ -458,8 +458,53 @@
     stTick();
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 1, run, pending, at: Date.now() })); } catch (e) { /* хранилище недоступно */ }
   }
+  /* Сохранение могло остаться от прежней версии игры: без полей, которых тогда не было, с картами, талисманами,
+     врагами или героем, которых с тех пор переименовали или убрали. Раньше такое сохранение роняло «Продолжить»,
+     а с незнакомым героем не открывался и главный экран. Чиним всё, что можно починить; что нельзя, считаем
+     отсутствием сохранения. */
+  function fixSave(s) {
+    const r = s.run;
+    const num = (v, d) => (v !== null && v !== '' && Number.isFinite(+v) ? +v : d);
+    const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+    const arr = (v) => (Array.isArray(v) ? v : []);
+    if (r.cls && !CLASSES[r.cls]) r.cls = 'lamp';
+    const h = CLASSES[r.cls || 'lamp'];
+    r.step = Math.max(0, Math.min(MAX_STEPS - 1, Math.floor(num(r.step, 0))));
+    r.maxHp = Math.max(1, Math.floor(num(r.maxHp, h.hp)));
+    r.hp = Math.max(1, Math.min(r.maxHp, Math.floor(num(r.hp, r.maxHp))));
+    r.gold = Math.max(0, Math.floor(num(r.gold, 0)));
+    r.lit = num(r.lit, 0); r.fights = num(r.fights, 0);
+    r.relics = arr(r.relics).filter((id) => RELICS[id]);
+    // карты: незнакомые убираем, номера (uid) должны быть у каждой и не повторяться
+    r.deck = r.deck.filter((c) => c && CARDS[c.id]);
+    if (!r.deck.length) r.deck = h.deck.map((id) => ({ id, up: false }));
+    let uid = r.deck.reduce((a, c) => (Number.isFinite(c.uid) ? Math.max(a, c.uid + 1) : a), 0);
+    const taken = new Set();
+    r.deck.forEach((c) => { if (!Number.isFinite(c.uid) || taken.has(c.uid)) c.uid = uid++; taken.add(c.uid); });
+    r.seen = obj(r.seen); r.offered = obj(r.offered); r.recent = arr(r.recent); r.lastOffered = arr(r.lastOffered);
+    r.bosses = STAGES.map((g, i) => (Array.isArray(r.bosses) && ENEMIES[r.bosses[i]] ? r.bosses[i] : pick(g.boss)));
+    const okChoice = (o) => o && typeof o === 'object' && (!o.enemy || ENEMIES[o.enemy])
+      && (o.t !== 'event' || EVENTS.some((e) => e.id === o.ev)) && (o.t !== 'meet' || LORE.MEET[o.hero]);
+    if (r.choices && !(Array.isArray(r.choices) && r.choices.length && r.choices.every(okChoice))) r.choices = null;
+    // экран, на котором вышли: незнакомый бой или встреча возвращают к выбору дороги, испорченная награда пропускается
+    const p = s.pending;
+    if (!p || typeof p !== 'object') s.pending = null;
+    else {
+      const t = p.t; const tiers = ['fight', 'elite', 'boss'];
+      const shopOk = (sh) => sh && Array.isArray(sh.cards) && sh.cards.every((c) => c && CARDS[c.id]) && (!sh.relic || RELICS[sh.relic.id]) && sh.tea && sh.remove && sh.up;
+      if ((tiers.includes(t) || t === 'talk') && !ENEMIES[p.enemy]) s.pending = null;
+      else if (t === 'talk' && !tiers.includes(p.tier)) s.pending = null;
+      else if (t === 'meet' && !LORE.MEET[p.hero]) s.pending = null;
+      else if (t === 'shop' && p.shop && !shopOk(p.shop)) delete p.shop;
+      else if (t === 'reward' && !(p.r && Array.isArray(p.r.ids) && p.r.ids.every((id) => CARDS[id]))) s.pending = { t: 'next' };
+      else if (t === 'bossrelic' && p.opts && !(Array.isArray(p.opts) && p.opts.every((id) => RELICS[id]))) p.opts = null;
+      else if (t === 'after' && !(ENEMIES[p.enemy] && tiers.includes(p.tier))) s.pending = { t: 'next' };
+      else if (t === 'afterdone' && !tiers.includes(p.tier)) s.pending = { t: 'next' };
+    }
+    return s;
+  }
   function loadSave() {
-    try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.v === 1 && s.run && Array.isArray(s.run.deck) ? s : null; } catch (e) { return null; }
+    try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.v === 1 && s.run && Array.isArray(s.run.deck) ? fixSave(s) : null; } catch (e) { return null; }
   }
   function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* пусто */ } }
 
@@ -477,20 +522,27 @@
     SND.music(mapTrack());
     const p = s.pending;
     const ev = p && p.t === 'event' && EVENTS.find((e) => e.id === p.ev);
-    if (!p) goMap();
-    else if (p.t === 'fight' || p.t === 'elite' || p.t === 'boss') startCombat(p.enemy, p.t);
-    else if (ev) goEvent(ev);
-    else if (p.t === 'shop') goShop(p.shop);
-    else if (p.t === 'chest') goChest();
-    else if (p.t === 'rest') goRest();
-    else if (p.t === 'next') advance();
-    else if (p.t === 'reward') renderReward(p.r);
-    else if (p.t === 'bossrelic') goBossRelic(p.opts);
-    else if (p.t === 'meet') goMeet(p.hero);
-    else if (p.t === 'talk') goTalk(p.enemy, p.tier);
-    else if (p.t === 'after') goAfter(p.tier, p.enemy);
-    else if (p.t === 'afterdone') afterNext(p.tier);
-    else goMap();
+    const resume = () => {
+      if (!p) return goMap();
+      if (p.t === 'fight' || p.t === 'elite' || p.t === 'boss') return startCombat(p.enemy, p.t);
+      if (ev) return goEvent(ev);
+      if (p.t === 'shop') return goShop(p.shop);
+      if (p.t === 'chest') return goChest();
+      if (p.t === 'rest') return goRest();
+      if (p.t === 'next') return advance();
+      if (p.t === 'reward') return renderReward(p.r);
+      if (p.t === 'bossrelic') return goBossRelic(p.opts);
+      if (p.t === 'meet') return goMeet(p.hero);
+      if (p.t === 'talk') return goTalk(p.enemy, p.tier);
+      if (p.t === 'after') return goAfter(p.tier, p.enemy);
+      if (p.t === 'afterdone') return afterNext(p.tier);
+      return goMap();
+    };
+    // последняя страховка: экран из сохранения не открылся, значит возвращаемся к выбору дороги на том же уровне
+    const fallback = () => {
+      try { C = null; busy = false; hideOverlay(); run.choices = null; goMap(); } catch (e) { clearSave(); goTitle(); toast(tr('Сохранение не открылось. Начни новый забег')); }
+    };
+    try { const out = resume(); if (out && out.catch) out.catch(fallback); } catch (e) { fallback(); }
   }
 
   /* ---------- Общие куски интерфейса ---------- */

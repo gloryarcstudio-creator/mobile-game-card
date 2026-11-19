@@ -236,6 +236,7 @@
     'Уйти': 'Leave',
     'Не хватает монет': 'Not enough coins',
     'Здоровье и так полное': 'Health is already full',
+  'Сохранение не открылось. Начни новый забег': 'Couldn’t open the saved run. Start a new one',
     'Сундук-соня сладко храпит.': 'The sleepy chest is snoring sweetly.',
     'Открыть': 'Open',
     'Не будить': 'Let it sleep',
