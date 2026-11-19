@@ -2220,15 +2220,17 @@
   function openChest() {
     ach.add('chests');
     const free = freeRelics();
-    let msg;
+    let msg; let found = null;
     // из сундука вылетает то, что в нём лежало: горка монет или звёзды находки.
     // Подпись под сундуком уже называет талисман и что он делает, поэтому всплывашку с тем же именем поверх неё убираем
     const at = spot($('.chest'));
     const burst = { x: at.x, y: at.y - 6, w: at.w, h: at.h, foot: at.y + at.h * 0.3 };
-    if (free.length && Math.random() < (LONG ? BAL.chestRelic : 0.5)) { const id = pickRelic(free); addRelic(id, true); FX.play('find', burst); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
+    if (free.length && Math.random() < (LONG ? BAL.chestRelic : 0.5)) { const id = pickRelic(free); found = id; addRelic(id, true); FX.play('find', burst); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
     else { const g = rnd(28, 45); gain(g); SND.sfx('coin'); FX.play('loot', burst); msg = tr('Внутри {n} {n|монета|монеты|монет}.', { n: g }); }
     save({ t: 'next' });
     $('.chest').classList.add('open');
+    // сундук нарисован только закрытым: найденный талисман показываем сам, он поднимается из сияния над крышкой
+    if (found) $('.chest').insertAdjacentHTML('beforeend', `<div class="chest-find">${Art.relic(found)}</div>`);
     $('.chest-wrap p').textContent = msg;
     $('.row2').innerHTML = `<button class="btn" data-act="next">${tr('Дальше')}</button>`;
     $('.topbar').outerHTML = topBar();
