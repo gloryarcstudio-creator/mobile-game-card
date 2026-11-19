@@ -1090,7 +1090,9 @@
     const tiles = (ids) => ids.map((id) => cxTile(kind, id)).join('');
     if (kind === 'h') return `<div class="cxgrid">${tiles(CODEX.h)}</div>`;
     if (kind === 'e') {
-      return MAIN_STAGES.map((g) => cxGroup(g.name, tiles(stageFoes(g)))).join('')
+      // враг, который встречается в двух стадиях, стоит один раз: там, где встречается впервые
+      const shown = new Set();
+      return MAIN_STAGES.map((g) => { const ids = stageFoes(g).filter((id) => !shown.has(id)); ids.forEach((id) => shown.add(id)); return cxGroup(g.name, tiles(ids)); }).join('')
         + cxGroup(tr('Мрачные герои'), tiles(CODEX.e.filter((id) => ENEMIES[id].dark)));
     }
     if (kind === 'c') {
@@ -1147,9 +1149,9 @@
       bsi >= 0 && tr('Ярость: на половине HP получает Силу +{n} и {b} защиты.', { n: BAL.rageStr[bsi], b: BAL.rageBlock[bsi] }),
       e.thorns && tr('Каждый ваш удар по врагу ранит вас на {n}', { n: e.thorns }),
       e.nest && tr('Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: {n}.', { n: e.nest }),
-      e.boil && tr('Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После его хода кипяток остывает. Поджог его не злит.'),
+      e.boil && tr('Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После своего хода он остывает. Поджог его не злит.'),
       e.tally && tr('Каждая {n}-я карта за ход: кукушка кукует и бьёт вас на 3.', { n: e.tally }),
-      e.plating && tr('Защита Ледяного Рыцаря не сгорает: она копится от хода к ходу. Поджог бьёт прямо по HP.'),
+      e.plating && tr('Латы: защита не сгорает, а копится от хода к ходу. Поджог бьёт прямо по HP.'),
       e.alarm && tr('Каждый ваш Навык даёт сторожу {n} защиты до конца вашего хода. Бейте до хитростей.', { n: e.alarm }),
     ].filter(Boolean);
     const att = ['like', 'fear', 'hate'].map((k) => { const h = (LORE.ATT[id] || {})[k]; return h ? `<p class="cxatt a-${k}"><b>${tr(ATT_FOE[k])}:</b> ${cxHas('h', h) ? CLASSES[h].name : '???'}</p>` : ''; }).join('');
@@ -2638,9 +2640,9 @@
     // особые приёмы врага
     const ed = ENEMIES[C.id];
     if (e.nest) st.push(chip('s-trait', tr('Матрёшка ×{n}', { n: e.nest }), tr('Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: {n}.', { n: e.nest })));
-    if (ed.boil) st.push(chip(e.boil ? 's-burn' : 's-trait', tr('Кипит +{n}', { n: e.boil }), tr('Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После его хода кипяток остывает. Поджог его не злит.')));
+    if (ed.boil) st.push(chip(e.boil ? 's-burn' : 's-trait', tr('Кипит +{n}', { n: e.boil }), tr('Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После своего хода он остывает. Поджог его не злит.')));
     if (ed.tally) st.push(chip('s-trait', tr('Ку-ку {a}/{b}', { a: C.playedTurn % ed.tally, b: ed.tally }), tr('Каждая {n}-я карта за ход: кукушка кукует и бьёт вас на 3.', { n: ed.tally })));
-    if (ed.plating) st.push(chip('s-trait', tr('Латы'), tr('Защита Ледяного Рыцаря не сгорает: она копится от хода к ходу. Поджог бьёт прямо по HP.')));
+    if (ed.plating) st.push(chip('s-trait', tr('Латы'), tr('Латы: защита не сгорает, а копится от хода к ходу. Поджог бьёт прямо по HP.')));
     if (ed.alarm) st.push(chip('s-trait', tr('Колотушка +{n}', { n: ed.alarm }), tr('Каждый ваш Навык даёт сторожу {n} защиты до конца вашего хода. Бейте до хитростей.', { n: ed.alarm })));
     if (e.mist) st.push(chip('s-weak', tr('Туман ≤{n}', { n: e.mist }), tr('Пока туман, любой удар по ней наносит не больше {n} урона. Поджог проходит. Туман рассеется, когда она снова сходит.', { n: e.mist })));
     const bi = ed.pattern.findIndex((p) => p.k === 'boom');
