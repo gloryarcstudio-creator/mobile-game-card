@@ -160,7 +160,7 @@
   const NEED = {
     snowball: ['snowball_p', 'snowball'], blizzard: ['blizzard', 'snow'], icicle: ['icicle_p', 'icicle'],
     letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], loot: ['gold'], find: ['starfall', 'sigil'], triumph: ['confetti', 'starfall', 'gold'],
-    heart: ['heart', 'heal'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'], bite: ['bite_p', 'bite'],
+    heart: ['heart', 'heal'], rage: ['aura', 'growl'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'], bite: ['bite_p', 'bite'],
   };
   // готовы ли ролики эффекта; недолго ждём расшифровку, но не скачивание
   async function ready(kind) {
@@ -573,6 +573,8 @@
       particles(a, 14, { html: () => dot(rnd(1.6, 3), '#ffe38a', '#a0501a'), ang: [190, 350], dist: [60, 140], dur: 0.6, grav: 70 });
       sfx('grind');
     },
+    // ярость босса (рисунок кодом, пока ролики не готовы): толчок и рык
+    async rage() { sfx('growl'); shake(1.2); },
     async growl() {
       const a = anchor('hero');
       pop(a, `<div class="growl">${sized(window.Art.dog({ bark: true }), 64)}${svg('-20 -20 40 40', `<path d="M-14 -6 L-4 -2 M-6 -14 L-2 -4 M6 -14 L2 -4 M14 -6 L4 -2" stroke="#e8505a" stroke-width="4" stroke-linecap="round"/>`, 34)}</div>`, 'growlpop', 900, 26, -90);
@@ -767,6 +769,14 @@
     async sugar() { put('sugar', { x: 200, y: 640 }, 320, { dur: 800 }); sfx('sugar'); },
     async grind() { put('grind', { x: 200, y: 590 }, 260, { dur: 760 }); sfx('grind'); },
     async growl() { put('growl', anchor('hero'), 140, { dx: 30, dy: -90, dur: 900 }); sfx('growl'); },
+    // ярость босса: те же кольца рыка и сияние, но крупно вокруг врага и в красном
+    async rage(t = 'enemy') {
+      const a = anchor(t);
+      const red = (el) => { const sp = el && el.querySelector('.sp'); if (sp) sp.style.filter = 'brightness(.7) hue-rotate(-50deg) saturate(3.6)'; };
+      red(put('aura', a, 420, { dur: 860 }));
+      red(put('growl', a, 310, { dy: -8, dur: 950, delay: 70 }));
+      sfx('growl'); shake(1.2);
+    },
     // укус Дружка: раскрытая пасть летит от героя и смыкается на враге
     async bite(t = 'enemy') {
       sfx('bark');

@@ -2372,6 +2372,7 @@
       if (k) kinds.push(k, ATK_FX_NEXT[k]);
       if (CAST_FX[c.id]) kinds.push(CAST_FX[c.id][0]);
     });
+    if (C.tier === 'boss' && !C.enemy.raged) kinds.push('rage');
     FX.warm(kinds.filter(Boolean));
   }
 
@@ -2704,7 +2705,10 @@
     const si = Math.min(2, stageOf(run.step));
     e.str += BAL.rageStr[si]; e.block += BAL.rageBlock[si];
     SND.sfx('buff');
-    floatText($('.enemy-fx'), tr('Ярость! Сила +{n}', { n: BAL.rageStr[si] }), 'burnf');
+    FX.play('rage', 'enemy');
+    // надпись выходит чуть позже числа урона и выше него: раньше они ложились друг на друга
+    const text = tr('Ярость! Сила +{n}', { n: BAL.rageStr[si] });
+    setTimeout(() => { if (C && C.enemy === e) floatText($('.enemy-fx'), text, 'burnf ragef'); }, SETTINGS.fast ? 160 : 380);
   }
 
   // Матрёшка: вместо гибели раскрывается, внутри новая, поменьше
