@@ -887,7 +887,7 @@
         if (b.dataset.lang === I18N.lang) return;
         SETTINGS.lang = b.dataset.lang;
         saveJSON(SETTINGS_KEY, SETTINGS);
-        try { sessionStorage.setItem('lastray.reopen', 'settings'); } catch (err) { /* недоступно */ }
+        try { sessionStorage.setItem('lastray.reopen', run ? 'settings+run' : 'settings'); } catch (err) { /* недоступно */ }
         location.reload();
         return;
       }
@@ -1204,6 +1204,7 @@
       const b = e.target.closest('[data-act]');
       if (!b) return;
       if (b.dataset.act === 'r-no') { showSettings(); return; }
+      if (C && busy) { toast(tr('Дождись конца хода')); return; }
       clearSave();
       Object.assign(ACH, { c: {}, s: {}, got: {}, seenAt: 0, k: {} });
       Object.keys(STATS).forEach((k) => { if (!(k in STATS_DEF)) delete STATS[k]; });
@@ -3284,6 +3285,26 @@
   window.addEventListener('pointercancel', (e) => endDrag(e, true));
 
   app.addEventListener('pointerdown', () => closeTip(), true);
+  /* Двойное касание: второй тап в ту же точку не должен нажать то, что успело появиться под пальцем
+     (карта в открывшейся колоде, «Дальше» после выбора, дорожка на карте пути). Та же самая кнопка нажимается как раньше;
+     в самом бою ввод и так закрыт на время анимаций, там касания не трогаем */
+  let lastTap = null;
+  const tapKey = (el) => {
+    const c = el.closest && el.closest('[data-act], [data-hi], [data-uid], [data-set], [data-lang], [data-relic], button, .card');
+    const where = overlay.contains(el) ? 'o' : 's';
+    return c ? `${where}|${c.dataset.act || ''}|${c.dataset.i || c.dataset.hi || c.dataset.uid || c.dataset.set || c.dataset.lang || ''}|${c.textContent.trim().slice(0, 24)}` : `${where}|`;
+  };
+  window.addEventListener('click', (e) => {
+    if (!e.isTrusted) return;
+    const now = performance.now();
+    const key = tapKey(e.target);
+    const inFight = screen.className === 'scr-combat' && !overlay.classList.contains('show');
+    if (lastTap && !inFight && now - lastTap.t < 300 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 34 && key !== lastTap.key) {
+      e.stopImmediatePropagation(); e.preventDefault();
+      return;
+    }
+    lastTap = { t: now, x: e.clientX, y: e.clientY, key };
+  }, true);
   app.addEventListener('click', (e) => {
     SND.unlock();
     if (overlay.contains(e.target)) { if (!e.target.matches('input')) SND.sfx('click'); return; }
@@ -3385,6 +3406,8 @@
   codexSeed();
   if (hasCinema() && !cinemaSeen()) goCinema(() => goTitle()); else goTitle();
   try {
-    if (sessionStorage.getItem('lastray.reopen') === 'settings') { sessionStorage.removeItem('lastray.reopen'); showSettings(); }
+    // язык сменили посреди забега: после перезапуска возвращаемся туда же, а не на главный экран
+    const reopen = sessionStorage.getItem('lastray.reopen');
+    if (reopen) { sessionStorage.removeItem('lastray.reopen'); if (reopen === 'settings+run' && loadSave() && screen.className === 'scr-title') continueRun(); showSettings(); }
   } catch (e) { /* недоступно */ }
 })();

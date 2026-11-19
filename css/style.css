@@ -1607,3 +1607,7 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 #app.skin:has(#screen.scr-summary) .achtoast .aport { width: 46px; height: 42px; }
 #app:has(#screen.scr-summary) .achtoast small { font-size: 11px; }
 #app:has(#screen.scr-summary) .achtoast b { font-size: 16px; }
+
+/* v76: сообщение на главном экране стоит над кнопками, а не на первой из них */
+#app:has(#screen.scr-title) .toast { top: 430px; }
+#app:has(#screen.scr-title .title-hero.small) .toast { top: 338px; }
