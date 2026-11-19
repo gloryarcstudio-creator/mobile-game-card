@@ -1421,3 +1421,21 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 :is(.clscard, .clscards, .relic, .shopcard, .svc, .cxtile, .pile, .sreset):active { scale: .95; filter: brightness(1.18); }
 :is(.radio, .achtabs button):active { scale: .94; }
 .dpip:active { scale: 1.12 1.5; }
+
+/* ---------- Крупный миг: улучшенная карта, убранная карта, новый талисман (moment в game.js) ---------- */
+.moment { --ms: 1.4s; position: absolute; left: 50%; top: 392px; width: 372px; z-index: 31; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none; animation: mlife var(--ms) both; }
+.moment .mbody { position: relative; animation: mpop var(--ms) both; }
+.moment .card { --w: 168px; position: relative; display: block; animation: none; }
+.moment > b { position: relative; max-width: 350px; line-height: 1.15; padding: 6px 16px 7px; border-radius: 12px; background: rgba(15, 18, 30, .94); border: 2px solid var(--gold); font-family: var(--title); font-weight: normal; font-size: 18px; color: #ffe9b0; text-align: center; }
+.moment .mrays { position: absolute; left: 50%; top: 42%; width: 380px; height: 380px; margin: -190px 0 0 -190px; border-radius: 50%; background: repeating-conic-gradient(rgba(255, 220, 140, .5) 0 9deg, transparent 9deg 22deg); -webkit-mask: radial-gradient(#000 20%, transparent 68%); mask: radial-gradient(#000 20%, transparent 68%); animation: mspin 5s linear infinite; }
+.moment .mrelic { width: 124px; height: 124px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(#3a3150, #1e1a2c); border: 4px solid #e6c45a; box-shadow: 0 0 0 3px var(--ink), 0 0 34px rgba(255, 214, 130, .8); }
+.moment .mrelic > * { width: 92px; height: 92px; }
+.moment.up .mbody { filter: drop-shadow(0 0 16px rgba(255, 220, 130, .95)); }
+.moment.up .mbody::after { content: ''; position: absolute; inset: 0; border-radius: 10px; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .8) 50%, transparent 65%); background-size: 300% 100%; mix-blend-mode: screen; animation: msweep calc(var(--ms) * .6) calc(var(--ms) * .15) both; }
+.moment.gone .mrays { display: none; }
+.moment.gone .mbody { animation-name: mgone; }
+@keyframes mlife { 0% { opacity: 0; } 10%, 82% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes mpop { 0% { transform: scale(.5); } 16% { transform: scale(1.12); } 28%, 100% { transform: scale(1); } }
+@keyframes mgone { 0% { transform: scale(.7); filter: none; } 14%, 40% { transform: scale(1); filter: none; } 100% { transform: translateY(46px) scale(.72) rotate(7deg); filter: grayscale(1) brightness(.45) blur(2px); } }
+@keyframes mspin { to { rotate: 1turn; } }
+@keyframes msweep { from { background-position: 100% 0; } to { background-position: 0 0; } }

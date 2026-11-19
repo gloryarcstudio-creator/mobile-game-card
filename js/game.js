@@ -589,6 +589,18 @@
     setTimeout(() => t.remove(), 1500);
   }
 
+  // Крупный миг посреди экрана: улучшенная карта, убранная карта, новый талисман.
+  // Живёт поверх экранов и сам исчезает, поэтому игра идёт дальше, не дожидаясь его.
+  function moment(html, label, kind) {
+    app.querySelectorAll('.moment').forEach((x) => x.remove());
+    const m = document.createElement('div');
+    m.className = `moment ${kind}`;
+    m.innerHTML = `<i class="mrays"></i><div class="mbody">${html}</div><b>${label}</b>`;
+    if (SETTINGS.fast) m.style.setProperty('--ms', '.7s');
+    app.appendChild(m);
+    setTimeout(() => m.remove(), SETTINGS.fast ? 720 : 1430);
+  }
+
   function showOverlay(html, onClick) {
     overlay.innerHTML = `<div class="ov-inner">${html}</div>`;
     overlay.classList.add('show');
@@ -1518,7 +1530,7 @@
     return list[list.length - 1];
   }
 
-  function addRelic(id) {
+  function addRelic(id, quiet) {
     run.relics.push(id);
     codexMark('r', id);
     ach.put('relics', id);
@@ -1529,7 +1541,8 @@
     if (id === 'whetstone') upgradeRandom(2, true);
     if (id === 'goldquill') { const list = run.deck.filter(canUpgrade); list.forEach((c) => { c.up = true; }); achUpgraded(list.length); }
     SND.sfx('relic');
-    toast(tr('Талисман: {name}', { name: RELICS[id].name }));
+    // новый талисман показывается крупно, с лучами; quiet: экран сам показывает находку (сундук)
+    if (!quiet) moment(`<div class="mrelic">${Art.relic(id)}</div>`, tr('Талисман: {name}', { name: RELICS[id].name }), 'talis');
   }
 
   // счётчик улучшений и число улучшенных карт в колоде — для достижений
@@ -1549,7 +1562,7 @@
     showDeck(list, tr('Выбери карту для улучшения'), (uid) => {
       hideOverlay();
       const c = uid != null && run.deck.find((d) => d.uid === uid);
-      if (c) { c.up = true; achUpgraded(1); SND.sfx('relic'); toast(tr('Улучшена: {name}', { name: cardName(c) })); }
+      if (c) { c.up = true; achUpgraded(1); SND.sfx('relic'); moment(cardHTML(c), tr('Улучшена: {name}', { name: cardName(c) }), 'up'); }
       done(!!c);
     }, 'up');
   }
@@ -1557,7 +1570,7 @@
   function removeCardFlow(done) {
     showDeck(run.deck, tr('Выбери карту, которую убрать'), (uid) => {
       hideOverlay();
-      if (uid != null) { const c = run.deck.find((d) => d.uid === uid); run.deck = run.deck.filter((d) => d.uid !== uid); toast(tr('Убрана: {name}', { name: cardName(c) })); }
+      if (uid != null) { const c = run.deck.find((d) => d.uid === uid); run.deck = run.deck.filter((d) => d.uid !== uid); moment(cardHTML(c), tr('Убрана: {name}', { name: cardName(c) }), 'gone'); }
       done(uid != null);
     });
   }
@@ -2016,7 +2029,7 @@
     // Подпись под сундуком уже называет талисман и что он делает, поэтому всплывашку с тем же именем поверх неё убираем
     const at = spot($('.chest'));
     const burst = { x: at.x, y: at.y - 6, w: at.w, h: at.h, foot: at.y + at.h * 0.3 };
-    if (free.length && Math.random() < (LONG ? BAL.chestRelic : 0.5)) { const id = pickRelic(free); addRelic(id); app.querySelectorAll('.toast').forEach((x) => x.remove()); FX.play('find', burst); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
+    if (free.length && Math.random() < (LONG ? BAL.chestRelic : 0.5)) { const id = pickRelic(free); addRelic(id, true); FX.play('find', burst); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
     else { const g = rnd(28, 45); gain(g); SND.sfx('coin'); FX.play('loot', burst); msg = tr('Внутри {n} {n|монета|монеты|монет}.', { n: g }); }
     save({ t: 'next' });
     $('.chest').classList.add('open');
