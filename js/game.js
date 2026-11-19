@@ -2855,9 +2855,13 @@
     // каждая на свою строку выше прежней: раньше они ложились одна на другую и не читались
     const now = performance.now(); const key = host.className;
     const live = (floatRows.get(key) || []).filter((x) => now - x.at < 420);
-    let row = 0; while (row < 4 && live.some((x) => x.row === row)) row++;
-    if (row === 4) row = live.reduce((a, b) => (a.at <= b.at ? a : b)).row;   // выше четырёх строк не растём: там намерения врага
-    live.push({ at: now, row }); floatRows.set(key, live);
+    let row = 0;
+    // у «Ярости» своё место над числами (style.css, .ragef): в лесенку она не встаёт, иначе уезжала на значки намерений
+    if (!/ragef/.test(cls)) {
+      while (row < 4 && live.some((x) => x.row === row)) row++;
+      if (row === 4) row = live.reduce((a, b) => (a.at <= b.at ? a : b)).row;   // выше четырёх строк не растём: там намерения врага
+      live.push({ at: now, row }); floatRows.set(key, live);
+    }
     if (layer) {
       const r = host.getBoundingClientRect(); const s = layer.getBoundingClientRect(); const k = 400 / (s.width || 400);
       f.style.top = `${Math.round((r.top - s.top + r.height * 0.4) * k) - row * 34}px`;

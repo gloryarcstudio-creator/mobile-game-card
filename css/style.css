@@ -1499,7 +1499,15 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 .enemy.rage::after { content: ''; position: absolute; z-index: -1; left: 50%; top: 47%; width: 124%; height: 108%; translate: -50% -50%; border-radius: 50%; pointer-events: none;
   background: radial-gradient(closest-side, rgba(255, 36, 14, .9), rgba(240, 30, 12, .55) 55%, rgba(230, 24, 10, .18) 82%, rgba(230, 24, 10, 0)); animation: rageglow 1.3s ease-in-out infinite alternate; }
 @keyframes rageglow { from { opacity: .5; scale: .93; } to { opacity: 1; scale: 1.06; } }
-.float.ragef { font-size: 30px; color: #ff7a4a; margin-top: -74px; }
+.float.ragef { font-size: 30px; color: #ff7a4a; margin-top: -94px; animation-name: floatrage; }
+/* «Ярость» почти не всплывает: прямо над ней значки намерений врага, раньше надпись наезжала на них */
+@keyframes floatrage {
+  0% { transform: translate(-50%, 8px) scale(.5); opacity: 0; }
+  12% { transform: translate(-50%, -4px) scale(1.22); opacity: 1; }
+  24% { transform: translate(-50%, -6px) scale(1); }
+  70% { transform: translate(-50%, -14px) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -20px) scale(.96); opacity: 0; }
+}
 
 /* ---------- v64: мало здоровья: пульс полоски и красные края экрана в бою (только прозрачность, без фильтров) ---------- */
 .herobar.low .hpbar::after { content: ''; position: absolute; inset: -3px; border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 2px rgba(255, 96, 70, .95), 0 0 12px 3px rgba(255, 50, 30, .8); animation: lowhp .9s var(--ph, 0ms) ease-in-out infinite alternate; }
