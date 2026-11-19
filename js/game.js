@@ -881,9 +881,10 @@
     const p = Math.min(achProgress(a), a.goal);
     const desc = a.desc.replace('{p}', `<b>${fmt(p)}/${fmt(a.goal)}</b>`);
     const fresh = done && ACH.got[a.id] > since;
-    return `<div class="arow ${done ? 'done' : 'locked'}">
-      <div class="aport ${a.cat}">${achArt(a)}${fresh ? `<em class="anew">${tr('новое')}</em>` : ''}</div>
-      <div class="atext"><h3>${a.name}${achStars(a)}</h3><p>${desc}</p>
+    const tight = a.name.length > 20 && a.desc.length > 28 ? 'tight' : '';
+    return `<div class="arow ${done ? 'done' : 'locked'} ${tight}">
+      <div class="aport ${a.cat}">${achArt(a)}${fresh ? `<em class="anew">${tr('новое')}</em>` : ''}${a.stars ? `<i class="arank">${'★'.repeat(a.stars)}</i>` : ''}</div>
+      <div class="atext"><h3>${a.name}</h3><p>${desc}</p>
         ${!done && a.goal > 1 ? `<div class="abar"><i style="width:${(p / a.goal) * 100}%"></i></div>` : ''}</div>
       ${done ? achStamp(ACH.got[a.id]) : '<span class="aslot"></span>'}
     </div>`;
@@ -2418,6 +2419,24 @@
   }
 
   const sti = (k) => (Art.status ? Art.status(k) : '');
+  // что изменилось с прошлой отрисовки (статус, намерение, энергия): короткий «подскок».
+  // Отрисовка идёт часто и заново, поэтому помним время изменения и продолжаем анимацию с нужного места.
+  const chgMem = new Map();
+  function popChanged(root, sel, scope) {
+    if (!root) return;
+    const now = performance.now(); const seen = new Set();
+    root.querySelectorAll(sel).forEach((el) => {
+      const val = el.textContent;
+      const key = `${scope}:${el.className}:${val.replace(/[\d−+×≤/\s-]+/g, '')}`;
+      seen.add(key);
+      let m = chgMem.get(key);
+      if (!m || m.val !== val) { m = { val, at: now, up: !m || (parseInt(val.replace(/\D+/g, ''), 10) || 0) >= (parseInt(m.val.replace(/\D+/g, ''), 10) || 0) }; chgMem.set(key, m); }
+      const age = now - m.at;
+      if (age < 520) { el.classList.add('chg', m.up ? 'up' : 'down'); el.style.setProperty('--age', `${-Math.round(age)}ms`); }
+    });
+    for (const k of [...chgMem.keys()]) if (k.startsWith(`${scope}:`) && !seen.has(k)) chgMem.delete(k);
+  }
+
   function chip(cls, text, tipText, ico = '') {
     return `<i class="${cls}" data-tip="${tipText}">${ico}${text}</i>`;
   }
@@ -2427,6 +2446,7 @@
     const e = C.enemy;
     if (!C.saidHurt && e.hp > 0 && e.hp <= e.max / 2) { C.saidHurt = true; say(lineOf(C.id, 'hurt')); }
     $('.intent').innerHTML = e.hp > 0 ? currentIntents().map(intentHTML).join('') : '';
+    popChanged($('.intent'), '.it', 'intent');
     $('.ehp .fill').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
     $('.ehp .trail').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
     $('.ehp span').textContent = `${Math.max(0, e.hp)}/${e.max}`;
@@ -2453,6 +2473,7 @@
     if (e.stun) st.push(chip('s-weak', tr('Спит'), g('Спит'), sti('asleep')));
     if (C.stolen) st.push(chip('s-gold', tr('Украдено {n}', { n: C.stolen }), g('Кража'), sti('steal')));
     $('.estatus').innerHTML = st.join('');
+    popChanged($('.estatus'), 'i', 'est');
     // статусы Ивы и активные чары
     const hs = [];
     const res = C.str + C.tmpStr;
@@ -2466,7 +2487,11 @@
     if (C.deliveries.length) hs.push(chip('h-del', tr('Доставка {n}', { n: C.deliveries.length }), `${g('Доставка')} ${tr('В пути: {list}.', { list: C.deliveries.map((d) => d.name).join(', ') })}`, sti('delivery')));
     for (const [id, n] of Object.entries(C.charms)) hs.push(chip('h-charm', `${n}`, `${CARDS[id].name}: ${CHARM_TIP[id](n)}`, Art.card(id)));
     $('.hstatus').innerHTML = hs.join('');
+    popChanged($('.hstatus'), 'i', 'hst');
     $('.hb-slot').innerHTML = heroBar(true);
+    popChanged($('.hb-slot'), '.energy b', 'energy');
+    const orb = $('.hb-slot .energy');
+    if (orb) { const eb = orb.querySelector('b'); orb.classList.toggle('empty', C.energy <= 0); if (eb.classList.contains('chg')) { orb.classList.add(eb.classList.contains('up') ? 'gain' : 'spend'); orb.style.setProperty('--age', eb.style.getPropertyValue('--age')); } }
     renderHand(dealAnim);
   }
 

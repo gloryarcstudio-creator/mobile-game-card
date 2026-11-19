@@ -1439,3 +1439,30 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 @keyframes mgone { 0% { transform: scale(.7); filter: none; } 14%, 40% { transform: scale(1); filter: none; } 100% { transform: translateY(46px) scale(.72) rotate(7deg); filter: grayscale(1) brightness(.45) blur(2px); } }
 @keyframes mspin { to { rotate: 1turn; } }
 @keyframes msweep { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+/* ---------- v57: статусы врага в несколько рядов, «подскок» изменившихся значений, огонёк энергии ---------- */
+.estatus { flex-wrap: wrap; row-gap: 3px; max-width: 392px; margin-left: auto; margin-right: auto; }
+.estatus i, .hstatus i { white-space: nowrap; }
+.estatus i.chg, .hstatus i.chg { animation: chgpop .5s var(--age, 0ms) both; }
+@keyframes chgpop { 0% { scale: 1; filter: brightness(1); } 25% { scale: 1.15; filter: brightness(1.5); } 100% { scale: 1; filter: brightness(1); } }
+.it.chg { animation: itpop .5s var(--age, 0ms) both, bob 1.4s infinite alternate; }
+.it.boom.chg { animation: itpop .5s var(--age, 0ms) both, bob .5s infinite alternate; }
+@keyframes itpop { 0% { scale: .5; opacity: 0; } 35% { scale: 1.2; opacity: 1; } 100% { scale: 1; opacity: 1; } }
+.energy { position: relative; }
+.energy b { display: inline-block; }
+.energy b.chg.up { animation: engain .5s var(--age, 0ms) both; }
+.energy b.chg.down { animation: enspend .36s var(--age, 0ms) both; }
+@keyframes engain { 0% { scale: 1; } 30% { scale: 1.5; color: #fff7c9; } 100% { scale: 1; } }
+@keyframes enspend { 0% { scale: 1; } 35% { scale: .72; } 100% { scale: 1; } }
+.energy.gain::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 3px solid rgba(160, 255, 236, .95); box-shadow: 0 0 12px rgba(120, 255, 230, .9); pointer-events: none; animation: enring .5s var(--age, 0ms) both; }
+@keyframes enring { 0% { scale: .7; opacity: 0; } 25% { opacity: 1; } 100% { scale: 1.55; opacity: 0; } }
+.energy.empty b { opacity: .55; filter: saturate(.4); }
+.energy.empty small { opacity: .6; }
+/* достижения: звёзды ступени на портрете, а не в названии; длинные названия больше не вылезают за рамку */
+.arank { position: absolute; left: 0; right: 0; bottom: 0; padding: 7px 0 2px; font-style: normal; font-size: 14px; line-height: 1; letter-spacing: 1px; text-align: center; color: var(--gold-hi); text-shadow: 0 1px 0 #000, 0 0 4px #000, 0 0 2px #000; background: linear-gradient(transparent, rgba(8, 8, 16, .82) 55%); pointer-events: none; }
+.arow.locked .arank { color: #c9c2d6; }
+.atext h3 { font-size: 17px; line-height: 1.06; text-wrap: balance; }
+.atext p { margin-top: 3px; font-size: 14.5px; line-height: 1.15; }
+.abar { height: 6px; margin-top: 5px; }
+.arow.tight .atext h3 { font-size: 15.5px; }
+.arow.tight .atext p { font-size: 13.5px; line-height: 1.1; margin-top: 2px; }
