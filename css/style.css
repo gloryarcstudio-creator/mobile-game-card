@@ -1636,3 +1636,14 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 @media (prefers-reduced-motion: reduce) { .bg-lights i { animation: none; } }
 .stats i.dot { font-style: normal; }
 .stats i.dot.brk { display: block; height: 0; overflow: hidden; }
+/* На экранах награды и трофея подсказка вставала прямо на кнопку «Пропустить» / «Не брать»: теперь ниже неё */
+#app:has(#screen:is(.scr-reward, .scr-bossrelic)) .toast { top: 512px; }
+/* Пока страница и первые картинки грузятся, в темноте светит тёплый огонёк. Раньше на медленной сети
+   несколько секунд был пустой экран, а потом титул проявлялся кусками. Убирает его bootDone() в game.js */
+#boot { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: radial-gradient(circle at 50% 50%, #242b47 0%, #10131f 60%); transition: opacity .45s ease-out; }
+#boot.out { opacity: 0; pointer-events: none; }
+#boot i { width: 16px; height: 16px; border-radius: 50%; background: #ffdc9a; box-shadow: 0 0 16px 7px rgba(255, 196, 100, .6), 0 0 64px 30px rgba(255, 160, 60, .22); animation: bootglow 1.7s ease-in-out infinite; }
+@keyframes bootglow { 0%, 100% { transform: scale(.82); opacity: .65; } 50% { transform: scale(1.12); opacity: 1; } }
+/* ореолы света появляются, когда картинка фона уже загрузилась */
+.bg-lights { opacity: 0; transition: opacity .6s ease-out; }
+.bg-lights.on { opacity: 1; }

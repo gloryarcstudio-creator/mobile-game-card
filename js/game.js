@@ -367,7 +367,7 @@
     const bgEl = $('#bg');
     const was = bgEl.querySelector('image'); const wasHref = was && was.getAttribute('href'); const wasHTML = wasHref ? bgEl.innerHTML : '';
     bgEl.innerHTML = painted || Art.background(p, lamps, g.scene, approach);
-    if (painted) groundCam();
+    if (painted) { groundCam(); Art.lightsOn(bgEl); }
     // свет сцены: по нему враги в бою слегка тонируются под закат или ночь (см. data-light в style.css)
     const bk = painted ? ($('#bg svg.painted') || {}).dataset.k || '' : '';
     app.dataset.light = /night|final/.test(bk) ? 'night' : /outskirts/.test(bk) ? 'dusk' : /sunset/.test(bk) ? 'sunset' : /town_mid/.test(bk) ? 'eve' : 'day';
@@ -3536,6 +3536,20 @@
   achCheck(true);
   codexSeed();
   if (hasCinema() && !cinemaSeen()) goCinema(() => goTitle()); else goTitle();
+  // Огонёк загрузки (#boot) гаснет, когда картинки первого экрана готовы, но не позже чем через 5 секунд
+  (function bootDone() {
+    const boot = $('#boot');
+    if (!boot) return;
+    const urls = new Set();
+    app.querySelectorAll('#bg image').forEach((x) => urls.add(x.getAttribute('href')));
+    screen.querySelectorAll('img').forEach((x) => urls.add(x.getAttribute('src')));
+    screen.querySelectorAll('[style*="url("]').forEach((x) => { const m = /url\(["']?([^"')]+)/.exec(x.getAttribute('style')); if (m) urls.add(m[1]); });
+    let left = 0; let gone = false;
+    const out = () => { if (gone) return; gone = true; boot.classList.add('out'); setTimeout(() => boot.remove(), 500); };
+    urls.forEach((u) => { if (!u) return; const im = new Image(); left++; im.onload = im.onerror = () => { if (--left <= 0) out(); }; im.src = u; });
+    if (!left) out();
+    setTimeout(out, 5000);
+  })();
   try {
     // язык сменили посреди забега: после перезапуска возвращаемся туда же, а не на главный экран
     const reopen = sessionStorage.getItem('lastray.reopen');

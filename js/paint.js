@@ -147,10 +147,20 @@
     scene_meet: [[243, 268, 46], [335, 318, 30, 'w'], [40, 478, 26, 'w']],
     scene_shop: [[66, 205, 44], [392, 165, 20]],
   };
+  // Ореолы включаются, когда сама картинка фона загружена: иначе на медленной сети они горели бы над пустым местом
+  const bgSeen = new Set();
+  Art.lightsOn = (root) => {
+    const L = root && root.querySelector('.bg-lights:not(.on)');
+    if (!L) return;
+    const k = L.dataset.k; const probe = new Image();
+    const on = () => { bgSeen.add(k); root.querySelectorAll(`.bg-lights[data-k="${k}"]`).forEach((x) => x.classList.add('on')); };
+    probe.onload = on; probe.src = url(`bg/${k}`);
+    if (probe.complete && probe.naturalWidth) on();
+  };
   function lightsHTML(k) {
     const L = LIGHTS[k];
     if (!L) return '';
-    return `<div class="bg-lights">${L.map(([x, y, r, kind], i) => `<i${kind ? ` class="${kind}"` : ''} style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px;animation-duration:${(kind === 'f' ? 1.5 : 3.7 + ((i * 1.37) % 2.1)).toFixed(2)}s;animation-delay:-${((i * 1.9) % 5).toFixed(2)}s"></i>`).join('')}</div>`;
+    return `<div class="bg-lights${bgSeen.has(k) ? ' on' : ''}" data-k="${k}">${L.map(([x, y, r, kind], i) => `<i${kind ? ` class="${kind}"` : ''} style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px;animation-duration:${(kind === 'f' ? 1.5 : 3.7 + ((i * 1.37) % 2.1)).toFixed(2)}s;animation-delay:-${((i * 1.9) % 5).toFixed(2)}s"></i>`).join('')}</div>`;
   }
   function paintBg(a, b, mix) {
     const c = (A.bgc || {})[mix > 0.5 && b ? b : a] || '#2a3350';
