@@ -1711,3 +1711,21 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 #screen:has(.hand .card.inhand):not(:has(.hand .card.inhand:not(.nope))) .herobar .btn.end::after { animation: endglow 1.5s ease-in-out infinite alternate; }
 @keyframes endglow { from { opacity: calc(.25 * var(--endglow)); } to { opacity: var(--endglow); } }
 @media (prefers-reduced-motion: reduce) { #screen .herobar .btn.end::after { animation: none; } }
+
+/* ---------- v100: солнце и луна на фонах ----------
+   Вокруг солнца медленно поворачивается веер мягких лучей, у луны дышит холодный ореол. Места заданы в LIGHTS (paint.js, виды 's' и 'm').
+   Ручка на #app: --sun (0 — убрать). Чтобы убрать совсем: удалить этот блок и записи 's'/'m' в LIGHTS. */
+#app { --sun: 1; }
+.bg-lights i:is(.s, .m) { opacity: var(--sun); animation: none; background: none; will-change: auto; }
+.bg-lights i.s::before { content: ''; position: absolute; inset: 0; border-radius: 50%; will-change: transform;
+  background: repeating-conic-gradient(rgba(255, 236, 190, 0) 0deg, rgba(255, 236, 190, .34) 7deg, rgba(255, 236, 190, 0) 15deg, rgba(255, 236, 190, 0) 22deg, rgba(255, 236, 190, .2) 27deg, rgba(255, 236, 190, 0) 33deg, rgba(255, 236, 190, 0) 45deg);
+  -webkit-mask: radial-gradient(circle, #000 8%, rgba(0, 0, 0, .55) 32%, transparent 70%); mask: radial-gradient(circle, #000 8%, rgba(0, 0, 0, .55) 32%, transparent 70%);
+  animation: sunturn 120s linear infinite; }
+.bg-lights i:is(.s, .m)::after { content: ''; position: absolute; inset: 18%; border-radius: 50%; will-change: opacity;
+  background: radial-gradient(circle, rgba(255, 238, 200, .5) 0%, rgba(255, 220, 160, .2) 38%, rgba(255, 210, 140, 0) 70%);
+  animation: sunbreath 7s ease-in-out infinite alternate; }
+.bg-lights i.m::after { inset: 0; background: radial-gradient(circle, rgba(214, 230, 255, .42) 0%, rgba(190, 212, 255, .16) 40%, rgba(180, 205, 255, 0) 70%); }
+@keyframes sunturn { to { transform: rotate(360deg); } }
+@keyframes sunbreath { from { opacity: .55; } to { opacity: 1; } }
+#app.calm .bg-lights i:is(.s, .m)::before, #app.calm .bg-lights i:is(.s, .m)::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { .bg-lights i:is(.s, .m)::before, .bg-lights i:is(.s, .m)::after { animation: none; } }
