@@ -585,8 +585,37 @@
   function toast(text) {
     const t = document.createElement('div');
     t.className = 'toast'; t.textContent = text;
+    // длинную строку не успеть прочитать за полторы секунды: время растёт с длиной
+    const ms = Math.min(4000, 1500 + Math.max(0, text.length - 30) * 35);
+    t.style.animationDuration = `${ms}ms`;
     app.appendChild(t);
-    setTimeout(() => t.remove(), 1500);
+    setTimeout(() => t.remove(), ms);
+  }
+  // строка итогов: части не рвутся посередине, перенос только между ними
+  const statLine = (parts) => parts.map((x) => `<span>${x}</span>`).join(' · ');
+
+  // Подсказка к значку (статус, намерение врага, талисман): пузырь рядом с тем, на что нажали, а не поверх него.
+  // Висит столько, сколько нужно на чтение, и закрывается следующим касанием.
+  let tipTimer = 0;
+  function closeTip() { clearTimeout(tipTimer); app.querySelectorAll('.tipb').forEach((x) => x.remove()); }
+  function showTip(el, text, title) {
+    closeTip();
+    const s = app.getBoundingClientRect(); const k = 400 / (s.width || 400); const r = el.getBoundingClientRect();
+    const box = { x: (r.left - s.left) * k, y: (r.top - s.top) * k, w: r.width * k, h: r.height * k };
+    const t = document.createElement('div');
+    t.className = 'tipb';
+    t.innerHTML = `${title ? `<b></b>` : ''}<span></span>`;
+    if (title) t.querySelector('b').textContent = title;
+    t.querySelector('span').textContent = text;
+    app.appendChild(t);
+    const w = t.offsetWidth; const h = t.offsetHeight; const cx = box.x + box.w / 2;
+    const left = Math.max(8, Math.min(392 - w, cx - w / 2));
+    const below = box.y + box.h + 10 + h < 852 && (box.y + box.h / 2 < 430 || box.y - 10 - h < 8);
+    t.classList.add(below ? 'below' : 'above');
+    t.style.left = `${left}px`;
+    t.style.top = `${below ? box.y + box.h + 10 : box.y - 10 - h}px`;
+    t.style.setProperty('--ax', `${Math.max(16, Math.min(w - 16, cx - left))}px`);
+    tipTimer = setTimeout(closeTip, Math.min(7000, 2200 + (text.length + (title || '').length) * 45));
   }
 
   // Крупный миг посреди экрана: улучшенная карта, убранная карта, новый талисман.
@@ -2969,7 +2998,7 @@
         ${bookArt(endingKey(), 'moon')}
         <h1>${STORY.winTitle}</h1>
         <p class="story">${txt(STORY.winText)}${saved && LORE.DARK[saved] ? ` ${tr(LORE.DARK[saved].saved)}` : ''}</p>
-        <p class="stats">${DIFF().name} · ${tr('Побед: {n}', { n: run.fights })} · ${tr('Карт в колоде: {n}', { n: run.deck.length })} · ${tr('Талисманов: {n}', { n: run.relics.length })}</p>
+        <p class="stats">${statLine([DIFF().name, tr('Побед: {n}', { n: run.fights }), tr('Карт в колоде: {n}', { n: run.deck.length }), tr('Талисманов: {n}', { n: run.relics.length })])}</p>
       </div></div>
       <div class="endbtns"><button class="btn big" data-act="summary">${tr('Итоги забега')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
     fitBook();
@@ -3035,7 +3064,7 @@
         ${bookArt('story_lose', 'dim')}
         <h1>${STORY.loseTitle}</h1>
         <p class="story">${txt(STORY.loseText)}</p>
-        <p class="stats">${DIFF().name} · ${tr('Пройдено уровней: {a} из {b}', { a: run.step + 1, b: MAX_STEPS })} · ${tr('Побед: {n}', { n: run.fights })}</p>
+        <p class="stats">${statLine([DIFF().name, tr('Пройдено уровней: {a} из {b}', { a: run.step + 1, b: MAX_STEPS }), tr('Побед: {n}', { n: run.fights })])}</p>
       </div></div>
       <div class="endbtns"><button class="btn big" data-act="summary">${tr('Итоги забега')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
     fitBook();
@@ -3176,13 +3205,14 @@
   window.addEventListener('pointerup', (e) => endDrag(e));
   window.addEventListener('pointercancel', (e) => endDrag(e, true));
 
+  app.addEventListener('pointerdown', () => closeTip(), true);
   app.addEventListener('click', (e) => {
     SND.unlock();
     if (overlay.contains(e.target)) { if (!e.target.matches('input')) SND.sfx('click'); return; }
     const relic = e.target.closest('[data-relic]');
-    if (relic) { const r = RELICS[relic.dataset.relic]; toast(`${r.name}: ${r.desc}`); return; }
+    if (relic) { const r = RELICS[relic.dataset.relic]; showTip(relic, r.desc, r.name); return; }
     const tipEl = e.target.closest('[data-tip]');
-    if (tipEl) { toast(tipEl.dataset.tip); return; }
+    if (tipEl) { const own = tipEl.matches('.estatus i, .hstatus i') ? tipEl.textContent.trim() : ''; showTip(tipEl, tipEl.dataset.tip, /[^\d\s]/.test(own) ? own : ''); return; }
     const t = e.target.closest('[data-act], [data-hi]');
 
     if (screen.className === 'scr-combat') {

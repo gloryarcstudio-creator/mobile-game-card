@@ -1466,3 +1466,15 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 .abar { height: 6px; margin-top: 5px; }
 .arow.tight .atext h3 { font-size: 15.5px; }
 .arow.tight .atext p { font-size: 13.5px; line-height: 1.1; margin-top: 2px; }
+
+/* ---------- v58: пузырь подсказки рядом со значком (showTip в game.js), итоги без рваных частей ---------- */
+.tipb { position: absolute; z-index: 32; max-width: 300px; min-width: 120px; padding: 8px 13px 9px; border-radius: 11px; background: rgba(15, 18, 30, .97); border: 2px solid var(--gold); box-shadow: 0 6px 16px rgba(0, 0, 0, .55); font-size: 15.5px; line-height: 1.22; color: #f1ead8; text-align: left; pointer-events: none; animation: tipin .16s ease-out both; }
+.tipb > b { display: block; margin-bottom: 3px; font-family: var(--title); font-weight: normal; font-size: 17px; color: var(--gold-hi); }
+.tipb > span { display: block; text-wrap: pretty; }
+.tipb::before { content: ''; position: absolute; left: var(--ax, 50%); width: 12px; height: 12px; margin-left: -7px; background: rgba(15, 18, 30, .97); border: 2px solid var(--gold); border-right: 0; border-bottom: 0; }
+.tipb.below { transform-origin: var(--ax, 50%) 0; }
+.tipb.above { transform-origin: var(--ax, 50%) 100%; }
+.tipb.below::before { top: -8px; rotate: 45deg; }
+.tipb.above::before { bottom: -8px; rotate: 225deg; }
+@keyframes tipin { from { opacity: 0; scale: .86; } to { opacity: 1; scale: 1; } }
+.stats > span { white-space: nowrap; }
