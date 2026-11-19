@@ -1516,3 +1516,7 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 #bg::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity .6s ease-out;
   background: radial-gradient(ellipse 120% 70% at 50% 30%, rgba(12, 14, 40, .5), rgba(6, 8, 24, .82)); }
 #app:has(.scr-end.lose) #bg::after, #app:has(#screen[data-fallen]) #bg::after { opacity: 1; }
+
+/* ---------- v67: на экранах конца забега достижения всплывают снизу и не закрывают ленту ---------- */
+#app:has(#screen:is(.scr-end, .scr-summary)) .achtoast { top: auto; bottom: 16px; animation-name: achinb; }
+@keyframes achinb { 0% { opacity: 0; transform: translateY(30px); } 10%, 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(20px); } }

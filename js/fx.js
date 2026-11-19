@@ -48,6 +48,11 @@
   const vars = (d, o) => { if (d) for (const k in o) d.style.setProperty(`--${k}`, o[k]); return d; };
 
   // разлёт частиц: ang — сектор в градусах (0 — вправо, 90 — вниз), dist — дальность, up — подброс, grav — падение
+  // бумажные конфетти из одной точки (рисунок кодом)
+  function confettiBits(a) {
+    const cs = ['#e8505a', '#ffd27a', '#6ac0e8', '#7fe08a', '#d6b0ff'];
+    particles(a, 18, { html: (i) => svg('-4 -2 8 4', `<rect x="-4" y="-2" width="8" height="4" fill="${cs[i % 5]}" stroke="${O}" stroke-width="1"/>`, 12, 6), dist: [50, 130], dur: 0.9, spin: 720, up: 40, grav: 90 });
+  }
   function particles(at, n, o) {
     for (let i = 0; i < n; i++) {
       const a = rnd(...(o.ang || [0, 360])) * Math.PI / 180;
@@ -159,7 +164,7 @@
   // какие ролики нужны эффекту (если не тот же, что и название)
   const NEED = {
     snowball: ['snowball_p', 'snowball'], blizzard: ['blizzard', 'snow'], icicle: ['icicle_p', 'icicle'],
-    letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], loot: ['gold'], find: ['starfall', 'sigil'], triumph: ['confetti', 'starfall', 'gold'],
+    letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], loot: ['gold'], find: ['starfall', 'sigil'], triumph: ['confetti', 'starfall', 'gold'], fanfare: ['confetti', 'starfall'],
     heart: ['heart', 'heal'], rage: ['aura', 'growl'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'], bite: ['bite_p', 'bite'],
   };
   // готовы ли ролики эффекта; недолго ждём расшифровку, но не скачивание
@@ -421,12 +426,12 @@
     },
     // ярмарка: конфетти
     async confetti(t) {
-      const a = anchor(t);
-      const cs = ['#e8505a', '#ffd27a', '#6ac0e8', '#7fe08a', '#d6b0ff'];
-      particles(a, 18, { html: (i) => svg('-4 -2 8 4', `<rect x="-4" y="-2" width="8" height="4" fill="${cs[i % 5]}" stroke="${O}" stroke-width="1"/>`, 12, 6), dist: [50, 130], dur: 0.9, spin: 720, up: 40, grav: 90 });
+      confettiBits(anchor(t));
       sfx('fair');
       return K.bonk(t);
     },
+    // праздник на экране победы: хлопушки по краям ленты, без удара и тряски (звучит победная мелодия)
+    async fanfare() { confettiBits({ x: 84, y: 160, w: 80, h: 80 }); await wait(260); confettiBits({ x: 316, y: 170, w: 80, h: 80 }); },
     // пряник: крошки
     async crumbs(t) {
       const a = anchor(t);
@@ -744,6 +749,11 @@
     async gold(t = 'hero') { const a = anchor(t); put('gold', { x: a.x + 10, y: a.y + 34 }, 160, { ay: BASE, dur: 900 }); sfx('coin'); },
     async loot(t = 'enemy') { put('gold', feet(anchor(t)), 250, { ay: BASE, dur: 950 }); sfx('coin'); },
     async find(t) { const a = anchor(t); put('starfall', a, 280, { dy: -46, dur: 900 }); put('sigil', a, 230, { dur: 900 }); sfx('sigil'); },
+    async fanfare() {
+      put('confetti', { x: 84, y: 160 }, 330, { dur: 1000 });
+      put('confetti', { x: 316, y: 172 }, 330, { dur: 1000, delay: 260 });
+      put('starfall', { x: 200, y: 250 }, 380, { dur: 1100, delay: 420 });
+    },
     async triumph(t = 'enemy') {
       const a = anchor(t);
       put('confetti', a, 390, { dy: -20, dur: 1000 });

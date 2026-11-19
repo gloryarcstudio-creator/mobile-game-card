@@ -3038,8 +3038,12 @@
         <p class="story">${txt(STORY.winText)}${saved && LORE.DARK[saved] ? ` ${tr(LORE.DARK[saved].saved)}` : ''}</p>
         <p class="stats">${statLine([DIFF().name, tr('Побед: {n}', { n: run.fights }), tr('Карт в колоде: {n}', { n: run.deck.length }), tr('Талисманов: {n}', { n: run.relics.length })])}</p>
       </div></div>
-      <div class="endbtns"><button class="btn big" data-act="summary">${tr('Итоги забега')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
+      <div class="endbtns"><button class="btn big" data-act="summary">${tr('Итоги забега')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>
+      <div class="fxlayer"></div>`;
     fitBook();
+    // праздник: хлопушки у ленты и звёзды над книгой, когда экран уже проявился
+    FX.warm(['fanfare']);
+    setTimeout(() => { if (screen.className === 'scr-end win') FX.play('fanfare'); }, 520);
   }
   /* После поражения можно начать бой заново или вернуться на развилку перед боем:
      за просмотр рекламы, а в режиме без рекламы сразу. Или закончить забег. */
