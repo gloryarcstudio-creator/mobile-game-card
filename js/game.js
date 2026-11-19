@@ -2501,7 +2501,7 @@
       str: 0, tmpStr: 0, thorns: hasRelic('pinecone') ? (hasRelic('wreath') ? 6 : 3) : 0,
       charms: {}, deliveries: [], playedTurn: 0, playedTotal: 0,
       firstAtk: false, shoe: false, hpLost: false, stolen: 0, burstsTurn: 0,
-      last: null, atkTurn: false, frail: 0, sap: 0, bury: 0, vane: false, medal: false, boomed: false,
+      last: null, atkTurn: false, frail: 0, sap: 0, bury: 0, vane: false, medal: false, boomed: false, blast: 0,
       ginger: 0, glaze: false, sharpened: 0, dog: hasRelic('dogfriend') ? 3 : 0, paid: 0,
     };
     if (hasRelic('chimneycap')) C.enemy.burn += 6;
@@ -2855,20 +2855,25 @@
     // каждая на свою строку выше прежней: раньше они ложились одна на другую и не читались
     const now = performance.now(); const key = host.className;
     const live = (floatRows.get(key) || []).filter((x) => now - x.at < 420);
-    let row = 0;
+    let row = 0; let lift = 0;
     // у «Ярости» своё место над числами (style.css, .ragef): в лесенку она не встаёт, иначе уезжала на значки намерений
     if (!/ragef/.test(cls)) {
       while (row < 4 && live.some((x) => x.row === row)) row++;
       if (row === 4) row = live.reduce((a, b) => (a.at <= b.at ? a : b)).row;   // выше четырёх строк не растём: там намерения врага
-      live.push({ at: now, row }); floatRows.set(key, live);
+      // большое число урона выше обычной строки: над соседней надписью ему нужно больше места, иначе оно ложилось на неё («−6» на «Внутри ещё одна!»)
+      // а нижняя надпись к этому времени уже успела всплыть (до 24 px за 0,4 с): новая встаёт выше ещё на этот путь
+      const under = live.find((x) => x.row === row - 1);
+      const rose = under ? Math.min(24, Math.round((now - under.at) * 0.055)) : 0;
+      lift = row ? Math.min(126, Math.max(row * 34, (under ? under.lift : 0) + (/dmgf/.test(cls) ? 46 : 34)) + rose) : 0;
+      live.push({ at: now, row, lift }); floatRows.set(key, live);
     }
     if (layer) {
       const r = host.getBoundingClientRect(); const s = layer.getBoundingClientRect(); const k = 400 / (s.width || 400);
-      f.style.top = `${Math.round((r.top - s.top + r.height * 0.4) * k) - row * 34}px`;
+      f.style.top = `${Math.round((r.top - s.top + r.height * 0.4) * k) - lift}px`;
       layer.appendChild(f);
       const half = f.offsetWidth / 2 + 6;          // длинная надпись не уходит за край экрана
       f.style.left = `${Math.round(Math.max(half, Math.min(400 - half, (r.left - s.left + r.width * at) * k)))}px`;
-    } else { f.style.left = `${at * 100}%`; if (row) f.style.marginTop = `${-row * 34}px`; host.appendChild(f); }
+    } else { f.style.left = `${at * 100}%`; if (lift) f.style.marginTop = `${-lift}px`; host.appendChild(f); }
     setTimeout(() => f.remove(), 1150);
   }
 
@@ -3082,13 +3087,14 @@
             if (g > 0) { run.gold -= g; C.stolen += g; SND.sfx('coin'); floatText($('.hero-fx'), tr('−{n} {n|монета|монеты|монет}', { n: g }), 'weakf'); }
           }
         } else if (it.k === 'boom') {
+          // замах с шипящим фитилём; сам взрыв — это гибель шутихи, «Бабах!» и удар по герою приходят в момент вспышки (winCombat).
+          // Раньше надпись выходила до замаха, герой получал урон, шутиха полсекунды стояла целой и только потом взрывалась
           el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
           const boomMs = eAct('attack');
-          SND.sfx('burst');
-          floatText($('.enemy-fx'), tr('Бабах!'), 'burnf');
+          SND.sfx('enemy');
           await sleep(Math.min(600, Math.max(200, boomMs)));
-          await hitHero(enemyDmg(it.v));
-          e.hp = 0; C.boomed = true;
+          e.hp = 0; C.boomed = true; C.blast = enemyDmg(it.v);
+          break;
         } else if (it.k === 'sap') { C.sap += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), tr('−{n} {n|энергия|энергии|энергии}', { n: it.v }), 'weakf'); }
         else if (it.k === 'mist') { e.mist = it.v; SND.sfx('debuff'); floatText($('.enemy-fx'), tr('Туман'), 'weakf'); }
         else if (it.k === 'bury') { C.bury += it.v; SND.sfx('debuff'); floatText($('.hero-fx'), tr('Замело: −{n} {n|карта|карты|карт}', { n: it.v }), 'weakf'); }
@@ -3128,12 +3134,22 @@
     // пока враг тает, из него сыплются монеты (над боссом ещё конфетти и звёзды): победа ощущается, а не просто сменяется экран
     const prize = C.tier === 'boss' ? 'triumph' : 'loot';
     const juice = Math.round(900 / sp);
+    // шутиха взорвалась сама: «Бабах!» и удар по герою приходят в момент вспышки её гибели; true — герой взрыва не пережил
+    const blastHero = async () => {
+      const d = C.blast; C.blast = 0;
+      SND.sfx('burst'); floatText($('.enemy-fx'), tr('Бабах!'), 'burnf');
+      await hitHero(d);
+      if (run.hp > 0) return false;
+      await fall(); goDefeat(); return true;
+    };
     if (el && dur) {
-      el.style.setProperty('--dd', `${dur}ms`); el.classList.add('dying', 'drawn'); eAct('death');
+      el.style.setProperty('--dd', `${dur}ms`); el.classList.add('dying', 'drawn'); const flash = eAct('death');
       const lead = Math.round(dur * 0.4);
-      await sleep(lead); FX.play(prize, 'enemy');
-      await sleep(Math.max(dur + 200 - lead, juice));
-    } else { if (el) el.classList.add('dying'); await sleep(250); FX.play(prize, 'enemy'); await sleep(Math.max(550, juice)); }
+      let gone = 0;
+      if (C.blast) { gone = Math.min(flash || lead, lead); await sleep(gone); if (await blastHero()) return; gone += 300; }
+      await sleep(Math.max(0, lead - gone)); FX.play(prize, 'enemy');
+      await sleep(Math.max(dur + 200 - Math.max(lead, gone), juice));
+    } else { if (el) el.classList.add('dying'); await sleep(250); if (C.blast && await blastHero()) return; FX.play(prize, 'enemy'); await sleep(Math.max(550, juice)); }
     const { tier, stolen, hpLost, id, turn, boomed, paid, tie } = C;
     // Ремень для правки: одна заточенная карта остаётся улучшенной
     const sharp = [...C.draw, ...C.hand, ...C.disc, ...C.exh].filter((c) => c.sharp).map((c) => c.uid);
