@@ -1478,3 +1478,11 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 .tipb.above::before { bottom: -8px; rotate: 225deg; }
 @keyframes tipin { from { opacity: 0; scale: .86; } to { opacity: 1; scale: 1; } }
 .stats > span { white-space: nowrap; }
+
+/* ---------- v60: читаемые заголовки на светлом небе, длинные названия в рамке, свиток «Дальше» ---------- */
+.map-hint, .pickhint { text-shadow: 0 0 2px #0b1024, 0 0 5px #0b1024, 0 2px 3px #0b1024, 0 0 12px rgba(8, 12, 30, .9), 0 0 22px rgba(8, 12, 30, .6); }
+.map-hint small { text-shadow: 0 0 2px #0b1024, 0 0 4px #0b1024, 0 1px 2px #0b1024, 0 0 10px rgba(8, 12, 30, .95), 0 0 18px rgba(8, 12, 30, .7); }
+.loot { padding: 3px 16px 3px 10px; border-radius: 18px; background: rgba(15, 18, 30, .72); border: 1.5px solid rgba(216, 169, 74, .55); }
+.ev-box h2.long { font-size: 21px; }
+.ev-box h2.xlong { font-size: 18px; }
+#app.skin .scroll:not(:has(small)) { min-height: 43px; }

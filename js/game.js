@@ -291,6 +291,19 @@
     if (screen.animate) screen.animate([{ opacity: 0 }, { opacity: 1 }], { duration: SETTINGS.fast ? 120 : 260, easing: 'ease-out' });
   }).observe(screen, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
 
+  // Длинное название в рамке разговора или события не помещается в одну строку и налезает на фонарь рамки:
+  // уменьшаем шрифт, пока строка не станет одной. Срабатывает на любую перерисовку экрана, до показа кадра.
+  function fitTitles() {
+    screen.querySelectorAll('.ev-box h2').forEach((h) => {
+      if (h.dataset.fit === h.textContent) return;
+      h.dataset.fit = h.textContent;
+      h.classList.remove('long', 'xlong');
+      const two = () => h.offsetHeight > parseFloat(getComputedStyle(h).fontSize) * 1.7;
+      if (two()) { h.classList.add('long'); if (two()) h.classList.replace('long', 'xlong'); }
+    });
+  }
+  new MutationObserver(fitTitles).observe(screen, { childList: true, subtree: true, characterData: true });
+
   /* ---------- Снег ---------- */
   // снегопад можно выключить в настройках: тогда анимация останавливается совсем
   const snow = (function () {
