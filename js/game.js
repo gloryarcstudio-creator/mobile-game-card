@@ -549,6 +549,19 @@
       trail: hpMove.from > hpMove.to ? `<div class="trail" style="width:${pct}%;--from:${hpMove.from}%;animation:hpmove ${520 * k}ms ${Math.round(260 * k) - el}ms backwards ease-out"></div>` : '',
     };
   }
+  // Слои для эффектов и всплывающих чисел на экранах вне боя: без них лечение, монеты и находки
+  // в событиях, у костра и в лавке происходили молча, менялись только цифры
+  const FXH = '<div class="hero-fx"></div><div class="fxlayer"></div>';
+  const warmPeace = () => FX.warm(['heal', 'gold', 'heart']);
+  // Показать, что изменилось у героя вне боя: здоровье (сияние или встряска портрета и число) и монеты.
+  // Вызывается после перерисовки панели героя; числа идут по очереди, чтобы не легли друг на друга.
+  function showGain(hp0, gold0) {
+    const host = $('.hero-fx'); if (!host) return;
+    const dh = run.hp - hp0; const dg = run.gold - gold0;
+    if (dh > 0) { SND.sfx('heal'); FX.play('heal'); floatText(host, `+${dh}`, 'healf'); }
+    if (dh < 0) { SND.sfx('hurt'); const pt = $('#heroPortrait'); if (pt) pt.classList.add('hurt'); floatText(host, `${dh}`.replace('-', '−'), 'dmgf small'); }
+    if (dg) setTimeout(() => { if (!$('.hero-fx')) return; if (dg > 0) FX.play('gold'); floatText($('.hero-fx'), dg > 0 ? coins(dg) : `−${-dg}`, 'burnf'); }, dh ? (SETTINGS.fast ? 320 : 640) : 0);
+  }
   function heroBar(inCombat) {
     const hpPct = (run.hp / run.maxHp) * 100;
     const mv = hpAnim(hpPct);
@@ -1560,7 +1573,8 @@
         const ok = !o.can || o.can(run);
         return `<button class="scroll ${ok ? '' : 'off'} ${o.ad ? 'adopt' : ''}" data-act="evopt" data-i="${i}" ${ok ? '' : 'disabled'}>${o.ad ? adTag() : ''}${o.text}<small>${o.hint}</small></button>`;
       }).join('')}</div>
-      ${heroBar(false)}`;
+      ${heroBar(false)}${FXH}`;
+    warmPeace();
     screen.dataset.ev = ev.id;
     ach.put('events', ev.id);
   }
@@ -1577,7 +1591,7 @@
     }
     let fought = false;
     evApi.startFight = (id) => { fought = id; };
-    const gold0 = run.gold;
+    const gold0 = run.gold; const hp0 = run.hp;
     const mark = stMark();
     const res = tr(ev.options[i].act(run, evApi)); // итог события — русский текст, он же ключ перевода
     stGoldSince(mark);
@@ -1589,6 +1603,7 @@
     $('.ev-box p').textContent = res;
     $('.topbar').outerHTML = topBar();
     $('.herobar').outerHTML = heroBar(false);
+    showGain(hp0, gold0);
   }
 
   /* ---------- Разговоры, встречи и пощада (тексты и отношения — js/lore.js) ---------- */
@@ -1916,7 +1931,7 @@
         </div>
         <button class="btn ghost reroll" data-act="reroll">${tr('Обновить товар')}<i class="${run.gold < rerollPrice() ? 'poor' : ''}">${Art.icon('coin')}${rerollPrice()}</i></button>
         <button class="btn leave" data-act="next">${tr('Уйти')}</button>
-        ${heroBar(false)}`;
+        ${heroBar(false)}${FXH}`;
     };
     const pay = (item) => {
       if (item.sold) return false;
@@ -1927,7 +1942,8 @@
       const g0 = run.gold;
       if (act === 'buy' && pay(shop.cards[i])) { flyToDeck(screen.querySelectorAll('.shopcard')[i]); ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(tr('Куплено: {name}', { name: CARDS[shop.cards[i].id].name })); }
       if (act === 'buyrelic' && shop.relic && pay(shop.relic)) addRelic(shop.relic.id);
-      if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
+      let tea = 0;
+      if (act === 'buytea' && pay(shop.tea)) { const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + 12); tea = run.hp - before; stAdd('healed', tea); SND.sfx('heal'); }
       if (act === 'reroll') {
         const price = rerollPrice();
         if (run.gold < price) { SND.sfx('deny'); toast(tr('Не хватает монет')); return; }
@@ -1948,6 +1964,7 @@
         return;
       }
       render();
+      if (act === 'buytea' && run.gold < g0) { FX.play('heal'); floatText($('.hero-fx'), `+${tea}`, 'healf'); }   // после перерисовки, иначе эффект стёрся бы вместе с экраном
       if (run.gold < g0 && Art.act) Art.act($('.shopkeeper'), 'happy'); // ёж радуется покупке
     };
     render();
@@ -1988,7 +2005,7 @@
     screen.innerHTML = `${topBar()}
       <div class="chest-wrap"><div class="chest">${Art.icon('chest')}</div><p>${tr('Сундук-соня сладко храпит.')}</p></div>
       <div class="row2"><button class="btn" data-act="openchest">${tr('Открыть')}</button><button class="btn ghost" data-act="next">${tr('Не будить')}</button></div>
-      ${heroBar(false)}<div class="fxlayer"></div>`;
+      ${heroBar(false)}${FXH}`;
     FX.warm(['loot', 'find']);
   }
   function openChest() {
@@ -2032,7 +2049,8 @@
         <button class="scroll" data-act="rest-up">${tr('Наточить карту')}<small>${tr('Улучшить карту')}</small></button>
         <button class="scroll" data-act="rest-burn">${tr('Сжечь карту')}<small>${tr('Убрать карту из колоды')}</small></button>
       </div>
-      ${heroBar(false)}`;
+      ${heroBar(false)}${FXH}`;
+    warmPeace();
   }
 
   /* ================= БОЙ ================= */
@@ -3192,7 +3210,19 @@
       case 'afternext': afterNext(screen.dataset.tier); break;
       case 'meetopt': meetChoose(t.dataset.k); break;
       case 'openchest': openChest(); break;
-      case 'rest-heal': evApi.heal(restHeal()); if (hasRelic('cocoatin')) { run.maxHp += 2; run.hp += 2; toast(`${RELICS.cocoatin.name}: ${tr('+{n} к макс. HP', { n: 2 })}`); } advance(); break;
+      case 'rest-heal': {
+        // отдых виден: зелёное сияние у героя, число, полоска здоровья доезжает, и только потом дорога дальше
+        if (screen.dataset.rested) break;
+        screen.dataset.rested = '1';
+        const hp0 = run.hp;
+        evApi.heal(restHeal());
+        if (hasRelic('cocoatin')) { run.maxHp += 2; run.hp += 2; toast(`${RELICS.cocoatin.name}: ${tr('+{n} к макс. HP', { n: 2 })}`); }
+        screen.querySelectorAll('.scroll').forEach((x) => { if (x !== t) x.classList.add('off'); x.disabled = true; });
+        $('.herobar').outerHTML = heroBar(false);
+        showGain(hp0, run.gold);
+        setTimeout(() => { delete screen.dataset.rested; if (screen.className === 'scr-rest') advance(); }, SETTINGS.fast ? 380 : 800);
+        break;
+      }
       case 'rest-up': upgradeFlow((ok) => { if (ok) advance(); }); break;
       case 'rest-burn': removeCardFlow((ok) => { if (ok) advance(); }); break;
       case 'takecard': SND.sfx('card'); flyToDeck(t); run.deck.push(mk(t.dataset.id)); toast(tr('В колоду: {name}', { name: CARDS[t.dataset.id].name })); advance(); break;
