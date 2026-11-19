@@ -1894,7 +1894,7 @@
       spend(bribePrice()); next = 'peace'; narr = tr('Монеты звякнули, и {name} уступает дорогу.', { name: e.name });
     } else if (k === 'secret') {
       const sc = secretOf(id); const fx = sc.effect;
-      run.secrets.push(id); ach.put('secrets', run.cls); ach.add('peace'); run.tone.peace++;
+      run.secrets.push(id); ach.put('secrets', run.cls); if (fx.peace) ach.add('peace'); run.tone.peace++;   // «Миром» только там, где тайна обходится без боя
       narr = tr(sc.res);
       if (fx.gold) gain(fx.gold);
       if (fx.maxHp) { run.maxHp += fx.maxHp; run.hp += fx.maxHp; }
@@ -1921,6 +1921,7 @@
     $('.scrolls').innerHTML = `<button class="scroll" data-act="${act}">${tr(next === 'fight' ? 'В бой' : 'Дальше')}</button>`;
     $('.topbar').outerHTML = topBar();
     $('.herobar').outerHTML = heroBar(false);
+    ach.add('spent', gold0 - run.gold); // «Звонкая монета» считает и монеты, отданные в разговоре: успокоить, откупиться, выкупить
     showGain(hp0, gold0); // монеты и здоровье, полученные или отданные в разговоре, видны у портрета
   }
 
@@ -2025,6 +2026,7 @@
     if (k === 'help' || k === 'tie') ach.add('helps');
     if (k === 'tie') ach.put('ties', `${run.cls}>${h}`);
     if (fx.letters) ach.flag('letters');
+    ach.add('spent', gold0 - run.gold); // и монеты, отданные героям на встречах
     run.meetLog.push(k);
     relChange(h, fx.rel || 0);
     const finish = () => {
