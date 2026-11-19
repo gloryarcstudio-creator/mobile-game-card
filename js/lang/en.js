@@ -235,6 +235,7 @@
     'Свежий товар! Только что с саней.': 'Fresh goods! Straight off the sled.',
     'Уйти': 'Leave',
     'Не хватает монет': 'Not enough coins',
+    'Здоровье и так полное': 'Health is already full',
     'Сундук-соня сладко храпит.': 'The sleepy chest is snoring sweetly.',
     'Открыть': 'Open',
     'Не будить': 'Let it sleep',

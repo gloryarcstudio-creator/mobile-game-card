@@ -2019,6 +2019,8 @@
       if (act === 'buy' && pay(shop.cards[i])) { flyToDeck(screen.querySelectorAll('.shopcard')[i]); ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(tr('Куплено: {name}', { name: CARDS[shop.cards[i].id].name })); }
       if (act === 'buyrelic' && shop.relic && pay(shop.relic)) addRelic(shop.relic.id);
       let tea = 0;
+      // сбитень при полном здоровье забирал монеты и показывал «+0»
+      if (act === 'buytea' && !shop.tea.sold && run.hp >= run.maxHp) { SND.sfx('deny'); toast(tr('Здоровье и так полное')); return; }
       if (act === 'buytea' && pay(shop.tea)) { const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + 12); tea = run.hp - before; stAdd('healed', tea); SND.sfx('heal'); }
       if (act === 'reroll') {
         const price = rerollPrice();
@@ -2674,7 +2676,7 @@
   function floatText(host, text, cls) {
     if (!host) return;
     const f = document.createElement('div');
-    f.className = `float ${cls}`; f.textContent = text;
+    f.className = `float ${cls}${host.classList.contains('hero-fx') ? ' hf' : ''}`; f.textContent = text;   // hf: число героя, вне боя оно всплывает ниже (style.css, v74)
     const layer = $('#screen .fxlayer');
     const at = 0.4 + Math.random() * 0.2;
     if (layer) {

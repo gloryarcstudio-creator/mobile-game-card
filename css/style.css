@@ -1573,3 +1573,23 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 .clsbtns { bottom: 10px; }
 #screen.scr-class[data-tight] :is(.clsabout, .clsrelic span, .clscards small, .diffhint) { line-height: 1.06; }
 #screen.scr-class[data-tight] :is(.clsrelic, .clscards, .diffbox) { margin-top: 3px; }
+
+/* ---------- v74: всплывающие плашки не закрывают важное ----------
+   В бою плашка достижения закрывала намерение врага, на экране награды наезжала на ленту «Победа!»: там она ниже ростом.
+   В событиях, разговорах и встречах сообщение («Новая карта: …») ложилось на кнопку «Дальше» или на ноги собеседника:
+   там оно выходит наверху, под шапкой. */
+#app.skin:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic)) .achtoast { top: 6px; min-height: 52px; }
+#app.skin:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic)) .achtoast .aport { width: 46px; height: 42px; }
+#app:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic)) .achtoast small { font-size: 11px; }
+#app:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic)) .achtoast b { font-size: 16px; }
+#app:has(#screen:is(.scr-event, .scr-talk, .scr-meet)) .toast { top: 100px; }
+/* Вне боя число героя («−5», «+12») всплывало прямо по надписи кнопки над панелью («Дальше», «Обновить товар»):
+   там оно появляется ниже и поднимается меньше, оставаясь над полоской здоровья. */
+#screen:not(.scr-combat) .float.hf { margin-top: 14px; margin-left: 50px; animation-name: floatlow; }   /* правее имени героя */
+@keyframes floatlow {
+  0% { transform: translate(-50%, 8px) scale(.5); opacity: 0; }
+  12% { transform: translate(-50%, -4px) scale(1.22); opacity: 1; }
+  24% { transform: translate(-50%, -6px) scale(1); }
+  62% { transform: translate(-50%, -14px) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -30px) scale(.96); opacity: 0; }
+}
