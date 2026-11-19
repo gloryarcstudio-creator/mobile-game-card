@@ -189,8 +189,17 @@
       for (const n of NEED[k] || [k]) if (left-- > 0) decode(n);
     }
   }
-  // файлы роликов качаются по одному, друг за другом, а не все разом
-  if (PX) setTimeout(() => { PX.files.reduce((q, _, i) => q.then(() => pack(i)), Promise.resolve()); warm(['bonk', 'shield', 'claw']); }, 2500);
+  // Файлы роликов (около мегабайта каждый, tools/art/split_fx.py) качаются по одному и только в «тихую» сеть:
+  // перед каждым ждём, пока придут картинки текущего экрана (Art.quiet). Раньше два файла по 5 МБ качались
+  // с первых секунд, и на телефонной сети фон, враг и рисунки карт первого боя появлялись с опозданием.
+  // Ролик, который нужен прямо сейчас (decode), свой файл берёт сразу, без очереди.
+  if (PX) {
+    const quiet = () => (window.Art && window.Art.quiet ? window.Art.quiet() : Promise.resolve());
+    setTimeout(() => {
+      quiet().then(() => { warm(['bonk', 'shield', 'claw']); });
+      PX.files.reduce((q, _, i) => q.then(quiet).then(() => pack(i)).then(() => new Promise((r) => setTimeout(r, 400))), Promise.resolve());
+    }, 2500);
+  }
 
   // рисунок ролика для spawn и fly. w — сторона кадра на экране; ay — какая доля высоты кадра стоит в точке
   // (по умолчанию середина, BASE — рисунок стоит на земле); dur — длительность, delay — задержка, loop — по кругу

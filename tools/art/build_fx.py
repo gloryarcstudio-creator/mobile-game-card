@@ -30,7 +30,8 @@ ONLY = args[2:]
 
 FS, COLS = 200, 5      # frame size and columns of a clip atlas
 WORK = 720             # frames are keyed at this size, then reduced
-DIR = 'fx3'            # bump when clips change: published pages cache files by path
+DIR = 'fx5'            # bump when clips change: published pages cache files by path. After building run
+                       # tools/art/split_fx.py: it cuts the packs into ~1 MB files in the next folder (fx6); then delete this one
 
 def V(kind, **o): return dict(src=kind, sheet=False, **o)
 def S(kind, **o): return dict(src=kind, sheet=True, **o)

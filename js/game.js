@@ -765,6 +765,9 @@
     SND.music('title');
     const s = loadSave();
     const info = s && `${CLASSES[s.run.cls || 'lamp'].name} · ${DIFFICULTIES[diffOf(s.run)].name} · ${tr('ур. {n}', { n: s.run.step + 1 })} · ${s.run.hp}/${s.run.maxHp} HP`;
+    // пока игрок на титуле, скачиваем экран выбора героя и страницу вступления: на медленной сети
+    // портреты героев появлялись через секунду, а текст вступления стоял без пергамента под ним
+    if (Art.warm) Art.warm({ ui: ['tile', 'panel', 'parch', 'back'], faces: Object.keys(CLASSES).map((k) => CLASSES[k].look), heroes: [CLASSES[SETTINGS.cls] ? CLASSES[SETTINGS.cls].look : 'lamp'], pics: ['story_intro'] });
     screen.className = 'scr-title';
     screen.innerHTML = `
       <div class="logo"><small>${tr('почтовая сказка')}</small><h1${STORY.title.length > 14 ? ' class="long"' : ''}>${STORY.title}</h1></div>
@@ -1356,7 +1359,7 @@
     hideOverlay();
     SND.music('title');
     // пока игрок выбирает героя, скачиваем первую улицу и рамки карты пути
-    if (Art.warm) Art.warm({ scene: STORY.sky === 'night' ? 'night' : STAGES[0].scene, ui: ['topbar', 'mapcard', 'herobar', 'tile'] });
+    if (Art.warm) Art.warm({ pics: ['story_intro'], scene: STORY.sky === 'night' ? 'night' : STAGES[0].scene, ui: ['parch', 'topbar', 'mapcard', 'herobar', 'tile'], heroes: [CLASSES[sel].look] });
     const h = CLASSES[sel];
     const r = RELICS[h.relic];
     const own = heroCards(sel);
@@ -1600,6 +1603,7 @@
         places: [...['shop', 'rest', 'chest', 'meet'].filter(has), ...(ch.some((o) => o.enemy) ? ['talk'] : [])],
         ui: ['f_atk', 'f_skill', 'f_charm', 'f_status', 'bubble', 'scroll', 'row', 'parch'],
         cards: run.deck.map((c) => c.id), intents: true,
+        pics: ch.filter((o) => o.t === 'event').map((o) => { const ev = EVENTS.find((e) => e.id === o.ev); return ev && EV_PIC[ev.art]; }).filter((k) => k && picFits(k)),
       });
     }
   }
@@ -3544,6 +3548,11 @@
     app.querySelectorAll('#bg image').forEach((x) => urls.add(x.getAttribute('href')));
     screen.querySelectorAll('img').forEach((x) => urls.add(x.getAttribute('src')));
     screen.querySelectorAll('[style*="url("]').forEach((x) => { const m = /url\(["']?([^"')]+)/.exec(x.getAttribute('style')); if (m) urls.add(m[1]); });
+    // и рамки интерфейса (кнопки, панели, пергамент): без них первые экраны стояли голым текстом на фоне
+    for (const n of app.style) {
+      if (!n.startsWith('--ui-') || (n.startsWith('--ui-logo_') && n !== `--ui-logo_${window.I18N ? window.I18N.lang : 'ru'}`)) continue;
+      const m = /url\(["']?([^"')]+)/.exec(app.style.getPropertyValue(n)); if (m) urls.add(m[1]);
+    }
     let left = 0; let gone = false;
     const out = () => { if (gone) return; gone = true; boot.classList.add('out'); setTimeout(() => boot.remove(), 500); };
     urls.forEach((u) => { if (!u) return; const im = new Image(); left++; im.onload = im.onerror = () => { if (--left <= 0) out(); }; im.src = u; });

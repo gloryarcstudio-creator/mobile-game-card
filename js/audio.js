@@ -248,9 +248,13 @@
   const packed = {}, decoded = new Map(), pos = {};
   let voice = null, seq = 0;
 
-  function fetchTrack(name) {
+  // Музыка весит по полтора мегабайта на дорожку: её файл ждёт, пока придут картинки экрана (Art.quiet),
+  // иначе на телефонной сети она занимала канал, и экран дорисовывался с опозданием. Дорожка, которая должна
+  // звучать сейчас, ждёт недолго (wait мс), запас наперёд ждёт дольше и качается по одному файлу.
+  const quietNet = (wait) => (window.Art && window.Art.quiet ? window.Art.quiet(wait) : Promise.resolve());
+  function fetchTrack(name, wait = 4000) {
     if (!packed[name]) {
-      packed[name] = fetch(fileUrl(name))
+      packed[name] = quietNet(wait).then(() => fetch(fileUrl(name), { priority: 'low' }))
         .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
         .catch((e) => { delete packed[name]; throw e; });
     }
@@ -302,7 +306,7 @@
       g.gain.linearRampToValueAtTime(1, t + (off ? 0.8 : 0.04));
       src.start(t, off);
       voice = { name, src, g, t0: t, off, a, b };
-      (NEXT[name] || []).filter(hasFile).reduce((q, n) => q.then(() => fetchTrack(n)).catch(() => {}), Promise.resolve());
+      (NEXT[name] || []).filter(hasFile).reduce((q, n) => q.then(() => fetchTrack(n, 9000)).catch(() => {}), Promise.resolve());
     }).catch(() => { if (my === seq && current === name) startSynth(name); });
   }
 

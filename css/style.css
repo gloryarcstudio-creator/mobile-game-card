@@ -1647,3 +1647,6 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 /* ореолы света появляются, когда картинка фона уже загрузилась */
 .bg-lights { opacity: 0; transition: opacity .6s ease-out; }
 .bg-lights.on { opacity: 1; }
+/* Пока картинка пергамента не пришла (медленная сеть), под текстом лежит простой лист того же цвета:
+   раньше тёмные буквы стояли прямо на фоне. Лист чуть меньше рамки и целиком прячется под ней */
+#app.skin .page, #app.skin .ev-box { background: linear-gradient(#ead9b6, #ead9b6) 50% 50% / calc(100% - 14px) calc(100% - 12px) no-repeat; }

@@ -51,7 +51,10 @@
     // Рамки стоят фоном в CSS, а фон, который не пришёл из-за сбоя сети, браузер сам не перезапрашивает:
     // кнопки и строки оставались без рамок до перезапуска. Поэтому каждую рамку по очереди загружаем сами
     // (заодно они готовы до первого показа); не пришла, пробуем снова, а получив, подставляем адрес заново.
-    const names = [...UI].filter((n) => !/^logo_/.test(n) || n === `logo_${(window.I18N && window.I18N.lang) || 'ru'}`);
+    // по порядку первого показа: титул, выбор героя, вступление, карта пути, бой
+    const FIRST = ['btn_red', 'btn_dark', 'round', 'panel', 'tile', 'back', 'parch', 'topbar', 'herobar', 'mapcard', 'scroll', 'row', 'bubble'];
+    const names = [...UI].filter((n) => !/^logo_/.test(n) || n === `logo_${(window.I18N && window.I18N.lang) || 'ru'}`)
+      .sort((x, y) => (/^logo_/.test(y) - /^logo_/.test(x)) || ((FIRST.indexOf(x) + 99) % 99) - ((FIRST.indexOf(y) + 99) % 99));
     const check = (i, tries = 0) => {
       const n = names[i];
       if (!n) return;
@@ -287,7 +290,36 @@
     if (!u) { warming = false; return; }
     fetch(u, { priority: 'low' }).then((r) => r.blob()).catch(() => { warmed.delete(u); }).then(() => setTimeout(warmNext, 20));
   }
-  /* w: { enemies: [id], places: ['shop'|'rest'|…], scene: 'town'|…, ui: [имя], cards: [id], intents: true } */
+  /* Тихая сеть: обещание выполняется, когда картинки текущего экрана пришли и очередь загрузки наперёд пуста
+     (или вышло время wait). Тяжёлые фоновые загрузки (музыка, пакеты роликов эффектов) ждут его перед каждым
+     файлом: на телефонной сети они занимали канал, и фон, рисунки карт и враг появлялись с опозданием. */
+  const seenPic = new Set(); const probing = new Set();
+  function picsPending() {
+    if (warming || warmQ.length) return true;
+    if ([...document.querySelectorAll('#app img')].some((im) => !im.complete)) return true;
+    let wait = false;
+    document.querySelectorAll('#app image').forEach((el) => {
+      const u = el.getAttribute('href');
+      if (!u || seenPic.has(u)) return;
+      wait = true;
+      if (probing.has(u)) return;
+      probing.add(u);
+      const im = new Image();
+      im.onload = im.onerror = () => { probing.delete(u); seenPic.add(u); };
+      im.src = u;
+    });
+    return wait || Object.values(imgs).some((im) => im && !im.ok && (im.tries || 0) < 3);
+  }
+  Art.quiet = (wait = 8000) => new Promise((res) => {
+    const t0 = performance.now(); let calm = 0;
+    const tick = () => {
+      calm = picsPending() ? 0 : calm + 1;
+      if (calm >= 2 || performance.now() - t0 > wait) res(); else setTimeout(tick, 350);
+    };
+    setTimeout(tick, 60);
+  });
+  /* w: { enemies: [id], places: ['shop'|'rest'|…], scene: 'town'|…, ui: [имя], cards: [id], intents: true,
+     faces: [герой], heroes: [герой], pics: [картинка книги или события] } */
   Art.warm = (w = {}) => {
     if (!window.fetch || (navigator.connection && navigator.connection.saveData)) return;
     const live = (w.enemies || []).filter((id) => AN[id] && AN[id].idle && S.enemy.has(id));
@@ -298,6 +330,9 @@
       ...(w.scene ? (KEYS[w.scene] || KEYS.town).filter((k) => S.bg.has(k)).slice(0, 1).map((k) => url(`bg/${k}`)) : []),
       ...[...new Set(w.cards || [])].filter((id) => S.card.has(id)).map((id) => url(`c/${id}`)),
       ...(w.intents ? [...S.intent].map((k) => url(`it/${k}`)) : []),
+      ...(w.faces || []).filter((k) => S.face.has(k)).map((k) => url(`h/${k}_face`)),
+      ...(w.heroes || []).filter((k) => S.hero.has(k)).map((k) => url(`h/${k}`)),
+      ...(w.pics || []).filter((k) => S.pic.has(k)).map((k) => url(`pic/${k}`)),
       ...live.flatMap((id) => parts(AN[id]).map((pt) => atlasUrl(id, pt))),
     ];
     list.forEach((u) => { if (!warmed.has(u) && !imgs[u]) { warmed.add(u); warmQ.push(u); } });
