@@ -126,15 +126,38 @@
   // На нарисованном фоне камера подстраивается под того, кто стоит на экране:
   // снег с картинки встаёт ему под ноги (враг в бою, собеседник, сундук, ёж в лавке)
   const STANDS = '.enemy, .talk-art, .chest, .shopkeeper, .ev-art, .title-hero';
-  function groundCam() {
+  // Прежний вид фона тает поверх нового: и когда сменилась сама картинка, и когда та же картинка встала иначе
+  // (в бою она поднята к ногам врага, на награде и карте пути стоит целиком). Без этого сцена прыгала рывком.
+  const camY = (s) => { const m = /translateY\((-?[\d.]+)px\)/.exec(s || ''); return m ? +m[1] : 0; };
+  function bgGhost(html, cam) {
+    app.querySelectorAll('.bg-ghost').forEach((x) => x.remove());
+    const ghost = document.createElement('div');
+    ghost.className = 'bg-ghost'; ghost.innerHTML = html;
+    if (cam) {
+      // снимок сделан уже с новой постановкой: возвращаем ему прежнюю
+      const g = ghost.querySelector('.bg-cam'); const low = g && g.querySelector('.bg-low'); const fade = low && low.querySelector('.bg-fade'); const li = ghost.querySelector('.bg-lights');
+      if (g) g.style.transform = cam.t;
+      if (li) li.style.transform = cam.t;
+      if (low) { if (cam.l) low.setAttribute('transform', cam.l); else low.removeAttribute('transform'); }
+      if (fade) fade.style.display = cam.f;
+    }
+    if (SETTINGS.fast) ghost.style.animationDuration = '.2s';
+    $('#bg').after(ghost);
+    setTimeout(() => ghost.remove(), SETTINGS.fast ? 220 : 480);
+  }
+  function groundCam(quiet) {
     if (!Art.groundCam) return;
+    const bgEl = $('#bg');
+    const g = bgEl.querySelector('.bg-cam'); const low = g && g.querySelector('.bg-low'); const fade = low && low.querySelector('.bg-fade');
+    const was = g ? { t: g.style.transform, l: low ? low.getAttribute('transform') : null, f: fade ? fade.style.display : '' } : null;
     const el = screen.querySelector(STANDS);
     let y = null;
     if (el && el.offsetHeight) {
       y = el.offsetHeight;
       for (let n = el; n && n !== app; n = n.offsetParent) y += n.offsetTop;
     }
-    Art.groundCam($('#bg'), y);
+    Art.groundCam(bgEl, y);
+    if (was && !quiet && Math.abs(camY(was.t) - camY(g.style.transform)) > 24 && !app.querySelector('.bg-ghost')) bgGhost(bgEl.innerHTML, was);
   }
   new MutationObserver(() => { app.classList.toggle('ground', screen.className === 'scr-combat'); groundCam(); })
     .observe(screen, { attributes: true, attributeFilter: ['class'], childList: true });
@@ -366,21 +389,16 @@
     app.classList.toggle('painted-bg', !!painted);
     const bgEl = $('#bg');
     const was = bgEl.querySelector('image'); const wasHref = was && was.getAttribute('href'); const wasHTML = wasHref ? bgEl.innerHTML : '';
+    const wasCam = bgEl.querySelector('.bg-cam'); const wasY = wasCam ? camY(wasCam.style.transform) : 0;
     bgEl.innerHTML = painted || Art.background(p, lamps, g.scene, approach);
-    if (painted) { groundCam(); Art.lightsOn(bgEl); }
+    if (painted) { groundCam(true); Art.lightsOn(bgEl); }
     // свет сцены: по нему враги в бою слегка тонируются под закат или ночь (см. data-light в style.css)
     const bk = painted ? ($('#bg svg.painted') || {}).dataset.k || '' : '';
     app.dataset.light = /night|final/.test(bk) ? 'night' : /outskirts/.test(bk) ? 'dusk' : /sunset/.test(bk) ? 'sunset' : /town_mid/.test(bk) ? 'eve' : 'day';
     const pic = painted && $('#bg image');
     // сцена сменилась: прежняя картинка тает поверх новой, а не обрывается
-    if (pic && wasHref && wasHref !== pic.getAttribute('href')) {
-      app.querySelectorAll('.bg-ghost').forEach((x) => x.remove());
-      const ghost = document.createElement('div');
-      ghost.className = 'bg-ghost'; ghost.innerHTML = wasHTML;
-      if (SETTINGS.fast) ghost.style.animationDuration = '.2s';
-      bgEl.after(ghost);
-      setTimeout(() => ghost.remove(), SETTINGS.fast ? 220 : 480);
-    }
+    const nowCam = pic && bgEl.querySelector('.bg-cam');
+    if (pic && wasHref && (wasHref !== pic.getAttribute('href') || (Math.abs(wasY - (nowCam ? camY(nowCam.style.transform) : 0)) > 24 && !app.querySelector('.bg-ghost')))) bgGhost(wasHTML);
     backdrop.style.backgroundImage = pic ? `url("${pic.getAttribute('href')}")` : '';
     backdrop.style.backgroundColor = p.skyMid || '';
     app.style.setProperty('--sky-top', p.skyTop);
