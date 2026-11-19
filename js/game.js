@@ -2205,7 +2205,7 @@
   }
 
   /* ================= БОЙ ================= */
-  const apiStatic = { state: null, played: 0, blockNow: 0, dmgText: (n) => `${n}` };
+  const apiStatic = { state: null, played: 0, blockNow: 0, dmgText: (n) => `${n}`, blkText: (n) => `${n}`, blkNum: (n) => n, thornsGain: (n) => n };
   const api = {
     get state() { return C; },
     get played() { return C ? C.playedTurn : 0; },
@@ -2213,10 +2213,16 @@
     get enemyDead() { return C.enemy.hp <= 0; },
     // название предыдущей карты хода для Копирки
     get lastCard() { return C && C.last && C.last.id !== 'carbon' ? cardName(C.last) : null; },
-    dmgText(base) {
-      const v = calcDmg(base);
+    // spent: карта сначала тратит Огоньки, поэтому их прибавка к урону в расчёт не идёт
+    dmgText(base, spent) {
+      const v = calcDmg(spent ? base - flameBonus() * C.flame : base);
       return v > base ? `<b class="up">${v}</b>` : v < base ? `<b class="down">${v}</b>` : `${v}`;
     },
+    // защита, которую карта даст на самом деле: под Хрупкостью число на карте меньше и подсвечено
+    blkNum: (n) => frailed(n),
+    blkText(n) { const v = frailed(n); return v < n ? `<b class="down">${v}</b>` : `${n}`; },
+    // сколько Шипов прибавит карта (Еловый венок удваивает)
+    thornsGain: (n) => (hasRelic('wreath') ? n * 2 : n),
     async attack(base, hits = 1) {
       const kind = C.fx || 'bonk';
       for (let h = 0; h < hits; h++) {

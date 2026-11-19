@@ -22,7 +22,7 @@
     },
     guard: {
       name: 'Ставень', cost: 1, type: 'skill', rarity: 'start', art: 'guard',
-      desc: (g, u) => `Получить ${u ? 8 : 5} защиты.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 8 : 5)} защиты.`,
       play: async (g, u) => g.block(u ? 8 : 5),
     },
     kindle: {
@@ -44,7 +44,7 @@
     },
     cloak: {
       name: 'Тёплый плащ', cost: 1, type: 'skill', rarity: 'common', art: 'cloak',
-      desc: (g, u) => `Получить ${u ? 11 : 8} защиты.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 11 : 8)} защиты.`,
       play: async (g, u) => g.block(u ? 11 : 8),
     },
     tea: {
@@ -64,7 +64,7 @@
     },
     mirror: {
       name: 'Зеркальце', cost: 1, type: 'skill', rarity: 'common', art: 'mirror',
-      desc: (g, u) => `Получить ${u ? 8 : 5} защиты. +1 Огонёк.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 8 : 5)} защиты. +1 Огонёк.`,
       play: async (g, u) => { g.block(u ? 8 : 5); await g.flame(1); },
     },
     heavy: {
@@ -74,7 +74,7 @@
     },
     wax: {
       name: 'Капля воска', cost: 1, type: 'skill', rarity: 'common', art: 'wax',
-      desc: (g, u) => `Получить ${u ? 8 : 6} защиты. Враг Ослаблен на ${u ? 2 : 1} ход${u ? 'а' : ''}.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 8 : 6)} защиты. Враг Ослаблен на ${u ? 2 : 1} ход${u ? 'а' : ''}.`,
       play: async (g, u) => { g.block(u ? 8 : 6); g.weak(u ? 2 : 1); },
     },
     ember: {
@@ -84,7 +84,7 @@
     },
     snowkick: {
       name: 'Пинок сугроба', cost: 1, type: 'atk', rarity: 'common', art: 'snowkick',
-      desc: (g, u) => `Нанести ${g.dmgText(u ? 7 : 5)} урона. Получить ${u ? 7 : 5} защиты.`,
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 7 : 5)} урона. Получить ${g.blkText(u ? 7 : 5)} защиты.`,
       play: async (g, u) => { await g.attack(u ? 7 : 5); g.block(u ? 7 : 5); },
     },
     payback: {
@@ -115,7 +115,7 @@
     },
     heavybag: {
       name: 'Тяжёлая сумка', cost: 2, type: 'atk', rarity: 'common', art: 'heavybag',
-      desc: (g, u) => `Нанести ${g.dmgText(u ? 13 : 10)} урона. Получить ${u ? 8 : 6} защиты.`,
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 13 : 10)} урона. Получить ${g.blkText(u ? 8 : 6)} защиты.`,
       play: async (g, u) => { await g.attack(u ? 13 : 10); g.block(u ? 8 : 6); },
     },
     sbiten: {
@@ -130,12 +130,12 @@
     },
     hornblow: {
       name: 'Сигнал рожка', cost: 1, type: 'skill', rarity: 'common', art: 'hornblow',
-      desc: (g, u) => `Получить ${u ? 7 : 5} защиты. +${u ? 3 : 2} Решимость до конца хода.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 7 : 5)} защиты. +${u ? 3 : 2} Решимость до конца хода.`,
       play: async (g, u) => { g.block(u ? 7 : 5); g.rush(u ? 3 : 2); },
     },
     patch: {
       name: 'Заплатка', cost: 1, type: 'skill', rarity: 'common', art: 'patch',
-      desc: (g, u) => `Получить ${u ? 9 : 6} защиты. Сжечь помехи в руке.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 9 : 6)} защиты. Сжечь помехи в руке.`,
       play: async (g, u) => { g.block(u ? 9 : 6); g.exhaustHand((c) => c.type === 'status'); },
     },
 
@@ -194,12 +194,12 @@
     },
     prickly: {
       name: 'Колючий шарф', cost: 1, type: 'skill', rarity: 'uncommon', art: 'prickly',
-      desc: (g, u) => `Получить ${u ? 6 : 4} защиты. Шипы ${u ? 3 : 2}.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 6 : 4)} защиты. Шипы ${u ? 3 : 2}.`,
       play: async (g, u) => { g.block(u ? 6 : 4); g.thorns(u ? 3 : 2); },
     },
     frostlace: {
       name: 'Морозный узор', cost: 1, type: 'skill', rarity: 'uncommon', art: 'frostlace',
-      desc: (g, u) => `Враг теряет ${u ? 3 : 2} Силы. Получить ${u ? 6 : 4} защиты.`,
+      desc: (g, u) => `Враг теряет ${u ? 3 : 2} Силы. Получить ${g.blkText(u ? 6 : 4)} защиты.`,
       play: async (g, u) => { g.chill(u ? 3 : 2); g.block(u ? 6 : 4); },
     },
     parcel: {
@@ -219,7 +219,7 @@
     },
     umbrella: {
       name: 'Зонтик', cost: 1, type: 'skill', rarity: 'common', art: 'umbrella', retain: true,
-      desc: (g, u) => `Получить ${u ? 10 : 7} защиты.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 10 : 7)} защиты.`,
       play: async (g, u) => g.block(u ? 10 : 7),
     },
     blotter: {
@@ -241,7 +241,7 @@
     // ---------- редкие ----------
     palm: {
       name: 'Жар-ладонь', cost: 1, type: 'atk', rarity: 'rare', art: 'palm',
-      desc: (g, u) => `Потратить все Огоньки. ${u ? 9 : 7} урона за каждый${g.state ? ` (${(u ? 9 : 7) * g.state.flame})` : ''}.`,
+      desc: (g, u) => `Потратить все Огоньки. ${u ? 9 : 7} урона за каждый${g.state ? ` (${g.state.flame ? g.dmgText((u ? 9 : 7) * g.state.flame, true) : 0})` : ''}.`,
       play: async (g, u) => { const n = g.consumeFlame(); if (n > 0) await g.attack((u ? 9 : 7) * n); },
     },
     shadow: {
@@ -287,7 +287,7 @@
     },
     drift: {
       name: 'Сугроб', cost: 1, upCost: 0, type: 'skill', rarity: 'uncommon', art: 'drift',
-      desc: (g) => `Удвоить защиту${g.state ? ` (${g.blockNow} → ${g.blockNow * 2})` : ''}.`,
+      desc: (g) => `Удвоить защиту${g.state ? ` (${g.blockNow} → ${g.blockNow + g.blkNum(g.blockNow)})` : ''}.`,
       play: async (g) => g.doubleBlock(),
     },
     pockethog: {
@@ -365,7 +365,7 @@
     },
     iceprison: {
       name: 'Ледяная темница', cost: 2, type: 'skill', rarity: 'epic', art: 'iceprison', exhaust: true,
-      desc: (g, u) => `Получить ${u ? 14 : 10} защиты. Враг теряет 4 Силы и Ослаблен на 3 хода.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 14 : 10)} защиты. Враг теряет 4 Силы и Ослаблен на 3 хода.`,
       play: async (g, u) => { g.block(u ? 14 : 10); g.chill(4); g.weak(3); },
     },
     bonfire: {
@@ -411,7 +411,7 @@
     },
     lampglass: {
       name: 'Ламповое стекло', cost: 1, type: 'skill', rarity: 'common', art: 'lampglass', cls: 'lamp',
-      desc: (g, u) => `Получить ${u ? 5 : 3} защиты и ещё ${u ? 3 : 2} за каждый Огонёк${g.state ? ` (${(u ? 5 : 3) + (u ? 3 : 2) * g.state.flame})` : ''}.`,
+      desc: (g, u) => `Получить ${u ? 5 : 3} защиты и ещё ${u ? 3 : 2} за каждый Огонёк${g.state ? ` (${g.blkText((u ? 5 : 3) + (u ? 3 : 2) * g.state.flame)})` : ''}.`,
       play: async (g, u) => g.block((u ? 5 : 3) + (u ? 3 : 2) * g.state.flame),
     },
     beam: {
@@ -427,7 +427,7 @@
     },
     express: {
       name: 'Экспресс', cost: 1, type: 'skill', rarity: 'common', art: 'express', cls: 'courier',
-      desc: (g, u) => `Получить ${u ? 7 : 4} защиты. Доставка: +1 энергия и 2 карты.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 7 : 4)} защиты. Доставка: +1 энергия и 2 карты.`,
       play: async (g, u) => { g.block(u ? 7 : 4); g.deliver('Экспресс', async (d) => { d.energy(1); d.draw(2); }); },
     },
     rushmail: {
@@ -438,12 +438,12 @@
     // Марфа, сторожиха моста: защита, Шипы и мороз
     icewall: {
       name: 'Ледяная стена', cost: 2, type: 'skill', rarity: 'common', art: 'icewall', cls: 'guard',
-      desc: (g, u) => `Получить ${u ? 17 : 13} защиты. Враг теряет ${u ? 2 : 1} Силы.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 17 : 13)} защиты. Враг теряет ${u ? 2 : 1} Силы.`,
       play: async (g, u) => { g.block(u ? 17 : 13); g.chill(u ? 2 : 1); },
     },
     hedge: {
       name: 'Колючая изгородь', cost: 1, type: 'skill', rarity: 'common', art: 'hedge', cls: 'guard',
-      desc: (g, u) => `Шипы ${u ? 3 : 2}. Получить защиту, равную двойным Шипам${g.state ? ` (${(g.state.thorns + (u ? 3 : 2)) * 2})` : ''}.`,
+      desc: (g, u) => `Шипы ${u ? 3 : 2}. Получить защиту, равную двойным Шипам${g.state ? ` (${g.blkText((g.state.thorns + g.thornsGain(u ? 3 : 2)) * 2)})` : ''}.`,
       play: async (g, u) => { g.thorns(u ? 3 : 2); g.block(g.state.thorns * 2); },
     },
     standfast: {
@@ -471,7 +471,7 @@
     // Груня, пряничница: Пряники прямо в бою
     gingerbread: {
       name: 'Пряник', cost: 0, type: 'skill', rarity: 'token', art: 'gingerbread', cls: 'baker', exhaust: true,
-      desc: (g, u) => `Нанести ${g.dmgText(u ? 5 : 3)} урона. Получить ${u ? 5 : 3} защиты.`,
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 5 : 3)} урона. Получить ${g.blkText(u ? 5 : 3)} защиты.`,
       play: async (g, u) => { await g.attack(u ? 5 : 3); g.block(u ? 5 : 3); },
     },
     dough: {
@@ -486,7 +486,7 @@
     },
     glaze: {
       name: 'Сахарная глазурь', cost: 1, type: 'skill', rarity: 'uncommon', art: 'glaze', cls: 'baker',
-      desc: (g, u) => `Получить ${u ? 9 : 6} защиты. До конца боя все Пряники улучшены.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 9 : 6)} защиты. До конца боя все Пряники улучшены.`,
       play: async (g, u) => { g.block(u ? 9 : 6); g.glaze(); },
     },
     gingerhouse: {
@@ -503,7 +503,7 @@
     // Савва, точильщик: Заточка карт прямо в бою
     hone: {
       name: 'Править лезвие', cost: 1, type: 'skill', rarity: 'common', art: 'hone', cls: 'grinder',
-      desc: (g, u) => `Получить ${u ? 7 : 5} защиты. Заточить ${u ? 2 : 1} карт${u ? 'ы' : 'у'} в руке.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 7 : 5)} защиты. Заточить ${u ? 2 : 1} карт${u ? 'ы' : 'у'} в руке.`,
       play: async (g, u) => { g.block(u ? 7 : 5); g.sharpen(u ? 2 : 1); },
     },
     gritsparks: {
@@ -541,7 +541,7 @@
     },
     heel: {
       name: 'Рядом!', cost: 1, type: 'skill', rarity: 'common', art: 'heel', cls: 'shepherd',
-      desc: (g, u) => `Получить ${u ? 6 : 4} защиты и ещё столько, сколько Злости у Дружка${g.state ? ` (${(u ? 6 : 4) + g.state.dog})` : ''}.`,
+      desc: (g, u) => `Получить ${u ? 6 : 4} защиты и ещё столько, сколько Злости у Дружка${g.state ? ` (${g.blkText((u ? 6 : 4) + g.state.dog)})` : ''}.`,
       play: async (g, u) => g.block((u ? 6 : 4) + g.state.dog),
     },
     bone: {
@@ -567,7 +567,7 @@
     },
     chamomile: {
       name: 'Ромашковый отвар', cost: 1, type: 'skill', rarity: 'common', art: 'chamomile', cls: 'herbalist',
-      desc: (g, u) => `Получить ${u ? 7 : 5} защиты. Восстановить ${u ? 4 : 3} HP.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 7 : 5)} защиты. Восстановить ${u ? 4 : 3} HP.`,
       play: async (g, u) => { g.block(u ? 7 : 5); g.heal(u ? 4 : 3); },
     },
     wormwood: {

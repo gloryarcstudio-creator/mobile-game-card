@@ -43,7 +43,7 @@ async function bot({ jobs, diff, bal, diffo, noDef }) {
     };
     const g = {
       state: C, played: C.playedTurn, get blockNow() { return C.block + R.blk; }, enemyDead: false, lastCard: C.last ? 'x' : null,
-      dmgText: (n) => `${n}`,
+      dmgText: (n) => `${n}`, blkText: (n) => `${n}`, blkNum: (n) => n, thornsGain: (n) => n,
       attack: async (base, hits = 1) => { for (let h = 0; h < hits; h++) { let d = calc(base); if (C.enemy.mist > 0 && d > C.enemy.mist) d = C.enemy.mist; R.dmg += d; R.hits++; if (has('sootbroom')) R.burn += 1; } },
       block: (n) => { if (C.frail > 0) n = Math.floor(n * 0.75); R.blk += n; },
       flame: async (n) => { R.flame += n; flame += n; let guard = 0; while (flame >= fm && guard++ < 20) { flame -= fm; R.dmg += burstDmg(); R.flame -= 1; if (has('ivalamp')) flame += 1; if (has('wickcutter')) R.blk += 4; if (has('stub')) R.heal += 2; } },
@@ -142,7 +142,7 @@ async function bot({ jobs, diff, bal, diffo, noDef }) {
 
   // ---------- решения вне боя ----------
   // колода собирается с оглядкой на защиту: когда её мало, защитные карты ценнее, как у живого игрока
-  const DEF = {}; for (const [id, cd] of Object.entries(D.CARDS)) { let d = ''; try { d = cd.desc({ dmgText: (n) => n, state: null }, false, {}); } catch (e) {} DEF[id] = /защит/i.test(String(d)); }
+  const DEF = {}; for (const [id, cd] of Object.entries(D.CARDS)) { let d = ''; try { d = cd.desc({ dmgText: (n) => n, blkText: (n) => n, blkNum: (n) => n, thornsGain: (n) => n, state: null }, false, {}); } catch (e) {} DEF[id] = /защит/i.test(String(d)); }
   const defShare = () => { const d = G.run.deck; return d.filter((c) => DEF[c.id]).length / Math.max(1, d.length); };
   const cardScore = (id, draft) => {
     const h = D.CLASSES[G.run.cls]; const cd = D.CARDS[id];
