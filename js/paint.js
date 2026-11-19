@@ -160,18 +160,30 @@
     if (imgs[u]) return imgs[u];
     const im = new Image();
     imgs[u] = im;
-    im.ok = false;
+    im.ok = false; im.u = u;
     const done = () => { im.ok = true; };
-    im.onload = () => { if (im.decode) im.decode().then(done, done); else done(); };
-    im.src = u;
+    const plain = () => { im.onload = () => { if (im.decode) im.decode().then(done, done); else done(); }; im.src = u; };
+    // Атлас берём готовой растровой копией: файл расшифровывается в фоне, а не в кадре.
+    // Обычную картинку браузер расшифровывал при первом показе каждого атласа, и на слабом телефоне
+    // бой замирал на четверть секунды в начале и на первом ударе.
+    if (window.createImageBitmap && window.fetch && u.includes(`/${A.ea || 'ea'}/`)) {
+      fetch(u).then((r) => (r.ok ? r.blob() : Promise.reject(new Error('нет файла')))).then((b) => createImageBitmap(b)).then((bmp) => {
+        if (imgs[u] === im) im.bmp = bmp; else if (bmp.close) bmp.close(); // пока готовили, атлас уже выгрузили
+        done();
+      }, plain);
+    } else plain();
     return im;
   }
+  const pix = (im) => im.bmp || im;
   const atlasUrl = (id, part) => url(`${A.ea || 'ea'}/${id}_${part}`); // папка меняется при пересборке атласов
   Art.hasLive = (id) => !!(AN[id] && AN[id].idle);
   // атласы прежних врагов выгружаем: каждый занимает в памяти десятки мегабайт
   function keepOnly(ids) {
     for (const u of Object.keys(imgs)) {
-      if (u.includes(`/${A.ea || 'ea'}/`) && !ids.some((i) => u.includes(`/${i}_`))) delete imgs[u];
+      if (u.includes(`/${A.ea || 'ea'}/`) && !ids.some((i) => u.includes(`/${i}_`))) {
+        if (imgs[u].bmp && imgs[u].bmp.close) imgs[u].bmp.close();
+        delete imgs[u];
+      }
     }
   }
   const parts = (m) => [...new Set(Object.values(m.act || {}).map((a) => a.f || 'act'))];
@@ -239,7 +251,7 @@
       if (u >= 1 || !st.snap) st.xd = 0; else old = 1 - u * u * (3 - 2 * u);
     }
     layers = layers.filter((l) => l.w > 0.004);
-    const key = `${old.toFixed(3)};${layers.map((l) => `${l.im.src}|${l.sx}|${l.sy}|${l.w.toFixed(3)}`).join(';')}`;
+    const key = `${old.toFixed(3)};${layers.map((l) => `${l.im.u}|${l.sx}|${l.sy}|${l.w.toFixed(3)}`).join(';')}`;
     if (cv._key === key) return;
     cv._key = key;
     st.pt = now;
@@ -253,7 +265,7 @@
     if (old > 0) { ctx.globalAlpha = old; ctx.drawImage(st.snap, 0, 0, W, H); }
     for (const l of layers) {
       ctx.globalAlpha = mix ? l.w * (1 - old) : 1;
-      ctx.drawImage(l.im, l.sx, l.sy, l.s, l.s, (W - d) / 2, fy, d, d);
+      ctx.drawImage(pix(l.im), l.sx, l.sy, l.s, l.s, (W - d) / 2, fy, d, d);
     }
     ctx.globalAlpha = 1;
     if (mix) ctx.globalCompositeOperation = 'source-over';

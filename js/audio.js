@@ -38,7 +38,9 @@
     const imp = ctx.createBuffer(2, len, ctx.sampleRate);
     for (let c = 0; c < 2; c++) {
       const d = imp.getChannelData(c);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6);
+      // огибающая меняется плавно: считаем её раз в 64 отсчёта, иначе первое касание на слабом телефоне заметно замирает
+      let env = 1;
+      for (let i = 0; i < len; i++) { if ((i & 63) === 0) env = Math.pow(1 - i / len, 2.6); d[i] = (Math.random() * 2 - 1) * env; }
     }
     conv.buffer = imp;
     const rg = ctx.createGain(); rg.gain.value = 0.32;

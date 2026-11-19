@@ -109,7 +109,9 @@
   const packs = []; const packText = [];
   function pack(i) {
     if (!packs[i]) {
-      packs[i] = fetch(`${window.ASSETS.base || 'assets/'}${PX.files[i]}`).then((r) => (r.ok ? r.text() : null)).catch(() => null);
+      // ролики эффектов тяжёлые (несколько мегабайт): качаем их с низким приоритетом, чтобы на медленной сети
+      // они не отнимали канал у картинок экрана и атласа первого врага; пока ролика нет, эффект рисуется кодом
+      packs[i] = fetch(`${window.ASSETS.base || 'assets/'}${PX.files[i]}`, { priority: 'low' }).then((r) => (r.ok ? r.text() : null)).catch(() => null);
       packs[i].then((t) => { if (t) packText[i] = t; else setTimeout(() => { packs[i] = null; }, 15000); });   // не скачался — попробуем позже
     }
     return packs[i];
@@ -180,7 +182,8 @@
       for (const n of NEED[k] || [k]) if (left-- > 0) decode(n);
     }
   }
-  if (PX) setTimeout(() => { PX.files.forEach((_, i) => pack(i)); warm(['bonk', 'shield', 'claw']); }, 2500);
+  // файлы роликов качаются по одному, друг за другом, а не все разом
+  if (PX) setTimeout(() => { PX.files.reduce((q, _, i) => q.then(() => pack(i)), Promise.resolve()); warm(['bonk', 'shield', 'claw']); }, 2500);
 
   // рисунок ролика для spawn и fly. w — сторона кадра на экране; ay — какая доля высоты кадра стоит в точке
   // (по умолчанию середина, BASE — рисунок стоит на земле); dur — длительность, delay — задержка, loop — по кругу
