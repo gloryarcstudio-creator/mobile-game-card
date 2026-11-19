@@ -1621,3 +1621,18 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 .fx.relicup.old { translate: calc(var(--slot, 1) * var(--dir, 1) * 46px) -8px; scale: .7; }
 .fx.relicup .relicpop b, .fx.relicup .relicpop .rays { transition: opacity .14s; }
 .fx.relicup.old .relicpop b, .fx.relicup.old .relicpop .rays { opacity: 0; }
+
+/* Живой свет фонарей и окон на нарисованных фонах: ореолы меняют только прозрачность (дёшево для телефона).
+   Снегопад выключен в настройках (экономия заряда) или система просит меньше движения: свет стоит ровно. */
+.bg-lights { position: absolute; inset: 0; pointer-events: none; }
+.bg-lights i { position: absolute; border-radius: 50%; opacity: .55; will-change: opacity;
+  background: radial-gradient(circle, rgba(255, 214, 140, .42) 0%, rgba(255, 180, 90, .2) 36%, rgba(255, 150, 50, 0) 70%);
+  animation: lampglow 4s ease-in-out infinite; }
+.bg-lights i.w { background: radial-gradient(circle, rgba(255, 200, 110, .3) 0%, rgba(255, 170, 80, .13) 40%, rgba(255, 150, 50, 0) 70%); }
+.bg-lights i.f { background: radial-gradient(circle, rgba(255, 190, 100, .34) 0%, rgba(255, 150, 60, .16) 40%, rgba(255, 130, 40, 0) 70%); animation-name: fireglow; }
+@keyframes lampglow { 0%, 100% { opacity: .3; } 21% { opacity: .8; } 36% { opacity: .5; } 54% { opacity: 1; } 70% { opacity: .62; } 86% { opacity: .9; } }
+@keyframes fireglow { 0%, 100% { opacity: .5; } 14% { opacity: .95; } 29% { opacity: .62; } 46% { opacity: 1; } 61% { opacity: .55; } 80% { opacity: .9; } }
+#app.calm .bg-lights i { animation: none; }
+@media (prefers-reduced-motion: reduce) { .bg-lights i { animation: none; } }
+.stats i.dot { font-style: normal; }
+.stats i.dot.brk { display: block; height: 0; overflow: hidden; }

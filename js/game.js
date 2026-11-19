@@ -685,7 +685,15 @@
     setTimeout(() => t.remove(), life);
   }
   // строка итогов: части не рвутся посередине, перенос только между ними
-  const statLine = (parts) => parts.map((x) => `<span>${x}</span>`).join(' · ');
+  const statLine = (parts) => parts.map((x) => `<span>${x}</span>`).join('<i class="dot"> · </i>');
+  // Строка итогов переносится: точка-разделитель не должна висеть в конце строки, на её месте просто перенос
+  function tidyStats() {
+    screen.querySelectorAll('.stats i.dot').forEach((d) => {
+      d.classList.remove('brk');
+      const a = d.previousElementSibling; const b = d.nextElementSibling;
+      if (a && b && b.offsetTop > a.offsetTop + 4) d.classList.add('brk');
+    });
+  }
 
   // Подсказка к значку (статус, намерение врага, талисман): пузырь рядом с тем, на что нажали, а не поверх него.
   // Висит столько, сколько нужно на чтение, и закрывается следующим касанием.
@@ -977,6 +985,7 @@
         saveJSON(SETTINGS_KEY, SETTINGS);
         if (b.dataset.set === 'snow' && SETTINGS.snow) snow.start();
         app.classList.toggle('fast', SETTINGS.fast);
+        app.classList.toggle('calm', !SETTINGS.snow);
         render();
         return;
       }
@@ -1438,6 +1447,7 @@
   /* Текст на другом языке бывает длиннее: если книжка с кнопками не помещается на экран,
      картинка в ней становится ниже (но не меньше 110px) */
   function fitBook() {
+    tidyStats();
     const art = screen.querySelector('.book-art');
     if (!art) return;
     art.style.height = '';
@@ -3345,6 +3355,7 @@
   /* Звук включается по первому касанию; шестерёнка в углу открывает настройки */
   window.addEventListener('pointerdown', () => SND.unlock(), { capture: true });
   app.classList.toggle('fast', SETTINGS.fast);
+  app.classList.toggle('calm', !SETTINGS.snow); // без снегопада и свет фонарей стоит ровно
   const gearBtn = $('#gear');
   gearBtn.innerHTML = uiIco('gear');
   gearBtn.setAttribute('aria-label', tr('Настройки'));

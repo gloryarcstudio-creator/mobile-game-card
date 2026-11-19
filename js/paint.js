@@ -132,6 +132,26 @@
   // Картинка лежит двумя кусками: всё выше линии снега и передний план ниже неё. Когда камера поднимает
   // картинку к ногам персонажа, передний план растягивается вниз (Art.groundCam), и снег доходит до низа
   // экрана. Раньше под картинкой оставалась ровная пустая полоса.
+  // Живой свет: мягкие ореолы поверх нарисованных фонарей и окон, они медленно «дышат» (стиль .bg-lights).
+  // [x, y, радиус, вид] на экране 400×860 без сдвига камеры; вид: 'w' окно (спокойнее), 'f' костёр (живее)
+  const LIGHTS = {
+    bg_stage1_town_day: [[362, 592, 22, 'w'], [10, 572, 20, 'w']],
+    bg_stage1_town_mid: [[58, 467, 40], [355, 598, 22, 'w'], [8, 575, 18, 'w']],
+    bg_stage1_town_sunset: [[41, 432, 38], [181, 425, 36], [303, 432, 36], [360, 585, 24, 'w'], [390, 492, 20]],
+    bg_stage2_outskirts_start: [[120, 467, 40], [290, 493, 28], [348, 537, 22, 'w'], [58, 455, 20, 'w']],
+    bg_stage2_outskirts_mid: [[83, 470, 34], [312, 478, 30], [179, 480, 30, 'w']],
+    bg_stage2_outskirts_night: [[70, 492, 40], [332, 515, 40], [163, 515, 36, 'w']],
+    bg_final_house: [[107, 507, 34], [297, 497, 34], [177, 492, 40, 'w']],
+    bg_title: [[82, 545, 36], [278, 572, 34], [30, 515, 22, 'w'], [338, 637, 22, 'w'], [380, 637, 22, 'w']],
+    scene_campfire: [[210, 585, 95, 'f'], [290, 248, 46], [22, 345, 34, 'w'], [392, 340, 30, 'w']],
+    scene_meet: [[243, 268, 46], [335, 318, 30, 'w'], [40, 478, 26, 'w']],
+    scene_shop: [[66, 205, 44], [392, 165, 20]],
+  };
+  function lightsHTML(k) {
+    const L = LIGHTS[k];
+    if (!L) return '';
+    return `<div class="bg-lights">${L.map(([x, y, r, kind], i) => `<i${kind ? ` class="${kind}"` : ''} style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px;animation-duration:${(kind === 'f' ? 1.5 : 3.7 + ((i * 1.37) % 2.1)).toFixed(2)}s;animation-delay:-${((i * 1.9) % 5).toFixed(2)}s"></i>`).join('')}</div>`;
+  }
   function paintBg(a, b, mix) {
     const c = (A.bgc || {})[mix > 0.5 && b ? b : a] || '#2a3350';
     const fa = FEET[a] || 690; const feet = b && mix > 0.001 ? fa + ((FEET[b] || 690) - fa) * mix : fa;
@@ -145,7 +165,7 @@
         <rect y="-300" width="400" height="1600" fill="${c}"/>
         <g clip-path="url(#bgTop)">${pics}</g>
         <g class="bg-low"><g clip-path="url(#bgLow)">${pics}<rect class="bg-fade" y="${BH - 90}" width="400" height="91" fill="url(#bgFade)"/></g></g>
-      </g></svg>`;
+      </g></svg>${b && mix > 0.001 ? '' : lightsHTML(a)}`;
   }
   /* opts: { scene: 'town'|'outskirts'|'night', t: 0..1 внутри стадии } или { place: 'rest'|'shop'|…|'final'|'title' } */
   Art.paintedBg = (opts = {}) => {
@@ -171,6 +191,8 @@
     const feet = +sv.dataset.feet || 690;
     const ty = y == null ? 0 : Math.min(0, y - feet);
     g.style.transform = ty ? `translateY(${ty.toFixed(1)}px)` : '';
+    const lights = root.querySelector('.bg-lights');
+    if (lights) lights.style.transform = g.style.transform; // ореолы едут вместе с картинкой
     const low = g.querySelector('.bg-low');
     if (low) {
       // во сколько раз растянуть снег ниже линии ног, чтобы низ картинки снова лёг на низ экрана
