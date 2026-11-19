@@ -2762,19 +2762,27 @@
   }
 
   // всплывающее число или слово. Живёт в слое эффектов, поверх вспышек: урон виден сразу, а не из-под удара
+  const floatRows = new Map();
   function floatText(host, text, cls) {
     if (!host) return;
     const f = document.createElement('div');
     f.className = `float ${cls}${host.classList.contains('hero-fx') ? ' hf' : ''}`; f.textContent = text;   // hf: число героя, вне боя оно всплывает ниже (style.css, v74)
     const layer = $('#screen .fxlayer');
     const at = 0.4 + Math.random() * 0.2;
+    // Надписи, которые появились почти разом (укус и его урон, несколько чар в начале хода), встают лесенкой,
+    // каждая на свою строку выше прежней: раньше они ложились одна на другую и не читались
+    const now = performance.now(); const key = host.className;
+    const live = (floatRows.get(key) || []).filter((x) => now - x.at < 420);
+    let row = 0; while (row < 4 && live.some((x) => x.row === row)) row++;
+    if (row === 4) row = live.reduce((a, b) => (a.at <= b.at ? a : b)).row;   // выше четырёх строк не растём: там намерения врага
+    live.push({ at: now, row }); floatRows.set(key, live);
     if (layer) {
       const r = host.getBoundingClientRect(); const s = layer.getBoundingClientRect(); const k = 400 / (s.width || 400);
-      f.style.top = `${Math.round((r.top - s.top + r.height * 0.4) * k)}px`;
+      f.style.top = `${Math.round((r.top - s.top + r.height * 0.4) * k) - row * 34}px`;
       layer.appendChild(f);
       const half = f.offsetWidth / 2 + 6;          // длинная надпись не уходит за край экрана
       f.style.left = `${Math.round(Math.max(half, Math.min(400 - half, (r.left - s.left + r.width * at) * k)))}px`;
-    } else { f.style.left = `${at * 100}%`; host.appendChild(f); }
+    } else { f.style.left = `${at * 100}%`; if (row) f.style.marginTop = `${-row * 34}px`; host.appendChild(f); }
     setTimeout(() => f.remove(), 1150);
   }
 

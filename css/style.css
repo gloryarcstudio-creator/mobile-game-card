@@ -1616,3 +1616,8 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
    а смахивание по игре не тянет за собой страницу, в которую она встроена */
 html, body { overscroll-behavior: none; -webkit-touch-callout: none; }
 img { -webkit-user-drag: none; -webkit-touch-callout: none; }
+/* v82: талисманы срабатывают подряд: прежний значок отъезжает в ряд, уменьшается и теряет подпись, чтобы имена не ложились друг на друга */
+.fx.relicup { transition: translate .22s ease-out, scale .22s ease-out; }
+.fx.relicup.old { translate: calc(var(--slot, 1) * var(--dir, 1) * 46px) -8px; scale: .7; }
+.fx.relicup .relicpop b, .fx.relicup .relicpop .rays { transition: opacity .14s; }
+.fx.relicup.old .relicpop b, .fx.relicup.old .relicpop .rays { opacity: 0; }

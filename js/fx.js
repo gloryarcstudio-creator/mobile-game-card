@@ -808,6 +808,7 @@
 
   /* Талисман сработал: его значок всплывает над героем или врагом. Очередь, чтобы не налезали друг на друга. */
   const relicQ = [];
+  const relicLive = { hero: [], enemy: [] };
   let relicBusy = false;
   function relic(art, name, where = 'hero') {
     relicQ.push({ art, name, where });
@@ -819,9 +820,15 @@
     relicBusy = true;
     const a = r.where === 'enemy' ? anchor('enemy') : anchor('hero');
     const at = r.where === 'enemy' ? { x: a.x + 90, y: a.y - 80 } : { x: a.x + 60, y: a.y - 120 };
-    pop(at, `<div class="relicpop"><i class="rays"></i><span>${icon(r.art, 44)}</span><b>${r.name}</b></div>`, 'relicup', 1100);
+    // Несколько талисманов подряд (начало боя): прежние значки той же стороны отъезжают в ряд и теряют подпись,
+    // читается только новое имя. Раньше подписи ложились одна на другую.
+    const side = r.where === 'enemy' ? 'enemy' : 'hero';
+    relicLive[side] = relicLive[side].filter((el) => el.isConnected);
+    relicLive[side].forEach((el) => { el.classList.add('old'); el.style.setProperty('--slot', (+el.style.getPropertyValue('--slot') || 0) + 1); });
+    const el = pop(at, `<div class="relicpop"><i class="rays"></i><span>${icon(r.art, 44)}</span><b>${r.name}</b></div>`, 'relicup', 1100);
+    if (el) { el.style.setProperty('--dir', side === 'enemy' ? -1 : 1); relicLive[side].push(el); }
     sfx('proc');
-    setTimeout(nextRelic, fast() ? 180 : 330);
+    setTimeout(nextRelic, fast() ? 220 : 400);
   }
 
   async function play(kind, target) {
