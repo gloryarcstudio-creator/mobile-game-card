@@ -1740,7 +1740,8 @@
       <div class="talk-art tk-${e.tier}">${(Art.enemyLive || Art.enemy)(id)}</div>
       <div class="ev-box talk-box"><h2>${e.name}</h2><p>${quote(line)}</p>${tie ? `<small class="tienote">${tr(tie.text)}</small>` : ''}</div>
       <div class="scrolls">${opts.map((op) => `<button class="scroll ${op.can === false ? 'off' : ''} ${op.secret ? 'secret' : ''}" data-act="talkopt" data-k="${op.k}" ${op.can === false ? 'disabled' : ''}>${tr(op.text)}<small>${op.hint}</small></button>`).join('')}</div>
-      ${heroBar(false)}`;
+      ${heroBar(false)}${FXH}`;
+    warmPeace();
   }
 
   // ответ в разговоре; mod — как разговор изменит бой (действует до награды за него)
@@ -1749,6 +1750,7 @@
     const e = ENEMIES[id];
     const mod = { str: 0, weak: 0, goldMul: 1, hpMul: 1, stun: 0, talked: true };
     let reply = null; let narr = null; let next = 'fight'; let fightId = id;
+    const hp0 = run.hp; const gold0 = run.gold;
     if (k !== 'fight') ach.add('talks');
     if (k === 'taunt' || k === 'sass') {
       mod.str = k === 'sass' ? 3 : 2; mod.goldMul = k === 'sass' ? 2 : 1.5;
@@ -1761,11 +1763,11 @@
       ach.add('regards'); run.tone.peace++;
       if (tier === 'boss') { mod.weak = 2; reply = LORE.TIE_SAY.regardsBoss; } else {
         next = 'peace'; beKind(id); ach.add('peace'); reply = pick(LORE.TIE_SAY.regards);
-        const g = goldFor('fight'); gain(g); evApi.heal(6); toast(`${coins(g)} · +6 HP`);
+        const g = goldFor('fight'); gain(g); evApi.heal(6);
       }
     } else if (k === 'peace') {
       next = 'peace'; beKind(id); reply = lineOf(id, 'peace') || 'Ладно, иди с миром.'; run.tone.peace++; ach.add('peace');
-      if (tier === 'elite') evApi.giveRelic(); else { const g = goldFor('fight'); gain(g); evApi.heal(6); toast(`${coins(g)} · +6 HP`); }
+      if (tier === 'elite') evApi.giveRelic(); else { const g = goldFor('fight'); gain(g); evApi.heal(6); }
     } else if (k === 'scare') {
       next = 'peace'; ach.add('scares'); const g = Math.ceil(goldFor(tier) / 2); gain(g);
       narr = tr('{name} убегает, бросив {n} {n|монету|монеты|монет}.', { name: e.name, n: g });
@@ -1800,6 +1802,7 @@
     $('.scrolls').innerHTML = `<button class="scroll" data-act="${act}">${tr(next === 'fight' ? 'В бой' : 'Дальше')}</button>`;
     $('.topbar').outerHTML = topBar();
     $('.herobar').outerHTML = heroBar(false);
+    showGain(hp0, gold0); // монеты и здоровье, полученные или отданные в разговоре, видны у портрета
   }
 
   /* После боя побеждённый враг иногда просит пощады: подарок или больше монет, но обида на весь забег */
@@ -1817,10 +1820,12 @@
         <button class="scroll" data-act="spare">${tr('Пощадить')}<small>${tr(tier === 'boss' ? 'Враг отдаст талисман' : 'Враг оставит подарок')}</small></button>
         <button class="scroll" data-act="takeall">${tr('Забрать всё')}<small>${tr('Монет в полтора раза больше, но враг запомнит обиду')}</small></button>
       </div>
-      ${heroBar(false)}`;
+      ${heroBar(false)}${FXH}`;
+    warmPeace();
   }
   function afterChoose(spare) {
     const id = screen.dataset.enemy; const tier = screen.dataset.tier;
+    const hp0 = run.hp; const gold0 = run.gold;
     let msg;
     if (spare) {
       run.tone.peace++; ach.add('spares');
@@ -1828,7 +1833,7 @@
       if (tier === 'boss') evApi.giveRelic();
       else {
         const gift = rnd(0, 2);
-        if (gift === 0) { evApi.heal(8); toast('+8 HP'); } else if (gift === 1 && upgradeRandom(1)) { /* всплывашка уже показана */ } else { gain(15); toast(coins(15)); }
+        if (gift === 0) evApi.heal(8); else if (gift === 1 && upgradeRandom(1)) { /* всплывашка уже показана */ } else gain(15);
       }
       SND.sfx('heal');
       msg = tr('Ты {f|отпустила|отпустил} врага, и на прощание он оставил тебе подарок.');
@@ -1843,6 +1848,7 @@
     $('.scrolls').innerHTML = `<button class="scroll" data-act="afternext">${tr('Дальше')}</button>`;
     $('.topbar').outerHTML = topBar();
     $('.herobar').outerHTML = heroBar(false);
+    showGain(hp0, gold0);
   }
   const afterNext = (tier) => (tier === 'boss' ? goBossRelic() : goReward(tier));
 
@@ -1874,7 +1880,8 @@
       <div class="talk-art hero">${heroArt(h)}</div>
       <div class="ev-box talk-box"><h2>${tr(m.title)}</h2><p>${tr(m.text)}</p></div>
       <div class="scrolls">${meetOptions(h).map((o) => `<button class="scroll ${o.can ? '' : 'off'} ${o.secret ? 'secret' : ''}" data-act="meetopt" data-k="${o.k}" ${o.can ? '' : 'disabled'}>${tr(o.text)}<small>${o.hint}</small></button>`).join('')}</div>
-      ${heroBar(false)}`;
+      ${heroBar(false)}${FXH}`;
+    warmPeace();
   }
   function relChange(h, d) {
     run.rel[h] = (run.rel[h] || 0) + d;
@@ -1888,6 +1895,7 @@
     const o = meetOptions(h).find((x) => x.k === k);
     if (!o || !o.can) return;
     const fx = o.fx || {};
+    const hp0 = run.hp; const gold0 = run.gold;
     if (fx.gold) gain(fx.gold);
     if (fx.hp) evApi.damage(fx.hp);
     if (fx.heal) evApi.heal(fx.heal);
@@ -1906,7 +1914,8 @@
         <div class="talk-art hero">${heroArt(h)}</div>
         <div class="ev-box talk-box"><h2>${tr(m.title)}</h2><p>${tr(o.res)}</p></div>
         <div class="scrolls"><button class="scroll" data-act="next">${tr('Дальше')}</button></div>
-        ${heroBar(false)}`;
+        ${heroBar(false)}${FXH}`;
+      showGain(hp0, gold0);
     };
     if (fx.up) upgradeFlow(() => finish()); else finish();
   }
