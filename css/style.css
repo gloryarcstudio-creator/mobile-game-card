@@ -1611,3 +1611,8 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 /* v76: сообщение на главном экране стоит над кнопками, а не на первой из них */
 #app:has(#screen.scr-title) .toast { top: 430px; }
 #app:has(#screen.scr-title .title-hero.small) .toast { top: 338px; }
+
+/* v79: телефон. Долгое нажатие не открывает меню «сохранить картинку», картинку нельзя потянуть пальцем,
+   а смахивание по игре не тянет за собой страницу, в которую она встроена */
+html, body { overscroll-behavior: none; -webkit-touch-callout: none; }
+img { -webkit-user-drag: none; -webkit-touch-callout: none; }

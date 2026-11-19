@@ -276,9 +276,14 @@
   backdrop.id = 'backdrop';
   document.body.insertBefore(backdrop, app);
   function fit() {
-    const s = Math.min(window.innerWidth / 400, window.innerHeight / 860);
+    // Размер берём у самой страницы, а не window.innerWidth: в мобильном браузере (не во вкладке приложения)
+    // innerWidth растёт вместе с содержимым, которое шире экрана, игра подгоняла себя под это число,
+    // становилась ещё шире и в итоге оказывалась увеличенной и обрезанной со всех сторон.
+    const root = document.documentElement;
+    const vw = root.clientWidth || window.innerWidth; const vh = root.clientHeight || window.innerHeight;
+    const s = Math.min(vw / 400, vh / 860);
     app.style.transform = `translate(-50%, -50%) scale(${s})`;
-    const bands = Math.max(window.innerWidth - 400 * s, window.innerHeight - 860 * s);
+    const bands = Math.max(vw - 400 * s, vh - 860 * s);
     backdrop.hidden = bands < 12;
     app.classList.toggle('framed', bands >= 12);
   }
@@ -3351,6 +3356,9 @@
   window.addEventListener('pointercancel', (e) => endDrag(e, true));
 
   app.addEventListener('pointerdown', () => closeTip(), true);
+  // долгое нажатие на телефоне: меню браузера («сохранить картинку», «копировать») игре не нужно
+  window.addEventListener('contextmenu', (e) => { if (!(e.target.closest && e.target.closest('input, textarea'))) e.preventDefault(); });
+  window.addEventListener('dragstart', (e) => e.preventDefault());
   /* Двойное касание: второй тап в ту же точку не должен нажать то, что успело появиться под пальцем
      (карта в открывшейся колоде, «Дальше» после выбора, дорожка на карте пути). Та же самая кнопка нажимается как раньше;
      в самом бою ввод и так закрыт на время анимаций, там касания не трогаем */
