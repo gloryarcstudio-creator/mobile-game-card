@@ -157,7 +157,7 @@
   // какие ролики нужны эффекту (если не тот же, что и название)
   const NEED = {
     snowball: ['snowball_p', 'snowball'], blizzard: ['blizzard', 'snow'], icicle: ['icicle_p', 'icicle'],
-    letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], loot: ['gold'], triumph: ['confetti', 'starfall', 'gold'],
+    letter: ['letter_p', 'letter'], arrive: ['letter_p', 'letter'], coin: ['coin_p', 'coin'], loot: ['gold'], find: ['starfall', 'sigil'], triumph: ['confetti', 'starfall', 'gold'],
     heart: ['heart', 'heal'], flamelet: ['flamelet_p', 'flamelet'], deliver: ['deliver_p'], bite: ['bite_p', 'bite'],
   };
   // готовы ли ролики эффекта; недолго ждём расшифровку, но не скачивание
@@ -530,6 +530,8 @@
     // победа: монеты сыплются из поверженного врага; над боссом ещё и конфетти
     async loot(t = 'enemy') { return K.gold(t); },
     async triumph(t = 'enemy') { K.confetti(t); return K.gold(t); },
+    // находка в сундуке
+    async find() { sfx('sigil'); },
     async deliver() {
       sfx('paper');
       await fly(envelope(40), 'hero', { x: 430, y: 330 }, 520, { arc: 80, spin: 30 });
@@ -736,6 +738,7 @@
     async thorns() { put('thorns', anchor('hero'), 160, { dy: -6, dur: 800 }); sfx('thorns'); },
     async gold(t = 'hero') { const a = anchor(t); put('gold', { x: a.x + 10, y: a.y + 34 }, 160, { ay: BASE, dur: 900 }); sfx('coin'); },
     async loot(t = 'enemy') { put('gold', feet(anchor(t)), 250, { ay: BASE, dur: 950 }); sfx('coin'); },
+    async find(t) { const a = anchor(t); put('starfall', a, 280, { dy: -46, dur: 900 }); put('sigil', a, 230, { dur: 900 }); sfx('sigil'); },
     async triumph(t = 'enemy') {
       const a = anchor(t);
       put('confetti', a, 390, { dy: -20, dur: 1000 });

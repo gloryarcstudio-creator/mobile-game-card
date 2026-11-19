@@ -1925,7 +1925,7 @@
     };
     screen.onShop = (act, i) => {
       const g0 = run.gold;
-      if (act === 'buy' && pay(shop.cards[i])) { ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(tr('Куплено: {name}', { name: CARDS[shop.cards[i].id].name })); }
+      if (act === 'buy' && pay(shop.cards[i])) { flyToDeck(screen.querySelectorAll('.shopcard')[i]); ach.add('bought'); run.deck.push(mk(shop.cards[i].id)); toast(tr('Куплено: {name}', { name: CARDS[shop.cards[i].id].name })); }
       if (act === 'buyrelic' && shop.relic && pay(shop.relic)) addRelic(shop.relic.id);
       if (act === 'buytea' && pay(shop.tea)) { evApi.heal(12); SND.sfx('heal'); }
       if (act === 'reroll') {
@@ -1953,6 +1953,34 @@
     render();
   }
 
+  // Место элемента в координатах игры (экран 400×860, как бы ни был растянут)
+  function spot(el) {
+    const s = app.getBoundingClientRect(); const k = 400 / (s.width || 400); const r = el.getBoundingClientRect();
+    return { x: (r.left - s.left + r.width / 2) * k, y: (r.top - s.top + r.height / 2) * k, w: r.width * k, h: r.height * k };
+  }
+  // Купленная или взятая в награду карта улетает в колоду: копия карты едет к кнопке «Колода», счётчик подпрыгивает.
+  // Копия живёт поверх экранов, поэтому переход на следующий экран её не обрывает.
+  function flyToDeck(el) {
+    const to = $('.deckbtn');
+    if (!el || !to || !el.animate) return;
+    const a = spot(el); const b = spot(to);
+    const c = el.cloneNode(true);
+    c.className = `${el.className.replace(/\b(shopcard|reward)\b/g, '')} flycard`;
+    c.removeAttribute('data-act');
+    c.style.cssText = `--w:${a.w}px; position:absolute; left:${a.x - a.w / 2}px; top:${a.y - a.h / 2}px; margin:0; z-index:30; pointer-events:none; animation:none;`;
+    app.appendChild(c);
+    const ms = SETTINGS.fast ? 240 : 460;
+    c.animate([
+      { transform: 'translate(0, 0) scale(1)', opacity: 1, filter: 'brightness(1.4)' },
+      { transform: `translate(${(b.x - a.x) * 0.35}px, ${(b.y - a.y) * 0.25 - 30}px) scale(.8)`, opacity: 1, filter: 'brightness(1.1)', offset: 0.4 },
+      { transform: `translate(${b.x - a.x}px, ${b.y - a.y}px) scale(.16)`, opacity: 0.2, filter: 'brightness(1)' },
+    ], { duration: ms, easing: 'cubic-bezier(.4, 0, .7, .4)' }).onfinish = () => {
+      c.remove();
+      const d = $('.deckbtn');
+      if (d && d.animate) d.animate([{ scale: 1 }, { scale: 1.22, filter: 'brightness(1.5)' }, { scale: 1 }], { duration: 260, easing: 'ease-out' });
+    };
+  }
+
   /* ---------- Сундук ---------- */
   function goChest() {
     setBg(); // на нарисованной сцене сундука уже есть свой сундук, поэтому фон пути
@@ -1960,14 +1988,19 @@
     screen.innerHTML = `${topBar()}
       <div class="chest-wrap"><div class="chest">${Art.icon('chest')}</div><p>${tr('Сундук-соня сладко храпит.')}</p></div>
       <div class="row2"><button class="btn" data-act="openchest">${tr('Открыть')}</button><button class="btn ghost" data-act="next">${tr('Не будить')}</button></div>
-      ${heroBar(false)}`;
+      ${heroBar(false)}<div class="fxlayer"></div>`;
+    FX.warm(['loot', 'find']);
   }
   function openChest() {
     ach.add('chests');
     const free = freeRelics();
     let msg;
-    if (free.length && Math.random() < (LONG ? BAL.chestRelic : 0.5)) { const id = pickRelic(free); addRelic(id); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
-    else { const g = rnd(28, 45); gain(g); SND.sfx('coin'); msg = tr('Внутри {n} {n|монета|монеты|монет}.', { n: g }); }
+    // из сундука вылетает то, что в нём лежало: горка монет или звёзды находки.
+    // Подпись под сундуком уже называет талисман и что он делает, поэтому всплывашку с тем же именем поверх неё убираем
+    const at = spot($('.chest'));
+    const burst = { x: at.x, y: at.y - 6, w: at.w, h: at.h, foot: at.y + at.h * 0.3 };
+    if (free.length && Math.random() < (LONG ? BAL.chestRelic : 0.5)) { const id = pickRelic(free); addRelic(id); app.querySelectorAll('.toast').forEach((x) => x.remove()); FX.play('find', burst); msg = tr('Внутри: {name}. {desc}', { name: RELICS[id].name, desc: RELICS[id].desc }); }
+    else { const g = rnd(28, 45); gain(g); SND.sfx('coin'); FX.play('loot', burst); msg = tr('Внутри {n} {n|монета|монеты|монет}.', { n: g }); }
     save({ t: 'next' });
     $('.chest').classList.add('open');
     $('.chest-wrap p').textContent = msg;
@@ -3162,7 +3195,7 @@
       case 'rest-heal': evApi.heal(restHeal()); if (hasRelic('cocoatin')) { run.maxHp += 2; run.hp += 2; toast(`${RELICS.cocoatin.name}: ${tr('+{n} к макс. HP', { n: 2 })}`); } advance(); break;
       case 'rest-up': upgradeFlow((ok) => { if (ok) advance(); }); break;
       case 'rest-burn': removeCardFlow((ok) => { if (ok) advance(); }); break;
-      case 'takecard': SND.sfx('card'); run.deck.push(mk(t.dataset.id)); toast(tr('В колоду: {name}', { name: CARDS[t.dataset.id].name })); advance(); break;
+      case 'takecard': SND.sfx('card'); flyToDeck(t); run.deck.push(mk(t.dataset.id)); toast(tr('В колоду: {name}', { name: CARDS[t.dataset.id].name })); advance(); break;
       case 'bossrelic': addRelic(t.dataset.id); goReward('boss'); break;
       case 'bossrelic-skip': goReward('boss'); break;
       case 'buy': case 'buyrelic': case 'buytea': case 'buyremove': case 'buyup': case 'reroll': screen.onShop(act, +t.dataset.i); break;
