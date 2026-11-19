@@ -2893,7 +2893,7 @@
   function heroMove(k) {
     heroAct = { k, at: performance.now() };
     const p = $('#heroPortrait'); if (!p) return;
-    p.classList.remove('lunge', 'bite', 'hurt'); p.style.removeProperty('--ad'); void p.offsetWidth; p.classList.add(k);
+    p.classList.remove('lunge', 'bite', 'hurt', 'guard'); p.style.removeProperty('--ad'); void p.offsetWidth; p.classList.add(k);
   }
   const heroLunge = () => heroMove('lunge');
 
@@ -2976,7 +2976,7 @@
     loseHp(real);
     if (real > 0) FX.play('claw'); else FX.play('shield');
     const p = $('#heroPortrait');
-    if (p) heroMove('hurt');
+    if (p) heroMove(real > 0 ? 'hurt' : 'guard');   // удар целиком в защиту: портрет вздрагивает, но не краснеет, как от раны
     SND.sfx(real > 0 ? 'hurt' : 'clank');
     floatText($('.hero-fx'), real > 0 ? `-${real}` : absorbed > 0 ? tr('Блок −{n}', { n: absorbed }) : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
