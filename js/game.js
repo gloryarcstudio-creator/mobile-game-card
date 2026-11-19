@@ -572,17 +572,19 @@
     const host = $('.hero-fx'); if (!host) return;
     const dh = run.hp - hp0; const dg = run.gold - gold0;
     if (dh > 0) { SND.sfx('heal'); FX.play('heal'); floatText(host, `+${dh}`, 'healf'); }
-    if (dh < 0) { SND.sfx('hurt'); const pt = $('#heroPortrait'); if (pt) pt.classList.add('hurt'); floatText(host, `${dh}`.replace('-', '−'), 'dmgf small'); }
+    if (dh < 0) { SND.sfx('hurt'); heroMove('hurt'); floatText(host, `${dh}`.replace('-', '−'), 'dmgf small'); }
     if (dg) setTimeout(() => { if (!$('.hero-fx')) return; if (dg > 0) FX.play('gold'); floatText($('.hero-fx'), dg > 0 ? coins(dg) : `−${-dg}`, 'burnf'); }, dh ? (SETTINGS.fast ? 320 : 640) : 0);
   }
+  let heroAct = { k: '', at: -1e9 };   // последнее движение портрета, см. heroMove
   function heroBar(inCombat) {
     const hpPct = (run.hp / run.maxHp) * 100;
     const mv = hpAnim(hpPct);
     const flame = inCombat ? C.flame : 0;
     // мало здоровья (четверть и меньше): полоска тревожно пульсирует; фаза общая, чтобы перерисовка не сбивала пульс
     const low = run.hp > 0 && run.hp / run.maxHp <= 0.25;
+    const actAge = Math.round(performance.now() - heroAct.at);
     return `<div class="herobar${low ? ' low' : ''}"${low ? ` style="--ph:-${Math.round(performance.now() % 1800)}ms"` : ''}>
-      <div class="portrait" id="heroPortrait">${heroFace()}</div>
+      <div class="portrait${actAge < 350 ? ` ${heroAct.k}" style="--ad:-${actAge}ms` : ''}" id="heroPortrait">${heroFace()}</div>
       <div class="hb-mid">
         <div class="hpbar">${mv.trail}<div class="fill" style="${mv.fill}width:${hpPct}%"></div><span>${run.hp}/${run.maxHp}</span>
           ${inCombat && C.block > 0 ? `<div class="hblk">${Art.intentIcon('block')}<b>${C.block}</b></div>` : ''}</div>
@@ -2247,7 +2249,7 @@
     async bite() {
       if (C.dog <= 0 || C.enemy.hp <= 0) return;
       const pt = $('#heroPortrait');
-      if (pt) { pt.classList.remove('bite'); void pt.offsetWidth; pt.classList.add('bite'); }
+      if (pt) heroMove('bite');
       await FX.play('bite', 'enemy');
       floatText($('.enemy-fx'), tr('Гав!'), 'weakf');
       await hitEnemy(dogDmg(), true);
@@ -2688,10 +2690,15 @@
     delete screen.dataset.fallen;
   }
 
-  function heroLunge() {
+  // Движение портрета героя: выпад (lunge), укус пса (bite), встряска от удара (hurt).
+  // Панель героя перерисовывается почти сразу после удара, поэтому движение запоминаем,
+  // и heroBar дорисовывает его с того места, где оно было (иначе оно не успевало показаться).
+  function heroMove(k) {
+    heroAct = { k, at: performance.now() };
     const p = $('#heroPortrait'); if (!p) return;
-    p.classList.remove('lunge'); void p.offsetWidth; p.classList.add('lunge');
+    p.classList.remove('lunge', 'bite', 'hurt'); p.style.removeProperty('--ad'); void p.offsetWidth; p.classList.add(k);
   }
+  const heroLunge = () => heroMove('lunge');
 
   // quiet: звук удара уже сыграла анимация приёма
   async function hitEnemy(dmg, quiet) {
@@ -2772,7 +2779,7 @@
     loseHp(real);
     if (real > 0) FX.play('claw'); else FX.play('shield');
     const p = $('#heroPortrait');
-    if (p) { p.classList.remove('hurt'); void p.offsetWidth; p.classList.add('hurt'); }
+    if (p) heroMove('hurt');
     SND.sfx(real > 0 ? 'hurt' : 'clank');
     floatText($('.hero-fx'), real > 0 ? `-${real}` : absorbed > 0 ? tr('Блок −{n}', { n: absorbed }) : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
     renderCombat();

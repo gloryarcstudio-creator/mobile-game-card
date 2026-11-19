@@ -1525,3 +1525,15 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 .card.inhand.toss { transition: transform .2s cubic-bezier(.5, 0, .8, .6) var(--d, 0ms), opacity .14s calc(var(--d, 0ms) + .06s);
   transform: translate(var(--tx, 150px), 124px) scale(.22) rotate(24deg); opacity: 0; pointer-events: none; }
 #app.fast .card.inhand.toss { transition-duration: .1s, .07s; transition-delay: calc(var(--d, 0ms) / 2), calc(var(--d, 0ms) / 2 + .03s); }
+
+/* ---------- v69: движения портрета героя (выпад, укус, удар) теперь действительно проигрываются ----------
+   Они переживают перерисовку панели: --ad сдвигает анимацию на уже прошедшее время (см. heroMove в game.js).
+   В нарисованной панели двигается рисунок внутри латунного кольца, а не весь круг: кольцо остаётся на месте. */
+.portrait:is(.lunge, .bite, .hurt) { animation-delay: var(--ad, 0ms); }
+#app.skin .herobar .portrait:is(.lunge, .bite, .hurt) { animation: none; }
+#app.skin .herobar .portrait.lunge > * { animation: plunge .3s var(--ad, 0ms); }
+#app.skin .herobar .portrait.bite > * { animation: pbite .35s var(--ad, 0ms); }
+#app.skin .herobar .portrait.hurt > * { animation: phurt .38s var(--ad, 0ms); }
+@keyframes plunge { 45% { transform: translateY(-5px) scale(1.15); filter: brightness(1.25); } }
+@keyframes pbite { 40% { transform: translateX(6px) rotate(4deg) scale(1.08); } }
+@keyframes phurt { 15% { transform: translateX(-6px) scale(1.07); filter: brightness(1.5) sepia(.6) saturate(2.4) hue-rotate(-35deg); } 40% { transform: translateX(5px); filter: none; } 65% { transform: translateX(-3px); } 85% { transform: translateX(2px); } }
