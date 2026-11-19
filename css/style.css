@@ -1520,3 +1520,8 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 /* ---------- v67: на экранах конца забега достижения всплывают снизу и не закрывают ленту ---------- */
 #app:has(#screen:is(.scr-end, .scr-summary)) .achtoast { top: auto; bottom: 16px; animation-name: achinb; }
 @keyframes achinb { 0% { opacity: 0; transform: translateY(30px); } 10%, 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(20px); } }
+
+/* ---------- v68: сброс руки в конце хода: карты улетают к стопке «Сброс» ---------- */
+.card.inhand.toss { transition: transform .2s cubic-bezier(.5, 0, .8, .6) var(--d, 0ms), opacity .14s calc(var(--d, 0ms) + .06s);
+  transform: translate(var(--tx, 150px), 124px) scale(.22) rotate(24deg); opacity: 0; pointer-events: none; }
+#app.fast .card.inhand.toss { transition-duration: .1s, .07s; transition-delay: calc(var(--d, 0ms) / 2), calc(var(--d, 0ms) / 2 + .03s); }

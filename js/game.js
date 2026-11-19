@@ -2552,8 +2552,15 @@
     renderHand(dealAnim);
   }
 
+  // Раздача доигрывает до конца, даже если руку перерисовали посреди неё (в начале хода экран рисуется
+  // несколько раз подряд): класс «deal» держится всё время раздачи, а задержка уходит в минус на прошедшее время.
+  let dealAt = -1e9;
   function renderHand(dealAnim) {
     const n = C.hand.length;
+    const now = performance.now();
+    if (dealAnim) dealAt = now;
+    const dealAge = Math.round(now - dealAt);
+    const dealing = dealAge < (SETTINGS.fast ? 180 : 350) + n * 60;
     const W = 104; const avail = 384;
     const step = n > 1 ? Math.min(W + 4, (avail - W) / (n - 1)) : 0;
     const total = W + step * (n - 1);
@@ -2565,8 +2572,8 @@
       const can = cost != null && cost <= C.energy;
       let left = x0 + i * step;
       if (i === selected) left = Math.max(26, Math.min(400 - W - 26, left));
-      return cardHTML(c, `inhand ${can ? '' : 'nope'} ${i === selected ? 'sel' : ''} ${dealAnim ? 'deal' : ''}`,
-        `data-hi="${i}" style="left:${left}px; --rot:${rot}deg; --lift:${lift}px; --d:${i * 60}ms; z-index:${i === selected ? 50 : i + 1}"`);
+      return cardHTML(c, `inhand ${can ? '' : 'nope'} ${i === selected ? 'sel' : ''} ${dealing ? 'deal' : ''}`,
+        `data-hi="${i}" style="left:${left}px; --rot:${rot}deg; --lift:${lift}px; --d:${i * 60 - dealAge}ms; z-index:${i === selected ? 50 : i + 1}"`);
     }).join('');
   }
 
@@ -2809,13 +2816,21 @@
       else if (cd.retain || c === ribbon || (hasRelic('magicbag') && cd.type !== 'status')) { keep.push(c); if (cd.onRetain) cd.onRetain(c, c.up); }
       else C.disc.push(c);
     }
+    // сброс: карты, которые не остаются в руке, улетают к стопке сброса, а не исчезают разом
+    const gone = [...document.querySelectorAll('.hand .card.inhand')].filter((el) => !keep.includes(C.hand[+el.dataset.hi]));
+    gone.forEach((el, k) => {
+      el.style.setProperty('--tx', `${Math.round(352 - (parseFloat(el.style.left) || 0) - 52)}px`);
+      el.style.setProperty('--d', `${k * 22}ms`);
+      el.classList.remove('deal'); el.classList.add('toss');
+    });
+    if (gone.length) await sleep(200 + gone.length * 22);
     C.hand = keep;
     C.tmpStr = 0;
     if (C.pWeak > 0) C.pWeak--;
     if (C.frail > 0) C.frail--;
     if (dread) { loseHp(dread); SND.sfx('hurt'); floatText($('.hero-fx'), `-${dread}`, 'dmgf'); }
     renderCombat();
-    await sleep(250);
+    await sleep(gone.length ? 110 : 250);
     if (run.hp <= 0) { await fall(); goDefeat(); return; }
     // пёс пастушки кусает в конце хода
     if (C.dog > 0 && C.enemy.hp > 0) {
