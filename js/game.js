@@ -668,8 +668,21 @@
     // длинную строку не успеть прочитать за полторы секунды: время растёт с длиной
     const ms = Math.min(4000, 1500 + Math.max(0, text.length - 30) * 35);
     t.style.animationDuration = `${ms}ms`;
+    // Несколько подсказок разом (после победы сработали Копилка, Термос и Коробка леденцов) встают столбиком:
+    // раньше они ложились одна на другую, и читалась только последняя. Та же подсказка повторно
+    // (второе нажатие на недоступную кнопку) показывается заново на своём месте, а не второй строкой.
+    const live = [...app.querySelectorAll('.toast')];
+    const same = live.find((x) => x.textContent === text);
+    let off = 0;
+    if (same) { off = parseFloat(same.style.marginTop) || 0; same.remove(); }
+    else live.forEach((x) => { off = Math.max(off, (parseFloat(x.style.marginTop) || 0) + x.offsetHeight + 6); });
+    if (off > 230) off = 0;
+    if (off) t.style.marginTop = `${off}px`;
+    // столбик читают сверху вниз: каждая следующая строка висит на полсекунды дольше
+    const life = same ? ms : ms + Math.min(4, live.length) * 500;
+    t.style.animationDuration = `${life}ms`;
     app.appendChild(t);
-    setTimeout(() => t.remove(), ms);
+    setTimeout(() => t.remove(), life);
   }
   // строка итогов: части не рвутся посередине, перенос только между ними
   const statLine = (parts) => parts.map((x) => `<span>${x}</span>`).join(' · ');
