@@ -1670,3 +1670,29 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 /* Пока картинка пергамента не пришла (медленная сеть), под текстом лежит простой лист того же цвета:
    раньше тёмные буквы стояли прямо на фоне. Лист чуть меньше рамки и целиком прячется под ней */
 #app.skin .page, #app.skin .ev-box { background: linear-gradient(#ead9b6, #ead9b6) 50% 50% / calc(100% - 14px) calc(100% - 12px) no-repeat; }
+
+/* ---------- v98: глубина сцены ----------
+   Две добавки, обе на фоне (под экраном игры) и обе с ручкой силы на #app:
+   --mist: дымка у земли за фигурой (0 — убрать, 1 — как задумано), --vig: затемнение краёв сцены (0 — убрать).
+   Чтобы убрать совсем, достаточно удалить этот блок: в game.js останется только безвредная пометка data-feet. */
+#app { --mist: 1; --vig: .42; --mistc: 236, 242, 255; }
+#app[data-light="sunset"] { --mistc: 255, 214, 190; }
+#app[data-light="eve"] { --mistc: 196, 190, 235; --mist: .85; }
+#app[data-light="dusk"] { --mistc: 214, 190, 226; --mist: .55; }
+#app[data-light="night"] { --mistc: 150, 168, 230; --mist: .8; }
+/* дымка: три мягких облака в полосе у линии ног, медленно ходят из стороны в сторону; двигается слой целиком (дёшево для телефона) */
+#bg::before { content: ''; position: absolute; left: -80px; right: -80px; top: calc(var(--feet, 690px) - 150px); height: 200px; z-index: 1; pointer-events: none;
+  opacity: 0; transition: opacity .9s ease-out; will-change: transform;
+  background:
+    radial-gradient(ellipse 32% 38% at 18% 62%, rgba(var(--mistc), .5), rgba(var(--mistc), 0) 70%),
+    radial-gradient(ellipse 38% 32% at 74% 56%, rgba(var(--mistc), .44), rgba(var(--mistc), 0) 70%),
+    radial-gradient(ellipse 30% 40% at 46% 70%, rgba(var(--mistc), .3), rgba(var(--mistc), 0) 70%),
+    linear-gradient(rgba(var(--mistc), 0) 30%, rgba(var(--mistc), .16) 66%, rgba(var(--mistc), 0) 96%);
+  animation: mistdrift 24s ease-in-out infinite alternate; }
+#bg[data-feet]::before { opacity: var(--mist); }
+@keyframes mistdrift { from { transform: translateX(-34px); } to { transform: translateX(34px); } }
+#app.calm #bg::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { #bg::before { animation: none; } }
+/* края сцены чуть темнее середины: взгляд собирается на фигуре, у фона появляется глубина. Неподвижный слой над фоном, под снегом и интерфейсом */
+#app::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: radial-gradient(ellipse 88% 70% at 50% 40%, rgba(6, 10, 30, 0) 52%, rgba(6, 10, 30, var(--vig)) 100%); }

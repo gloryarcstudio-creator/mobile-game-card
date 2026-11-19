@@ -126,6 +126,7 @@
   // На нарисованном фоне камера подстраивается под того, кто стоит на экране:
   // снег с картинки встаёт ему под ноги (враг в бою, собеседник, сундук, ёж в лавке)
   const STANDS = '.enemy, .talk-art, .chest, .shopkeeper, .ev-art, .title-hero';
+  const MISTY = '.enemy, .talk-art, .chest, .title-hero';   // у кого за ногами стелется дымка
   // Прежний вид фона тает поверх нового: и когда сменилась сама картинка, и когда та же картинка встала иначе
   // (в бою она поднята к ногам врага, на награде и карте пути стоит целиком). Без этого сцена прыгала рывком.
   const camY = (s) => { const m = /translateY\((-?[\d.]+)px\)/.exec(s || ''); return m ? +m[1] : 0; };
@@ -157,6 +158,8 @@
       for (let n = el; n && n !== app; n = n.offsetParent) y += n.offsetTop;
     }
     Art.groundCam(bgEl, y);
+    // линия ног для дымки у земли (style.css, #bg::before): стоит фигура — дымка стелется за ней, иначе прячется
+    if (y != null && el.matches(MISTY) && app.classList.contains('painted-bg')) { bgEl.style.setProperty('--feet', `${Math.round(y)}px`); bgEl.dataset.feet = '1'; } else delete bgEl.dataset.feet;
     if (was && !quiet && Math.abs(camY(was.t) - camY(g.style.transform)) > 24 && !app.querySelector('.bg-ghost')) bgGhost(bgEl.innerHTML, was);
   }
   new MutationObserver(() => { app.classList.toggle('ground', screen.className === 'scr-combat'); groundCam(); })
