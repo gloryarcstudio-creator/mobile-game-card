@@ -749,6 +749,15 @@
     setTimeout(() => m.remove(), SETTINGS.fast ? 720 : 1430);
   }
 
+  // Карту показывают крупно (улучшена, убрана): экран под ней ждёт, пока показ не кончится, и только потом сменяется.
+  // Иначе карта висела уже поверх карты пути, вперемешку с её плашками. Кнопки экрана на это время не нажимаются
+  function afterMoment(fn) {
+    const r = run; const scr = screen.className;
+    screen.style.pointerEvents = 'none';
+    // за это время игрок мог выйти в меню или начать другой забег: тогда переходить уже некуда
+    setTimeout(() => { screen.style.pointerEvents = ''; if (run === r && screen.className === scr) fn(); }, SETTINGS.fast ? 520 : 1100);
+  }
+
   function showOverlay(html, onClick) {
     overlay.innerHTML = `<div class="ov-inner">${html}</div>`;
     overlay.classList.add('show');
@@ -1673,8 +1682,8 @@
       if (!free.length) { gain(40); toast(coins(40)); return; }
       addRelic(pickRelic(free));
     },
-    removeCardPrompt: () => removeCardFlow(() => advance()),
-    upgradePrompt: () => upgradeFlow(() => advance()),
+    removeCardPrompt: () => removeCardFlow((ok) => (ok ? afterMoment(advance) : advance())),
+    upgradePrompt: () => upgradeFlow((ok) => (ok ? afterMoment(advance) : advance())),
     upgradeRandom: (n) => upgradeRandom(n),
     duplicatePrompt: () => {
       showDeck(run.deck.filter((c) => CARDS[c.id].rarity !== 'status'), tr('Выбери карту для копии'), (uid) => {
@@ -1898,6 +1907,13 @@
   }
 
   // ответ в разговоре; mod — как разговор изменит бой (действует до награды за него)
+  // Ответ выбран, вариантов стало меньше: прижатая к низу вёрстка роняла собеседника вниз, а за ним прыгал и фон.
+  // Собеседник остаётся стоять, где стоял: под единственной кнопкой оставляем столько же места, сколько занимали варианты
+  function keepStand(fn) {
+    const foot = () => { const a = screen.querySelector('.talk-art'); return a ? a.offsetTop + a.offsetHeight : null; };
+    const y0 = foot(); fn(); const y1 = foot(); const sc = screen.querySelector('.scrolls');
+    if (sc && y0 != null && y1 != null && y1 - y0 > 2) sc.style.paddingBottom = `${Math.round(y1 - y0)}px`;
+  }
   function talkChoose(k) {
     const id = screen.dataset.enemy; const tier = screen.dataset.tier;
     const e = ENEMIES[id];
@@ -1948,11 +1964,13 @@
       screen.dataset.fight = fightId;
     } else save({ t: 'next' });
     if (next === 'bosspeace') save({ t: 'bossrelic', opts: null });
-    $('.talk-box p').innerHTML = reply ? quote(reply) : narr;
-    const note = $('.tienote'); if (note) note.remove();
-    if (fightId !== id) { $('.talk-box h2').textContent = ENEMIES[fightId].name; $('.talk-art').innerHTML = (Art.enemyLive || Art.enemy)(fightId); }
-    const act = next === 'fight' ? 'talkgo' : next === 'bosspeace' ? 'talkboss' : 'next';
-    $('.scrolls').innerHTML = `<button class="scroll" data-act="${act}">${tr(next === 'fight' ? 'В бой' : 'Дальше')}</button>`;
+    keepStand(() => {
+      $('.talk-box p').innerHTML = reply ? quote(reply) : narr;
+      const note = $('.tienote'); if (note) note.remove();
+      if (fightId !== id) { $('.talk-box h2').textContent = ENEMIES[fightId].name; $('.talk-art').innerHTML = (Art.enemyLive || Art.enemy)(fightId); }
+      const act = next === 'fight' ? 'talkgo' : next === 'bosspeace' ? 'talkboss' : 'next';
+      $('.scrolls').innerHTML = `<button class="scroll" data-act="${act}">${tr(next === 'fight' ? 'В бой' : 'Дальше')}</button>`;
+    });
     $('.topbar').outerHTML = topBar();
     $('.herobar').outerHTML = heroBar(false);
     ach.add('spent', gold0 - run.gold); // «Звонкая монета» считает и монеты, отданные в разговоре: успокоить, откупиться, выкупить
@@ -2065,11 +2083,13 @@
     relChange(h, fx.rel || 0);
     const finish = () => {
       save({ t: 'next' });
-      screen.innerHTML = `${topBar()}
-        <div class="talk-art hero">${heroArt(h)}</div>
-        <div class="ev-box talk-box"><h2>${tr(m.title)}</h2><p>${tr(o.res)}</p></div>
-        <div class="scrolls"><button class="scroll" data-act="next">${tr('Дальше')}</button></div>
-        ${heroBar(false)}${FXH}`;
+      keepStand(() => {
+        screen.innerHTML = `${topBar()}
+          <div class="talk-art hero">${heroArt(h)}</div>
+          <div class="ev-box talk-box"><h2>${tr(m.title)}</h2><p>${tr(o.res)}</p></div>
+          <div class="scrolls"><button class="scroll" data-act="next">${tr('Дальше')}</button></div>
+          ${heroBar(false)}${FXH}`;
+      });
       showGain(hp0, gold0);
     };
     if (fx.up) upgradeFlow(() => finish()); else finish();
@@ -3545,8 +3565,8 @@
         setTimeout(() => { delete screen.dataset.rested; if (screen.className === 'scr-rest') advance(); }, SETTINGS.fast ? 380 : 800);
         break;
       }
-      case 'rest-up': upgradeFlow((ok) => { if (ok) advance(); }); break;
-      case 'rest-burn': removeCardFlow((ok) => { if (ok) advance(); }); break;
+      case 'rest-up': upgradeFlow((ok) => { if (ok) afterMoment(advance); }); break;
+      case 'rest-burn': removeCardFlow((ok) => { if (ok) afterMoment(advance); }); break;
       case 'takecard': SND.sfx('card'); flyToDeck(t); run.deck.push(mk(t.dataset.id)); toast(tr('В колоду: {name}', { name: CARDS[t.dataset.id].name })); advance(); break;
       case 'bossrelic': addRelic(t.dataset.id); goReward('boss'); break;
       case 'bossrelic-skip': goReward('boss'); break;
