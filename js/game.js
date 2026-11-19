@@ -2232,7 +2232,7 @@
       }
     },
     block(n) {
-      if (C.frail > 0) n = Math.floor(n * 0.75);
+      n = frailed(n);
       C.block += n; SND.sfx('block'); FX.play('shield'); floatText($('.hero-fx'), `+${n}`, 'blockf');
     },
     async flame(n) {
@@ -2379,9 +2379,11 @@
     return Math.max(0, d);
   }
 
+  // Хрупкость режет любую защиту от карт, чар и талисманов, как сказано в справочнике
+  const frailed = (n) => (C.frail > 0 ? Math.floor(n * 0.75) : n);
   function exhaustCard(c) {
     C.exh.push(c);
-    if (hasRelic('brazier')) { C.block += 3; floatText($('.hero-fx'), '+3', 'blockf'); }
+    if (hasRelic('brazier')) { const n = frailed(3); C.block += n; floatText($('.hero-fx'), `+${n}`, 'blockf'); }
   }
 
   function startCombat(enemyId, tier) {
@@ -2471,8 +2473,8 @@
     const first = C.turn === 1;
     if (first) startProcs();
     if (first && proc('bell')) { C.block += 6; FX.play('shield'); }
-    if (proc('thimble')) C.block += 2;
-    if (C.charms.mittens) C.block += C.charms.mittens;
+    if (proc('thimble')) C.block += frailed(2);
+    if (C.charms.mittens) C.block += frailed(C.charms.mittens);
     C.energy = maxEnergy() + (C.charms.aurora || 0) + (C.vane ? 1 : 0) + (C.medal ? 1 : 0);
     if (first && proc('scarf')) C.energy += 1;
     if (C.turn % 3 === 0 && proc('musicbox')) C.energy += 2;
@@ -2536,8 +2538,11 @@
     return p.then ? [p, p.then] : [p];
   }
 
-  function intentHTML(it) {
+  // add — Сила, которую враг наберёт этим же ходом до удара («Сила +3» и следом удар):
+  // число над головой сразу показывает удар с ней, иначе герой ставит защиту под меньший урон
+  function intentHTML(it, add = 0) {
     const tip = (t) => `data-tip="${t}"`;
+    if (add && it.v != null && (it.k === 'attack' || it.k === 'boom' || it.k === 'snuff' || it.k === 'steal')) it = { ...it, v: it.v + add };
     if (it.k === 'attack') return `<div class="it atk" ${tip(`${tr('Атака: {d} урона', { d: enemyDmg(it.v) })}${it.hits ? ` ${tr('{n} {n|раз|раза|раз}', { n: it.hits })}` : ''}${it.leech ? `. ${tr('Враг вылечится на весь урон, который пройдёт сквозь защиту')}` : ''}`)}>${Art.intentIcon(it.leech ? 'leech' : 'attack')}<b>${enemyDmg(it.v)}${it.hits ? `×${it.hits}` : ''}</b></div>`;
     if (it.k === 'sap') return `<div class="it deb" ${tip(tr('Собьёт с ритма: в ваш следующий ход −{n} {n|энергия|энергии|энергии}', { n: it.v }))}>${Art.intentIcon('sap')}<b>−${it.v}</b></div>`;
     if (it.k === 'mist') return `<div class="it blk" ${tip(tr('Напустит туман: до её следующего хода любой удар по ней наносит не больше {n} урона. Поджог проходит', { n: it.v }))}>${Art.intentIcon('mist')}<b>≤${it.v}</b></div>`;
@@ -2583,7 +2588,8 @@
     if (!C) return;
     const e = C.enemy;
     if (!C.saidHurt && e.hp > 0 && e.hp <= e.max / 2) { C.saidHurt = true; say(lineOf(C.id, 'hurt')); }
-    $('.intent').innerHTML = e.hp > 0 ? currentIntents().map(intentHTML).join('') : '';
+    let add = 0;
+    $('.intent').innerHTML = e.hp > 0 ? currentIntents().map((it) => { const h = intentHTML(it, add); if (it.k === 'buff') add += it.v; return h; }).join('') : '';
     popChanged($('.intent'), '.it', 'intent');
     $('.ehp .fill').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
     $('.ehp .trail').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
