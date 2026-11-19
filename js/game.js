@@ -2429,7 +2429,7 @@
     if (C.charms.eveninglamp && C.enemy.hp > 0) await api.flame(C.charms.eveninglamp);
     if (C.charms.eternalwinter && C.enemy.hp > 0) { api.chill(2 * C.charms.eternalwinter); api.block(8 * C.charms.eternalwinter); }
     if (C.charms.firebird && C.enemy.hp > 0) { api.burn(3 * C.charms.firebird); await api.flame(2 * C.charms.firebird); }
-    if (run.hp <= 0) { await sleep(400); goDefeat(); return; }
+    if (run.hp <= 0) { await fall(); goDefeat(); return; }
     if (C.enemy.hp <= 0) { await winCombat(); return; }
     busy = false;
     renderCombat();
@@ -2648,7 +2648,7 @@
     const ed = ENEMIES[C.id];
     if (ed.alarm && cd.type === 'skill' && C.enemy.hp > 0) { C.enemy.block += ed.alarm; SND.sfx('clank'); floatText($('.enemy-fx'), tr('Тук-тук! +{n}', { n: ed.alarm }), 'blockf'); }
     if (ed.tally && C.playedTurn % ed.tally === 0 && C.enemy.hp > 0 && run.hp > 0) { floatText($('.enemy-fx'), tr('Ку-ку!'), 'weakf'); await hitHero(3); }
-    if (run.hp <= 0) { await sleep(400); goDefeat(); return; }
+    if (run.hp <= 0) { await fall(); goDefeat(); return; }
     if (C.enemy.hp <= 0) { await winCombat(); return; }
     renderCombat();
     busy = false;
@@ -2673,6 +2673,13 @@
 
   // кадры нарисованного врага: attack | hurt | death (если есть раскадровка)
   const eAct = (k) => (Art.act ? Art.act($('#enemy'), k, SETTINGS.fast ? 2 : 1) : 0);
+
+  // Последний удар: экран темнеет вокруг героя, портрет гаснет, и только потом открывается экран поражения
+  async function fall() {
+    screen.dataset.fallen = '1';
+    await sleep(900);
+    delete screen.dataset.fallen;
+  }
 
   function heroLunge() {
     const p = $('#heroPortrait'); if (!p) return;
@@ -2809,7 +2816,7 @@
     if (dread) { loseHp(dread); SND.sfx('hurt'); floatText($('.hero-fx'), `-${dread}`, 'dmgf'); }
     renderCombat();
     await sleep(250);
-    if (run.hp <= 0) { await sleep(400); goDefeat(); return; }
+    if (run.hp <= 0) { await fall(); goDefeat(); return; }
     // пёс пастушки кусает в конце хода
     if (C.dog > 0 && C.enemy.hp > 0) {
       for (let k = 0; k < 1 + (C.charms.wolfhound || 0) && C.enemy.hp > 0; k++) await api.bite();
@@ -2886,7 +2893,7 @@
         if (run.hp <= 0 || e.hp <= 0) break;
       }
     }
-    if (run.hp <= 0) { await sleep(400); goDefeat(); return; }
+    if (run.hp <= 0) { await fall(); goDefeat(); return; }
     if (e.hp <= 0) { await winCombat(); return; }
     if (e.weak > 0) e.weak--;
     if (e.vuln > 0) e.vuln--;

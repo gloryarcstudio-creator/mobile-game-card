@@ -1503,3 +1503,16 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 .hblk.chg, .eblk.chg { animation: chgpop .5s var(--age, 0ms) both; }
 .hblk.chg.down, .eblk.chg.down { animation-name: blkdown; }
 @keyframes blkdown { 0% { scale: 1; filter: brightness(1); } 25% { scale: .82; filter: brightness(1.7) saturate(.4); } 100% { scale: 1; filter: brightness(1); } }
+
+/* ---------- v66: гибель героя и настроение экрана поражения ---------- */
+/* Последний удар: темнота сходится к портрету героя, сам портрет гаснет */
+#screen[data-fallen]::after { content: ''; position: absolute; inset: 0; z-index: 6; pointer-events: none; box-shadow: none;
+  background: radial-gradient(circle at 42px 812px, rgba(8, 10, 26, 0) 0 50px, rgba(8, 10, 26, .6) 240px); animation: fallin .8s ease-out both; }
+#app.fast #screen[data-fallen]::after { animation-duration: .4s; }
+@keyframes fallin { from { opacity: 0; } to { opacity: 1; } }
+#screen[data-fallen] #heroPortrait { filter: grayscale(.85) brightness(.78); transition: filter .5s; }
+/* Экран поражения: вместо ясного дня синие сумерки за книгой. Слой лежит на фоне, а не на экране,
+   поэтому темнота не мигает при смене экрана: она опускается ещё в бою и остаётся. */
+#bg::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity .6s ease-out;
+  background: radial-gradient(ellipse 120% 70% at 50% 30%, rgba(12, 14, 40, .5), rgba(6, 8, 24, .82)); }
+#app:has(.scr-end.lose) #bg::after, #app:has(#screen[data-fallen]) #bg::after { opacity: 1; }
