@@ -2016,8 +2016,10 @@
       msg = tr('Ты {f|забрала|забрал} всё до последней монетки. Враг это запомнит.');
     }
     save({ t: 'afterdone', tier });
-    $('.talk-box p').textContent = msg;
-    $('.scrolls').innerHTML = `<button class="scroll" data-act="afternext">${tr('Дальше')}</button>`;
+    keepStand(() => {
+      $('.talk-box p').textContent = msg;
+      $('.scrolls').innerHTML = `<button class="scroll" data-act="afternext">${tr('Дальше')}</button>`;
+    });
     $('.topbar').outerHTML = topBar();
     $('.herobar').outerHTML = heroBar(false);
     showGain(hp0, gold0);
@@ -3113,6 +3115,7 @@
   async function winCombat() {
     busy = true;
     const el = $('#enemy');
+    FX.warm([C.tier === 'boss' ? 'triumph' : 'loot']);   // ролики монет и праздника расшифровываются, пока враг падает
     const dl = !C.boomed && lineOf(C.id, 'death');
     if (dl && SETTINGS.lines !== false) { say(dl, 1600); await sleep(800); }
     // нарисованная гибель играет до конца (останки сами тают), иначе прежнее растворение

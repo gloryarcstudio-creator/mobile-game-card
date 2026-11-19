@@ -548,7 +548,7 @@
     },
     // победа: монеты сыплются из поверженного врага; над боссом ещё и конфетти
     async loot(t = 'enemy') { return K.gold(t); },
-    async triumph(t = 'enemy') { K.confetti(t); return K.gold(t); },
+    async triumph(t = 'enemy') { confettiBits(anchor(t)); sfx('fair'); return K.gold(t); },
     // находка в сундуке
     async find() { sfx('sigil'); },
     async deliver() {
