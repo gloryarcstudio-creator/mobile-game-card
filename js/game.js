@@ -579,7 +579,9 @@
     const hpPct = (run.hp / run.maxHp) * 100;
     const mv = hpAnim(hpPct);
     const flame = inCombat ? C.flame : 0;
-    return `<div class="herobar">
+    // мало здоровья (четверть и меньше): полоска тревожно пульсирует; фаза общая, чтобы перерисовка не сбивала пульс
+    const low = run.hp > 0 && run.hp / run.maxHp <= 0.25;
+    return `<div class="herobar${low ? ' low' : ''}"${low ? ` style="--ph:-${Math.round(performance.now() % 1800)}ms"` : ''}>
       <div class="portrait" id="heroPortrait">${heroFace()}</div>
       <div class="hb-mid">
         <div class="hpbar">${mv.trail}<div class="fill" style="${mv.fill}width:${hpPct}%"></div><span>${run.hp}/${run.maxHp}</span>
