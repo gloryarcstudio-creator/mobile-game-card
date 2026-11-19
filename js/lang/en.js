@@ -337,6 +337,7 @@
     'Тук-тук! +{n}': 'Knock-knock! +{n}',
     'Ку-ку!': 'Cuckoo!',
     'Блок': 'Blocked',
+    'Блок −{n}': 'Blocked {n}',
     'Внутри ещё одна!': 'Another one inside!',
     'Вспышка!': 'Flare!',
     'Подкова!': 'Horseshoe!',

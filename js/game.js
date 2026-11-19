@@ -2504,7 +2504,8 @@
     $('.ehp .fill').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
     $('.ehp .trail').style.width = `${(Math.max(0, e.hp) / e.max) * 100}%`;
     $('.ehp span').textContent = `${Math.max(0, e.hp)}/${e.max}`;
-    $('.eblk').innerHTML = e.block > 0 ? `${Art.intentIcon('block')}<b>${e.block}</b>` : '';
+    const eb = $('.eblk'); eb.className = 'eblk';   // значок живёт между перерисовками: класс «подскока» снимаем сами
+    eb.innerHTML = e.block > 0 ? `${Art.intentIcon('block')}<b>${e.block}</b>` : '';
     const g = (name) => GL[name];
     const st = [];
     if (e.str) st.push(chip('s-str', tr('Сила {n}', { n: e.str }), g('Сила врага'), sti('enemy_strength')));
@@ -2544,6 +2545,8 @@
     popChanged($('.hstatus'), 'i', 'hst');
     $('.hb-slot').innerHTML = heroBar(true);
     popChanged($('.hb-slot'), '.energy b', 'energy');
+    popChanged($('.hb-slot'), '.hblk', 'hblk');
+    popChanged($('.ehp'), '.eblk', 'eblk');
     const orb = $('.hb-slot .energy');
     if (orb) { const eb = orb.querySelector('b'); orb.classList.toggle('empty', C.energy <= 0); if (eb.classList.contains('chg')) { orb.classList.add(eb.classList.contains('up') ? 'gain' : 'spend'); orb.style.setProperty('--age', eb.style.getPropertyValue('--age')); } }
     renderHand(dealAnim);
@@ -2694,7 +2697,7 @@
     eAct('hurt');
     if (real <= 0) SND.sfx('clank');
     else if (!quiet) SND.sfx('hit', Math.min(1.4, 0.6 + real / 15));
-    floatText($('.enemy-fx'), real > 0 ? `-${real}` : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
+    floatText($('.enemy-fx'), real > 0 ? `-${real}` : absorbed > 0 ? tr('Блок −{n}', { n: absorbed }) : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
     await sleep(260);
   }
@@ -2757,7 +2760,7 @@
     const p = $('#heroPortrait');
     if (p) { p.classList.remove('hurt'); void p.offsetWidth; p.classList.add('hurt'); }
     SND.sfx(real > 0 ? 'hurt' : 'clank');
-    floatText($('.hero-fx'), real > 0 ? `-${real}` : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
+    floatText($('.hero-fx'), real > 0 ? `-${real}` : absorbed > 0 ? tr('Блок −{n}', { n: absorbed }) : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
     renderCombat();
     await sleep(300);
     // окованный ставень: удар целиком в защиту — враг получает в ответ
