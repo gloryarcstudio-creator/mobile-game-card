@@ -847,7 +847,16 @@
       const b = e.target.closest('[data-act]');
       if (!b) return;
       hideOverlay();
-      if (b.dataset.act === 'c-yes') { clearSave(); begin(); }
+      if (b.dataset.act === 'c-yes') {
+        // Брошенный забег в журнал не попадает, но его урон, монеты и время идут в общий счёт:
+        // сыгранные карты и победы из него там уже есть, иначе строки «Всего» считались бы по разным забегам
+        const st = s.run.st;
+        if (st) {
+          STATS.dmg = (STATS.dmg || 0) + (st.dmg || 0); STATS.ms = (STATS.ms || 0) + (st.ms || 0); STATS.gold = (STATS.gold || 0) + (st.gold || 0);
+          STATS.runDmg = Math.max(STATS.runDmg || 0, st.dmg || 0); saveStats();
+        }
+        clearSave(); begin();
+      }
     });
   }
 
