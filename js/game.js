@@ -125,7 +125,7 @@
   // в бою фон опускается к земле: класс ground на #app.
   // На нарисованном фоне камера подстраивается под того, кто стоит на экране:
   // снег с картинки встаёт ему под ноги (враг в бою, собеседник, сундук, ёж в лавке)
-  const STANDS = '.enemy, .talk-art, .chest, .shopkeeper, .ev-art';
+  const STANDS = '.enemy, .talk-art, .chest, .shopkeeper, .ev-art, .title-hero';
   function groundCam() {
     if (!Art.groundCam) return;
     const el = screen.querySelector(STANDS);

@@ -1545,3 +1545,11 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 #app.painted-bg[data-light="sunset"]:not(.aim) .enemy:not(.hit) > canvas.live { filter: sepia(.24) saturate(1.22) brightness(.97) drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
 #app.painted-bg[data-light="dusk"]:not(.aim) .enemy:not(.hit) > canvas.live { filter: brightness(.9) saturate(.93) sepia(.1) drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
 #app.painted-bg[data-light="night"]:not(.aim) .enemy:not(.hit) > canvas.live { filter: brightness(.84) saturate(.86) contrast(1.05) drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
+
+/* ---------- v71: героиня на титуле стоит на снегу, а не висит в небе ----------
+   Камера фона опускается ей под ноги (.title-hero в списке STANDS, game.js), под ногами мягкая тень,
+   в покое она покачивается на месте и больше не приподнимается над землёй. */
+.title-hero { position: relative; }
+.title-hero::before { content: ''; position: absolute; left: 50%; bottom: -3px; width: 52%; height: 15px; margin-left: -26%; z-index: -1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(8, 10, 26, .55), rgba(8, 10, 26, 0)); }
+@keyframes herosway { 0%, 100% { transform: rotate(-.6deg); } 50% { transform: rotate(.6deg) scaleY(1.008); } }
