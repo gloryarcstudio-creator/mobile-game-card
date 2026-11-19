@@ -1559,5 +1559,17 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
    потому что фон поднимался к сундуку. Тень ежа в лавке поднята под сапоги: карты срезали её нижнюю половину. */
 #app.painted-bg .chest-wrap { padding-top: 428px; }
 #app.painted-bg .chest-wrap p { margin-top: 14px; margin-bottom: 12px; }
-#app.painted-bg:has(#screen.scr-chest) .bg-cam > rect:last-child { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(.45); }   /* картинка кончается у самой панели героя: туману у её края хватит узкой полоски */
 #app.painted-bg .shopkeeper::before { bottom: -4px; height: 17px; width: 48%; margin-left: -24%; }
+/* Реплика врага в одну строку упиралась буквами в завитки рамки облачка: поля шире, длинная фраза уходит на вторую строку.
+   Подписи «Особенность» и «Сложность» на выборе героя стояли на самой кромке рамки: отступ сверху больше. */
+#app.skin .saybub { padding: 9px 18px 8px; }
+#app.skin .clsrelic { padding-top: 12px; }
+#app.skin .diffbox { padding-top: 13px; }
+#app.skin :is(.clsrelic, .clscards, .diffbox) { margin-top: 6px; }   /* высота столбца прежняя: отступы между панелями чуть меньше */
+/* Выбор героя: рамка сложности заходила под кнопки, когда описания героя и особенности длинные (до 19px в украинском).
+   Столбец начинается чуть выше, кнопки стоят чуть ниже; если и этого мало, game.js ставит data-tight. */
+.clshead { padding-top: 5px; }
+#app.skin .clsinfo { margin-top: 4px; }
+.clsbtns { bottom: 10px; }
+#screen.scr-class[data-tight] :is(.clsabout, .clsrelic span, .clscards small, .diffhint) { line-height: 1.06; }
+#screen.scr-class[data-tight] :is(.clsrelic, .clscards, .diffbox) { margin-top: 3px; }

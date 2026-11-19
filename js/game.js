@@ -1296,6 +1296,10 @@
       </div>
       ${Store.heroOwned(sel) ? `<div class="clsbtns"><button class="btn ghost" data-act="title">${tr('Назад')}</button><button class="btn big" data-act="clsgo">${tr('В путь')}</button></div>`
         : `<div class="clsbtns locked"><button class="btn ghost" data-act="title">${tr('Назад')}</button><button class="btn big buyhero" data-act="sbuy" data-p="hero_${sel}">${uiIco('lock')}<span>${tr('герой::Открыть')}<small>${Store.PRODUCTS[`hero_${sel}`].price}</small></span></button><button class="btn ghost" data-act="store" data-back="cls">${tr('Магазин')}</button></div>`}`;
+    // Длинные описания (чаще в переводах) опускали рамку сложности под кнопки: тогда строки и отступы плотнее
+    delete screen.dataset.tight;
+    const db = $('.diffbox'); const cb = $('.clsbtns');
+    if (db && cb && cb.offsetTop + Math.min(...[...cb.children].map((x) => x.offsetTop)) - (db.offsetTop + db.offsetHeight) < 4) screen.dataset.tight = '1';
   }
   // стартовая колода и собственные карты героя
   function showClassCards(id) {

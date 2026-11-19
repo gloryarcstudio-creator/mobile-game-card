@@ -115,15 +115,22 @@
     bg_final_house: 650, bg_title: 700, scene_talk: 700, scene_meet: 715, scene_shop: 515,
     scene_campfire: 700, scene_chest: 690,
   };
+  // Картинка лежит двумя кусками: всё выше линии снега и передний план ниже неё. Когда камера поднимает
+  // картинку к ногам персонажа, передний план растягивается вниз (Art.groundCam), и снег доходит до низа
+  // экрана. Раньше под картинкой оставалась ровная пустая полоса.
   function paintBg(a, b, mix) {
     const c = (A.bgc || {})[mix > 0.5 && b ? b : a] || '#2a3350';
     const fa = FEET[a] || 690; const feet = b && mix > 0.001 ? fa + ((FEET[b] || 690) - fa) * mix : fa;
-    return `<svg class="bg-svg painted" viewBox="0 0 400 860" data-feet="${feet.toFixed(0)}" data-k="${a}" ${NS}>
-      <defs><linearGradient id="bgFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}"/></linearGradient></defs>
+    const f = +feet.toFixed(0);
+    const pics = `${layer(a)}${b && mix > 0.001 ? layer(b, mix) : ''}`;
+    return `<svg class="bg-svg painted" viewBox="0 0 400 860" data-feet="${f}" data-k="${a}" ${NS}>
+      <defs><linearGradient id="bgFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}"/></linearGradient>
+        <clipPath id="bgTop"><rect x="-50" y="-300" width="500" height="${f + 301}"/></clipPath>
+        <clipPath id="bgLow"><rect x="-50" y="${f}" width="500" height="${BH - f + 2}"/></clipPath></defs>
       <g class="bg-cam">
         <rect y="-300" width="400" height="1600" fill="${c}"/>
-        ${layer(a)}${b && mix > 0.001 ? layer(b, mix) : ''}
-        <rect y="${BH - 90}" width="400" height="91" fill="url(#bgFade)"/>
+        <g clip-path="url(#bgTop)">${pics}</g>
+        <g class="bg-low"><g clip-path="url(#bgLow)">${pics}<rect class="bg-fade" y="${BH - 90}" width="400" height="91" fill="url(#bgFade)"/></g></g>
       </g></svg>`;
   }
   /* opts: { scene: 'town'|'outskirts'|'night', t: 0..1 внутри стадии } или { place: 'rest'|'shop'|…|'final'|'title' } */
@@ -142,12 +149,22 @@
 
   // Опустить камеру: снег с картинки встаёт под ноги персонажа на высоте y (экран 400×860).
   // y = null возвращает обычный вид. Вверх фон не сдвигаем, чтобы над ним не открылась пустота.
+  const LOW_MAX = 2.2; // сильнее передний план не тянем: мазки снега становятся полосами. Остаток уходит в туман под картами
   Art.groundCam = (root, y) => {
     const sv = root && root.querySelector('svg.bg-svg.painted');
     const g = sv && sv.querySelector('.bg-cam');
     if (!g) return false;
-    const ty = y == null ? 0 : Math.min(0, y - (+sv.dataset.feet || 690));
+    const feet = +sv.dataset.feet || 690;
+    const ty = y == null ? 0 : Math.min(0, y - feet);
     g.style.transform = ty ? `translateY(${ty.toFixed(1)}px)` : '';
+    const low = g.querySelector('.bg-low');
+    if (low) {
+      // во сколько раз растянуть снег ниже линии ног, чтобы низ картинки снова лёг на низ экрана
+      const need = ty ? (860 - y) / (860 - feet) : 1; const k = Math.min(LOW_MAX, need);
+      if (k > 1.001) low.setAttribute('transform', `translate(0 ${feet}) scale(1 ${k.toFixed(3)}) translate(0 ${-feet})`); else low.removeAttribute('transform');
+      const fade = low.querySelector('.bg-fade');
+      if (fade) fade.style.display = ty && need <= LOW_MAX ? 'none' : ''; // картинка дошла до низа экрана: туман у её края не нужен
+    }
     return true;
   };
 
