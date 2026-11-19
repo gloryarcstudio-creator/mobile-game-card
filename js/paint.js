@@ -419,11 +419,36 @@
       ctx.drawImage(pix(l.im), l.sx, l.sy, l.s, l.s, (W - d) / 2, fy, d, d);
     }
     ctx.globalAlpha = 1;
-    if (mix) ctx.globalCompositeOperation = 'source-over';
+    // Замах иногда выходит за свой квадратный кадр, и рисунок там обрезан по линейке. У таких кадров (метка e из
+    // описи: 1 верх, 2 право, 4 низ, 8 лево) край растворяется. Низ трогаем только у вспышки во весь кадр: ногам нужна опора
+    const side = [0, 0, 0, 0];
+    for (const l of layers) {
+      if (!l.e) continue;
+      const burst = (l.e & 1 ? 1 : 0) + (l.e & 2 ? 1 : 0) + (l.e & 8 ? 1 : 0) >= 3;
+      for (let k = 0; k < 4; k++) if (l.e & (1 << k) && (k !== 2 || burst)) side[k] += (mix ? l.w * (1 - old) : 1);
+    }
+    if (side[0] || side[1] || side[2] || side[3]) {
+      const x0 = (W - d) / 2; const F = d * EDGE_FADE;
+      ctx.globalCompositeOperation = 'destination-out';
+      const band = (k, gx0, gy0, gx1, gy1, x, y, w, h) => {
+        if (side[k] < 0.02) return;
+        const g = ctx.createLinearGradient(gx0, gy0, gx1, gy1);
+        g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.3, 'rgba(0,0,0,.78)'); g.addColorStop(0.7, 'rgba(0,0,0,.2)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = Math.min(1, side[k]); ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+      };
+      band(0, 0, fy, 0, fy + F, x0, fy, d, F);
+      band(1, x0 + d, 0, x0 + d - F, 0, x0 + d - F, fy, F, d);
+      band(2, 0, fy + d, 0, fy + d - F, x0, fy + d - F, d, F);
+      band(3, x0, 0, x0 + F, 0, x0, fy, F, d);
+      ctx.globalAlpha = 1;
+    }
+    ctx.globalCompositeOperation = 'source-over';
   }
-  const frameOf = (m, im, i, w = 1) => ({ im, sx: (i % m.cols) * m.fs, sy: Math.floor(i / m.cols) * m.fs, s: m.fs, w });
-  // два соседних кадра с долями (1 − f) и f
-  const blend = (m, im, i, j, f) => (f > 0 && i !== j ? [frameOf(m, im, i, 1 - f), frameOf(m, im, j, f)] : [frameOf(m, im, i)]);
+  const EDGE_FADE = 0.13; // ширина растворения у края, доля кадра
+  const edgeOf = (e, i) => (e ? parseInt(e[i], 16) || 0 : 0);
+  const frameOf = (m, im, i, w = 1, e = 0) => ({ im, sx: (i % m.cols) * m.fs, sy: Math.floor(i / m.cols) * m.fs, s: m.fs, w, e });
+  // два соседних кадра с долями (1 − f) и f; e — метки краёв этих кадров, o — с какого кадра атласа они считаются
+  const blend = (m, im, i, j, f, e, o = 0) => (f > 0 && i !== j ? [frameOf(m, im, i, 1 - f, edgeOf(e, i - o)), frameOf(m, im, j, f, edgeOf(e, j - o))] : [frameOf(m, im, i, 1, edgeOf(e, i - o))]);
   function tick(now) {
     const list = document.querySelectorAll('canvas.live');
     for (const cv of list) {
@@ -440,7 +465,7 @@
         if (p < T || st.dead) {
           const i = Math.min(Math.floor(p), T - 1);
           const fr = (j) => a.o + (a.seq ? a.seq[j] : j);
-          paint(cv, st, now, i < T - 1 ? blend(m, act, fr(i), fr(i + 1), p - i) : [frameOf(m, act, fr(i))]);
+          paint(cv, st, now, i < T - 1 ? blend(m, act, fr(i), fr(i + 1), p - i, a.e, a.o) : [frameOf(m, act, fr(i), 1, edgeOf(a.e, fr(i) - a.o))]);
           continue;
         }
         // движение кончилось: его последний кадр растворяется в покое, покой идёт с начала
@@ -454,7 +479,7 @@
         const n = m.idle.n;
         const p = Math.max(0, ((now - st.t) / 1000) * m.idle.fps);
         const i = Math.floor(p);
-        paint(cv, st, now, blend(m, idle, i % n, (i + 1) % n, p - i));
+        paint(cv, st, now, blend(m, idle, i % n, (i + 1) % n, p - i, m.idle.e));
       } else if (still && still.ok) {
         paint(cv, st, now, [{ im: still, sx: 0, sy: 0, s: still.naturalWidth, w: 1 }]);
       }

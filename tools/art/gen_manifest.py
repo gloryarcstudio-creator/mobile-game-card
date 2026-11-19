@@ -18,6 +18,35 @@ face = [n[:-5] for n in names('h') if n.endswith('_face')]
 EA = sorted(d for d in os.listdir(A) if re.fullmatch(r'ea\d*', d))[-1] if any(re.fullmatch(r'ea\d*', d) for d in os.listdir(A)) else 'ea'
 UI = ([d for d in sorted(os.listdir(A), key=lambda d: (len(d), d)) if re.fullmatch(r'ui\d*', d)] or ['ui'])[-1]
 anim = {}
+
+# Which frames run into the edge of their square: a move that swings out of the frame is cut there by a
+# straight line. The game fades such a frame out towards that edge (paint() in js/paint.js).
+# `e` = one hex digit per frame, bits 1 top, 2 right, 4 bottom, 8 left; left out when no frame touches.
+_alpha = {}
+def edges(cid, meta):
+    fs, cols = meta.get('fs'), meta.get('cols')
+    if not fs or not cols: return
+    def flags(part, o, n):
+        path = os.path.join(A, EA, f'{cid}_{part}.webp')
+        if not os.path.exists(path): return None
+        if path not in _alpha: _alpha.clear(); _alpha[path] = np.asarray(Image.open(path).convert('RGBA'))[..., 3] > 60
+        al = _alpha[path]; out = ''
+        for i in range(o, o + n):
+            x, y = (i % cols) * fs, (i // cols) * fs
+            fr = al[y:y + fs, x:x + fs]
+            if fr.shape != (fs, fs): out += '0'; continue
+            t = [fr[:2].any(0).sum(), fr[:, -2:].any(1).sum(), fr[-2:].any(0).sum(), fr[:, :2].any(1).sum()]
+            out += '%x' % sum(1 << k for k, v in enumerate(t) if v >= 4)
+        return out if out.strip('0') else None
+    idle = meta.get('idle')
+    if idle:
+        e = flags(idle.get('f', 'idle'), 0, idle['n'])
+        if e: idle['e'] = e
+        else: idle.pop('e', None)
+    for a in (meta.get('act') or {}).values():
+        e = flags(a.get('f', 'act'), a.get('o', 0), a['n'])
+        if e: a['e'] = e
+        else: a.pop('e', None)
 for k, v in build.items():
     kind, cid = k.split(':', 1)
     if kind == 'anim' and isinstance(v, list):
@@ -33,6 +62,7 @@ for k, v in build.items():
                 meta['aw'], meta['ah'] = at.size
                 break
         meta.pop('bg', None)
+        edges(cid, meta)
         anim[cid] = meta
 
 # bottom colour of each background, used to extend the ground below the picture
