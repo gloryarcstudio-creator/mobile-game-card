@@ -397,7 +397,8 @@
   };
 
   function sfx(name, v) {
-    if (!ctx || !prefs.sfxVol || !SFX[name]) return;
+    // в свёрнутой игре звук стоит на паузе: всё заказанное за это время грянуло бы разом при возвращении
+    if (!ctx || !prefs.sfxVol || !SFX[name] || document.hidden) return;
     SFX[name](ctx.currentTime + 0.005, v);
   }
 

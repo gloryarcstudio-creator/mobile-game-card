@@ -233,7 +233,9 @@
 
   // «+15 монет» с нужной формой слова
   const coins = (n) => tr('+{n} {n|монета|монеты|монет}', { n });
-  const sleep = (ms) => new Promise((r) => setTimeout(r, SETTINGS.fast ? ms * 0.5 : ms));
+  // игра свёрнута или экран погас: бой ждёт возвращения, чтобы ход врага не прошёл за глаза
+  const seen = () => (document.hidden ? new Promise((r) => document.addEventListener('visibilitychange', r, { once: true })).then(seen) : undefined);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, SETTINGS.fast ? ms * 0.5 : ms)).then(seen);
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const shuffle = (arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
@@ -1263,6 +1265,8 @@
     run = null; C = null; busy = false; setBg(0.45);
     hideOverlay();
     SND.music('title');
+    // пока игрок выбирает героя, скачиваем первую улицу и рамки карты пути
+    if (Art.warm) Art.warm({ scene: STORY.sky === 'night' ? 'night' : STAGES[0].scene, ui: ['topbar', 'mapcard', 'herobar', 'tile'] });
     const h = CLASSES[sel];
     const r = RELICS[h.relic];
     const own = heroCards(sel);
@@ -1497,6 +1501,16 @@
       <div class="map-hint">${mapHint()}</div>
       <div class="encs n${run.choices.length}">${run.choices.map(encHTML).join('')}</div>
       ${heroBar(false)}`;
+    // пока игрок выбирает дорогу, тихо скачиваем картинки следующего экрана: врагов, сцены, рамки и рисунки карт
+    if (Art.warm) {
+      const ch = run.choices; const has = (t) => ch.some((o) => o.t === t);
+      Art.warm({
+        enemies: [...ch.filter((o) => o.enemy).map((o) => o.enemy), ...(has('shop') ? ['hedgehog'] : [])],
+        places: [...['shop', 'rest', 'chest', 'meet'].filter(has), ...(ch.some((o) => o.enemy) ? ['talk'] : [])],
+        ui: ['f_atk', 'f_skill', 'f_charm', 'f_status', 'bubble', 'scroll', 'row', 'parch'],
+        cards: run.deck.map((c) => c.id), intents: true,
+      });
+    }
   }
 
   function mapHint() {

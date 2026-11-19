@@ -7,7 +7,9 @@
   const $ = (s) => document.querySelector(s);
   const rnd = (a, b) => a + Math.random() * (b - a);
   const fast = () => document.getElementById('app').classList.contains('fast');
-  const wait = (ms) => new Promise((r) => setTimeout(r, fast() ? ms * 0.5 : ms));
+  // пока игра свёрнута, эффекты ждут вместе с боем
+  const seen = () => (document.hidden ? new Promise((r) => document.addEventListener('visibilitychange', r, { once: true })).then(seen) : undefined);
+  const wait = (ms) => new Promise((r) => setTimeout(r, fast() ? ms * 0.5 : ms)).then(seen);
   const sfx = (n, v) => window.Sound && window.Sound.sfx(n, v);
   const svg = (vb, body, w, h = w) => `<svg viewBox="${vb}" style="width:${w}px;height:${h}px">${body}</svg>`;
 

@@ -48,6 +48,20 @@
     app.classList.add('skin');
     // полный адрес: относительный в переменной браузер считал бы от папки css/
     UI.forEach((n) => app.style.setProperty(`--ui-${n}`, `url("${new URL(url(`${A.uid || 'ui'}/${n}`), document.baseURI).href}")`));
+    // Рамки стоят фоном в CSS, а фон, который не пришёл из-за сбоя сети, браузер сам не перезапрашивает:
+    // кнопки и строки оставались без рамок до перезапуска. Поэтому каждую рамку по очереди загружаем сами
+    // (заодно они готовы до первого показа); не пришла, пробуем снова, а получив, подставляем адрес заново.
+    const names = [...UI].filter((n) => !/^logo_/.test(n) || n === `logo_${(window.I18N && window.I18N.lang) || 'ru'}`);
+    const check = (i, tries = 0) => {
+      const n = names[i];
+      if (!n) return;
+      const u = new URL(url(`${A.uid || 'ui'}/${n}`), document.baseURI).href;
+      const im = new Image();
+      im.onload = () => { if (tries) app.style.setProperty(`--ui-${n}`, `url("${u}#${tries}")`); setTimeout(() => check(i + 1), 30); };
+      im.onerror = () => { if (tries < 3) setTimeout(() => check(i, tries + 1), 1500 * (tries + 1)); else check(i + 1); };
+      im.src = u;
+    };
+    setTimeout(() => check(0), 1500);
   }
 
   /* ---------- Значки ---------- */
@@ -179,7 +193,12 @@
     imgs[u] = im;
     im.ok = false; im.u = u;
     const done = () => { im.ok = true; };
-    const plain = () => { im.onload = () => { if (im.decode) im.decode().then(done, done); else done(); }; im.src = u; };
+    const plain = () => {
+      im.onload = () => { if (im.decode) im.decode().then(done, done); else done(); };
+      // файл не пришёл: пробуем ещё дважды, иначе враг остался бы невидимым на весь бой
+      im.onerror = () => { im.tries = (im.tries || 0) + 1; if (im.tries <= 2) setTimeout(() => { if (imgs[u] === im) im.src = u; }, 1500 * im.tries); };
+      im.src = u;
+    };
     // Атлас берём готовой растровой копией: файл расшифровывается в фоне, а не в кадре.
     // Обычную картинку браузер расшифровывал при первом показе каждого атласа, и на слабом телефоне
     // бой замирал на четверть секунды в начале и на первом ударе.
@@ -204,6 +223,54 @@
     }
   }
   const parts = (m) => [...new Set(Object.values(m.act || {}).map((a) => a.f || 'act'))];
+
+  /* ---------- Файл не пришёл ----------
+     Сеть моргнула, и картинка не загрузилась: браузер рисовал на её месте значок «битая картинка», растянутый
+     во весь размер (у фона это бело-зелёное пятно на весь экран). Такую картинку прячем и дважды пробуем снова. */
+  window.addEventListener('error', (e) => {
+    const el = e.target;
+    const tag = el && el.tagName ? el.tagName.toLowerCase() : '';
+    if (tag !== 'image' && tag !== 'img') return;
+    const attr = tag === 'img' ? 'src' : 'href';
+    const u = el.getAttribute(attr) || '';
+    if (!u || /^(data|blob):/.test(u)) return;
+    el.style.visibility = 'hidden';
+    const n = +(el.dataset.retry || 0);
+    if (n >= 2) return;
+    el.dataset.retry = n + 1;
+    setTimeout(() => {
+      if (!el.isConnected) return;
+      el.addEventListener('load', () => { el.style.visibility = ''; }, { once: true });
+      el.removeAttribute(attr); el.setAttribute(attr, u);
+    }, 1200 * (n + 1));
+  }, true);
+
+  /* ---------- Загрузка наперёд ----------
+     Пока игрок читает экран, тихо скачиваем то, что покажет следующий: при первом входе в бой по мобильной
+     сети враг, рамки и рисунки карт появлялись с опозданием. Файлы только ложатся в кэш браузера, по одному
+     и после картинок самого экрана; в память ничего не раскодируется. В режиме экономии трафика не качаем. */
+  const warmed = new Set(); const warmQ = []; let warming = false;
+  function warmNext() {
+    const u = warmQ.shift();
+    if (!u) { warming = false; return; }
+    fetch(u, { priority: 'low' }).then((r) => r.blob()).catch(() => { warmed.delete(u); }).then(() => setTimeout(warmNext, 20));
+  }
+  /* w: { enemies: [id], places: ['shop'|'rest'|…], scene: 'town'|…, ui: [имя], cards: [id], intents: true } */
+  Art.warm = (w = {}) => {
+    if (!window.fetch || (navigator.connection && navigator.connection.saveData)) return;
+    const live = (w.enemies || []).filter((id) => AN[id] && AN[id].idle && S.enemy.has(id));
+    const list = [
+      ...(w.ui || []).filter((n) => UI.has(n)).map((n) => url(`${A.uid || 'ui'}/${n}`)),
+      ...live.map((id) => atlasUrl(id, AN[id].idle.f || 'idle')),
+      ...(w.places || []).map((pl) => SCENE[pl]).filter((k) => k && S.bg.has(k)).map((k) => url(`bg/${k}`)),
+      ...(w.scene ? (KEYS[w.scene] || KEYS.town).filter((k) => S.bg.has(k)).slice(0, 1).map((k) => url(`bg/${k}`)) : []),
+      ...[...new Set(w.cards || [])].filter((id) => S.card.has(id)).map((id) => url(`c/${id}`)),
+      ...(w.intents ? [...S.intent].map((k) => url(`it/${k}`)) : []),
+      ...live.flatMap((id) => parts(AN[id]).map((pt) => atlasUrl(id, pt))),
+    ];
+    list.forEach((u) => { if (!warmed.has(u) && !imgs[u]) { warmed.add(u); warmQ.push(u); } });
+    if (!warming && warmQ.length) { warming = true; setTimeout(warmNext, 350); }
+  };
   Art.enemyLive = (id) => {
     const m = AN[id];
     if (!m || !m.idle || !S.enemy.has(id)) return Art.enemy(id);
