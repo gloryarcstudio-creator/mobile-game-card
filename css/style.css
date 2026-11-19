@@ -1593,3 +1593,17 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
   62% { transform: translate(-50%, -14px) scale(1); opacity: 1; }
   100% { transform: translate(-50%, -30px) scale(.96); opacity: 0; }
 }
+
+/* ---------- v75: много статусов в долгом бою ----------
+   Статусы врага шли по три в ряд (ширина полоски здоровья) и на третьем ряду встречались со статусами героя.
+   Теперь ряд врага во всю ширину экрана; если рядов всё равно слишком много, значки плотнее (data-dense из game.js). */
+.estatus { width: 392px; max-width: none; margin-left: -46px; margin-right: -46px; }
+#screen[data-dense] .estatus { row-gap: 2px; margin-top: 4px; }
+#screen[data-dense] .hstatus { bottom: 302px; gap: 3px; }
+#screen[data-dense] :is(.estatus, .hstatus) i { font-size: 11px; padding: 0 5px; gap: 2px; }
+#screen[data-dense] :is(.estatus, .hstatus) i :is(.st-ico, .icon, svg, img) { width: 15px; height: 15px; }
+/* Итоги забега: плашка достижения снизу задевала кнопку «Главное меню», когда талисманов на три ряда */
+#app.skin:has(#screen.scr-summary) .achtoast { bottom: 5px; min-height: 52px; }
+#app.skin:has(#screen.scr-summary) .achtoast .aport { width: 46px; height: 42px; }
+#app:has(#screen.scr-summary) .achtoast small { font-size: 11px; }
+#app:has(#screen.scr-summary) .achtoast b { font-size: 16px; }

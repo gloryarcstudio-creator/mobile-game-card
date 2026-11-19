@@ -288,6 +288,7 @@
   // Класс экрану не добавляем: по точному имени класса игра узнаёт, какой экран открыт
   new MutationObserver((list) => {
     if (!list.some((m) => (m.oldValue || '') !== screen.className)) return;
+    closeTip();   // подсказка к значку не остаётся висеть над новым экраном
     if (screen.animate) screen.animate([{ opacity: 0 }, { opacity: 1 }], { duration: SETTINGS.fast ? 120 : 260, easing: 'ease-out' });
   }).observe(screen, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
 
@@ -2554,6 +2555,10 @@
     for (const [id, n] of Object.entries(C.charms)) hs.push(chip('h-charm', `${n}`, `${CARDS[id].name}: ${CHARM_TIP[id](n)}`, Art.card(id)));
     $('.hstatus').innerHTML = hs.join('');
     popChanged($('.hstatus'), 'i', 'hst');
+    // Статусы врага растут вниз, статусы героя вверх. В долгом бою их набирается столько, что ряды встречаются:
+    // тогда значки становятся плотнее (style.css, data-dense)
+    delete screen.dataset.dense;
+    if (st.length && hs.length && st.length + hs.length > 5 && $('.estatus').getBoundingClientRect().bottom > $('.hstatus').getBoundingClientRect().top - 3) screen.dataset.dense = '1';
     $('.hb-slot').innerHTML = heroBar(true);
     popChanged($('.hb-slot'), '.energy b', 'energy');
     popChanged($('.hb-slot'), '.hblk', 'hblk');
