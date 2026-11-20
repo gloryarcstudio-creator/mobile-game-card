@@ -1844,3 +1844,8 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 @media (prefers-reduced-motion: reduce) { #app.skin :is(.svc, .brelic)::before { animation: none; } }
 #app.calm :is(.ev-box, .page)::before { animation: none; }
 @media (prefers-reduced-motion: reduce) { #app.skin :is(.ev-box, .page)::before { animation: none; } }
+
+/* v111: в настройках ползунки «Звуки» и «Музыка» начинались на разной высоте по горизонтали: подписи сжимались каждая до своей ширины.
+   Подпись держит ширину, ползунок занимает остаток. */
+.srow label { flex: none; }
+.srow input[type=range] { min-width: 0; }
