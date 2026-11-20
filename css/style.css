@@ -1849,3 +1849,15 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
    Подпись держит ширину, ползунок занимает остаток. */
 .srow label { flex: none; }
 .srow input[type=range] { min-width: 0; }
+
+/* ---------- v112: фонарь Ивы на логотипе ----------
+   На титуле фонарь в руке Ивы на самой вывеске игры дышит тёплым светом. У каждого языка своя картинка вывески, поэтому место ореола своё.
+   Ручка та же, что у фонарей на рамках: --uilamp на #app (0 — убрать). Чтобы убрать совсем, удалить этот блок. */
+#app.skin .logo { position: relative; }
+#app.skin .logo::before { content: ''; position: absolute; left: 22.7%; top: 41.4%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; pointer-events: none; will-change: opacity;
+  background: radial-gradient(circle closest-side, rgba(255, 226, 150, calc(.55 * var(--uilamp))) 0%, rgba(255, 186, 96, calc(.26 * var(--uilamp))) 42%, rgba(255, 150, 50, 0) 100%);
+  animation: lampglow 4.9s -2s ease-in-out infinite; }
+html[lang="en"] #app.skin .logo::before { left: 29.2%; top: 37.4%; }
+html[lang="uk"] #app.skin .logo::before { left: 31.7%; top: 35.6%; }
+#app.calm .logo::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { #app.skin .logo::before { animation: none; } }
