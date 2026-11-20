@@ -1961,3 +1961,16 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
       и зазубрина на канте, следы заплатки на месте снятого узора (tools/art/build_ui.py). */
 #app.skin .cxport:not(.relic) > svg { display: block; width: calc(100% + 12px); margin: 0 -6px; background: inherit; background-clip: border-box; }
 #app.skin .scr-end.revive .book { margin-top: 104px; }
+
+/* v125. Три правки по кадрам на английском и украинском.
+   1) Итоги забега: плашка достижения стояла в 5 px от низа экрана, и нижний кант её рамки с узором
+      (рамка выступает за коробку на 7,7 px) обрезался краем. 10 px: рамка целиком на экране.
+   2) Длинный заголовок события набирается мельче (h2.long, .xlong), но строка тоже становилась ниже,
+      и мелкий заголовок прижимался к верхнему канту рамки. Поля возвращают ему ту же высоту и середину.
+   3) Настройки: подпись «Сохранение в этом браузере» на украинском не помещалась в 122 px, шла в две строки
+      и наезжала на угловой узор рамки. Подписи в одну строку и чуть выше узора. */
+#app.skin:has(#screen.scr-summary) .achtoast { bottom: 10px; }
+#app.skin .ev-box h2.long { padding: 2px 0 1px; }
+#app.skin .ev-box h2.xlong { padding: 3px 0; }
+#app.skin .sfoot { position: relative; top: -3px; }
+#app.skin .sfoot span { max-width: none; white-space: nowrap; }
