@@ -1783,3 +1783,18 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 @keyframes encfloat { from { transform: translateY(calc(1.5px * var(--enclive))); } to { transform: translateY(calc(-2.5px * var(--enclive))); } }
 #app.calm .enc::after, #app.calm .enc-art > * { animation: none; }
 @media (prefers-reduced-motion: reduce) { #app.skin .enc::after, #app.skin .enc-art > * { animation: none; } }
+
+/* ---------- v104: сундук-соня посапывает ----------
+   Пока сундук спит, на каждый его вдох (snore, 2 с) над крышкой всплывает и тает буква «z».
+   Двигаются только transform и opacity. Ручка на #app: --zzz (0 — убрать). Чтобы убрать совсем, удалить этот блок. */
+#app { --zzz: 1; }
+#app.painted-bg .chest:not(.open)::after { content: 'z'; position: absolute; left: 70%; top: 6%; font-family: var(--title); font-size: 32px; line-height: 1; color: #fff4d6;
+  text-shadow: 0 2px 3px rgba(8, 10, 22, .85), 0 0 8px rgba(8, 10, 22, .5); pointer-events: none; opacity: 0; will-change: transform, opacity;
+  animation: zrise 2s ease-out infinite; }
+@keyframes zrise {
+  0%, 28% { transform: translate(0, 10px) scale(.5) rotate(-8deg); opacity: 0; }
+  42% { opacity: var(--zzz); }
+  80% { opacity: calc(.85 * var(--zzz)); }
+  100% { transform: translate(24px, -50px) scale(1.15) rotate(10deg); opacity: 0; } }
+#app.calm.painted-bg .chest:not(.open)::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { #app.painted-bg .chest:not(.open)::after { animation: none; } }
