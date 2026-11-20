@@ -348,9 +348,12 @@
     list.forEach((u) => { if (!warmed.has(u) && !imgs[u]) { warmed.add(u); warmQ.push(u); } });
     if (!warming && warmQ.length) { warming = true; setTimeout(warmNext, 350); }
   };
+  // Неподвижная картинка для тех мест, где фигура стоит на земле (после боя, враг без своих клипов):
+  // в высокой рамке она прижата к низу, как и живая фигура. Раньше вставала по центру и висела над своей тенью.
+  Art.enemyStand = (id) => Art.enemy(id).replace('<svg ', '<svg preserveAspectRatio="xMidYMax meet" ');
   Art.enemyLive = (id) => {
     const m = AN[id];
-    if (!m || !m.idle || !S.enemy.has(id)) return Art.enemy(id);
+    if (!m || !m.idle || !S.enemy.has(id)) return Art.enemyStand(id);
     keepOnly([id, ...[...document.querySelectorAll('canvas.live')].map((c) => c.dataset.live)]);
     load(url(`e/${id}`));
     load(atlasUrl(id, m.idle.f || 'idle'));

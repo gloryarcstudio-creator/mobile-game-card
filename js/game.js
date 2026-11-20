@@ -2044,7 +2044,7 @@
     screen.className = 'scr-talk';
     screen.dataset.enemy = id; screen.dataset.tier = tier;
     screen.innerHTML = `${topBar()}
-      <div class="talk-art beaten tk-${e.tier}">${Art.enemy(id)}</div>
+      <div class="talk-art beaten tk-${e.tier}">${(Art.enemyStand || Art.enemy)(id)}</div>
       <div class="ev-box talk-box"><h2>${e.name}</h2><p>${quote(SAY[id].plea)}</p></div>
       <div class="scrolls">
         <button class="scroll" data-act="spare">${tr('Пощадить')}<small>${tr(tier === 'boss' ? 'Враг отдаст талисман' : 'Враг оставит подарок')}</small></button>
