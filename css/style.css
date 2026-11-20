@@ -1937,3 +1937,17 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
 /* v122. Экран поражения стоял прижатым к верху: над рамкой 50 px, под кнопками 245 px пустого снега.
    Опускаем лист, чтобы он стоял ближе к середине; внизу остаётся место под плашку достижения. */
 #app.skin .scr-end.lose:not(.revive) .book { margin-top: 128px; }
+
+/* v123. Три мелочи в окнах меню, найденные на крупных кадрах.
+   1) Цена в зелёной кнопке магазина стояла у левого края: общее правило .price делает её flex без центровки.
+   2) В статистике черта под строкой была разорвана: кусок под подписью, зазор и кусок под числом на 1 px ниже.
+      Теперь одна сплошная черта во всю ширину списка (ширина берётся у самого списка через cqw).
+   3) В настройках подпись «Вступление» шире своего столбца и сдвигала оба кружка этой строки на 1–2 px. */
+.btn.price { justify-content: center; }
+@supports (width: 1cqw) {
+  #app.skin .statp .statlist { container-type: inline-size; }
+  #app.skin .statp .statlist :is(dt, dd) { padding-bottom: 5px; border-bottom: 0; }
+  #app.skin .statp .statlist dt { position: relative; }
+  #app.skin .statp .statlist dt:not(:nth-last-child(2))::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100cqw; border-bottom: 1px solid rgba(216, 169, 74, .16); pointer-events: none; }
+}
+.trow:not(.langrow) .tlabel { min-width: 0; }
