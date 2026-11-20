@@ -1766,3 +1766,20 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
   100% { transform: translate(var(--dx), calc(var(--h) * -1)) scale(.35); opacity: 0; } }
 #app.calm .bg-lights .embers b { animation: none; }
 @media (prefers-reduced-motion: reduce) { .bg-lights .embers b { animation: none; } }
+
+/* ---------- v103: живые карточки пути ----------
+   На выборе пути бирюзовый фонарик на рамке каждой карточки дышит светом, а рисунок внутри чуть покачивается, у каждой карточки в своём ритме.
+   Двигаются только transform и opacity. Ручка на #app: --enclive (0 — убрать и свет, и покачивание). Чтобы убрать совсем, удалить этот блок. */
+#app { --enclive: 1; }
+#app.skin .enc::after { content: ''; position: absolute; left: 50%; top: calc(44px * var(--s)); width: calc(88px * var(--s)); height: calc(88px * var(--s)); margin: calc(-44px * var(--s)) 0 0 calc(-44px * var(--s));
+  border-radius: 50%; pointer-events: none; will-change: opacity;
+  background: radial-gradient(circle, rgba(190, 255, 244, calc(.6 * var(--enclive))) 0%, rgba(96, 228, 214, calc(.28 * var(--enclive))) 38%, rgba(70, 210, 200, 0) 70%);
+  animation: lampglow 4.4s ease-in-out infinite; }
+#app.skin .enc:nth-child(2)::after { animation-duration: 5.2s; animation-delay: -1.9s; }
+#app.skin .enc:nth-child(3)::after { animation-duration: 3.9s; animation-delay: -3.1s; }
+#app.skin .enc-art > * { animation: encfloat 3.8s ease-in-out infinite alternate; }
+#app.skin .enc:nth-child(2) .enc-art > * { animation-duration: 4.5s; animation-delay: -1.6s; }
+#app.skin .enc:nth-child(3) .enc-art > * { animation-duration: 4.1s; animation-delay: -2.9s; }
+@keyframes encfloat { from { transform: translateY(calc(1.5px * var(--enclive))); } to { transform: translateY(calc(-2.5px * var(--enclive))); } }
+#app.calm .enc::after, #app.calm .enc-art > * { animation: none; }
+@media (prefers-reduced-motion: reduce) { #app.skin .enc::after, #app.skin .enc-art > * { animation: none; } }
