@@ -1877,3 +1877,38 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
 :is(.estatus, .hstatus) i .st-ico { clip-path: circle(45% at 50% 50%); filter: brightness(1.4) saturate(1.15); }
 :is(.estatus, .hstatus) i .st-ico image { transform-box: fill-box; transform-origin: 50% 50%; transform: scale(1.34); }
 .it.atk .intent-ico { filter: brightness(1.55) saturate(1.1) drop-shadow(0 0 2px rgba(255, 190, 170, .55)); }
+
+/* ---------- v116. Штемпель на плашке нового достижения ----------
+   На плитке плашки нарисовано место под штамп (пунктирный овал). В списке достижений там стоит
+   штемпель «Получено», а на самой плашке место оставалось пустым. Теперь штемпель ставится на глазах.
+   --achstamp: 1 по умолчанию, 0 убирает штемпель (место снова пустое). */
+#app { --achstamp: 1; }
+.achtoast .astamp { display: none; }
+#app.skin .achtoast > span:not(.aport) { flex: 1; min-width: 0; padding-right: 58px; }
+#app.skin:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic, .scr-summary)) .achtoast > span:not(.aport) { padding-right: 53px; }
+.achtoast b { text-wrap: balance; }
+.achtoast b.long { font-size: 15.5px; }
+.achtoast b.xlong { font-size: 14px; }
+#app:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic, .scr-summary)) .achtoast b.long { font-size: 14.5px; }
+#app:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic, .scr-summary)) .achtoast b.xlong { font-size: 13px; }
+#app:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic, .scr-summary)) .achtoast b.two { font-size: 13px; line-height: 1.04; }
+#app.skin .achtoast .astamp {
+  display: block; right: 23px; top: 50%; width: 57px; height: 49.6px; margin-top: -27px;
+  opacity: var(--achstamp); transform-origin: 58.7% 50%;
+  animation: stampin .32s .5s cubic-bezier(.3, 1.5, .5, 1) both;
+}
+@keyframes stampin {
+  0% { opacity: 0; transform: rotate(-24deg) scale(2.2); }
+  55% { opacity: var(--achstamp); }
+  100% { opacity: var(--achstamp); transform: rotate(-14deg) scale(1); }
+}
+#app.skin:has(#screen:is(.scr-combat, .scr-reward, .scr-bossrelic, .scr-summary)) .achtoast .astamp { right: 25px; width: 46px; height: 40px; margin-top: -20.5px; }
+/* волнистые линии гашения на плашке не рисуются: они заходили бы на звёзды рядом с названием */
+.achtoast .astamp path { display: none; }
+#app.fast .achtoast .astamp { animation-delay: .34s; }
+#app.calm .achtoast .astamp { animation: none; }
+@media (prefers-reduced-motion: reduce) { .achtoast .astamp { animation: none; } }
+
+/* v116. Строки-уведомления и подсказки к значкам: сквозь плашку просвечивали значки под ней и мешались с текстом. */
+.toast { background: rgb(15, 18, 30); text-wrap: balance; }
+.tipb, .tipb::before { background: rgb(15, 18, 30); }

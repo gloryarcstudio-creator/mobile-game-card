@@ -241,6 +241,11 @@
   const achArt = (a) => (a.art === 'h' ? heroFace() : a.art.startsWith('c:') ? heroFace(a.art.slice(2))
     : a.art.startsWith('e:') ? Art.enemy(a.art.slice(2)) : Art.icon(a.art.slice(2)));
   const achStars = (a) => (a.stars ? ` <i class="astars">${'★'.repeat(a.stars)}</i>` : '');
+  function achFit(t) {
+    const nm = t.querySelector('b'); const rows = () => Math.round(nm.offsetHeight / (parseFloat(getComputedStyle(nm).lineHeight) || 18));
+    nm.className = '';
+    if (rows() > 1) { nm.className = 'long'; if (rows() > 1) { nm.className = 'xlong'; if (rows() > 1) { nm.className = 'long two'; if (rows() > 2) nm.className = 'xlong two'; } } }
+  }
   function achNextToast() {
     if (!achQueue.length) { achShowing = false; return; }
     achShowing = true;
@@ -249,10 +254,13 @@
     const a = achQueue.shift();
     const t = document.createElement('div');
     t.className = 'achtoast';
+    // на плитке есть место под штамп: в списке достижений там стоит штемпель «Получено», на плашке он ставится на глазах
     t.innerHTML = a.summary
-      ? `<span class="aport collect">${pico('medal') || ICO.medal}</span><span><small>${tr('Достижения получены')}</small><b>${tr('И ещё {n}', { n: a.summary })}</b></span>`
-      : `<span class="aport ${a.cat}">${achArt(a)}</span><span><small>${tr('Достижение получено')}</small><b>${a.name}${achStars(a)}</b></span>`;
+      ? `<span class="aport collect">${pico('medal') || ICO.medal}</span><span><small>${tr('Достижения получены')}</small><b>${tr('И ещё {n}', { n: a.summary })}</b></span>${ACH_ARC}${achStamp(Date.now())}`
+      : `<span class="aport ${a.cat}">${achArt(a)}</span><span><small>${tr('Достижение получено')}</small><b>${a.name}${achStars(a)}</b></span>${ACH_ARC}${achStamp(Date.now())}`;
     app.appendChild(t);
+    // рядом со штемпелем строке названия тесно: длинное название мельчает на шаг или два и только потом переносится
+    achFit(t);
     SND.sfx('achieve');
     setTimeout(() => { t.remove(); achNextToast(); }, SETTINGS.fast ? 1700 : 2600);
   }
@@ -1082,6 +1090,8 @@
   const achCount = (cat) => ACH_LIST.filter((a) => (!cat || a.cat === cat) && achDone(a)).length;
   const achHasNew = () => ACH_LIST.some((a) => ACH.got[a.id] > ACH.seenAt);
   const fmt = (n) => I18N.num(n);
+  // дуга, по которой на штемпеле идёт надпись: нужна и списку достижений, и плашке нового достижения
+  const ACH_ARC = '<svg style="position:absolute;width:0;height:0"><defs><path id="ach-arc" d="M28.5 40 a25.5 25.5 0 0 1 51 0"/></defs></svg>';
   // почтовый штемпель «Получено» с датой
   function achStamp(ts) {
     const d = new Date(ts);
@@ -1115,7 +1125,7 @@
     const got = achCount();
     const close = () => { if (back) back(); else { hideOverlay(); if (screen.className === 'scr-title') goTitle(); } };
     showOverlay(`<div class="achp">
-      <svg style="position:absolute;width:0;height:0"><defs><path id="ach-arc" d="M28.5 40 a25.5 25.5 0 0 1 51 0"/></defs></svg>
+      ${ACH_ARC}
       <div class="achhead">
         <span class="achtag">${pico('medal') || ICO.medal}${tr('Достижения')}</span>
         <button class="sclose" data-act="a-close" aria-label="${tr('Закрыть')}">✕</button>
@@ -3646,7 +3656,7 @@
   });
 
   // Для отладки и автотестов
-  window.Game = { get run() { return run; }, get combat() { return C; }, get busy() { return busy; }, bal: BAL, play: (i) => playCard(i), endTurn: () => endTurn(), playCost: (c) => playCost(c), newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id), cinema: () => goCinema(() => goTitle()) };
+  window.Game = { get run() { return run; }, get combat() { return C; }, get busy() { return busy; }, bal: BAL, play: (i) => playCard(i), endTurn: () => endTurn(), playCost: (c) => playCost(c), newRun, pickCard: (r) => pickCard(r), goMap: () => goMap(), startCombat: (id, t = 'fight') => startCombat(id, t), costOf, addRelic: (id) => addRelic(id), mk, render: () => renderCombat(), freeRelics: () => freeRelics(), goEvent: (id) => goEvent(EVENTS.find((e) => e.id === id)), goTalk: (id, t = 'fight') => goTalk(id, t), goMeet: (h) => goMeet(h), goAfter: (t, id) => goAfter(t, id), goShop: () => goShop(), goRest: () => goRest(), goChest: () => goChest(), goVictory: () => goVictory(), endRun: () => endRun(), finalBoss: () => finalBoss(), showCodex: () => showCodex(), tieOf: (id) => tieOf(id), cinema: () => goCinema(() => goTitle()), achFit: (t) => achFit(t) };
 
   achCheck(true);
   codexSeed();
