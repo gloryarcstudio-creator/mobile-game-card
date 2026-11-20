@@ -72,7 +72,8 @@
   // chest: картинка сундука пересобрана крупнее и без розового ореола (tools/art/build_big_icon.py); имя файла новое, потому что страница помнит картинки по пути
   const ICON_ALIAS = { dogfriend: 'buddy', lantern: 'r:ivalamp', chest: 'chest2' };
   Art.relic = (id) => {
-    if (S.relic.has(id)) return pic(`r/${id}`, '0 0 100 100', 'icon');
+    // r2: талисманы пересобраны с верным цветом свечения (tools/art/build_relics.py); папка новая, потому что страница помнит картинки по пути
+    if (S.relic.has(id)) return pic(`r2/${id}`, '0 0 100 100', 'icon');
     const r = (D().RELICS || {})[id];
     return orig.icon(r ? r.art : id);
   };

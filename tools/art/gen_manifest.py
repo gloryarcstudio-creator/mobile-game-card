@@ -97,7 +97,7 @@ if FXD:
 M = {
     'hero': hero, 'face': face,
     'enemy': names('e'), 'foot': foot, 'anim': anim,
-    'relic': names('r'), 'card': names('c'), 'st': names('st'),
+    'relic': names('r2'), 'card': names('c'), 'st': names('st'),
     'intent': names('it'), 'icon': names('i'),
     'bg': names('bg'), 'bgc': bgc, 'pic': names('pic'), 'ea': EA,
     'ui': names(UI), 'uid': UI,

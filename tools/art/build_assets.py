@@ -386,7 +386,7 @@ def run(j):
         if kind == 'hero': return j, hero_sprite(k)
         if kind == 'face': return j, hero_face(k)
         if kind == 'enemy': return j, still_square(f'{k}_sprite.png', f'e/{k}.webp', 384, trim=False, q=80)
-        if kind == 'relic': return j, still_square(f'relic_{k}.png', f'r/{k}.webp', 192, pad=0.02)
+        if kind == 'relic': return j, still_square(f'relic_{k}.png', f'r/{k}.webp', 192, pad=0.02)  # в игре стоят картинки из r2: их собирает build_relics.py
         if kind == 'card': return j, card(k)
         if kind == 'st': return j, still_square(f'st_{k}.png', f'st/{k}.webp', 128, pad=0.02)
         if kind == 'intent': return j, still_square(f'intent_{k}.png', f'it/{k}.webp', 128, pad=0.02)
