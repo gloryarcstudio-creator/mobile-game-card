@@ -1917,3 +1917,19 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
    хотя у карт выше и в верхней панели рядом с числом всегда стоит монета. Монета встаёт над числом, как в верхней панели. */
 .svc > i { display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1; min-width: 34px; }
 .svc > i .icon { width: 19px; height: 19px; }
+
+/* ---------- v119. Открытый сундук светится изнутри ----------
+   Сундук нарисован только закрытым, и после открытия (особенно когда внутри монеты) на вид не менялся ничего.
+   Теперь из щели под крышкой льётся тёплый свет и поднимается над крышкой мягким столбом.
+   --chestglow: 1 по умолчанию, 0 убирает свет (сундук снова как закрытый). */
+#app { --chestglow: 1; }
+#app.painted-bg .chest.open::after {
+  content: ''; position: absolute; z-index: 1; left: -10%; top: -34%; width: 120%; height: 120%; pointer-events: none; will-change: opacity;
+  background:
+    radial-gradient(ellipse 43% 7.5% at 49% 71%, rgba(255, 248, 214, calc(.95 * var(--chestglow))) 0%, rgba(255, 214, 124, calc(.5 * var(--chestglow))) 42%, rgba(255, 170, 60, 0) 100%),
+    radial-gradient(ellipse 32% 42% at 50% 54%, rgba(255, 232, 160, calc(.4 * var(--chestglow))) 0%, rgba(255, 196, 100, calc(.16 * var(--chestglow))) 55%, rgba(255, 170, 60, 0) 100%);
+  animation: chestlit .5s ease-out backwards, lampglow 3.4s .5s ease-in-out infinite;
+}
+@keyframes chestlit { from { opacity: 0; } }
+#app.calm.painted-bg .chest.open::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { #app.painted-bg .chest.open::after { animation: none; } }
