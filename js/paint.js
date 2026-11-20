@@ -238,11 +238,16 @@
     if (imgs[u]) return imgs[u];
     const im = new Image();
     imgs[u] = im;
-    im.ok = false; im.u = u;
+    im.ok = false; im.u = u; im.low = low;
+    begin(im);
+    return im;
+  }
+  function begin(im) {
+    const u = im.u;
     const done = () => { im.ok = true; };
     const plain = () => {
       im.onload = () => { if (im.decode) im.decode().then(done, done); else done(); };
-      // файл не пришёл: пробуем ещё дважды, иначе враг остался бы невидимым на весь бой
+      // файл не пришёл: пробуем ещё дважды; если и это не помогло, картинку позже поднимет heal()
       im.onerror = () => { im.tries = (im.tries || 0) + 1; if (im.tries <= 2) setTimeout(() => { if (imgs[u] === im) im.src = u; }, 1500 * im.tries); };
       im.src = u;
     };
@@ -250,13 +255,48 @@
     // Обычную картинку браузер расшифровывал при первом показе каждого атласа, и на слабом телефоне
     // бой замирал на четверть секунды в начале и на первом ударе.
     if (window.createImageBitmap && window.fetch && u.includes(`/${A.ea || 'ea'}/`)) {
-      fetch(u, low ? { priority: 'low' } : undefined).then((r) => (r.ok ? r.blob() : Promise.reject(new Error('нет файла')))).then((b) => createImageBitmap(b)).then((bmp) => {
+      fetch(u, im.low ? { priority: 'low' } : undefined).then((r) => (r.ok ? r.blob() : Promise.reject(new Error('нет файла')))).then((b) => createImageBitmap(b)).then((bmp) => {
         if (imgs[u] === im) im.bmp = bmp; else if (bmp.close) bmp.close(); // пока готовили, атлас уже выгрузили
         done();
       }, plain);
     } else plain();
-    return im;
   }
+  /* v135. Сеть пропала и вернулась. Раньше картинка врага после трёх неудач бросалась насовсем: если связь
+     пропадала на 10–20 секунд в начале боя, враг оставался невидимым до конца боя, а фон пустым до смены экрана.
+     heal() пробует снова: по событию «сеть вернулась» и раз в 8 секунд, пока есть что чинить (после пяти
+     неудач подряд одна и та же картинка пробуется раз в 32 секунды).
+     broken — картинки экрана (<img> и <image>), у которых случилась ошибка загрузки. */
+  const broken = new Set(); const heals = new WeakMap(); let healTick = 0;
+  document.addEventListener('error', (e) => {
+    const t = e.target;
+    if (t && (t.tagName === 'IMG' || t.tagName === 'image') && t.closest && t.closest('#app')) broken.add(t);
+  }, true);
+  function heal(force) {
+    if (document.hidden) return;
+    healTick++;
+    const due = (o) => { const n = (heals.get(o) || 0) + 1; heals.set(o, n); return force === true || n <= 5 || healTick % 4 === 0; };
+    for (const im of Object.values(imgs)) if (!im.ok && (im.tries || 0) > 2 && due(im)) { im.tries = 0; begin(im); }
+    if (!broken.size) return;
+    const all = [...broken].filter((el) => el.isConnected);
+    const list = all.filter(due);
+    broken.clear();
+    all.forEach((el) => { if (!list.includes(el)) broken.add(el); });
+    for (const el of list) {
+      if (el.tagName === 'IMG') { const v = el.getAttribute('src'); if (v) el.src = v; continue; }
+      const h = el.getAttribute('href');
+      if (h) { el.removeAttribute('href'); el.setAttribute('href', h); }
+    }
+    // фон под картинкой задан стилем: его запрос браузер сам не повторяет
+    if (list.length) {
+      document.querySelectorAll('#app [style*="background-image"]').forEach((el) => {
+        const v = el.style.backgroundImage;
+        if (!v || !v.includes('url(')) return;
+        el.style.backgroundImage = 'none'; void el.offsetWidth; el.style.backgroundImage = v;
+      });
+    }
+  }
+  window.addEventListener('online', () => setTimeout(() => heal(true), 300));
+  setInterval(heal, 8000);
   const pix = (im) => im.bmp || im;
   const atlasUrl = (id, part) => url(`${A.ea || 'ea'}/${id}_${part}`); // папка меняется при пересборке атласов
   Art.hasLive = (id) => !!(AN[id] && AN[id].idle);
