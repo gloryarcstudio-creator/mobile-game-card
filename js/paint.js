@@ -161,10 +161,19 @@
     probe.onload = on; probe.src = url(`bg/${k}`);
     if (probe.complete && probe.naturalWidth) on();
   };
+  // Искры над костром (v102): восемь точек со своим ходом, взлетают из пламени и гаснут. Сила — ручка --embers на #app.
+  function embersHTML(x, y, r) {
+    let h = '';
+    for (let i = 0; i < 8; i++) {
+      const sx = ((i * 37) % 29) - 14; const dx = ((i * 53) % 41) - 20; const up = 96 + ((i * 47) % 60);
+      h += `<b style="--x:${sx}px;--dx:${dx}px;--h:${up}px;--t:${(2.6 + ((i * 0.83) % 1.9)).toFixed(2)}s;--d:-${((i * 1.31) % 4.3).toFixed(2)}s"></b>`;
+    }
+    return `<span class="embers" style="left:${x}px;top:${Math.round(y - r * 0.42)}px">${h}</span>`;
+  }
   function lightsHTML(k) {
     const L = LIGHTS[k];
     if (!L) return '';
-    return `<div class="bg-lights${bgSeen.has(k) ? ' on' : ''}" data-k="${k}">${L.map(([x, y, r, kind], i) => `<i${kind ? ` class="${kind}"` : ''} style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px;${kind === 's' || kind === 'm' ? '' : `animation-duration:${(kind === 'f' ? 1.5 : 3.7 + ((i * 1.37) % 2.1)).toFixed(2)}s;animation-delay:-${((i * 1.9) % 5).toFixed(2)}s`}"></i>`).join('')}</div>`;
+    return `<div class="bg-lights${bgSeen.has(k) ? ' on' : ''}" data-k="${k}">${L.map(([x, y, r, kind], i) => `<i${kind ? ` class="${kind}"` : ''} style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px;${kind === 's' || kind === 'm' ? '' : `animation-duration:${(kind === 'f' ? 1.5 : 3.7 + ((i * 1.37) % 2.1)).toFixed(2)}s;animation-delay:-${((i * 1.9) % 5).toFixed(2)}s`}"></i>${kind === 'f' ? embersHTML(x, y, r) : ''}`).join('')}</div>`;
   }
   function paintBg(a, b, mix) {
     const c = (A.bgc || {})[mix > 0.5 && b ? b : a] || '#2a3350';
