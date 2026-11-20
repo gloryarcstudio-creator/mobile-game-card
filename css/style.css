@@ -1798,3 +1798,14 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
   100% { transform: translate(24px, -50px) scale(1.15) rotate(10deg); opacity: 0; } }
 #app.calm.painted-bg .chest:not(.open)::after { animation: none; }
 @media (prefers-reduced-motion: reduce) { #app.painted-bg .chest:not(.open)::after { animation: none; } }
+
+/* ---------- v105: заряженный шар энергии ----------
+   В бою, пока энергия есть, стекло шара дышит бирюзовым светом изнутри (под цифрой); на нуле свет гаснет (шар и так тускнеет).
+   Меняется только прозрачность. Ручка на #app: --orb (0 — убрать). Чтобы убрать совсем, удалить этот блок. */
+#app { --orb: 1; }
+#app.skin .herobar .energy:not(.empty, .idle)::before { content: ''; position: absolute; z-index: -1; inset: -1px; border-radius: 50%; pointer-events: none; will-change: opacity;
+  background: radial-gradient(circle closest-side, rgba(150, 255, 236, 0) 24%, rgba(150, 255, 236, calc(.3 * var(--orb))) 46%, rgba(160, 255, 238, calc(.5 * var(--orb))) 58%, rgba(150, 255, 236, 0) 66%);
+  animation: orbbreath 2.4s ease-in-out infinite alternate; }
+@keyframes orbbreath { from { opacity: .25; } to { opacity: 1; } }
+#app.calm .herobar .energy::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { #app.skin .herobar .energy::before { animation: none; } }
