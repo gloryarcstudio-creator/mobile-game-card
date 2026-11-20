@@ -309,6 +309,8 @@ async function bot({ jobs, diff, bal, diffo, noDef }) {
     await p.evaluate(() => {
       for (const k of Object.keys(window.Art)) { const f = window.Art[k]; if (typeof f === 'function' && !['bgUrl', 'enemyUrl', 'actDur', 'act', 'groundCam'].includes(k)) window.Art[k] = () => ''; }
       window.Art.enemyLive = null; window.Art.actDur = () => 0; window.Art.act = () => 0;
+      // музыка ждёт Art.quiet() (обещание) и качает файлы: в прогоне она не нужна
+      window.Art.quiet = () => Promise.resolve(); if (window.Sound) window.Sound.music = () => {};
       window.FX.play = async () => {}; window.FX.relic = () => {};
     });
     // сторож: если страница зависла, забираем готовые забеги и пишем, где она стоит
