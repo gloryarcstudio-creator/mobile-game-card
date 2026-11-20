@@ -1127,18 +1127,22 @@ canvas.live { display: block; width: 100%; height: 100%; }
 #app.skin .card.atk { --fl:-0.26%;--ft:-0.92%;--fw:100.51%;--fh:101.01%; --gl:3.59%;--gt:0.00%;--gw:18.97%;--gh:13.59%; --tl:24.10%;--tt:3.86%;--tw:58.72%;--th:15.61%; --al:25.64%;--at:22.68%;--aw:48.72%;--ah:34.89%; --dl:6.41%;--dt:61.52%;--dw:87.18%;--dh:27.55%; --yl:50.06%;--yt:94.58%; --frame: var(--ui-f_atk); }
 #app.skin .card.skill { --fl:-4.81%;--ft:-0.93%;--fw:107.47%;--fh:106.77%; --gl:0.89%;--gt:0.00%;--gw:19.75%;--gh:14.47%; --tl:22.41%;--tt:4.45%;--tw:71.39%;--th:11.13%; --al:22.41%;--at:18.74%;--aw:57.72%;--ah:42.30%; --dl:15.82%;--dt:67.35%;--dw:75.95%;--dh:25.42%; --yl:50.00%;--yt:97.22%; --frame: var(--ui-f_skill); }
 #app.skin .card.charm { --fl:-0.24%;--ft:0.00%;--fw:100.49%;--fh:100.36%; --gl:3.78%;--gt:4.16%;--gw:15.61%;--gh:11.58%; --tl:23.41%;--tt:5.88%;--tw:53.41%;--th:8.60%; --al:24.63%;--at:20.54%;--aw:50.73%;--ah:37.65%; --dl:14.63%;--dt:61.90%;--dw:73.41%;--dh:22.81%; --yl:50.00%;--yt:93.67%; --frame: var(--ui-f_charm); }
-#app.skin .card.status { --fl:-9.61%;--ft:-3.60%;--fw:110.06%;--fh:106.58%; --gl:-6.91%;--gt:-2.88%;--gw:23.42%;--gh:16.05%; --tl:19.52%;--tt:3.60%;--tw:74.32%;--th:14.92%; --al:16.82%;--at:22.12%;--aw:66.07%;--ah:45.27%; --dl:25.83%;--dt:71.19%;--dw:71.17%;--dh:20.78%; --yl:49.55%;--yt:95.68%; --frame: var(--ui-f_status); }
+#app.skin .card.status { --fl:-9.61%;--ft:-3.60%;--fw:110.06%;--fh:106.58%; --gl:-6.91%;--gt:-2.88%;--gw:23.42%;--gh:16.05%; --tl:19.52%;--tt:3.60%;--tw:74.32%;--th:14.92%; --al:16.82%;--at:22.12%;--aw:66.07%;--ah:45.27%; --dl:26.5%;--dt:68.8%;--dw:66%;--dh:23%; --yl:49.55%;--yt:95.68%; --frame: var(--ui-f_status); }
 #app.skin .card { height: calc(var(--w) * 1.4); padding: 0; border: 0; border-radius: .7em; background: none; box-shadow: 0 .45em .8em rgba(0, 0, 0, .45); }
 #app.skin .card::before { content: ''; position: absolute; left: var(--fl); top: var(--ft); width: var(--fw); height: var(--fh); background: var(--frame) 0 0 / 100% 100% no-repeat; pointer-events: none; }
 #app.skin .card .cost { left: var(--gl); top: var(--gt); width: var(--gw); height: var(--gh); background: none; border: 0; font-size: 1.55em; text-shadow: 0 0 .2em #000, 0 .07em 0 #000, 0 0 .5em rgba(0, 0, 0, .7); }
 #app.skin .card .cost.none { background: radial-gradient(circle at 40% 35%, #b8b8c4, #5a5a68 65%, #2e2e38); box-shadow: inset 0 0 0 .1em #1a1418; transform: scale(.82); }
 #app.skin .card .ctitle { position: absolute; z-index: 1; margin: 0; left: var(--tl); top: var(--tt); width: var(--tw); height: var(--th); min-height: 0; padding: 0 .25em; background: none; border: 0; border-radius: 0; box-shadow: none; font-size: .98em; line-height: 1; color: #fbefd2; text-shadow: 0 .08em 0 #000, 0 0 .3em rgba(0, 0, 0, .85); }
 #app.skin .card .ctitle.long { font-size: .84em; }
+#app.skin .card .ctitle.xlong { font-size: .75em; }
 #app.skin .card .cart { position: absolute; margin: 0; left: var(--al); top: var(--at); width: var(--aw); height: var(--ah); padding: 0; border: 0; border-radius: 50%; background: none; box-shadow: none; overflow: hidden; }
 #app.skin .card .cart > svg { display: block; width: 100%; height: 100%; }
 #app.skin .card .cdesc { position: absolute; z-index: 1; left: var(--dl); top: var(--dt); width: var(--dw); height: var(--dh); min-height: 0; padding: 0; font-size: 1em; line-height: 1.1; text-shadow: 0 .06em .12em #000; }
 #app.skin .card .cdesc.long { font-size: .92em; line-height: 1.06; }
 #app.skin .card .cdesc.xlong { font-size: .84em; line-height: 1.02; }
+/* v114: ещё две ступени для текста, который не помещается в поле рамки (ставит fitCards в game.js) */
+#app.skin .card .cdesc.xxlong { font-size: .78em; line-height: 1.01; }
+#app.skin .card .cdesc.tiny { font-size: .72em; line-height: 1; }
 #app.skin .card .ctype { left: var(--yl); top: var(--yt); bottom: auto; transform: translate(-50%, -50%); padding: .05em .65em; font-size: .78em; color: #f1e4c4; background: rgba(18, 14, 26, .9); border: .12em solid #b8893a; }
 #app.skin .card.atk .ctype { color: #3a2418; background: none; border-color: transparent; }
 #app.skin .card.up .ctitle { color: #e4ffd8; }

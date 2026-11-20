@@ -338,6 +338,45 @@
   }
   new MutationObserver(fitTitles).observe(screen, { childList: true, subtree: true, characterData: true });
 
+  // Текст карты подгоняется под её рамку (v114). Раньше размер шрифта выбирался только по числу букв, а поля у рамок разные:
+  // у навыков и помех четыре строки налезали на ярлык вида карты, длинное название с «+» выходило на фонарь рамки.
+  // Здесь текст уменьшается на ступень, пока не встанет между рисунком и ярлыком. Результат запоминается (cardFit),
+  // и в следующий раз cardHTML сразу ставит нужную ступень: замер нужен один раз на каждый текст.
+  const cardFit = new Map();
+  const DSTEP = ['', 'long', 'xlong', 'xxlong', 'tiny']; const TSTEP = ['', 'long', 'xlong'];
+  const stepOf = (el, steps) => { for (let i = steps.length - 1; i > 0; i--) if (el.classList.contains(steps[i])) return i; return 0; };
+  const cardKind = (card) => ['atk', 'skill', 'charm', 'status'].find((t) => card.classList.contains(t)) || '';
+  function fitCards() {
+    if (!app.classList.contains('skin')) return;
+    let todo = [];
+    app.querySelectorAll('.card:not([data-fit])').forEach((card) => {
+      const d = card.querySelector('.cdesc'); const ds = d && d.firstElementChild; const t = card.querySelector('.ctitle'); const ts = t && t.firstElementChild;
+      const ty = card.querySelector('.ctype'); const art = card.querySelector('.cart');
+      if (!ds || !ts || !ty || !art || !card.offsetHeight) return;   // скрытая карта: измерим, когда покажется
+      const kind = cardKind(card);
+      todo.push({ card, d, ds, t, ts, ty, art, di: stepOf(d, DSTEP), ti: stepOf(t, TSTEP), dk: `d|${kind}|${ds.textContent}`, tk: `t|${kind}|${ts.textContent}` });
+    });
+    const next = (el, steps, i) => { if (steps[i]) el.classList.remove(steps[i]); el.classList.add(steps[i + 1]); };
+    for (let pass = 0; pass < 6 && todo.length; pass++) {
+      // сначала все замеры, потом все правки: страница пересчитывается один раз за проход
+      const seen = todo.map((q) => {
+        const top = q.d.offsetTop + q.ds.offsetTop; const gapTop = top - (q.art.offsetTop + q.art.offsetHeight);
+        const gapBot = (q.ty.offsetTop - q.ty.offsetHeight / 2) - (top + q.ds.offsetHeight);
+        return { tight: gapBot < q.card.offsetHeight * 0.008 || gapTop < 0 || q.ds.scrollWidth > q.d.clientWidth + 1, wide: q.ts.offsetWidth > q.t.clientWidth + 1 };
+      });
+      const rest = [];
+      todo.forEach((q, i) => {
+        let again = false;
+        if (seen[i].tight && q.di < DSTEP.length - 1) { next(q.d, DSTEP, q.di++); again = true; }
+        if (seen[i].wide && q.ti < TSTEP.length - 1) { next(q.t, TSTEP, q.ti++); again = true; }
+        if (again) rest.push(q); else { q.card.dataset.fit = '1'; cardFit.set(q.dk, DSTEP[q.di]); cardFit.set(q.tk, TSTEP[q.ti]); }
+      });
+      todo = rest;
+    }
+    todo.forEach((q) => { q.card.dataset.fit = '1'; });
+  }
+  new MutationObserver(fitCards).observe(app, { childList: true, subtree: true });
+
   /* ---------- Снег ---------- */
   // снегопад можно выключить в настройках: тогда анимация останавливается совсем
   const snow = (function () {
@@ -591,11 +630,16 @@
     if (c.retain) desc += ` ${tr('Удержание.')}`;
     if (c.exhaust && c.type !== 'status') desc += ` ${tr('Сгорает.')}`;
     const plain = desc.replace(/<[^>]+>/g, '');
-    return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${inst.sharp ? 'sharp' : ''} ${extra}" ${attrs}>
+    // размер текста: если карта с таким текстом уже подгонялась под рамку (fitCards), берём готовую ступень, иначе прикидка по длине
+    const dKey = `d|${c.type}|${plain}`; const tKey = `t|${c.type}|${c.name}${inst.up ? '+' : ''}`;
+    const fitted = cardFit.has(dKey) && cardFit.has(tKey);
+    const dCls = fitted ? cardFit.get(dKey) : (plain.length > 64 ? 'xlong' : plain.length > 48 ? 'long' : '');
+    const tCls = fitted ? cardFit.get(tKey) : (c.name.length > 12 ? 'long' : '');
+    return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${inst.sharp ? 'sharp' : ''} ${extra}" ${attrs}${fitted ? ' data-fit="1"' : ''}>
       <div class="cost ${cost == null ? 'none' : ''}"><span>${cost == null ? '✕' : cost}</span></div>
-      <div class="ctitle ${c.name.length > 12 ? 'long' : ''}"><span>${c.name}${inst.up ? '<i>+</i>' : ''}</span></div>
+      <div class="ctitle ${tCls}"><span>${c.name}${inst.up ? '<i>+</i>' : ''}</span></div>
       <div class="cart">${Art.card(inst.id)}</div>
-      <div class="cdesc ${plain.length > 64 ? 'xlong' : plain.length > 48 ? 'long' : ''}"><span>${desc}</span></div>
+      <div class="cdesc ${dCls}"><span>${desc}</span></div>
       <div class="ctype">${RARITY_GEM[c.rarity] ? `<i class="gem g-${c.rarity}"></i>` : ''}${TYPE_LABEL[c.type]}</div>
     </div>`;
   }
