@@ -463,6 +463,8 @@
   let C = null;     // текущий бой
   let busy = false; // блокировка ввода на время анимаций
   let selected = -1;
+  let playing = false;   // идёт розыгрыш карты (а не ход врага)
+  let tapNext = '';      // uid карты, которую тронули во время розыгрыша предыдущей
 
   /* ---------- Итоги забега: счётчики текущего забега (run.st) ----------
      ms — время в пути (пауза больше 2 минут считается за 2), dmg — урон врагам, hit — сильнейший удар,
@@ -2832,7 +2834,7 @@
       let left = x0 + i * step;
       if (i === selected) left = Math.max(26, Math.min(400 - W - 26, left));
       return cardHTML(c, `inhand ${can ? '' : 'nope'} ${i === selected ? 'sel' : ''} ${dealing ? 'deal' : ''}`,
-        `data-hi="${i}" style="left:${left}px; --rot:${rot}deg; --lift:${lift}px; --d:${i * 60 - dealAge}ms; z-index:${i === selected ? 50 : i + 1}"`);
+        `data-hi="${i}" data-cu="${c.uid}" style="left:${left}px; --rot:${rot}deg; --lift:${lift}px; --d:${i * 60 - dealAge}ms; z-index:${i === selected ? 50 : i + 1}"`);
     }).join('');
   }
 
@@ -2868,7 +2870,7 @@
     if (why) { SND.sfx('deny'); toast(why); return; }
     const cost = playCost(c);
     const price = cd.price ? cd.price(c.up) : 0;
-    busy = true; selected = -1;
+    busy = true; selected = -1; playing = true; tapNext = '';
     const el = dragEl || $(`.hand [data-hi="${i}"]`);
     SND.sfx('card');
     if (el) { aimCard(el, cd.type); el.classList.add('fly'); await sleep(220); }
@@ -2914,10 +2916,16 @@
     const ed = ENEMIES[C.id];
     if (ed.alarm && cd.type === 'skill' && C.enemy.hp > 0) { C.enemy.block += ed.alarm; SND.sfx('clank'); floatText($('.enemy-fx'), tr('Тук-тук! +{n}', { n: ed.alarm }), 'blockf'); }
     if (ed.tally && C.playedTurn % ed.tally === 0 && C.enemy.hp > 0 && run.hp > 0) { floatText($('.enemy-fx'), tr('Ку-ку!'), 'weakf'); await hitHero(3); }
+    playing = false;
     if (run.hp <= 0) { await fall(); goDefeat(); return; }
     if (C.enemy.hp <= 0) { await winCombat(); return; }
     renderCombat();
     busy = false;
+    // карту тронули, пока разыгрывалась эта: выбираем её сейчас (v130; раньше такое касание пропадало молча)
+    if (tapNext) {
+      const j = C.hand.findIndex((x) => String(x.uid) === tapNext); tapNext = '';
+      if (j >= 0) { selected = j; SND.sfx('draw'); renderHand(false); }
+    }
   }
 
   // всплывающее число или слово. Живёт в слое эффектов, поверх вспышек: урон виден сразу, а не из-под удара
@@ -3590,7 +3598,11 @@
     const t = e.target.closest('[data-act], [data-hi]');
 
     if (screen.className === 'scr-combat') {
-      if (busy || performance.now() - dragEndAt < 350) return;
+      if (busy || performance.now() - dragEndAt < 350) {
+        // пока карта разыгрывается (0,25–0,5 с), касание следующей запоминается: она выберется, как только игра освободится
+        if (busy && playing && C && t && t.dataset.cu) tapNext = t.dataset.cu;
+        return;
+      }
       if (t && t.dataset.hi != null) {
         const i = +t.dataset.hi;
         if (selected === i || SETTINGS.oneTap) playCard(i);
