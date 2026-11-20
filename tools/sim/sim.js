@@ -208,9 +208,9 @@ async function bot({ jobs, diff, bal, diffo, noDef }) {
       }
       if (scr === 'scr-combat') {
         const C = G.combat; if (!C) continue;
-        if (!fight) fight = { id: C.id, tier: C.tier, step: R.step, hp0: R.hp, max: R.maxHp, t: 0, ehp: C.enemy.max };
+        if (!fight) fight = { id: C.id, tier: C.tier, step: R.step, hp0: R.hp, max: R.maxHp, t: 0, ehp: C.enemy.max, deck: R.deck.length, up: R.deck.filter((x) => x.up).length, sh: 0 };
         if (G.busy) continue;
-        fight.t = C.turn; rec.turns++;
+        fight.t = C.turn; fight.sh = Math.max(fight.sh, C.sharpened || 0); rec.turns++;
         await combatTurn();
         continue;
       }
