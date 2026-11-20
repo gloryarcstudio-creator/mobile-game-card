@@ -234,7 +234,7 @@
   // и не пропадает, пока браузер готовит картинку. Атласы грузятся заранее.
   const AN = A.anim || {};
   const imgs = {}; // url -> Image (готова, когда .ok)
-  function load(u) {
+  function load(u, low) {
     if (imgs[u]) return imgs[u];
     const im = new Image();
     imgs[u] = im;
@@ -250,7 +250,7 @@
     // Обычную картинку браузер расшифровывал при первом показе каждого атласа, и на слабом телефоне
     // бой замирал на четверть секунды в начале и на первом ударе.
     if (window.createImageBitmap && window.fetch && u.includes(`/${A.ea || 'ea'}/`)) {
-      fetch(u).then((r) => (r.ok ? r.blob() : Promise.reject(new Error('нет файла')))).then((b) => createImageBitmap(b)).then((bmp) => {
+      fetch(u, low ? { priority: 'low' } : undefined).then((r) => (r.ok ? r.blob() : Promise.reject(new Error('нет файла')))).then((b) => createImageBitmap(b)).then((bmp) => {
         if (imgs[u] === im) im.bmp = bmp; else if (bmp.close) bmp.close(); // пока готовили, атлас уже выгрузили
         done();
       }, plain);
@@ -353,13 +353,21 @@
   // Неподвижная картинка для тех мест, где фигура стоит на земле (после боя, враг без своих клипов):
   // в высокой рамке она прижата к низу, как и живая фигура. Раньше вставала по центру и висела над своей тенью.
   Art.enemyStand = (id) => Art.enemy(id).replace('<svg ', '<svg preserveAspectRatio="xMidYMax meet" ');
+  // выполнить fn, когда картинка dep готова (или вышло время ожидания); если её успели выгрузить, не выполнять
+  function after(dep, ms, fn, t0 = performance.now()) {
+    if (imgs[dep.u] !== dep) return;
+    if (dep.ok || performance.now() - t0 > ms) fn(); else setTimeout(() => after(dep, ms, fn, t0), 80);
+  }
   Art.enemyLive = (id) => {
     const m = AN[id];
     if (!m || !m.idle || !S.enemy.has(id)) return Art.enemyStand(id);
     keepOnly([id, ...[...document.querySelectorAll('canvas.live')].map((c) => c.dataset.live)]);
-    load(url(`e/${id}`));
-    load(atlasUrl(id, m.idle.f || 'idle'));
-    parts(m).forEach((p) => load(atlasUrl(id, p)));
+    // Порядок загрузки (v133). Раньше неподвижная фигура (25 КБ), покой и все движения (до 1,7 МБ) качались разом,
+    // и на медленной сети враг и рисунки карт появлялись через 7 секунд: мелкие файлы ждали за атласами.
+    // Теперь сначала фигура, за ней покой, и только потом движения (тихим приоритетом: их догонит запрос по требованию).
+    const still = load(url(`e/${id}`));
+    const idleU = atlasUrl(id, m.idle.f || 'idle');
+    after(still, 4000, () => after(load(idleU), 15000, () => { if (imgs[idleU]) parts(m).forEach((p) => load(atlasUrl(id, p), true)); }));
     return `<canvas class="foe painted live${ALOFT.has(id) ? ' aloft' : ''}" data-live="${id}"></canvas>`;
   };
   const liveOf = (el) => el && (el.matches && el.matches('canvas.live') ? el : el.querySelector && el.querySelector('canvas.live'));

@@ -252,13 +252,31 @@
   // иначе на телефонной сети она занимала канал, и экран дорисовывался с опозданием. Дорожка, которая должна
   // звучать сейчас, ждёт недолго (wait мс), запас наперёд ждёт дольше и качается по одному файлу.
   const quietNet = (wait) => (window.Art && window.Art.quiet ? window.Art.quiet(wait) : Promise.resolve());
+  // v133. Загрузку дорожки можно прервать (dropOthers): на медленной сети музыка титула (1,4 МБ) докачивалась,
+  // когда игрок уже был в бою, и делила канал с анимациями врага и музыкой боя. Теперь, если новой дорожке
+  // самой ещё предстоит скачаться, недокачанные чужие бросаются; понадобятся снова, скачаются заново.
+  // Если новая дорожка уже скачана, чужие не трогаем: канал свободен, пусть доходят.
+  const loading = {}; // имя -> AbortController, пока файл ждёт сеть или качается
+  const have = new Set(); // дорожки, чей файл уже пришёл
   function fetchTrack(name, wait = 4000) {
     if (!packed[name]) {
-      packed[name] = quietNet(wait).then(() => fetch(fileUrl(name), { priority: 'low' }))
+      const ac = window.AbortController ? new AbortController() : null;
+      if (ac) loading[name] = ac;
+      const mine = packed[name] = quietNet(wait)
+        .then(() => { if (ac && ac.signal.aborted) throw new Error('не нужна'); return fetch(fileUrl(name), ac ? { priority: 'low', signal: ac.signal } : { priority: 'low' }); })
         .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
-        .catch((e) => { delete packed[name]; throw e; });
+        .then((bytes) => { if (loading[name] === ac) delete loading[name]; have.add(name); return bytes; })
+        .catch((e) => { if (loading[name] === ac) delete loading[name]; if (packed[name] === mine) delete packed[name]; throw e; });
     }
     return packed[name];
+  }
+  function dropOthers(name) {
+    Object.keys(loading).forEach((n) => {
+      if (n === name) return;
+      const ac = loading[n];
+      delete loading[n]; delete packed[n];
+      ac.abort();
+    });
   }
   function loadTrack(name) {
     if (decoded.has(name)) { const b = decoded.get(name); decoded.delete(name); decoded.set(name, b); return Promise.resolve(b); }
@@ -306,12 +324,13 @@
       g.gain.linearRampToValueAtTime(1, t + (off ? 0.8 : 0.04));
       src.start(t, off);
       voice = { name, src, g, t0: t, off, a, b };
-      (NEXT[name] || []).filter(hasFile).reduce((q, n) => q.then(() => fetchTrack(n, 9000)).catch(() => {}), Promise.resolve());
+      (NEXT[name] || []).filter(hasFile).reduce((q, n) => q.then(() => (current === name ? fetchTrack(n, 9000) : null)).catch(() => {}), Promise.resolve());
     }).catch(() => { if (my === seq && current === name) startSynth(name); });
   }
 
   let wanted = null;
   function music(name) {
+    if (name !== wanted && name && hasFile(name) && !have.has(name)) dropOthers(name);
     wanted = name;
     if (!ctx) { if (name && hasFile(name)) fetchTrack(name).catch(() => {}); return; }
     if (name === current) return;
