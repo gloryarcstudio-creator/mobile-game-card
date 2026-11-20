@@ -327,7 +327,7 @@
     'Цена {n}': 'Price {n}',
     'В этом бою уже отдано {n} HP.': 'Already paid this combat: {n} HP.',
     'Слабость {n}': 'Weakness {n}',
-    'Слабость: ваши атаки наносят на 25% меньше урона.': 'Weakness: your attacks deal 25% less damage.',
+    'Ваши атаки наносят на 25% меньше урона. Число — сколько ходов это продлится.': 'Your attacks deal 25% less damage. The number shows how many turns it lasts.',
     'Хрупкость {n}': 'Frail {n}',
     'Доставка {n}': 'Delivery {n}',
     'В пути: {list}.': 'On the way: {list}.',

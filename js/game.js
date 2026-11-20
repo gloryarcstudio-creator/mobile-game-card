@@ -76,6 +76,7 @@
     ['Поджог', 'В конце вашего хода враг теряет столько HP, а Поджог слабеет на 1.'],
     ['Шипы', 'Когда враг бьёт вас, он сам получает столько урона. Колючие враги так же ранят вас за каждый удар по ним.'],
     ['Хрупкость', 'Карты и талисманы дают вам на 25% меньше защиты. Число — сколько ходов это продлится.'],
+    ['Слабость', 'Ваши атаки наносят на 25% меньше урона. Число — сколько ходов это продлится.'],
     ['Сила врага', 'Каждое очко добавляет врагу +1 урона. Её можно отнять морозом.'],
     ['Ярость босса', 'Когда у босса остаётся половина HP, он впадает в Ярость: получает Силу и защиту. Приберегите к этому сильный ход.'],
     ['Спит', 'Враг пропускает свой следующий ход.'],
@@ -2715,7 +2716,7 @@
     if (it.k === 'frail') return `<div class="it deb" ${tip(tr('Хрупкость на {n} {n|ход|хода|ходов}: ваша защита слабее на 25%', { n: it.v }))}>${Art.intentIcon('frail')}<b>${it.v}</b></div>`;
     if (it.k === 'block') return `<div class="it blk" ${tip(tr('Защита {n}', { n: it.v }))}>${Art.intentIcon('block')}<b>${it.v}</b></div>`;
     if (it.k === 'buff') return `<div class="it buf" ${tip(tr('Враг станет сильнее: Сила +{n}', { n: it.v }))}>${Art.intentIcon('buff')}<b>+${it.v}</b></div>`;
-    if (it.k === 'debuff') return `<div class="it deb" ${tip(tr('Слабость на {n} {n|ход|хода|ходов}: ваши атаки слабее на 25%', { n: it.v }))}>${Art.intentIcon('debuff')}</div>`;
+    if (it.k === 'debuff') return `<div class="it deb" ${tip(tr('Слабость на {n} {n|ход|хода|ходов}: ваши атаки слабее на 25%', { n: it.v }))}>${Art.intentIcon('debuff')}<b>${it.v}</b></div>`;
     if (it.k === 'snuff') return `<div class="it snf" ${tip(tr('Погасит все Огоньки и ударит на {d}', { d: enemyDmg(it.v) }))}>${Art.intentIcon('snuff')}<b>${enemyDmg(it.v)}</b></div>`;
     if (it.k === 'curse') return `<div class="it cur" ${tip(tr('Подкинет в колоду: {name} ×{n}', { name: CARDS[it.card].name, n: it.n }))}>${Art.intentIcon('curse')}<b>×${it.n}</b></div>`;
     if (it.k === 'steal') return `<div class="it atk" ${tip(tr('Ударит на {d} и украдёт до {g} {g|монеты|монет|монет}', { d: enemyDmg(it.v), g: it.gold }))}>${Art.intentIcon('steal')}<b>${enemyDmg(it.v)}</b></div>`;
@@ -2791,7 +2792,7 @@
     if (C.dog > 0) hs.push(chip('h-dog', `${C.dog}`, `${g('Дружок')} ${tr('Злость {n}: укус на {d}', { n: C.dog, d: dogDmg() })}${C.charms.wolfhound ? `, ${tr('{n} {n|раз|раза|раз} за ход', { n: 1 + C.charms.wolfhound })}` : ''}.`, Art.icon('dogfriend')));
     if (C.glaze) hs.push(chip('h-charm', '', `${CARDS.glaze.name}: ${tr('до конца боя все Пряники улучшены')}`, Art.icon('glaze')));
     if (C.paid) hs.push(chip('h-paid', tr('Цена {n}', { n: C.paid }), `${g('Цена')} ${tr('В этом бою уже отдано {n} HP.', { n: C.paid })}`, sti('price')));
-    if (C.pWeak) hs.push(chip('h-weak', tr('Слабость {n}', { n: C.pWeak }), tr('Слабость: ваши атаки наносят на 25% меньше урона.'), sti('weak')));
+    if (C.pWeak) hs.push(chip('h-weak', tr('Слабость {n}', { n: C.pWeak }), g('Слабость'), sti('weak')));
     if (C.frail) hs.push(chip('h-weak', tr('Хрупкость {n}', { n: C.frail }), g('Хрупкость'), sti('frail')));
     if (C.deliveries.length) hs.push(chip('h-del', tr('Доставка {n}', { n: C.deliveries.length }), `${g('Доставка')} ${tr('В пути: {list}.', { list: C.deliveries.map((d) => d.name).join(', ') })}`, sti('delivery')));
     for (const [id, n] of Object.entries(C.charms)) hs.push(chip('h-charm', `${n}`, `${CARDS[id].name}: ${CHARM_TIP[id](n)}`, Art.card(id)));
