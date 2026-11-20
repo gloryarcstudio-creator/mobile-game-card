@@ -1367,7 +1367,7 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
    тело x 18–748, y 30–195, окошко x 68–200, y 55–175 */
 #app.skin :is(.rrow, .svc, .brelic) {
   --s: .41; min-height: 68px; padding: 4px 14px 4px calc(50px * var(--s)); gap: 10px; border: 0; border-radius: 0; background: none; box-shadow: none;
-  border-image: var(--ui-row) 60 70 40 215 fill / calc(60px * var(--s)) calc(70px * var(--s)) calc(40px * var(--s)) calc(215px * var(--s)) / calc(30px * var(--s)) calc(12px * var(--s)) calc(17px * var(--s)) calc(18px * var(--s)) stretch;
+  border-image: var(--ui-row2) 60 70 40 215 fill / calc(60px * var(--s)) calc(70px * var(--s)) calc(40px * var(--s)) calc(215px * var(--s)) / calc(30px * var(--s)) calc(12px * var(--s)) calc(17px * var(--s)) calc(18px * var(--s)) stretch;
 }
 #app.skin :is(.rrow, .svc, .brelic) > :is(svg, .icon):first-child { width: calc(132px * var(--s)); height: 42px; flex: none; padding: 0 5px; }
 #app.skin .rlist { gap: 9px; }
@@ -1411,7 +1411,7 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 #app.skin .cxport:not(.relic) { padding: 9px; border: 0; border-radius: 0; box-shadow: none; background-clip: content-box; border-image: var(--ui-btn_dark) 24 30 24 30 / 12px 14px 12px 14px / 2px stretch; }
 #app.skin :is(.cxrow, .runrow) {
   --s: .41; min-height: 68px; margin-bottom: 13px; padding: 6px 14px 6px calc(50px * var(--s)); gap: 12px; align-items: center; border: 0; border-radius: 0; background: none; box-shadow: none;
-  border-image: var(--ui-row) 60 70 40 215 fill / calc(60px * var(--s)) calc(70px * var(--s)) calc(40px * var(--s)) calc(215px * var(--s)) / calc(30px * var(--s)) calc(12px * var(--s)) calc(17px * var(--s)) calc(18px * var(--s)) stretch;
+  border-image: var(--ui-row2) 60 70 40 215 fill / calc(60px * var(--s)) calc(70px * var(--s)) calc(40px * var(--s)) calc(215px * var(--s)) / calc(30px * var(--s)) calc(12px * var(--s)) calc(17px * var(--s)) calc(18px * var(--s)) stretch;
 }
 #app.skin .runrow { padding-right: 30px; }
 #app.skin .cxrow { padding-right: 22px; }
@@ -1951,3 +1951,13 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
   #app.skin .statp .statlist dt:not(:nth-last-child(2))::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100cqw; border-bottom: 1px solid rgba(216, 169, 74, .16); pointer-events: none; }
 }
 .trow:not(.langrow) .tlabel { min-width: 0; }
+
+/* v124. Три правки по крупным кадрам.
+   1) Портрет в карточке базы знаний (герой, враг): картинка касалась рамки сверху и снизу, а по бокам
+      оставались тёмные полосы по 9 px: это тёмная часть боковых кусков рамки. Картинка теперь несёт свой фон
+      сама и заходит под боковые куски до золотого канта: поля одинаковые со всех сторон.
+   2) Экран «Тени настигли» с кнопками возрождения стоял прижатым к верху, как экран поражения до v122.
+   3) Рамка строк (забеги, записи базы знаний) пересобрана как ui2/row2: по верху шли пять светлых точек
+      и зазубрина на канте, следы заплатки на месте снятого узора (tools/art/build_ui.py). */
+#app.skin .cxport:not(.relic) > svg { display: block; width: calc(100% + 12px); margin: 0 -6px; background: inherit; background-clip: border-box; }
+#app.skin .scr-end.revive .book { margin-top: 104px; }

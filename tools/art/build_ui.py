@@ -242,7 +242,8 @@ if __name__ == '__main__':
     magenta('panel_dark', 'panel', 720)
     magenta('achievement_tile', 'tile', 760)
     # list rows of any width: the same tile without the centre ornaments and the stamp slot
-    magenta('achievement_tile', 'row', 760, plains=[((0, 52), (258, 484), (202, 258)), ((178, 212), (325, 430), (220, 325)), ((52, 178), (584, 708), (440, 564))])
+    # row2 (v124): образец без уголка рамки портрета (от него по верху шли точки), заплата до конца завитка
+    magenta('achievement_tile', 'row2', 760, plains=[((0, 52), (258, 496), (208, 258)), ((178, 212), (325, 430), (220, 325)), ((52, 178), (584, 708), (440, 564))])
     magenta('button_round', 'round', 132)
     for l in ('ru', 'en', 'uk'):
         magenta(f'logo_{l}', f'logo_{l}', 760)

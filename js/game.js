@@ -1697,7 +1697,7 @@
       Art.warm({
         enemies: [...ch.filter((o) => o.enemy).map((o) => o.enemy), ...(has('shop') ? ['hedgehog'] : [])],
         places: [...['shop', 'rest', 'chest', 'meet'].filter(has), ...(ch.some((o) => o.enemy) ? ['talk'] : [])],
-        ui: ['f_atk', 'f_skill', 'f_charm', 'f_status', 'bubble', 'scroll', 'row', 'parch'],
+        ui: ['f_atk', 'f_skill', 'f_charm', 'f_status', 'bubble', 'scroll', 'row2', 'parch'],
         cards: run.deck.map((c) => c.id), intents: true,
         pics: ch.filter((o) => o.t === 'event').map((o) => { const ev = EVENTS.find((e) => e.id === o.ev); return ev && EV_PIC[ev.art]; }).filter((k) => k && picFits(k)),
       });

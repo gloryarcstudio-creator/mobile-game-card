@@ -52,7 +52,7 @@
     // кнопки и строки оставались без рамок до перезапуска. Поэтому каждую рамку по очереди загружаем сами
     // (заодно они готовы до первого показа); не пришла, пробуем снова, а получив, подставляем адрес заново.
     // по порядку первого показа: титул, выбор героя, вступление, карта пути, бой
-    const FIRST = ['btn_red', 'btn_dark', 'round', 'panel', 'tile', 'back', 'parch', 'topbar', 'herobar', 'mapcard', 'scroll', 'row', 'bubble'];
+    const FIRST = ['btn_red', 'btn_dark', 'round', 'panel', 'tile', 'back', 'parch', 'topbar', 'herobar', 'mapcard', 'scroll', 'row2', 'bubble'];
     const names = [...UI].filter((n) => !/^logo_/.test(n) || n === `logo_${(window.I18N && window.I18N.lang) || 'ru'}`)
       .sort((x, y) => (/^logo_/.test(y) - /^logo_/.test(x)) || ((FIRST.indexOf(x) + 99) % 99) - ((FIRST.indexOf(y) + 99) % 99));
     const check = (i, tries = 0) => {
