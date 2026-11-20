@@ -1824,3 +1824,23 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
   animation: lampglow 4.6s ease-in-out infinite; }
 #app.calm .title-hero::after { animation: none; }
 @media (prefers-reduced-motion: reduce) { .title-hero[data-h="lamp"]::after { animation: none; } }
+
+/* ---------- v109: живые фонари на пергаменте и строках лавки ----------
+   Продолжение v101, та же ручка --uilamp на #app (0 — убрать): тёплый фонарь над пергаментом события, разговора, вступления и финалов
+   и бирюзовый фонарик слева у строк лавки дышат светом. Меняется только прозрачность. Чтобы убрать совсем, удалить этот блок. */
+#app.skin :is(.ev-box, .page)::before { content: ''; position: absolute; left: 50%; top: calc(-19px * var(--s)); width: calc(104px * var(--s)); height: calc(104px * var(--s));
+  margin: calc(-52px * var(--s)) 0 0 calc(-52px * var(--s)); border-radius: 50%; pointer-events: none; will-change: opacity;
+  background: radial-gradient(circle closest-side, rgba(255, 220, 150, calc(.5 * var(--uilamp))) 0%, rgba(255, 180, 90, calc(.24 * var(--uilamp))) 45%, rgba(255, 150, 50, 0) 100%);
+  animation: lampglow 4.7s -1.3s ease-in-out infinite; }
+#app.skin .page { position: relative; }
+#app.skin :is(.svc, .brelic) { position: relative; }
+#app.skin :is(.svc, .brelic)::before { content: ''; position: absolute; left: calc(7px * var(--s)); top: calc(50% + 7px); width: calc(66px * var(--s)); height: calc(66px * var(--s));
+  margin: calc(-33px * var(--s)) 0 0 calc(-33px * var(--s)); border-radius: 50%; pointer-events: none; will-change: opacity;
+  background: radial-gradient(circle closest-side, rgba(150, 250, 232, calc(.42 * var(--uilamp))) 0%, rgba(90, 226, 210, calc(.2 * var(--uilamp))) 50%, rgba(70, 210, 200, 0) 100%);
+  animation: lampglow 4.5s ease-in-out infinite; }
+#app.skin :is(.svc, .brelic):nth-child(2n)::before { animation-duration: 5.3s; animation-delay: -2.1s; }
+#app.skin :is(.svc, .brelic):nth-child(3n)::before { animation-delay: -3.4s; }
+#app.calm :is(.svc, .brelic)::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { #app.skin :is(.svc, .brelic)::before { animation: none; } }
+#app.calm :is(.ev-box, .page)::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { #app.skin :is(.ev-box, .page)::before { animation: none; } }
