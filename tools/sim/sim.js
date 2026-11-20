@@ -6,6 +6,9 @@
 //   OUT=файл.json   куда записать забеги (по умолчанию sim_d<сложность>.json в текущей папке)
 //   BAL='{"hpStep":0.06}'   подменить числа Game.bal на время прогона
 //   DIFFO='{"rest":0.5}'    подменить поля уровня сложности
+//   ENEMY='{"waxgiant":{"hp":100}}'   подменить поля врагов (hp, pattern)
+//   BOSS=waxgiant,troll     назначить боссов стадий (пустое место между запятыми оставляет случайного)
+//   STOP=25                 оборвать забег, когда герой дошёл до этого уровня (быстрая проверка первого босса)
 //   LIMIT=25                сторож: секунд на забег, после которых поток считается зависшим
 // Сводка печатается сразу; python3 tools/sim/heroes.py файл.json покажет потери HP по героям и стадиям.
 const { chromium } = require('playwright');
@@ -16,11 +19,12 @@ const classes = !process.argv[4] || process.argv[4] === 'all' ? ALL : process.ar
 const workers = +process.argv[5] || 4;
 const url = process.argv[6] || 'file://' + require('path').resolve(__dirname, '../../index.html');
 
-async function bot({ jobs, diff, bal, diffo, noDef }) {
+async function bot({ jobs, diff, bal, diffo, noDef, enemy, boss, stop }) {
   const process_noDef = !!noDef;
   const D = window.Data; const G = window.Game;
   if (bal && G.bal) Object.assign(G.bal, bal);
   if (diffo) Object.assign(D.DIFFICULTIES[diff], diffo);
+  if (enemy) for (const [id, v] of Object.entries(enemy)) Object.assign(D.ENEMIES[id], v);
   const wait = (ms = 20) => new Promise((r) => setTimeout(r, ms));
   const q = (s) => document.querySelector(s); const qa = (s) => [...document.querySelectorAll(s)];
   const click = (e) => { if (typeof e === 'string') e = q(e); if (e) e.click(); return !!e; };
@@ -180,6 +184,7 @@ async function bot({ jobs, diff, bal, diffo, noDef }) {
     // новый забег
     for (let k = 0; k < 400 && q('#screen').className !== 'scr-title'; k++) { click('[data-act=cine-skip]'); await wait(50); }
     G.newRun(cls, diff);
+    if (boss) boss.forEach((id, i) => { if (id) G.run.bosses[i] = id; });
     const rec = { cls, diff, win: false, step: 0, by: null, byTier: null, fights: [], hpAt: {}, deck: 0, relics: 0, turns: 0, kinds: {}, gold: 0 };
     let fight = null; let idle = 0; let lastSig = '';
     for (let it = 0; it < 60000; it++) {
@@ -187,6 +192,7 @@ async function bot({ jobs, diff, bal, diffo, noDef }) {
       const scr = q('#screen').className; const R = G.run;
       const sig = scr + (R ? R.step + ':' + R.hp + ':' + R.gold + ':' + R.deck.length : '') + (G.combat ? G.combat.turn + ':' + G.combat.enemy.hp + ':' + G.combat.hand.length + ':' + G.combat.energy : '') + q('#overlay').className + q('#screen').innerHTML.length;
       if (sig === lastSig) { if (++idle > 3000) { rec.stuck = scr + ' ' + q('#screen').innerText.slice(0, 160).replace(/\n/g, ' / '); break; } } else { idle = 0; lastSig = sig; }
+      if (stop && R && R.step >= stop && scr === 'scr-map') { rec.stopped = true; G.endRun(false); break; }
       if (R) { rec.step = Math.max(rec.step, R.step); if (R.st) rec.gold = R.st.gold || 0; rec.relics = R.relics.length; rec.deck = R.deck.length; }
       // бой закончился
       if (fight && scr !== 'scr-combat') { fight.hp1 = R ? R.hp : 0; fight.turns = fight.t; rec.fights.push(fight); fight = null; }
@@ -316,7 +322,7 @@ async function bot({ jobs, diff, bal, diffo, noDef }) {
     // сторож: если страница зависла, забираем готовые забеги и пишем, где она стоит
     const limit = (+process.env.LIMIT || 25) * 1000 * part.length;
     let r = await Promise.race([
-      p.evaluate(bot, { jobs: part, diff, bal: process.env.BAL ? JSON.parse(process.env.BAL) : null, diffo: process.env.DIFFO ? JSON.parse(process.env.DIFFO) : null }),
+      p.evaluate(bot, { jobs: part, diff, bal: process.env.BAL ? JSON.parse(process.env.BAL) : null, diffo: process.env.DIFFO ? JSON.parse(process.env.DIFFO) : null, enemy: process.env.ENEMY ? JSON.parse(process.env.ENEMY) : null, boss: process.env.BOSS ? process.env.BOSS.split(',') : null, stop: +process.env.STOP || 0 }),
       new Promise((res) => setTimeout(() => res(null), limit)),
     ]);
     if (!r) {
