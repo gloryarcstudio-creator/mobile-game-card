@@ -786,7 +786,8 @@
     magpie: {
       name: 'Сорока-Перехватчица', hp: 75, tier: 'boss',
       line: 'Ворует письма, блестяшки и чужие секреты.',
-      pattern: [{ k: 'steal', v: 9, gold: 15 }, { k: 'debuff', v: 2, then: { k: 'attack', v: 5 } }, { k: 'attack', v: 3, hits: 4 }, { k: 'block', v: 12, then: { k: 'buff', v: 2 } }],
+      // v132: серия 4×3 вместо 3×4 (с каждой Силой росла вчетверо и убивала в 20% боёв), одиночные удары чуть сильнее
+      pattern: [{ k: 'steal', v: 10, gold: 15 }, { k: 'debuff', v: 2, then: { k: 'attack', v: 7 } }, { k: 'attack', v: 4, hits: 3 }, { k: 'block', v: 12, then: { k: 'buff', v: 2 } }],
     },
     clockmaker: {
       name: 'Сумеречный Часовщик', hp: 140, tier: 'boss',
@@ -796,12 +797,14 @@
     waxgiant: {
       name: 'Сургучный Великан', hp: 90, tier: 'boss',
       line: 'Слеплен из сургуча с тысячи писем и запечатывает всех навсегда.',
-      pattern: [{ k: 'block', v: 14 }, { k: 'attack', v: 11 }, { k: 'curse', card: 'sealwax', n: 2, then: { k: 'attack', v: 6 } }, { k: 'buff', v: 2, then: { k: 'attack', v: 5 } }],
+      // v132: был легче элиты (10% HP за бой): теперь бьёт и в ход защиты, остальные удары сильнее
+      pattern: [{ k: 'block', v: 14, then: { k: 'attack', v: 5 } }, { k: 'attack', v: 14 }, { k: 'curse', card: 'sealwax', n: 2, then: { k: 'attack', v: 8 } }, { k: 'buff', v: 2, then: { k: 'attack', v: 7 } }],
     },
     vane: {
-      name: 'Флюгер-Петух', hp: 68, tier: 'boss',
+      name: 'Флюгер-Петух', hp: 74, tier: 'boss',
       line: 'Крутится на крыше ратуши и сдувает почтальонов с пути.',
-      pattern: [{ k: 'attack', v: 3, hits: 3 }, { k: 'debuff', v: 2 }, { k: 'attack', v: 4, hits: 3 }, { k: 'block', v: 8, then: { k: 'attack', v: 6 } }],
+      // v132: был заметно легче Сороки: +6 HP, удар в ход Слабости, удар после защиты сильнее
+      pattern: [{ k: 'attack', v: 3, hits: 3 }, { k: 'debuff', v: 2, then: { k: 'attack', v: 6 } }, { k: 'attack', v: 4, hits: 3 }, { k: 'block', v: 8, then: { k: 'attack', v: 10 } }],
     },
     wolf: {
       name: 'Сумеречный Волк', hp: 130, tier: 'boss',

@@ -330,10 +330,10 @@ async function bot({ jobs, diff, bal, diffo, noDef, enemy, boss, stop }) {
       errs.push('HUNG ' + JSON.stringify({ ...dbg, out: (dbg.out || []).length }));
       r = dbg.out || [];
     }
-    await ctx.close();
+    ctx.close().catch(() => {});   // не ждём: страница с виртуальными часами иногда не закрывается, и прогон висел до сторожа
     return { r, errs };
   }));
-  await b.close();
+  Promise.race([b.close(), new Promise((r) => setTimeout(r, 5000))]).then(() => process.exit(0));
   const all = res.flatMap((x) => x.r); const errs = res.flatMap((x) => x.errs);
   require('fs').writeFileSync(process.env.OUT || `sim_d${diff}.json`, JSON.stringify(all));
   // сводка
