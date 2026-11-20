@@ -1729,3 +1729,22 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 @keyframes sunbreath { from { opacity: .55; } to { opacity: 1; } }
 #app.calm .bg-lights i:is(.s, .m)::before, #app.calm .bg-lights i:is(.s, .m)::after { animation: none; }
 @media (prefers-reduced-motion: reduce) { .bg-lights i:is(.s, .m)::before, .bg-lights i:is(.s, .m)::after { animation: none; } }
+
+/* ---------- v101: живые фонари на рамках ----------
+   Нарисованные фонари и свеча на панели героя и верхней панели дышат тёплым светом, бирюзовый фонарь красных кнопок — бирюзовым, как фонари на фонах (v87).
+   Меняется только прозрачность ореола. Ручка на #app: --uilamp (0 — убрать). Чтобы убрать совсем, удалить этот блок. */
+#app { --uilamp: 1; }
+#app.skin .herobar::before, #app.skin .herobar::after, #app.skin .topbar:not(.slim)::before, #app.skin .topbar:not(.slim)::after,
+#app.skin .btn:not(.end, .deckbtn, .price, .buyhero, .ghost)::after {
+  content: ''; position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; pointer-events: none; will-change: opacity;
+  background: radial-gradient(circle, rgba(255, 214, 140, calc(.6 * var(--uilamp))) 0%, rgba(255, 176, 84, calc(.26 * var(--uilamp))) 38%, rgba(255, 150, 50, 0) 70%);
+  animation: lampglow 4.3s ease-in-out infinite; }
+#app.skin .herobar::before { left: 7px; top: 78px; width: 30px; height: 30px; margin: -15px 0 0 -15px; animation-duration: 5.1s; animation-delay: -1.7s; }
+#app.skin .herobar::after { left: 381px; top: 72px; }
+#app.skin .topbar:not(.slim)::before { left: 17px; top: 52px; animation-duration: 4.8s; animation-delay: -2.2s; }
+#app.skin .topbar:not(.slim)::after { left: 297px; top: 41px; width: 36px; height: 36px; margin: -18px 0 0 -18px; animation-duration: 3.4s; }
+#app.skin .btn:not(.end, .deckbtn, .price, .buyhero, .ghost, .leave, .reroll) { position: relative; }
+#app.skin .btn:not(.end, .deckbtn, .price, .buyhero, .ghost)::after { left: auto; right: calc(-63px * var(--s)); top: 55%; width: calc(76px * var(--s)); height: calc(76px * var(--s)); margin: calc(-38px * var(--s)) 0 0; animation-duration: 4.6s; animation-delay: -.9s;
+  background: radial-gradient(circle, rgba(190, 255, 244, calc(.55 * var(--uilamp))) 0%, rgba(96, 228, 214, calc(.26 * var(--uilamp))) 38%, rgba(70, 210, 200, 0) 70%); }
+#app.calm :is(.herobar, .topbar, .btn)::before, #app.calm :is(.herobar, .topbar, .btn)::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { #app.skin :is(.herobar, .topbar)::before, #app.skin :is(.herobar, .topbar, .btn)::after { animation: none; } }
