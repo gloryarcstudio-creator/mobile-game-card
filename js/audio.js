@@ -346,7 +346,8 @@
     debuff(t) { osc('triangle', 520, t, 0.45, 0.14, sfxBus, { f2: 180, rev: 0.5 }); osc('triangle', 535, t, 0.45, 0.1, sfxBus, { f2: 170 }); },
     snuff(t) { noise(t, 0.3, 0.35, sfxBus, { type: 'lowpass', f: 2000, f2: 150 }); osc('sine', 600, t, 0.4, 0.12, sfxBus, { f2: 120 }); },
     turn(t) { osc('sine', mtof(81), t, 0.5, 0.08, sfxBus, { rev: 0.7 }); },
-    step(t) { noise(t, 0.08, 0.18, sfxBus, { type: 'lowpass', f: 900 }); noise(t + 0.16, 0.08, 0.15, sfxBus, { type: 'lowpass', f: 800 }); },
+    // шаги по снегу при переходе на следующий уровень: были на 13 дБ тише музыки и не слышны (замер v131), подняты на 9 дБ
+    step(t) { noise(t, 0.08, 0.5, sfxBus, { type: 'lowpass', f: 900 }); noise(t + 0.16, 0.08, 0.42, sfxBus, { type: 'lowpass', f: 800 }); },
     /* звуки карт и талисманов: у каждого приёма свой */
     bonk(t, v = 1) { osc('sine', 230, t, 0.14, 0.6 * v, sfxBus, { f2: 70 }); noise(t, 0.08, 0.4 * v, sfxBus, { f: 1200, q: 1.2 }); osc('triangle', 660, t, 0.05, 0.07, sfxBus, { f2: 300 }); },
     lantern(t) { SFX.bonk(t); osc('sine', mtof(86), t + 0.02, 0.5, 0.08, sfxBus, { rev: 0.6 }); osc('sine', mtof(93), t + 0.05, 0.4, 0.05, sfxBus, { rev: 0.6 }); },
