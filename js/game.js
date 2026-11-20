@@ -945,10 +945,11 @@
     const s = loadSave();
     const begin = () => goClassSelect();
     if (!s) { begin(); return; }
-    showOverlay(`<div class="pause"><h2>${tr('Начать заново?')}</h2>
+    // вопрос стоит в той же нарисованной рамке, что и пауза (v126): раньше текст и кнопки висели на затемнённом экране
+    showOverlay(`<div class="settings pausebox askbox"><button class="sclose" data-act="c-no" aria-label="${tr('Закрыть')}">✕</button><div class="sribbon">${tr('Начать заново?')}</div><div class="pause">
       <p class="ovhint">${tr('Сохранённый забег на уровне {n} из {total} будет потерян.', { n: s.run.step + 1, total: MAX_STEPS })}</p>
       <button class="btn" data-act="c-yes">${tr('Начать заново')}</button>
-      <button class="btn ghost" data-act="c-no">${tr('Отмена')}</button></div>`, (e) => {
+      <button class="btn ghost" data-act="c-no">${tr('Отмена')}</button></div></div>`, (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       hideOverlay();
@@ -1388,10 +1389,10 @@
   }
 
   function askReset() {
-    showOverlay(`<div class="pause"><h2>${tr('Сбросить прогресс?')}</h2>
+    showOverlay(`<div class="settings pausebox askbox"><button class="sclose" data-act="r-no" aria-label="${tr('Закрыть')}">✕</button><div class="sribbon">${tr('Сбросить прогресс?')}</div><div class="pause">
       <p class="ovhint">${tr('Сохранённый забег, статистика и достижения будут удалены. Настройки и покупки останутся.')}</p>
       <button class="btn" data-act="r-yes">${tr('Сбросить')}</button>
-      <button class="btn ghost" data-act="r-no">${tr('Отмена')}</button></div>`, (e) => {
+      <button class="btn ghost" data-act="r-no">${tr('Отмена')}</button></div></div>`, (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       if (b.dataset.act === 'r-no') { showSettings(); return; }

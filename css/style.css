@@ -1974,3 +1974,11 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
 #app.skin .ev-box h2.xlong { padding: 3px 0; }
 #app.skin .sfoot { position: relative; top: -3px; }
 #app.skin .sfoot span { max-width: none; white-space: nowrap; }
+
+/* v126. Вопросы «Начать заново?» и «Сбросить прогресс?» стоят в той же рамке, что и пауза (.askbox в game.js):
+   раньше заголовок, текст и кнопки висели прямо на затемнённом экране. Заголовок мельче, чтобы длинный
+   («Сбросить прогресс?») не задевал конверт слева и крестик справа; крестик рамки работает как «Отмена». */
+#app.skin .settings.askbox .sribbon { margin: 3px 46px 9px; font-size: 21px; white-space: nowrap; }
+#app.skin .settings.askbox { margin-top: 230px; }
+/* На титуле с сохранённым забегом подпись «Прогресс сохраняется…» стояла вплотную к нижнему краю экрана (1 px). */
+.scr-title .savehint:not(:empty) { margin: 6px 0 8px; }
