@@ -1809,3 +1809,13 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 @keyframes orbbreath { from { opacity: .25; } to { opacity: 1; } }
 #app.calm .herobar .energy::before { animation: none; }
 @media (prefers-reduced-motion: reduce) { #app.skin .herobar .energy::before { animation: none; } }
+
+/* ---------- v106: фонарь в руке Ивы на титуле ----------
+   У фонарщицы на титульном экране фонарь в руке дышит тёплым светом и качается вместе с ней (у других героев фонаря нет).
+   Меняется только прозрачность. Ручка на #app: --herolamp (0 — убрать). Чтобы убрать совсем: этот блок и data-h у .title-hero в game.js. */
+#app { --herolamp: 1; }
+.title-hero[data-h="lamp"]::after { content: ''; position: absolute; left: 69.2%; top: 40.6%; width: 34%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; will-change: opacity;
+  background: radial-gradient(circle closest-side, rgba(255, 226, 150, calc(.62 * var(--herolamp))) 0%, rgba(255, 186, 96, calc(.3 * var(--herolamp))) 36%, rgba(255, 150, 50, 0) 100%);
+  animation: lampglow 4.6s ease-in-out infinite; }
+#app.calm .title-hero::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { .title-hero[data-h="lamp"]::after { animation: none; } }

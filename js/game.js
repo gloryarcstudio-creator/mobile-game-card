@@ -798,10 +798,11 @@
     // пока игрок на титуле, скачиваем экран выбора героя и страницу вступления: на медленной сети
     // портреты героев появлялись через секунду, а текст вступления стоял без пергамента под ним
     if (Art.warm) Art.warm({ ui: ['tile', 'panel', 'parch', 'back'], faces: Object.keys(CLASSES).map((k) => CLASSES[k].look), heroes: [CLASSES[SETTINGS.cls] ? CLASSES[SETTINGS.cls].look : 'lamp'], pics: ['story_intro'] });
+    const titleCls = s ? (s.run.cls || 'lamp') : SETTINGS.cls; // data-h: по нему стиль зажигает фонарь в руке Ивы (v106)
     screen.className = 'scr-title';
     screen.innerHTML = `
       <div class="logo"><small>${tr('почтовая сказка')}</small><h1${STORY.title.length > 14 ? ' class="long"' : ''}>${STORY.title}</h1></div>
-      <div class="title-hero${s ? ' small' : ''}">${heroArt(s ? (s.run.cls || 'lamp') : SETTINGS.cls)}</div>
+      <div class="title-hero${s ? ' small' : ''}" data-h="${(CLASSES[titleCls] || CLASSES.lamp).look}">${heroArt(titleCls)}</div>
       <div class="menu">
         ${s ? `<button class="btn big" data-act="continue">${tr('Продолжить')}<small>${info}</small></button>` : ''}
         <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">${tr('Новая игра')}</button>
