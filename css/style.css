@@ -1912,3 +1912,8 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
 /* v116. Строки-уведомления и подсказки к значкам: сквозь плашку просвечивали значки под ней и мешались с текстом. */
 .toast { background: rgb(15, 18, 30); text-wrap: balance; }
 .tipb, .tipb::before { background: rgb(15, 18, 30); }
+
+/* v118. Цена в строках лавки (талисман, сбитень, заточка, роспуск): была голым числом без монеты,
+   хотя у карт выше и в верхней панели рядом с числом всегда стоит монета. Монета встаёт над числом, как в верхней панели. */
+.svc > i { display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1; min-width: 34px; }
+.svc > i .icon { width: 19px; height: 19px; }
