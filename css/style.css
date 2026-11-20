@@ -1583,6 +1583,8 @@ html[lang="uk"] #app.skin .logo { background-image: var(--ui-logo_uk); }
 /* Реплика врага в одну строку упиралась буквами в завитки рамки облачка: поля шире, длинная фраза уходит на вторую строку.
    Подписи «Особенность» и «Сложность» на выборе героя стояли на самой кромке рамки: отступ сверху больше. */
 #app.skin .saybub { padding: 9px 18px 8px; }
+/* v107: то же у реплики ежа в лавке: буквы стояли на левой кромке рамки, справа оставалось пустое место. Поля шире, текст по центру. */
+#app.skin .bubble { padding: 9px 18px 8px; text-align: center; }
 #app.skin .clsrelic { padding-top: 12px; }
 #app.skin .diffbox { padding-top: 13px; }
 #app.skin :is(.clsrelic, .clscards, .diffbox) { margin-top: 6px; }   /* высота столбца прежняя: отступы между панелями чуть меньше */
