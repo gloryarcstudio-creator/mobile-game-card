@@ -2004,3 +2004,9 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
 .topbar:not(.slim) .relic.more::before { inset: -2px -10px -6px -4px; }
 .herobar .btn.end::before, .herobar .deckbtn::before { inset: -7px -9px; }
 #gear::before, #menu::before { inset: -3px -6px; }
+
+/* v136. Окна-списки (карты героя, выбор карты из колоды, талисманы): кнопка «Закрыть» или «Отмена» стояла
+   после всего списка и была не видна, пока не прокрутишь до конца; в окне «Карты героя» другого способа
+   закрыть нет. Теперь кнопка держится у нижнего края окна, список прокручивается под ней; тёмный ореол
+   отделяет её от карт. У справочника своя раскладка, его не трогаем. Убрать: удалить блок. */
+#overlay .ov-inner:not(:has(> .gloss)) > .btn[data-act="close"] { position: sticky; bottom: 14px; z-index: 3; margin-top: 14px; filter: drop-shadow(0 0 9px #0a0c14) drop-shadow(0 0 5px #0a0c14); }
