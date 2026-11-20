@@ -798,7 +798,7 @@
       name: 'Сургучный Великан', hp: 90, tier: 'boss',
       line: 'Слеплен из сургуча с тысячи писем и запечатывает всех навсегда.',
       // v132: был легче элиты (10% HP за бой): теперь бьёт и в ход защиты, остальные удары сильнее
-      pattern: [{ k: 'block', v: 14, then: { k: 'attack', v: 5 } }, { k: 'attack', v: 14 }, { k: 'curse', card: 'sealwax', n: 2, then: { k: 'attack', v: 8 } }, { k: 'buff', v: 2, then: { k: 'attack', v: 7 } }],
+      pattern: [{ k: 'block', v: 14, then: { k: 'attack', v: 5 } }, { k: 'attack', v: 13 }, { k: 'curse', card: 'sealwax', n: 2, then: { k: 'attack', v: 8 } }, { k: 'buff', v: 2, then: { k: 'attack', v: 7 } }],
     },
     vane: {
       name: 'Флюгер-Петух', hp: 74, tier: 'boss',

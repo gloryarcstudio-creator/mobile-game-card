@@ -216,6 +216,8 @@ async function bot({ jobs, diff, bal, diffo, noDef, enemy, boss, stop }) {
         const C = G.combat; if (!C) continue;
         if (!fight) fight = { id: C.id, tier: C.tier, step: R.step, hp0: R.hp, max: R.maxHp, t: 0, ehp: C.enemy.max, deck: R.deck.length, up: R.deck.filter((x) => x.up).length, sh: 0 };
         if (G.busy) continue;
+        // вечный бой (у героя не осталось атак, враг не пробивает защиту): забег считается застрявшим, прогон идёт дальше
+        if (C.turn > 150) { rec.stuck = `endless ${C.id} turn ${C.turn} hp ${R.hp}/${R.maxHp} enemy ${C.enemy.hp} deck ${[...C.draw, ...C.hand, ...C.disc].map((x) => x.id).join(',')} exh ${C.exh.map((x) => x.id).join(',')} charms ${JSON.stringify(C.charms)} relics ${R.relics.join(',')}`; G.endRun(false); break; }
         fight.t = C.turn; fight.sh = Math.max(fight.sh, C.sharpened || 0); rec.turns++;
         await combatTurn();
         continue;
