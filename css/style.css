@@ -1869,3 +1869,11 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
   animation: lampglow 4.9s -2s ease-in-out infinite; }
 #app.calm .logo::before { animation: none; }
 @media (prefers-reduced-motion: reduce) { #app.skin .logo::before { animation: none; } }
+
+/* ---------- v115: значки состояний и атаки читаются в бою ----------
+   Значки состояний нарисованы тёмными медальонами с узорным ободом: в плашке размером 18 px они сливались в тёмное пятно.
+   В плашках боя значок показан крупнее (обод уходит за круглый край) и светлее. Меч в намерении «атака» был тёмным на тёмной плашке: он светлее.
+   В подсказках и справочнике значки остаются как нарисованы. Чтобы вернуть как было, удалить этот блок. */
+:is(.estatus, .hstatus) i .st-ico { clip-path: circle(45% at 50% 50%); filter: brightness(1.4) saturate(1.15); }
+:is(.estatus, .hstatus) i .st-ico image { transform-box: fill-box; transform-origin: 50% 50%; transform: scale(1.34); }
+.it.atk .intent-ico { filter: brightness(1.55) saturate(1.1) drop-shadow(0 0 2px rgba(255, 190, 170, .55)); }
