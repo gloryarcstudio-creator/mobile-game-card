@@ -1933,3 +1933,7 @@ html[lang="uk"] #app.skin .logo { --la: 760 / 295; --lx: 31.7%; --ly: 34.6%; --l
 @keyframes chestlit { from { opacity: 0; } }
 #app.calm.painted-bg .chest.open::after { animation: none; }
 @media (prefers-reduced-motion: reduce) { #app.painted-bg .chest.open::after { animation: none; } }
+
+/* v122. Экран поражения стоял прижатым к верху: над рамкой 50 px, под кнопками 245 px пустого снега.
+   Опускаем лист, чтобы он стоял ближе к середине; внизу остаётся место под плашку достижения. */
+#app.skin .scr-end.lose:not(.revive) .book { margin-top: 128px; }

@@ -865,6 +865,17 @@
         <div class="menu-row"><button class="btn ghost" data-act="gloss">${tr('Справочник')}</button><button class="btn ghost" data-act="settings">${tr('Настройки')}</button></div>
       </div>
       <p class="savehint">${s ? tr('Прогресс сохраняется после каждого уровня') : ''}</p>`;
+    menuAlign();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(menuAlign);
+  }
+  // Значки четырёх строк меню стоят в одном столбце: раньше каждая строка центрировалась сама, и значок
+  // уезжал вбок на длину подписи (в английском до 39 px). Всем подписям даём ширину самой длинной (v122).
+  function menuAlign() {
+    if (screen.className !== 'scr-title') return;
+    const sp = [...screen.querySelectorAll('.menu .achbtn > span:not(.mico)')];
+    sp.forEach((x) => { x.style.minWidth = ''; });
+    const w = Math.ceil(Math.max(0, ...sp.map((x) => parseFloat(getComputedStyle(x).width) || x.offsetWidth)));
+    sp.forEach((x) => { x.style.minWidth = w + 'px'; });
   }
 
   /* ---------- Заставка ----------
