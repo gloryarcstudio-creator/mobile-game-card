@@ -432,6 +432,7 @@
     'Чужого не надо.': 'You don’t need what isn’t yours.',
     'Снегирь трудился без отдыха, и три карты заблестели.': 'The bullfinch worked without rest, and three cards began to shine.',
     'Точить оказалось нечего.': 'It turned out there was nothing to hone.',
+    'Снегирь наточил всё, что ещё не было наточено.': 'The bullfinch honed everything that was not yet honed.',
     'Руки в саже, зато две карты стали острее.': 'Your hands are covered in soot, but two cards got sharper.',
     'Снегирь пожал плечами и снова раздул мехи.': 'The bullfinch shrugged and pumped the bellows again.',
     'На посылке было твоё имя. Странно, но приятно.': 'The parcel had your name on it. Strange, but nice.',
