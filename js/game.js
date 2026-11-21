@@ -470,6 +470,7 @@
   let selected = -1;
   let playing = false;   // идёт розыгрыш карты (а не ход врага)
   let tapNext = '';      // uid карты, которую тронули во время розыгрыша предыдущей
+  let flickNext = false; // эту карту не просто тронули, а выбросили вверх: её надо сыграть, а не выбрать
 
   /* ---------- Итоги забега: счётчики текущего забега (run.st) ----------
      ms — время в пути (пауза больше 2 минут считается за 2), dmg — урон врагам, hit — сильнейший удар,
@@ -2875,7 +2876,7 @@
     if (why) { SND.sfx('deny'); toast(why); return; }
     const cost = playCost(c);
     const price = cd.price ? cd.price(c.up) : 0;
-    busy = true; selected = -1; playing = true; tapNext = '';
+    busy = true; selected = -1; playing = true; tapNext = ''; flickNext = false;
     const el = dragEl || $(`.hand [data-hi="${i}"]`);
     SND.sfx('card');
     if (el) { aimCard(el, cd.type); el.classList.add('fly'); await sleep(220); }
@@ -2929,8 +2930,11 @@
     // карту тронули, пока разыгрывалась эта: выбираем её сейчас (v130; раньше такое касание пропадало молча)
     if (tapNext) {
       const j = C.hand.findIndex((x) => String(x.uid) === tapNext); tapNext = '';
-      if (j >= 0) { selected = j; SND.sfx('draw'); renderHand(false); }
+      const flick = flickNext; flickNext = false;
+      if (j >= 0 && flick) playCard(j);
+      else if (j >= 0) { selected = j; SND.sfx('draw'); renderHand(false); }
     }
+    if (!busy) dragMove(); // следующую карту уже держат пальцем: она сразу идёт за ним
   }
 
   // всплывающее число или слово. Живёт в слое эффектов, поверх вспышек: урон виден сразу, а не из-под удара
@@ -3527,23 +3531,42 @@
   const PLAY_Y = 540; // выше этой линии (чуть над рукой) карта сыграет
   let drag = null; let dragEndAt = 0;
   const toLocal = (e) => { const r = app.getBoundingClientRect(); const k = r.width / 400; return { x: (e.clientX - r.left) / k, y: (e.clientY - r.top) / k }; };
+  // карту в руке находим по её номеру uid: пока палец держит карту, рука могла перерисоваться, и место карты в ней могло сдвинуться
+  const handEl = (cu) => $(`.hand [data-cu="${cu}"]`);
   app.addEventListener('pointerdown', (e) => {
-    if (screen.className !== 'scr-combat' || busy || !C || drag || e.button > 0) return;
+    // пока разыгрывается предыдущая карта (около полсекунды), следующую уже можно схватить: она пойдёт за пальцем,
+    // как только игра освободится (раньше такой жест пропадал молча). В ход врага рука по-прежнему закрыта
+    if (screen.className !== 'scr-combat' || (busy && !playing) || !C || drag || e.button > 0) return;
     const el = e.target.closest('.hand [data-hi]');
     if (!el) return;
     const p = toLocal(e);
-    drag = { i: +el.dataset.hi, el, x0: p.x, y0: p.y, on: false, ready: false, id: e.pointerId };
+    drag = { i: +el.dataset.hi, cu: el.dataset.cu, el, x0: p.x, y0: p.y, on: false, ready: false, id: e.pointerId };
   });
   window.addEventListener('pointermove', (e) => {
     if (!drag || e.pointerId !== drag.id) return;
-    const p = toLocal(e);
+    drag.p = toLocal(e);
+    dragMove();
+  });
+  // карта идёт за пальцем; вызывается на каждое движение и ещё раз, когда доигралась предыдущая карта, а палец уже держит следующую
+  function dragMove() {
+    if (!drag || !drag.p) return;
+    if (screen.className !== 'scr-combat' || !C) { drag = null; app.classList.remove('aim'); return; }
+    const p = drag.p;
     const dx = p.x - drag.x0; const dy = p.y - drag.y0;
     if (!drag.on) {
       if (Math.hypot(dx, dy) < 12 || busy) return;
       drag.on = true;
-      if (selected >= 0) { selected = -1; renderHand(false); drag.el = $(`.hand [data-hi="${drag.i}"]`); }
+      if (selected >= 0) { selected = -1; renderHand(false); }
+      drag.el = handEl(drag.cu);
       if (!drag.el) { drag = null; return; }
+      drag.i = +drag.el.dataset.hi;
       drag.el.classList.add('drag'); SND.sfx('draw');
+    } else if (!drag.el.isConnected) {
+      // руку перерисовали под пальцем: берём ту же карту заново или отпускаем жест, если её в руке уже нет
+      drag.el = handEl(drag.cu);
+      if (!drag.el) { drag = null; app.classList.remove('aim'); return; }
+      drag.i = +drag.el.dataset.hi; drag.ready = false;
+      drag.el.classList.add('drag');
     }
     drag.el.style.setProperty('--dx', `${dx}px`); drag.el.style.setProperty('--dy', `${dy}px`);
     const ready = p.y < PLAY_Y && dy < -50;
@@ -3552,14 +3575,21 @@
       app.classList.toggle('aim', ready && CARDS[C.hand[drag.i].id].type === 'atk');
       if (ready) SND.sfx('click');
     }
-  });
+  }
   function endDrag(e, cancel) {
     if (!drag || e.pointerId !== drag.id) return;
     const d = drag; drag = null;
     app.classList.remove('aim');
-    if (!d.on) return; // простое касание: дальше сработает click
+    if (!d.on) {
+      // карту выбросили вверх одним быстрым движением, пока разыгрывалась предыдущая: она сыграет следом
+      if (!cancel && busy && playing && C && screen.className === 'scr-combat') {
+        const p = toLocal(e);
+        if (p.y < PLAY_Y && p.y - d.y0 < -50) { tapNext = d.cu; flickNext = true; }
+      }
+      return; // простое касание: дальше сработает click
+    }
     dragEndAt = performance.now();
-    if (!cancel && d.ready && !busy && C && C.hand[d.i]) {
+    if (!cancel && d.ready && !busy && C && C.hand[d.i] && String(C.hand[d.i].uid) === d.cu) {
       const why = cantPlay(C.hand[d.i]);
       if (!why) { playCard(d.i, d.el); return; }
       SND.sfx('deny'); toast(why);
@@ -3605,7 +3635,7 @@
     if (screen.className === 'scr-combat') {
       if (busy || performance.now() - dragEndAt < 350) {
         // пока карта разыгрывается (0,25–0,5 с), касание следующей запоминается: она выберется, как только игра освободится
-        if (busy && playing && C && t && t.dataset.cu) tapNext = t.dataset.cu;
+        if (busy && playing && C && t && t.dataset.cu) { tapNext = t.dataset.cu; flickNext = false; }
         return;
       }
       if (t && t.dataset.hi != null) {
