@@ -326,6 +326,44 @@
   window.addEventListener('resize', fit);
   fit();
 
+  /* ---------- Переносы строк ---------- */
+  // Короткий предлог или союз не остаётся висеть в конце строки, число не отрывается от своего слова («Нанести 8 | урона»),
+  // тире не начинает строку: обычный пробел в этих местах заменяется неразрывным. Правится готовый текст на странице,
+  // сразу после любой отрисовки и до показа кадра; сами строки игры и ключи переводов не меняются.
+  // Наблюдатель создан раньше подгонки названий и карт (fitTitles, fitCards): они меряют уже исправленный текст.
+  const NB = '\u00a0';
+  const SHORT_WORDS = { ru: 'в|во|и|к|ко|с|со|у|о|об|а|на|но|не|ни|по|за|из|от|до', uk: 'в|у|і|й|з|із|зі|та|на|не|ні|по|за|до|від|а|о' }[I18N.lang];
+  const reShort = SHORT_WORDS ? new RegExp(`(^|[\\s${NB}«(„"])(${SHORT_WORDS}) (?=\\S)`, 'gi') : null;
+  const reNum = /(\d%?) (?=[A-Za-zА-Яа-яЁёІіЇїЄєҐґ])/g;
+  const reDash = / (?=[—–](?:\s|$))/g;
+  function glue(s, numOnly) {
+    if (s.indexOf(' ') < 0) return s;
+    let out = s.replace(reNum, `$1${NB}`);
+    if (numOnly) return out;
+    out = out.replace(reDash, NB);
+    if (reShort) out = out.replace(reShort, `$1$2${NB}`).replace(reShort, `$1$2${NB}`); // дважды: в «и в доме» два коротких слова подряд
+    return out;
+  }
+  const unglue = (s) => (s.indexOf(NB) < 0 ? s : s.split(NB).join(' ')); // для сравнения текста со страницы с исходной строкой
+  // На карте строка короткая (около 13 букв), и каждая склейка стоит места: с предлогами текст 16 карт из 226 становился
+  // мельче или длиннее на строку. Поэтому на картах склеивается только число со своим словом, а если и это не даёт тексту
+  // встать в рамку прежним размером, подгонка карт (fitCards) снимает склейку и помечает карту data-ng: шрифт мельче не становится.
+  function glueText(n) {
+    if (n.data.indexOf(' ') < 0) return;
+    const card = n.parentElement && n.parentElement.closest('.card');
+    if (card && card.dataset.ng) return;
+    const g = glue(n.data, !!card);
+    if (g !== n.data) n.data = g;
+  }
+  function glueNode(root) {
+    if (root.nodeType === 3) { glueText(root); return; }
+    if (root.nodeType !== 1) return;
+    const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let n;
+    while ((n = tw.nextNode())) glueText(n);
+  }
+  new MutationObserver((list) => { for (const m of list) for (const n of m.addedNodes) glueNode(n); }).observe(app, { childList: true, subtree: true });
+
   // новый экран проявляется мягко. Срабатывает только когда экран действительно сменился
   // (другой класс), а не при каждой перерисовке боя; только прозрачность, чтобы не сбивать замеры эффектов.
   // Класс экрану не добавляем: по точному имени класса игра узнаёт, какой экран открыт
@@ -364,7 +402,7 @@
       const ty = card.querySelector('.ctype'); const art = card.querySelector('.cart');
       if (!ds || !ts || !ty || !art || !card.offsetHeight) return;   // скрытая карта: измерим, когда покажется
       const kind = cardKind(card);
-      todo.push({ card, d, ds, t, ts, ty, art, di: stepOf(d, DSTEP), ti: stepOf(t, TSTEP), dk: `d|${kind}|${ds.textContent}`, tk: `t|${kind}|${ts.textContent}` });
+      todo.push({ card, d, ds, t, ts, ty, art, di: stepOf(d, DSTEP), ti: stepOf(t, TSTEP), dk: `d|${kind}|${unglue(ds.textContent)}`, tk: `t|${kind}|${unglue(ts.textContent)}` });
     });
     const next = (el, steps, i) => { if (steps[i]) el.classList.remove(steps[i]); el.classList.add(steps[i + 1]); };
     for (let pass = 0; pass < 6 && todo.length; pass++) {
@@ -377,9 +415,15 @@
       const rest = [];
       todo.forEach((q, i) => {
         let again = false;
-        if (seen[i].tight && q.di < DSTEP.length - 1) { next(q.d, DSTEP, q.di++); again = true; }
+        if (seen[i].tight && !q.ng && q.ds.textContent.indexOf(NB) >= 0) {
+          // тесно из-за неразрывных пробелов: сначала снимаем их, шрифт уменьшаем только если не помогло
+          q.ng = true; q.card.dataset.ng = '1';
+          const tw = document.createTreeWalker(q.ds, NodeFilter.SHOW_TEXT); let n;
+          while ((n = tw.nextNode())) n.data = unglue(n.data);
+          again = true;
+        } else if (seen[i].tight && q.di < DSTEP.length - 1) { next(q.d, DSTEP, q.di++); again = true; }
         if (seen[i].wide && q.ti < TSTEP.length - 1) { next(q.t, TSTEP, q.ti++); again = true; }
-        if (again) rest.push(q); else { q.card.dataset.fit = '1'; cardFit.set(q.dk, DSTEP[q.di]); cardFit.set(q.tk, TSTEP[q.ti]); }
+        if (again) rest.push(q); else { q.card.dataset.fit = '1'; cardFit.set(q.dk, DSTEP[q.di]); cardFit.set(q.tk, TSTEP[q.ti]); if (q.ng) cardFit.set(`n${q.dk}`, 1); }
       });
       todo = rest;
     }
@@ -649,11 +693,11 @@
     if (c.exhaust && c.type !== 'status') desc += ` ${tr('Сгорает.')}`;
     const plain = desc.replace(/<[^>]+>/g, '');
     // размер текста: если карта с таким текстом уже подгонялась под рамку (fitCards), берём готовую ступень, иначе прикидка по длине
-    const dKey = `d|${c.type}|${plain}`; const tKey = `t|${c.type}|${c.name}${inst.up ? '+' : ''}`;
+    const dKey = `d|${c.type}|${unglue(plain)}`; const tKey = `t|${c.type}|${unglue(c.name)}${inst.up ? '+' : ''}`;
     const fitted = cardFit.has(dKey) && cardFit.has(tKey);
     const dCls = fitted ? cardFit.get(dKey) : (plain.length > 64 ? 'xlong' : plain.length > 48 ? 'long' : '');
     const tCls = fitted ? cardFit.get(tKey) : (c.name.length > 12 ? 'long' : '');
-    return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${inst.sharp ? 'sharp' : ''} ${extra}" ${attrs}${fitted ? ' data-fit="1"' : ''}>
+    return `<div class="card ${c.type} r-${c.rarity} ${inst.up ? 'up' : ''} ${inst.sharp ? 'sharp' : ''} ${extra}" ${attrs}${fitted ? ' data-fit="1"' : ''}${cardFit.has(`n${dKey}`) ? ' data-ng="1"' : ''}>
       <div class="cost ${cost == null ? 'none' : ''}"><span>${cost == null ? '✕' : cost}</span></div>
       <div class="ctitle ${tCls}"><span>${c.name}${inst.up ? '<i>+</i>' : ''}</span></div>
       <div class="cart">${Art.card(inst.id)}</div>
@@ -755,7 +799,7 @@
     // раньше они ложились одна на другую, и читалась только последняя. Та же подсказка повторно
     // (второе нажатие на недоступную кнопку) показывается заново на своём месте, а не второй строкой.
     const live = [...app.querySelectorAll('.toast')];
-    const same = live.find((x) => x.textContent === text);
+    const same = live.find((x) => unglue(x.textContent) === unglue(text));
     let off = 0;
     if (same) { off = parseFloat(same.style.marginTop) || 0; same.remove(); }
     else live.forEach((x) => { off = Math.max(off, (parseFloat(x.style.marginTop) || 0) + x.offsetHeight + 6); });
