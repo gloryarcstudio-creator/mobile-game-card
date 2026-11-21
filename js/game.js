@@ -400,15 +400,20 @@
     });
     const ALPHA = [0.42, 0.7, 0.92];
     let running = false;
+    let last = 0;
     function tick(t) {
       ctx.clearRect(0, 0, 400, 860);
-      if (!SETTINGS.snow) { running = false; return; }
+      if (!SETTINGS.snow) { running = false; last = 0; return; }
+      // скорости снежинок заданы в шагах на кадр при 60 кадрах в секунду: шаг растёт с прошедшим временем,
+      // иначе на экранах 90 и 120 Гц снег падает в полтора-два раза быстрее, а на слабом телефоне медленнее
+      const k = last ? Math.min(3, Math.max(0, (t - last) / (1000 / 60))) : 1;
+      last = t;
       ctx.fillStyle = 'rgb(235,242,255)';
       const wind = Math.sin(t / 7300) * 0.22 + Math.sin(t / 2900 + 1.7) * 0.1;
       let layer = -1;
       for (const f of flakes) {
         if (f.z !== layer) { layer = f.z; ctx.globalAlpha = ALPHA[layer]; }
-        f.y += f.v; f.x += Math.sin(t / 1400 + f.d) * (0.2 + f.z * 0.12) + wind * (0.5 + f.z * 0.6);
+        f.y += f.v * k; f.x += (Math.sin(t / 1400 + f.d) * (0.2 + f.z * 0.12) + wind * (0.5 + f.z * 0.6)) * k;
         if (f.y > 870) { f.y = -10; f.x = Math.random() * 400; }
         if (f.x < -8) f.x += 416; else if (f.x > 408) f.x -= 416;
         ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 7); ctx.fill();
