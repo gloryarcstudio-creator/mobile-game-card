@@ -961,7 +961,9 @@
     hideOverlay();
     SND.music('title');
     const s = loadSave();
-    const info = s && `${CLASSES[s.run.cls || 'lamp'].name} · ${DIFFICULTIES[diffOf(s.run)].name} · ${tr('ур. {n}', { n: s.run.step + 1 })} · ${s.run.hp}/${s.run.maxHp} HP`;
+    // строка под «Продолжить» из двух половин: если целиком не помещается, menuAlign ставит их одну под другой (v169).
+    // Раньше длинная строка переносилась где придётся и оставляла точку-разделитель висеть в конце первой строки
+    const info = s && `<span>${CLASSES[s.run.cls || 'lamp'].name} · ${DIFFICULTIES[diffOf(s.run)].name}</span><i> · </i><span>${tr('ур. {n}', { n: s.run.step + 1 })} · ${s.run.hp}/${s.run.maxHp} HP</span>`;
     // пока игрок на титуле, скачиваем экран выбора героя и страницу вступления: на медленной сети
     // портреты героев появлялись через секунду, а текст вступления стоял без пергамента под ним
     if (Art.warm) Art.warm({ ui: ['tile', 'panel', 'parch', 'back'], faces: Object.keys(CLASSES).map((k) => CLASSES[k].look), heroes: [CLASSES[SETTINGS.cls] ? CLASSES[SETTINGS.cls].look : 'lamp'], pics: ['story_intro'] });
@@ -971,7 +973,7 @@
       <div class="logo"><small>${tr('почтовая сказка')}</small><h1${STORY.title.length > 14 ? ' class="long"' : ''}>${STORY.title}</h1></div>
       <div class="title-hero${s ? ' small' : ''}" data-h="${(CLASSES[titleCls] || CLASSES.lamp).look}">${heroArt(titleCls)}</div>
       <div class="menu">
-        ${s ? `<button class="btn big" data-act="continue">${tr('Продолжить')}<small>${info}</small></button>` : ''}
+        ${s ? `<button class="btn big" data-act="continue">${tr('Продолжить')}<small class="saveinfo">${info}</small></button>` : ''}
         <button class="btn ${s ? 'ghost' : 'big'}" data-act="newgame">${tr('Новая игра')}</button>
         <button class="btn ghost achbtn" data-act="ach">${menuIco('medal')}<span>${tr('Достижения')}<small>${tr('{a} из {b}', { a: achCount(), b: ACH_LIST.length })}</small></span>${achHasNew() ? '<i class="newdot"></i>' : ''}</button>
         <button class="btn ghost achbtn" data-act="codex">${menuIco('book')}<span>${tr('База знаний')}<small>${tr('{a} из {b}', { a: codexCount(), b: codexTotal })}</small></span></button>
@@ -987,6 +989,8 @@
   // уезжал вбок на длину подписи (в английском до 39 px). Всем подписям даём ширину самой длинной (v122).
   function menuAlign() {
     if (screen.className !== 'scr-title') return;
+    const si = $('.saveinfo');
+    if (si) { si.classList.remove('two'); si.classList.toggle('two', si.offsetHeight > si.firstElementChild.offsetHeight * 1.5); }
     const sp = [...screen.querySelectorAll('.menu .achbtn > span:not(.mico)')];
     sp.forEach((x) => { x.style.minWidth = ''; });
     const w = Math.ceil(Math.max(0, ...sp.map((x) => parseFloat(getComputedStyle(x).width) || x.offsetWidth)));

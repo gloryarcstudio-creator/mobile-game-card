@@ -474,6 +474,11 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .menu .btn { width: 270px; }
 .menu .btn.big { font-size: 28px; padding: 10px 20px; }
 .btn small { display: block; margin-top: 2px; font-family: var(--body); font-size: 14px; opacity: .9; }
+/* v169: строка сохранения под «Продолжить». Половины не рвутся внутри; если вся строка не помещается, они встают одна под другой без точки между ними */
+.saveinfo span { white-space: nowrap; }
+.saveinfo i { font-style: normal; }
+.saveinfo.two span { display: block; }
+.saveinfo.two i { display: none; }
 .savehint { margin: 14px 0 0; font-size: 14px; color: #fff4d6; text-shadow: 0 2px 4px #000; opacity: .85; }
 .pause { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 150px; }
 .pause h2 { margin-bottom: 0; }
