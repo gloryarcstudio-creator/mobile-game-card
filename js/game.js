@@ -1591,7 +1591,7 @@
     screen.className = 'scr-class';
     screen.dataset.cls = sel;
     screen.dataset.diff = diff;
-    const d = DIFFICULTIES[diff];
+    const d = DIFFICULTIES[diff];   // HP на плашке героя — с поправкой сложности, как в забеге (newRun): раньше «Прогулка» показывала 44, а забег начинался с 56 (v157)
     const won = ACH.s.winsDiff || [];
     screen.innerHTML = `
       <div class="clshead ${again ? 'still' : ''}"><h2>${tr('Кто понесёт письмо?')}</h2><p>${tr('У каждого героя свой путь к победе')}</p></div>
@@ -1601,7 +1601,7 @@
         <div class="clsbig ${sel}">${heroArt(sel)}</div>
         <div class="clstext">
           <h3>${h.name}<small>${h.role}</small></h3>
-          <div class="clsstats"><span>${Art.icon('heart')}${h.hp} HP</span><span>${Art.icon('coin')}${h.gold}</span></div>
+          <div class="clsstats"><span>${Art.icon('heart')}${h.hp + d.heroHp} HP</span><span>${Art.icon('coin')}${h.gold}</span></div>
           <p class="clsbuild">${h.build}</p>
           <p class="clsabout">${h.about}</p>
         </div>
