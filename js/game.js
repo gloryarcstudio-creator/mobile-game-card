@@ -2296,12 +2296,19 @@
     if (run.rel[h] <= -2 && !run.fallen.includes(h)) { run.fallen.push(h); ach.flag('betray'); SND.sfx('snuff'); toast(tr('Тень коснулась героя: {name}', { name })); }
     else if (d > 0 && run.rel[h] >= 2) { SND.sfx('relic'); toast(tr('Новый друг: {name}', { name })); ach.put('friends', h); }
   }
-  function meetChoose(k) {
+  function meetChoose(k, picked) {
     const h = screen.dataset.hero;
     const m = LORE.MEET[h];
     const o = meetOptions(h).find((x) => x.k === k);
     if (!o || !o.can) return;
     const fx = o.fx || {};
+    // v163: карту для улучшения выбирают до платы. Раньше монеты и дружба засчитывались сразу, а «Отмена» в окне выбора
+    // заканчивала встречу без улучшения: 25 монет Савве ни за что. Теперь отмена возвращает к ответам, как в событиях (v159).
+    // Если улучшать нечего, помочь всё равно можно: об этом скажет сообщение
+    if (fx.up && !picked) {
+      if (run.deck.some(canUpgrade)) { upgradeFlow((ok) => { if (ok) meetChoose(k, true); }); return; }
+      toast(tr('Все карты уже улучшены'));
+    }
     const hp0 = run.hp; const gold0 = run.gold;
     if (fx.gold) gain(fx.gold);
     if (fx.hp) evApi.damage(fx.hp);
@@ -2327,7 +2334,7 @@
       });
       showGain(hp0, gold0);
     };
-    if (fx.up) upgradeFlow(() => finish()); else finish();
+    finish();
   }
 
   /* Реплика врага в бою: облачко над головой (выключается в настройках) */
