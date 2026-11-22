@@ -595,15 +595,24 @@
      внутри шага: бой, событие, лавка, награда... Бой при продолжении начинается заново. */
   const STORY_ID = Object.keys(window.Story.STORIES).find((k) => window.Story.STORIES[k] === STORY) || 'main';
   const SAVE_KEY = `lastray.save.${STORY_ID}`;
+  // снимки забега для экрана поражения: развилка перед боем («Вернуться до боя») и начало боя («Начать бой заново»)
+  let snapStep = null;
+  let snapFight = null;
+  const BACK_FROM = ['fight', 'elite', 'boss', 'talk', 'event', 'defeat'];   // экраны, с которых можно попасть на экран поражения
   function save(pending = null) {
     if (!run) return;
     stTick();
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 1, run, pending, at: Date.now() })); } catch (e) { /* хранилище недоступно */ }
+    // back: развилка перед боем. Без неё после перезагрузки посреди боя на экране поражения пропадала кнопка «Вернуться до боя» (v151)
+    const back = pending && BACK_FROM.includes(pending.t) && snapStep ? snapStep : undefined;
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 1, run, pending, back, at: Date.now() })); } catch (e) { /* хранилище недоступно */ }
   }
   /* Сохранение могло остаться от прежней версии игры: без полей, которых тогда не было, с картами, талисманами,
      врагами или героем, которых с тех пор переименовали или убрали. Раньше такое сохранение роняло «Продолжить»,
      а с незнакомым героем не открывался и главный экран. Чиним всё, что можно починить; что нельзя, считаем
      отсутствием сохранения. */
+  function fixSnap(str) {
+    try { const o = JSON.parse(str); return o && Array.isArray(o.deck) ? JSON.stringify(fixSave({ run: o, pending: null }).run) : null; } catch (e) { return null; }
+  }
   function fixSave(s) {
     const r = s.run;
     const num = (v, d) => (v !== null && v !== '' && Number.isFinite(+v) ? +v : d);
@@ -613,7 +622,8 @@
     const h = CLASSES[r.cls || 'lamp'];
     r.step = Math.max(0, Math.min(MAX_STEPS - 1, Math.floor(num(r.step, 0))));
     r.maxHp = Math.max(1, Math.floor(num(r.maxHp, h.hp)));
-    r.hp = Math.max(1, Math.min(r.maxHp, Math.floor(num(r.hp, r.maxHp))));
+    const dead = !!s.pending && s.pending.t === 'defeat';   // сохранён экран поражения: у героя 0 HP
+    r.hp = Math.max(dead ? 0 : 1, Math.min(r.maxHp, Math.floor(num(r.hp, r.maxHp))));
     r.gold = Math.max(0, Math.floor(num(r.gold, 0)));
     r.lit = num(r.lit, 0); r.fights = num(r.fights, 0);
     r.relics = arr(r.relics).filter((id) => RELICS[id]);
@@ -642,7 +652,10 @@
       else if (t === 'bossrelic' && p.opts && !(Array.isArray(p.opts) && p.opts.every((id) => RELICS[id]))) p.opts = null;
       else if (t === 'after' && !(ENEMIES[p.enemy] && tiers.includes(p.tier))) s.pending = { t: 'next' };
       else if (t === 'afterdone' && !tiers.includes(p.tier)) s.pending = { t: 'next' };
+      // экран поражения: снимок начала боя чиним так же, как само сохранение; без годного снимка забег просто заканчивается
+      else if (t === 'defeat') p.fight = ENEMIES[p.enemy] && tiers.includes(p.tier) ? fixSnap(p.fight) : null;
     }
+    s.back = s.pending && BACK_FROM.includes(s.pending.t) ? fixSnap(s.back) : null;
     return s;
   }
   function loadSave() {
@@ -663,9 +676,16 @@
     setBg();
     SND.music(mapTrack());
     const p = s.pending;
+    snapFight = null; snapStep = s.back || null;
     const ev = p && p.t === 'event' && EVENTS.find((e) => e.id === p.ev);
     const resume = () => {
       if (!p) return goMap();
+      // игру закрыли на экране поражения: возвращаем его с теми же кнопками (раньше забег пропадал без следа, v151)
+      if (p.t === 'defeat') {
+        if (!p.fight) return endRun();
+        snapFight = { run: p.fight, enemyId: p.enemy, tier: p.tier };
+        return goDefeat();
+      }
       if (p.t === 'fight' || p.t === 'elite' || p.t === 'boss') return startCombat(p.enemy, p.t);
       if (ev) return goEvent(ev);
       if (p.t === 'shop') return goShop(p.shop);
@@ -682,7 +702,7 @@
     };
     // последняя страховка: экран из сохранения не открылся, значит возвращаемся к выбору дороги на том же уровне
     const fallback = () => {
-      try { C = null; busy = false; hideOverlay(); run.choices = null; goMap(); } catch (e) { clearSave(); goTitle(); toast(tr('Сохранение не открылось. Начни новый забег')); }
+      try { C = null; busy = false; hideOverlay(); if (run.hp <= 0) { endRun(); return; } run.choices = null; goMap(); } catch (e) { clearSave(); goTitle(); toast(tr('Сохранение не открылось. Начни новый забег')); }
     };
     try { const out = resume(); if (out && out.catch) out.catch(fallback); } catch (e) { fallback(); }
   }
@@ -3476,13 +3496,12 @@
   }
   /* После поражения можно начать бой заново или вернуться на развилку перед боем:
      за просмотр рекламы, а в режиме без рекламы сразу. Или закончить забег. */
-  let snapStep = null;
-  let snapFight = null;
   function goDefeat() {
     if (!snapFight) { endRun(); return; }
     if (C && run.st) run.st.by = C.id;
     C = null; busy = false;
-    clearSave();
+    // экран поражения сохраняется: раньше сохранение стиралось, и забег, закрытый на этом экране, пропадал без записи в журнале
+    save({ t: 'defeat', enemy: snapFight.enemyId, tier: snapFight.tier, fight: snapFight.run });
     SND.music(null); SND.sfx('defeat');
     const tag = Store.noAds() ? '' : `<i class="adtag">${uiIco('ad')}${tr('Реклама')}</i>`;
     screen.className = 'scr-end lose revive';
