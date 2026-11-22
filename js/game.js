@@ -3465,7 +3465,13 @@
       const cand = run.deck.filter((c) => sharp.includes(c.uid) && canUpgrade(c));
       if (cand.length) { const c = pick(cand); c.up = true; achUpgraded(1); toast(`${RELICS.leatherstrop.name}: ${tr('{card} навсегда', { card: cardName(c) })}`); }
     }
-    if (hasRelic('herbbag') && paid > 1) { evApi.heal(Math.floor(paid / 2)); toast(`${RELICS.herbbag.name}: +${Math.floor(paid / 2)} HP`); }
+    // Лечение талисманами после боя (v176). Термос смотрит на здоровье, с которым бой закончился: раньше Снеговик и Коробка леденцов
+    // лечили первыми, и с 18 из 40 HP Снеговик поднимал до 22, а Термос (+12) уже не срабатывал: лишний талисман делал хуже.
+    // Сообщение называет, сколько HP вернулось на деле (у полного здоровья писалось «+10 HP» без лечения); Снеговик лечил молча.
+    const lowHp = run.hp < run.maxHp / 2;
+    const lastWin = tier === 'boss' && isFinalStep(run.step);
+    const healBy = (rid, n) => { const b = run.hp; evApi.heal(n); if (run.hp > b && !lastWin) toast(`${RELICS[rid].name}: +${run.hp - b} HP`); };
+    if (hasRelic('herbbag') && paid > 1) healBy('herbbag', Math.floor(paid / 2));
     STATS.fights++;
     if (tier === 'elite') { STATS.elites++; stAdd('elites'); }
     if (tier === 'boss') { STATS.bosses++; stAdd('bosses'); }
@@ -3484,9 +3490,9 @@
     if (stolen) { run.gold += stolen; toast(tr('Монеты возвращены: +{n}', { n: stolen })); }
     if (hasRelic('piggy') && !hpLost) { gain(15); toast(`${RELICS.piggy.name}: ${coins(15)}`); }
     setBg();
-    if (hasRelic('snowman')) evApi.heal(4);
-    if (hasRelic('candybox') && tier === 'elite') { evApi.heal(10); toast(`${RELICS.candybox.name}: +10 HP`); }
-    if (hasRelic('thermos') && run.hp < run.maxHp / 2) { evApi.heal(12); toast(`${RELICS.thermos.name}: +12 HP`); }
+    if (hasRelic('snowman')) healBy('snowman', 4);
+    if (hasRelic('candybox') && tier === 'elite') healBy('candybox', 10);
+    if (hasRelic('thermos') && lowHp) healBy('thermos', 12);
     if (tier === 'boss' && isFinalStep(run.step)) {
       if (ENEMIES[id].dark) { ach.put('darkbeaten', ENEMIES[id].dark); run.finalDark = ENEMIES[id].dark; }
       goVictory(); return;
