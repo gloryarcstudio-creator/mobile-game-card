@@ -3794,11 +3794,14 @@
     const now = performance.now();
     const key = tapKey(e.target);
     const inFight = screen.className === 'scr-combat' && !overlay.classList.contains('show');
-    if (lastTap && !inFight && now - lastTap.t < 300 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 34 && key !== lastTap.key) {
+    // переключатели настроек стоят строками через 33 px: второй переключатель сразу под первым попадал в эти 34 px и не срабатывал,
+    // если нажать его быстрее 0,3 с (v167). Под пальцем там ничего нового не появляется, так что два переключателя подряд пропускаем
+    const sw = !!(e.target.closest && e.target.closest('[data-set]'));
+    if (lastTap && !inFight && !(sw && lastTap.sw) && now - lastTap.t < 300 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 34 && key !== lastTap.key) {
       e.stopImmediatePropagation(); e.preventDefault();
       return;
     }
-    lastTap = { t: now, x: e.clientX, y: e.clientY, key };
+    lastTap = { t: now, x: e.clientX, y: e.clientY, key, sw };
   }, true);
   app.addEventListener('click', (e) => {
     SND.unlock();
