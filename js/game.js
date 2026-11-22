@@ -2006,7 +2006,14 @@
   function talkOptions(id, tier, att) {
     const e = ENEMIES[id];
     const tie = tieOf(id);
-    const ops = [{ k: 'fight', text: 'В бой', hint: tr(tie && tie.kind === 'avenge' ? 'Сила врага +1' : tie && tie.kind === 'rival' ? 'Враг Ослаблен на 2 хода' : 'Обычный бой') }];
+    // с чем враг выйдет на бой из-за отношения к герою (те же числа, что в startCombat). Раньше «В бой» у врага, который
+    // не терпит героя, называлось «Обычный бой», хотя Сила была +2, а «Ответить дерзко» обещало +3 при настоящих +5
+    const kin = e.dark ? null : tie && tie.kind;   // мрачные герои дерутся без счётов за своих
+    const angry = (att === 'hate' || att === 'grudge' ? 2 : 0) + (kin === 'avenge' ? 1 : 0);
+    const scared = (att === 'fear' ? 2 : 0) + (kin === 'rival' ? 2 : 0);
+    const mood = angry && scared ? tr('Сила врага +{n}, враг Ослаблен на {w} хода', { n: angry, w: scared })
+      : angry ? tr('Сила врага +{n}', { n: angry }) : scared ? tr('Враг Ослаблен на {n} хода', { n: scared }) : tr('Обычный бой');
+    const ops = [{ k: 'fight', text: 'В бой', hint: mood }];
     if (tie && tie.kind === 'thanks') ops.push({ k: 'regards', text: 'Передать привет', hint: tr(tier === 'boss' ? 'Босс Ослаблен на 2 хода' : 'Без боя, монеты и +6 HP'), secret: true });
     const sc = secretOf(id);
     if (sc) ops.push({ k: 'secret', text: sc.text, hint: tr(sc.hint), can: !(sc.effect.gold < 0) || run.gold >= -sc.effect.gold, secret: true });
@@ -2016,7 +2023,7 @@
     if (att === 'fear' && tier !== 'boss') ops.push({ k: 'scare', text: 'Прогнать', hint: tr('Без боя, половина монет') });
     if (att === 'hate' || att === 'grudge' || (tie && tie.kind === 'avenge')) {
       ops.push({ k: 'calm', text: 'Успокоить', hint: tr('−{n} монет, враг не злится', { n: calmPrice(tier) }), can: run.gold >= calmPrice(tier) });
-      ops.push({ k: 'sass', text: 'Ответить дерзко', hint: tr('Сила врага +3, монет вдвое больше') });
+      ops.push({ k: 'sass', text: 'Ответить дерзко', hint: tr('Сила врага +{n}, монет вдвое больше', { n: 3 + angry }) });
     } else ops.push({ k: 'taunt', text: 'Подразнить', hint: tr('Сила врага +2, монет в полтора раза больше') });
     if (!att && !sc && tier === 'fight') ops.push({ k: 'bribe', text: 'Откупиться', hint: tr('−{n} монет, без боя', { n: bribePrice() }), can: run.gold >= bribePrice() });
     return ops;
