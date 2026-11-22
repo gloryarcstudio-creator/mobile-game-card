@@ -1952,7 +1952,15 @@
     stGoldSince(mark);
     ach.add('spent', gold0 - run.gold);
     if (res === null) return; // опция сама ведёт дальше (например, удаление карты)
-    if (fought) { save({ t: 'fight', enemy: fought }); toast(res); setTimeout(() => startCombat(fought, 'fight'), 600); return; }
+    if (fought) {
+      save({ t: 'fight', enemy: fought }); toast(res);
+      // бой начнётся через полсекунды: до него ответы больше не нажимаются. Раньше «Собрать» у рассыпанного кошелька
+      // можно было успеть нажать ещё раз и получить монеты дважды (а бой запускался два раза подряд)
+      screen.querySelectorAll('.scroll').forEach((x, k) => { x.disabled = true; if (k !== i) x.classList.add('off'); });
+      const r = run;
+      setTimeout(() => { if (run === r && screen.className === 'scr-event') startCombat(fought, 'fight'); }, 600);
+      return;
+    }
     save({ t: 'next' });
     $('.scrolls').innerHTML = `<button class="scroll" data-act="next">${tr('Дальше')}</button>`;
     $('.ev-box p').textContent = res;
