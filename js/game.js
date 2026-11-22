@@ -362,7 +362,22 @@
     let n;
     while ((n = tw.nextNode())) glueText(n);
   }
-  new MutationObserver((list) => { for (const m of list) for (const n of m.addedNodes) glueNode(n); }).observe(app, { childList: true, subtree: true });
+  /* Защита от повторного нажатия (v150). Нетерпеливое второе касание в ту же точку приходит через 0,3–0,5 с и попадало
+     в то, что только что появилось под пальцем: в окне «Сжечь карту» сгорала карта, оказавшаяся под пальцем, после
+     «Продолжить» в паузе выбиралась дорога, после трофея босса бралась карта награды. Только что появившиеся кнопки
+     пути, только что открытое окно и экран под только что закрытым окном первые TAP_LOCK мс нажатий не принимают.
+     Касается только настоящих касаний (e.isTrusted). Бой не затронут. Убрать: TAP_LOCK = 0. */
+  const TAP_LOCK = 400;
+  const TAP_GUARD = new Set(['next', 'afternext', 'takecard', 'choose', 'evopt', 'talkopt', 'talkgo', 'talkboss', 'meetopt', 'spare', 'takeall',
+    'bossrelic', 'bossrelic-skip', 'openchest', 'rest-heal', 'rest-up', 'rest-burn', 'buy', 'buyrelic', 'buytea', 'buyremove', 'buyup', 'reroll']);
+  const born = new WeakMap();   // когда узел появился на экране
+  let ovClosedAt = -1e9;        // когда закрылось окно поверх экрана
+  let ovSrc = null;             // чьё окно сейчас открыто (его обработчик нажатий)
+  const bornAt = (el) => { let at = -1e9; for (let n = el; n && n !== app; n = n.parentElement) { const b = born.get(n); if (b > at) at = b; } return at; };
+  new MutationObserver((list) => {
+    const now = performance.now();
+    for (const m of list) for (const n of m.addedNodes) { glueNode(n); if (n.nodeType === 1) born.set(n, now); }
+  }).observe(app, { childList: true, subtree: true });
 
   // новый экран проявляется мягко. Срабатывает только когда экран действительно сменился
   // (другой класс), а не при каждой перерисовке боя; только прозрачность, чтобы не сбивать замеры эффектов.
@@ -868,11 +883,15 @@
   }
 
   function showOverlay(html, onClick) {
+    // окно, которое только что открылось или сменилось другим (а не перерисовалось, как настройки после переключателя),
+    // первые мгновения не принимает касаний: см. TAP_LOCK
+    const openedAt = overlay.classList.contains('show') && ovSrc === onClick ? -1e9 : performance.now();
+    ovSrc = onClick;
     overlay.innerHTML = `<div class="ov-inner">${html}</div>`;
     overlay.classList.add('show');
-    overlay.onclick = (e) => onClick && onClick(e);
+    overlay.onclick = (e) => { if (e.isTrusted && performance.now() - openedAt < TAP_LOCK) return; if (onClick) onClick(e); };
   }
-  function hideOverlay() { overlay.classList.remove('show'); overlay.innerHTML = ''; overlay.onclick = null; }
+  function hideOverlay() { if (overlay.classList.contains('show')) ovClosedAt = performance.now(); ovSrc = null; overlay.classList.remove('show'); overlay.innerHTML = ''; overlay.onclick = null; }
 
   function showDeck(list, title, onPick, preview) {
     const sorted = [...list].sort((a, b) => a.id.localeCompare(b.id) || (a.up ? 1 : 0) - (b.up ? 1 : 0));
@@ -3734,6 +3753,7 @@
     }
     if (!t) return;
     const act = t.dataset.act;
+    if (e.isTrusted && TAP_GUARD.has(act) && performance.now() - Math.max(bornAt(t), ovClosedAt) < TAP_LOCK) return;
     if (!['buy', 'buyrelic', 'buytea', 'buyremove', 'buyup', 'reroll', 'takecard', 'bossrelic', 'cine-next'].includes(act)) SND.sfx('click');
     switch (act) {
       case 'start': newRun(); break;
