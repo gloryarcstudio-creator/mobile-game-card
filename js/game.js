@@ -2238,7 +2238,8 @@
       if (tier === 'boss') evApi.giveRelic();
       else {
         const gift = rnd(0, 2);
-        if (gift === 0) evApi.heal(8); else if (gift === 1 && upgradeRandom(1)) { /* всплывашка уже показана */ } else gain(15);
+        // v164: здоровому герою лечение не подарок: раньше в трети случаев пощада при полном здоровье не давала ничего
+        if (gift === 0 && run.hp < run.maxHp) evApi.heal(8); else if (gift === 1 && upgradeRandom(1)) { /* всплывашка уже показана */ } else gain(15);
       }
       SND.sfx('heal');
       msg = tr('Ты {f|отпустила|отпустил} врага, и на прощание он оставил тебе подарок.');
