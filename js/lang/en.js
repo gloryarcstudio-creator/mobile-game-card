@@ -483,7 +483,7 @@
     'Талисманы босса': 'Boss talismans',
     'После босса стадии можно выбрать один из трёх сильных талисманов. У многих есть цена.': 'After a stage boss you can choose one of three powerful talismans. Many of them come at a cost.',
     'Редкость': 'Rarity',
-    'Карты и талисманы бывают пяти редкостей: обычные (серый камень), необычные (зелёный), редкие (синий), эпические (фиолетовый) и легендарные (золотой). Чем сильнее противник, тем чаще после него выпадают редкие. Легендарную карту можно взять в колоду только одну.': 'Cards and talismans come in five rarities: common (grey gem), uncommon (green), rare (blue), epic (purple) and legendary (gold). The stronger the enemy, the more often rare ones drop. Each legendary card can be in your deck only once.',
+    'Карты и талисманы бывают пяти редкостей: обычные (серый камень), необычные (зелёный), редкие (синий), эпические (фиолетовый) и легендарные (золотой). Чем сильнее противник, тем чаще после него выпадают редкие. Каждую легендарную карту можно взять в колоду только один раз.': 'Cards and talismans come in five rarities: common (grey gem), uncommon (green), rare (blue), epic (purple) and legendary (gold). The stronger the enemy, the more often rare ones drop. Each legendary card can be in your deck only once.',
     'Приёмы врагов': 'Enemy tricks',
     'У многих врагов есть свои хитрости: матрёшки раскрываются, самовар закипает, туман глушит удары, шутиха взрывается. Приёмы видны значками под именем врага, нажмите на значок, чтобы прочитать.': 'Many enemies have tricks of their own: nesting dolls open up, the samovar boils, fog muffles blows, the firecracker explodes. Tricks appear as icons under the enemy’s name; tap an icon to read about it.',
     'Герои': 'Heroes',
