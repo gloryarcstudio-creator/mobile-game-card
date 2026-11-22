@@ -212,6 +212,7 @@
     'Уровень {n}': 'Level {n}',
     'Новая карта: {name}': 'New card: {name}',
     'Выбери карту для копии': 'Choose a card to copy',
+    'Легендарные карты зеркало не повторяет': 'The mirror does not copy legendary cards',
     'Копия: {name}': 'Copy: {name}',
     'Какую карту отдать?': 'Which card will you give away?',
     'Талисман: {name}': 'Talisman: {name}',

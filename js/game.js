@@ -913,10 +913,10 @@
   }
   function hideOverlay() { if (overlay.classList.contains('show')) ovClosedAt = performance.now(); ovSrc = null; overlay.classList.remove('show'); overlay.innerHTML = ''; overlay.onclick = null; }
 
-  function showDeck(list, title, onPick, preview) {
+  function showDeck(list, title, onPick, preview, note) {
     const sorted = [...list].sort((a, b) => a.id.localeCompare(b.id) || (a.up ? 1 : 0) - (b.up ? 1 : 0));
     const view = (c) => (preview === 'up' ? { ...c, up: true } : c);
-    showOverlay(`<h2>${title}</h2>${preview === 'up' ? `<p class="ovhint">${tr('Так карты будут выглядеть после улучшения')}</p>` : ''}<div class="grid">${sorted.map((c) => cardHTML(view(c), 'mini', `data-uid="${c.uid}"`)).join('') || `<p class="muted">${tr('Пусто')}</p>`}</div>
+    showOverlay(`<h2>${title}</h2>${preview === 'up' ? `<p class="ovhint">${tr('Так карты будут выглядеть после улучшения')}</p>` : note ? `<p class="ovhint">${note}</p>` : ''}<div class="grid">${sorted.map((c) => cardHTML(view(c), 'mini', `data-uid="${c.uid}"`)).join('') || `<p class="muted">${tr('Пусто')}</p>`}</div>
       <button class="btn" data-act="close">${onPick ? tr('Отмена') : tr('Закрыть')}</button>`, (e) => {
       const cardEl = e.target.closest('.card');
       if (onPick && cardEl) { onPick(+cardEl.dataset.uid); return; }
@@ -1875,12 +1875,15 @@
     upgradePrompt: () => upgradeFlow((ok) => (ok ? afterMoment(advance) : advance())),
     upgradeRandom: (n) => upgradeRandom(n),
     duplicatePrompt: () => {
-      showDeck(run.deck.filter((c) => CARDS[c.id].rarity !== 'status'), tr('Выбери карту для копии'), (uid) => {
+      // легендарная карта в колоде одна (справочник, «Редкость»): зеркало её не повторяет. Раньше копия давала вторую (v152)
+      const own = run.deck.filter((c) => CARDS[c.id].rarity !== 'status');
+      const list = own.filter((c) => CARDS[c.id].rarity !== 'legendary');
+      showDeck(list, tr('Выбери карту для копии'), (uid) => {
         hideOverlay();
-        const c = uid != null && run.deck.find((d) => d.uid === uid);
+        const c = uid != null && list.find((d) => d.uid === uid);
         if (c) { run.deck.push(mk(c.id, c.up)); SND.sfx('card'); toast(tr('Копия: {name}', { name: cardName(c) })); }
         advance();
-      });
+      }, null, list.length < own.length ? tr('Легендарные карты зеркало не повторяет') : '');
     },
     transformPrompt: () => {
       showDeck(run.deck, tr('Какую карту отдать?'), (uid) => {
