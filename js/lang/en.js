@@ -126,6 +126,8 @@
     'всё время': 'all time',
     'Забеги': 'Runs',
     'последние {n}': 'last {n}',
+    'последний': 'last one',
+    'пока нет': 'none yet',
     'Забегов: {a} · доставлено писем: {b}': 'Runs: {a} · letters delivered: {b}',
     'Итоги твоих забегов': 'Summaries of your runs',
     'Вступление': 'Intro',

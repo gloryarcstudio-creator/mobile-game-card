@@ -1497,7 +1497,7 @@
       <div class="achlist"></div>
       <div class="achtabs">
         <button data-tab="sum"><span>${tr('Итоги')}</span><small>${tr('всё время')}</small></button>
-        <button data-tab="runs"><span>${tr('Забеги')}</span><small>${tr('последние {n}', { n: list.length })}</small></button>
+        <button data-tab="runs"><span>${tr('Забеги')}</span><small>${list.length > 1 ? tr('последние {n}', { n: list.length }) : list.length ? tr('последний') : tr('пока нет')}</small></button>
       </div>
     </div>`, (e) => {
       const b = e.target.closest('[data-act], [data-tab], [data-run]');
