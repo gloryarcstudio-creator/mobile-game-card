@@ -382,7 +382,8 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .muted { opacity: .6; }
 
 /* ---------- Подсказки ---------- */
-.toast { position: absolute; left: 50%; top: 470px; z-index: 30; transform: translateX(-50%); max-width: 340px; padding: 8px 14px; border-radius: 10px; background: rgba(15, 18, 30, .95); border: 2px solid var(--gold); font-size: 16px; text-align: center; animation: toast 1.5s forwards; pointer-events: none; }
+/* width: max-content — иначе блок с left: 50% сжимался до половины экрана (200 px), и длинное сообщение вставало столбиком в 4–5 строк (v156) */
+.toast { position: absolute; left: 50%; top: 470px; z-index: 30; transform: translateX(-50%); width: max-content; max-width: 340px; padding: 8px 14px; border-radius: 10px; background: rgba(15, 18, 30, .95); border: 2px solid var(--gold); font-size: 16px; text-align: center; animation: toast 1.5s forwards; pointer-events: none; }
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
 .scr-end .page h1 { font-size: 32px; }
 
