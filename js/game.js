@@ -1306,7 +1306,20 @@
     }));
     // в длинном сюжете босс крепче своей записи, начинает с Силой и впадает в Ярость (BAL)
     const bsi = LONG && e.tier === 'boss' ? (final ? 2 : Math.max(0, MAIN_STAGES.indexOf(stage))) : -1;
-    const hpShown = bsi >= 0 ? Math.round(e.hp * BAL.bossHp[bsi]) : e.hp;
+    // обычные враги и элиты крепнут с каждым уровнем (BAL.hpStep): запись в данных — это HP на самом первом уровне,
+    // а на окраине у того же врага их втрое больше. Показываем, сколько HP бывает у врага на тех уровнях, где он встречается
+    // (обычная сложность, те же правила, что в genChoices и startCombat)
+    let hpLo = Infinity; let hpHi = 0;
+    if (LONG && bsi < 0) MAIN_STAGES.forEach((g, si) => {
+      for (let s = g.start; s < g.end; s++) {
+        const k = s - g.start;
+        const muls = [];
+        if ((k < 8 && g.early.length ? g.early : g.normals).includes(id)) muls.push(1);
+        if (g.elites.includes(id) && (si > 0 || k >= 6)) muls.push(BAL.eliteHp[Math.min(1, si)]);
+        muls.forEach((m) => { const v = Math.round(e.hp * (1 + s * BAL.hpStep) * m); hpLo = Math.min(hpLo, v); hpHi = Math.max(hpHi, v); });
+      }
+    });
+    const hpShown = bsi >= 0 ? Math.round(e.hp * BAL.bossHp[bsi]) : hpHi > hpLo ? `${hpLo}–${hpHi}` : hpHi || e.hp;
     const traits = [
       bsi >= 0 && BAL.bossStr[bsi] > 0 && tr('Начинает бой с Силой {n}.', { n: BAL.bossStr[bsi] }),
       bsi >= 0 && tr('Ярость: на половине HP получает Силу +{n} и {b} защиты.', { n: BAL.rageStr[bsi], b: BAL.rageBlock[bsi] }),
