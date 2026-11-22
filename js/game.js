@@ -1991,7 +1991,7 @@
     screen.className = 'scr-event';
     screen.innerHTML = `${topBar()}
       ${evArt(ev)}
-      <div class="ev-box"><h2>${ev.title}</h2><p>${ev.text}</p></div>
+      <div class="ev-box"><h2>${ev.title}</h2><p>${I18N.fill(ev.text)}</p></div>
       <div class="scrolls">${ev.options.map((o, i) => {
         const ok = !o.can || o.can(run);
         return `<button class="scroll ${ok ? '' : 'off'} ${o.ad ? 'adopt' : ''}" data-act="evopt" data-i="${i}" ${ok ? '' : 'disabled'}>${o.ad ? adTag() : ''}${o.text}<small>${o.hint}</small></button>`;
