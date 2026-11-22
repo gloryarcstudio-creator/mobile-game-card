@@ -343,7 +343,7 @@
     'Верста!': 'Milestone!',
     'Тук-тук! +{n}': 'Knock-knock! +{n}',
     'Ку-ку!': 'Cuckoo!',
-    'Блок': 'Blocked',
+    'Брать нечего': 'Nothing to draw',
     'Блок −{n}': 'Blocked {n}',
     'Внутри ещё одна!': 'Another one inside!',
     'Вспышка!': 'Flare!',

@@ -2594,7 +2594,8 @@
         await burst();
       }
     },
-    draw(n) { drawCards(n); },
+    // карта добора, которой нечего брать (колода и сброс пусты), говорит об этом, как «Сброс пуст» и «Нечего точить» (v172)
+    draw(n) { const was = C.hand.length; drawCards(n); if (n > 0 && C.hand.length === was && was < HAND_MAX) floatText($('.hero-fx'), tr('Брать нечего'), 'weakf'); },
     heal(n) { SND.sfx('heal'); FX.play('heal'); const before = run.hp; run.hp = Math.min(run.maxHp, run.hp + n); stAdd('healed', run.hp - before); floatText($('.hero-fx'), `+${run.hp - before}`, 'healf'); },
     burn(n) { const v = n + (proc('matchbox', 'enemy') ? 2 : 0); FX.play('burnApply', 'enemy'); C.enemy.burn += v; floatText($('.enemy-fx'), tr('Поджог {n}', { n: v }), 'burnf'); },
     weak(n) { FX.play('weak', 'enemy'); C.enemy.weak += n; floatText($('.enemy-fx'), tr('Ослаблен'), 'weakf'); },
@@ -3202,7 +3203,8 @@
     eAct('hurt');
     if (real <= 0) SND.sfx('clank');
     else if (!quiet) SND.sfx('hit', Math.min(1.4, 0.6 + real / 15));
-    floatText($('.enemy-fx'), real > 0 ? `-${real}` : absorbed > 0 ? tr('Блок −{n}', { n: absorbed }) : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
+    // удар на 0 урона по врагу без защиты пишет «0»: раньше всплывало «Блок», будто удар отбит (v172)
+    floatText($('.enemy-fx'), real > 0 ? `-${real}` : absorbed > 0 ? tr('Блок −{n}', { n: absorbed }) : '0', real > 0 ? 'dmgf' : absorbed > 0 ? 'blockf' : 'weakf');
     renderCombat();
     await sleep(260);
   }
@@ -3265,7 +3267,7 @@
     const p = $('#heroPortrait');
     if (p) heroMove(real > 0 ? 'hurt' : 'guard');   // удар целиком в защиту: портрет вздрагивает, но не краснеет, как от раны
     SND.sfx(real > 0 ? 'hurt' : 'clank');
-    floatText($('.hero-fx'), real > 0 ? `-${real}` : absorbed > 0 ? tr('Блок −{n}', { n: absorbed }) : tr('Блок'), real > 0 ? 'dmgf' : 'blockf');
+    floatText($('.hero-fx'), real > 0 ? `-${real}` : absorbed > 0 ? tr('Блок −{n}', { n: absorbed }) : '0', real > 0 ? 'dmgf' : absorbed > 0 ? 'blockf' : 'weakf');
     renderCombat();
     await sleep(300);
     // окованный ставень: удар целиком в защиту — враг получает в ответ
