@@ -248,8 +248,13 @@
     nm.className = '';
     if (rows() > 1) { nm.className = 'long'; if (rows() > 1) { nm.className = 'xlong'; if (rows() > 1) { nm.className = 'long two'; if (rows() > 2) nm.className = 'xlong two'; } } }
   }
+  let achNow = null;                 // плашка, которая сейчас на экране: { a, t, timer, at }
+  const achHeard = new WeakSet();    // плашки, у которых звук уже прозвучал
   function achNextToast() {
     if (!achQueue.length) { achShowing = false; return; }
+    // Пока поверх экрана открыто окно (выбор карты, колода, талисманы, справочник, пауза), плашка ждёт. Раньше она ложилась
+    // на заголовок окна и закрывала, для чего выбирают карту: «убрать», «улучшить» или «скопировать» (v153)
+    if (overlay.classList.contains('show')) { achShowing = false; return; }
     achShowing = true;
     // если открылось сразу много, показываем два и общий итог по остальным
     if (achQueue.length > 3) { const rest = achQueue.splice(2); achQueue.push({ summary: rest.length }); }
@@ -263,8 +268,19 @@
     app.appendChild(t);
     // рядом со штемпелем строке названия тесно: длинное название мельчает на шаг или два и только потом переносится
     achFit(t);
-    SND.sfx('achieve');
-    setTimeout(() => { t.remove(); achNextToast(); }, SETTINGS.fast ? 1700 : 2600);
+    if (!achHeard.has(a)) { achHeard.add(a); SND.sfx('achieve'); }
+    achNow = { a, t, at: performance.now(), timer: setTimeout(() => { achNow = null; t.remove(); achNextToast(); }, SETTINGS.fast ? 1700 : 2600) };
+  }
+  // Окно открылось поверх плашки: убираем её. Если её ещё не успели прочитать, она покажется заново, когда окно закроют
+  function achHold() {
+    if (!achNow) return;
+    const { a, t, at, timer } = achNow;
+    clearTimeout(timer); t.remove(); achNow = null; achShowing = false;
+    if (performance.now() - at < (SETTINGS.fast ? 1000 : 1500)) achQueue.unshift(a);
+  }
+  // окно закрылось: показываем то, что ждало (чуть погодя, вдруг следом откроется другое окно)
+  function achResume() {
+    if (achQueue.length && !achShowing) setTimeout(() => { if (achQueue.length && !achShowing) achNextToast(); }, 250);
   }
 
   // «+15 монет» с нужной формой слова
@@ -907,11 +923,12 @@
     // первые мгновения не принимает касаний: см. TAP_LOCK
     const openedAt = overlay.classList.contains('show') && ovSrc === onClick ? -1e9 : performance.now();
     ovSrc = onClick;
+    achHold();
     overlay.innerHTML = `<div class="ov-inner">${html}</div>`;
     overlay.classList.add('show');
     overlay.onclick = (e) => { if (e.isTrusted && performance.now() - openedAt < TAP_LOCK) return; if (onClick) onClick(e); };
   }
-  function hideOverlay() { if (overlay.classList.contains('show')) ovClosedAt = performance.now(); ovSrc = null; overlay.classList.remove('show'); overlay.innerHTML = ''; overlay.onclick = null; }
+  function hideOverlay() { if (overlay.classList.contains('show')) ovClosedAt = performance.now(); ovSrc = null; overlay.classList.remove('show'); overlay.innerHTML = ''; overlay.onclick = null; achResume(); }
 
   function showDeck(list, title, onPick, preview, note) {
     const sorted = [...list].sort((a, b) => a.id.localeCompare(b.id) || (a.up ? 1 : 0) - (b.up ? 1 : 0));
