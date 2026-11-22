@@ -2111,10 +2111,10 @@
       : { k: 'peace', text: 'Договориться миром', hint: tr(tier === 'elite' ? 'Без боя, талисман' : 'Без боя, монеты и +6 HP') });
     if (att === 'fear' && tier !== 'boss') ops.push({ k: 'scare', text: 'Прогнать', hint: tr('Без боя, половина монет') });
     if (att === 'hate' || att === 'grudge' || (tie && tie.kind === 'avenge')) {
-      ops.push({ k: 'calm', text: 'Успокоить', hint: tr('−{n} монет, враг не злится', { n: calmPrice(tier) }), can: run.gold >= calmPrice(tier) });
+      ops.push({ k: 'calm', text: 'Успокоить', hint: tr('−{n} {n|монета|монеты|монет}, враг не злится', { n: calmPrice(tier) }), can: run.gold >= calmPrice(tier) });
       ops.push({ k: 'sass', text: 'Ответить дерзко', hint: tr('Сила врага +{n}, монет вдвое больше', { n: 3 + angry }) });
     } else ops.push({ k: 'taunt', text: 'Подразнить', hint: tr('Сила врага +2, монет в полтора раза больше') });
-    if (!att && !sc && tier === 'fight') ops.push({ k: 'bribe', text: 'Откупиться', hint: tr('−{n} монет, без боя', { n: bribePrice() }), can: run.gold >= bribePrice() });
+    if (!att && !sc && tier === 'fight') ops.push({ k: 'bribe', text: 'Откупиться', hint: tr('−{n} {n|монета|монеты|монет}, без боя', { n: bribePrice() }), can: run.gold >= bribePrice() });
     return ops;
   }
 
