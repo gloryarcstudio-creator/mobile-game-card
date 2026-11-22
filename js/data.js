@@ -79,7 +79,7 @@
     },
     ember: {
       name: 'Уголёк', cost: 1, type: 'atk', rarity: 'common', art: 'ember',
-      desc: (g, u) => `Нанести ${g.dmgText(u ? 7 : 5)} урона. Поджог ${u ? 4 : 3}.`,
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 7 : 5)} урона. Поджог ${g.burnText(u ? 4 : 3)}.`,
       play: async (g, u) => { await g.attack(u ? 7 : 5); g.burn(u ? 4 : 3); },
     },
     snowkick: {
@@ -147,7 +147,7 @@
     },
     icelantern: {
       name: 'Ледяной фонарь', cost: 1, type: 'skill', rarity: 'uncommon', art: 'icelantern',
-      desc: (g, u) => `Враг Уязвим ${u ? 2 : 1}. Взять 1 карту. +1 Огонёк.`,
+      desc: (g, u) => `Враг Уязвим ${g.vulnNum(u ? 2 : 1)}. Взять 1 карту. +1 Огонёк.`,
       play: async (g, u) => { g.vuln(u ? 2 : 1); g.draw(1); await g.flame(1); },
     },
     cancel: {
@@ -167,19 +167,19 @@
     },
     kindling: {
       name: 'Растопка', cost: 1, type: 'skill', rarity: 'uncommon', art: 'kindling',
-      desc: (g, u) => `Поджог ${u ? 6 : 4}. Взять 1 карту.`,
+      desc: (g, u) => `Поджог ${g.burnText(u ? 6 : 4)}. Взять 1 карту.`,
       play: async (g, u) => { g.burn(u ? 6 : 4); g.draw(1); },
     },
 
     // ---------- обычные: новые механики ----------
     stamp: {
       name: 'Штемпель', cost: 1, type: 'atk', rarity: 'common', art: 'stamp',
-      desc: (g, u) => `Нанести ${g.dmgText(u ? 8 : 6)} урона. Враг Уязвим ${u ? 2 : 1}.`,
+      desc: (g, u) => `Нанести ${g.dmgText(u ? 8 : 6)} урона. Враг Уязвим ${g.vulnNum(u ? 2 : 1)}.`,
       play: async (g, u) => { await g.attack(u ? 8 : 6); g.vuln(u ? 2 : 1); },
     },
     redseal: {
       name: 'Красная печать', cost: 1, type: 'skill', rarity: 'uncommon', art: 'redseal',
-      desc: (g, u) => `Враг Уязвим ${u ? 3 : 2}. Взять 1 карту.`,
+      desc: (g, u) => `Враг Уязвим ${g.vulnNum(u ? 3 : 2)}. Взять 1 карту.`,
       play: async (g, u) => { g.vuln(u ? 3 : 2); g.draw(1); },
     },
     whistle: {
@@ -194,7 +194,7 @@
     },
     prickly: {
       name: 'Колючий шарф', cost: 1, type: 'skill', rarity: 'uncommon', art: 'prickly',
-      desc: (g, u) => `Получить ${g.blkText(u ? 6 : 4)} защиты. Шипы ${u ? 3 : 2}.`,
+      desc: (g, u) => `Получить ${g.blkText(u ? 6 : 4)} защиты. Шипы ${g.thornsText(u ? 3 : 2)}.`,
       play: async (g, u) => { g.block(u ? 6 : 4); g.thorns(u ? 3 : 2); },
     },
     frostlace: {
@@ -251,7 +251,7 @@
     },
     blaze: {
       name: 'Пожар', cost: 2, type: 'skill', rarity: 'uncommon', art: 'blaze',
-      desc: (g, u) => `Поджог ${u ? 11 : 8}. +1 Огонёк.`,
+      desc: (g, u) => `Поджог ${g.burnText(u ? 11 : 8)}. +1 Огонёк.`,
       play: async (g, u) => { g.burn(u ? 11 : 8); await g.flame(1); },
     },
     breath: {
@@ -292,7 +292,7 @@
     },
     pockethog: {
       name: 'Ёжик в кармане', cost: 1, type: 'skill', rarity: 'uncommon', art: 'pockethog', exhaust: true,
-      desc: (g, u) => `Шипы ${u ? 7 : 5} до конца боя.`,
+      desc: (g, u) => `Шипы ${g.thornsText(u ? 7 : 5)} до конца боя.`,
       play: async (g, u) => g.thorns(u ? 7 : 5),
     },
     drafts: {
@@ -317,7 +317,7 @@
     },
     hearth: {
       name: 'Сердце костра', cost: 1, type: 'charm', rarity: 'rare', art: 'hearth',
-      desc: (g, u) => `В начале каждого хода Поджог ${u ? 4 : 3}.`,
+      desc: (g, u) => `В начале каждого хода Поджог ${g.burnText(u ? 4 : 3)}.`,
       play: async (g, u) => g.charm('hearth', u ? 4 : 3),
     },
     rhythm: {
@@ -348,7 +348,7 @@
     },
     frostbite: {
       name: 'Обморожение', cost: 1, upCost: 0, type: 'skill', rarity: 'rare', art: 'frostbite', exhaust: true,
-      desc: () => 'Враг Уязвим 2, Ослаблен на 2 хода и теряет 2 Силы.',
+      desc: (g) => `Враг Уязвим ${g.vulnNum(2)}, Ослаблен на 2 хода и теряет 2 Силы.`,
       play: async (g) => { g.vuln(2); g.weak(2); g.chill(2); },
     },
     poste: {
@@ -370,7 +370,7 @@
     },
     bonfire: {
       name: 'Масленичный костёр', cost: 2, type: 'skill', rarity: 'epic', art: 'bonfire',
-      desc: (g, u) => `Поджог ${u ? 14 : 10}. Восстановить ${u ? 6 : 4} HP.`,
+      desc: (g, u) => `Поджог ${g.burnText(u ? 14 : 10)}. Восстановить ${u ? 6 : 4} HP.`,
       play: async (g, u) => { g.burn(u ? 14 : 10); g.heal(u ? 6 : 4); },
     },
     registered: {
@@ -393,7 +393,7 @@
     },
     firebird: {
       name: 'Перо Жар-птицы', cost: 3, upCost: 2, type: 'charm', rarity: 'legendary', art: 'firebird',
-      desc: () => 'В начале каждого хода +2 Огонька и Поджог 3.',
+      desc: (g) => `В начале каждого хода +2 Огонька и Поджог ${g.burnText(3)}.`,
       play: async (g) => g.charm('firebird', 1),
     },
     eternalwinter: {
@@ -443,7 +443,7 @@
     },
     hedge: {
       name: 'Колючая изгородь', cost: 1, type: 'skill', rarity: 'common', art: 'hedge', cls: 'guard',
-      desc: (g, u) => `Шипы ${u ? 3 : 2}. Получить защиту, равную двойным Шипам${g.state ? ` (${g.blkText((g.state.thorns + g.thornsGain(u ? 3 : 2)) * 2)})` : ''}.`,
+      desc: (g, u) => `Шипы ${g.thornsText(u ? 3 : 2)}. Получить защиту, равную двойным Шипам${g.state ? ` (${g.blkText((g.state.thorns + g.thornsGain(u ? 3 : 2)) * 2)})` : ''}.`,
       play: async (g, u) => { g.thorns(u ? 3 : 2); g.block(g.state.thorns * 2); },
     },
     standfast: {
@@ -454,7 +454,7 @@
     // Фома, трубочист: Поджог
     flue: {
       name: 'Дымоход', cost: 1, type: 'skill', rarity: 'common', art: 'flue', cls: 'stoker',
-      desc: (g, u) => `Поджог ${u ? 5 : 3}. Получить защиту, равную Поджогу врага.`,
+      desc: (g, u) => `Поджог ${g.burnText(u ? 5 : 3)}. Получить защиту, равную Поджогу врага.`,
       play: async (g, u) => { g.burn(u ? 5 : 3); g.block(g.state.enemy.burn); },
     },
     poker: {
@@ -464,7 +464,7 @@
     },
     fan: {
       name: 'Раздуть угли', cost: 1, upCost: 0, type: 'skill', rarity: 'rare', art: 'fan', cls: 'stoker', exhaust: true,
-      desc: (g) => `Удвоить Поджог врага${g.state ? ` (${g.state.enemy.burn} → ${g.state.enemy.burn * 2})` : ''}.`,
+      desc: (g) => `Удвоить Поджог врага${g.state ? ` (${g.state.enemy.burn} → ${g.state.enemy.burn + g.burnNum(g.state.enemy.burn)})` : ''}.`,
       play: async (g) => { if (g.state.enemy.burn > 0) g.burn(g.state.enemy.burn); },
     },
 

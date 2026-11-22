@@ -2549,7 +2549,7 @@
   }
 
   /* ================= БОЙ ================= */
-  const apiStatic = { state: null, played: 0, blockNow: 0, dmgText: (n) => `${n}`, blkText: (n) => `${n}`, blkNum: (n) => n, thornsGain: (n) => n };
+  const apiStatic = { state: null, played: 0, blockNow: 0, dmgText: (n) => `${n}`, blkText: (n) => `${n}`, blkNum: (n) => n, thornsGain: (n) => n, thornsText: (n) => `${n}`, burnNum: (n) => n, burnText: (n) => `${n}`, vulnNum: (n) => n };
   const api = {
     get state() { return C; },
     get played() { return C ? C.playedTurn : 0; },
@@ -2567,6 +2567,12 @@
     blkText(n) { const v = frailed(n); return v < n ? `<b class="down">${v}</b>` : `${n}`; },
     // сколько Шипов прибавит карта (Еловый венок удваивает)
     thornsGain: (n) => (hasRelic('wreath') ? n * 2 : n),
+    // Числа Шипов, Поджога и Уязвимости на карте с поправкой талисманов (Еловый венок, Коробок спичек, Штемпельная подушка):
+    // раньше карта показывала «Поджог 3», а накладывала 5 (v173). Выросшее число подсвечено, как урон
+    thornsText(n) { const v = api.thornsGain(n); return v > n ? `<b class="up">${v}</b>` : `${n}`; },
+    burnNum: (n) => n + (hasRelic('matchbox') ? 2 : 0),
+    burnText(n) { const v = api.burnNum(n); return v > n ? `<b class="up">${v}</b>` : `${n}`; },
+    vulnNum: (n) => n + (hasRelic('stamppad') ? 1 : 0),
     async attack(base, hits = 1) {
       const kind = C.fx || 'bonk';
       for (let h = 0; h < hits; h++) {
