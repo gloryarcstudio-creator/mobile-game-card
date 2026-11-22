@@ -3566,7 +3566,7 @@
     screen.innerHTML = `<div class="book"><div class="page">
         ${bookArt('story_lose', 'dim')}
         <h1>${tr('Тени настигли')}</h1>
-        <p class="story">${tr('Но письмо ещё можно спасти. Попробуйте этот бой снова или вернитесь на развилку перед ним и выберите другой путь.')}</p>
+        <p class="story">${tr('Но письмо ещё можно спасти. Попробуй этот бой снова или вернись на развилку перед ним и выбери другой путь.')}</p>
       </div></div>
       <div class="endbtns">
         <button class="btn big rv" data-act="revive-fight">${tag}${tr('Начать бой заново')}<small>${tr('с теми же HP и колодой, что перед боем')}</small></button>
@@ -3612,7 +3612,7 @@
         ${bookArt('story_lose', 'dim')}
         <h1>${STORY.loseTitle}</h1>
         <p class="story">${txt(STORY.loseText)}</p>
-        <p class="stats">${statLine([DIFF().name, tr('Пройдено уровней: {a} из {b}', { a: run.step + 1, b: MAX_STEPS }), tr('Побед: {n}', { n: run.fights })])}</p>
+        <p class="stats">${statLine([DIFF().name, `${tr('Уровень')} ${tr('{a} из {b}', { a: run.step + 1, b: MAX_STEPS })}`, tr('Побед: {n}', { n: run.fights })])}</p>
       </div></div>
       <div class="endbtns"><button class="btn big" data-act="summary">${tr('Итоги забега')}</button><button class="btn ghost" data-act="title">${tr('Главное меню')}</button></div>`;
     fitBook();
@@ -3657,6 +3657,8 @@
       : (foeName(rec.by) && tr('Последний бой: {name}', { name: foeName(rec.by) }));
     const tile = (label, value, sub) => `<div class="sumtile"><small>${label}</small><b>${value}</b>${sub ? `<i>${sub}</i>` : ''}</div>`;
     const relics = rec.relics.filter((r) => RELICS[r]);
+    // значки талисманов мельче, когда их больше трёх рядов: с 25 талисманами кнопки под итогами уходили за край экрана (v170)
+    const rs = relics.length <= 24 ? 0 : relics.length <= 40 ? 28 : relics.length <= 60 ? 22 : 18;
     const notes = [
       rec.met ? tr('Встречено героев: {n}', { n: rec.met }) : '',
       rec.fallen ? tr('Ушли в Тень: {n}', { n: rec.fallen }) : '',
@@ -3679,7 +3681,7 @@
         ${tile(tr('Монет собрано'), fmt(rec.gold), tr('потрачено: {n}', { n: fmt(rec.spent) }))}
         ${tile(tr('Колода'), tr('{n} {n|карта|карты|карт}', { n: rec.deck }), tr('улучшено: {n}', { n: rec.ups }))}
       </div>
-      <div class="sumrel"><small>${tr('Талисманы')} · ${relics.length}</small><div>${relics.map((r) => `<span class="sumr" title="${RELICS[r].name}">${Art.relic(r)}</span>`).join('')}</div></div>
+      <div class="sumrel"${rs ? ` style="--rs:${rs}px"` : ''}><small>${tr('Талисманы')} · ${relics.length}</small><div>${relics.map((r) => `<span class="sumr" title="${RELICS[r].name}">${Art.relic(r)}</span>`).join('')}</div></div>
       ${notes.length ? `<p class="sumnote">${notes.join(' · ')}</p>` : ''}
     </div>`;
   }
