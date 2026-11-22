@@ -608,7 +608,7 @@
     let uid = r.deck.reduce((a, c) => (Number.isFinite(c.uid) ? Math.max(a, c.uid + 1) : a), 0);
     const taken = new Set();
     r.deck.forEach((c) => { if (!Number.isFinite(c.uid) || taken.has(c.uid)) c.uid = uid++; taken.add(c.uid); });
-    r.seen = obj(r.seen); r.offered = obj(r.offered); r.recent = arr(r.recent); r.lastOffered = arr(r.lastOffered);
+    r.seen = obj(r.seen); r.offered = obj(r.offered); r.evSeen = obj(r.evSeen); r.recent = arr(r.recent); r.lastOffered = arr(r.lastOffered);
     r.bosses = STAGES.map((g, i) => (Array.isArray(r.bosses) && ENEMIES[r.bosses[i]] ? r.bosses[i] : pick(g.boss)));
     const okChoice = (o) => o && typeof o === 'object' && (!o.enemy || ENEMIES[o.enemy])
       && (o.t !== 'event' || EVENTS.some((e) => e.id === o.ev)) && (o.t !== 'meet' || LORE.MEET[o.hero]);
@@ -1642,7 +1642,7 @@
     const fight = () => { const enemy = pickEnemy(normals, used); used.push(enemy); return { t: 'fight', enemy }; };
     const elite = () => { const enemy = pickEnemy(g.elites, used); used.push(enemy); return { t: 'elite', enemy }; };
     const done = (list) => { run.lastOffered = [...used]; used.forEach((id) => { run.offered[id] = (run.offered[id] || 0) + 1; }); return list; };
-    if (s === 0) return done([fight(), fight(), { t: 'event', ev: pick(EVENTS).id }]);
+    if (s === 0) return done([fight(), fight(), { t: 'event', ev: pickEvent() }]);
     if (s === g.end - 1) return done([{ t: 'rest' }, { t: 'shop' }, eliteOk ? elite() : fight()]);
     const pool = [];
     // после привала, лавки, сундука, события или встречи дорога ведёт только через бой
@@ -1656,7 +1656,7 @@
       if (t !== 'fight' && t !== 'event' && pool.some((p) => p.t === t)) continue;
       if (t === 'fight') pool.push(fight());
       else if (t === 'elite') pool.push(elite());
-      else if (t === 'event') { const ev = pick(EVENTS.filter((e) => !pool.some((p) => p.ev === e.id))).id; pool.push({ t: 'event', ev }); }
+      else if (t === 'event') pool.push({ t: 'event', ev: pickEvent(pool.map((p) => p.ev)) });
       else pool.push({ t });
     }
     if (!pool.some((p) => p.t === 'fight' || p.t === 'elite')) pool[rnd(0, 2)] = fight();
@@ -1705,6 +1705,18 @@
   /* Выбор врага без надоедливых повторов: недавние бои, враги с прошлого шага и уже
      выложенные на этом шаге пропускаются, а остальные выпадают тем реже,
      чем чаще уже встречались в этом забеге */
+  /* Событие для развилки. Событий всего девять, а брались они наугад: в трёх забегах из четырёх одно и то же событие
+     попадалось дважды, в каждом втором два раза подряд (прогон 300 забегов). Теперь сначала предлагаются события,
+     в которых герой в этом забеге бывал реже всего, и не то, из которого он только что вышел. Убрать: вернуть pick(EVENTS). */
+  function pickEvent(skip = []) {
+    const been = run.evSeen || {};
+    let c = EVENTS.filter((e) => !skip.includes(e.id));
+    const least = Math.min(...c.map((e) => been[e.id] || 0));
+    c = c.filter((e) => (been[e.id] || 0) === least);
+    if (c.length > 1) c = c.filter((e) => e.id !== run.evLast);
+    return pick(c).id;
+  }
+
   function pickEnemy(list, used) {
     const avoid = [...run.recent, ...run.lastOffered];
     let cands = list.filter((id) => !used.includes(id) && !avoid.includes(id));
@@ -1786,6 +1798,7 @@
     const o = run.choices[i];
     run.choices = null;
     run.prev = o.t;
+    if (o.t === 'event') { run.evSeen = run.evSeen || {}; run.evSeen[o.ev] = (run.evSeen[o.ev] || 0) + 1; run.evLast = o.ev; }
     save(o);
     if (o.t === 'fight' || o.t === 'elite' || o.t === 'boss') { if (!preFight(o)) startCombat(o.enemy, o.t); }
     else if (o.t === 'meet') goMeet(o.hero);
