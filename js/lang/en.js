@@ -269,6 +269,7 @@
     'Нечего копировать': 'Nothing to copy',
     'Вернулось карт: {n}': 'Cards returned: {n}',
     'Сброс пуст': 'The discard pile is empty',
+    'Рука полна: больше {n} карт в неё не помещается': 'Your hand is full: it holds no more than {n} cards',
     'Из колоды: {name}': 'From the deck: {name}',
     'Пряник +{n}': 'Gingerbread +{n}',
     'Глазурь!': 'Glazed!',

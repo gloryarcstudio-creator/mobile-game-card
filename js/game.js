@@ -2633,6 +2633,7 @@
         if (CARDS[C.disc[i].id].type === 'status') continue;
         C.hand.push(C.disc.splice(i, 1)[0]); got++;
       }
+      if (got < n && C.hand.length >= HAND_MAX && C.disc.some((c) => CARDS[c.id].type !== 'status')) handFull();
       FX.play('cards'); floatText($('.hero-fx'), got ? tr('Вернулось карт: {n}', { n: got }) : tr('Сброс пуст'), 'weakf');
     },
     // До востребования: бесплатно разыграть верхние карты колоды, помехи сгорают
@@ -2658,6 +2659,7 @@
       let got = 0;
       for (let k = 0; k < n && C.hand.length < HAND_MAX; k++) { C.hand.push(mk('gingerbread', C.glaze)); got++; }
       if (got) { FX.play('ginger'); floatText($('.hero-fx'), tr('Пряник +{n}', { n: got }), 'burnf'); }
+      if (got < n) handFull();
     },
     glaze() {
       C.glaze = true;
@@ -2799,13 +2801,22 @@
     setTimeout(() => say(first), SETTINGS.fast ? 300 : 700);
   }
 
+  // В руке не больше HAND_MAX карт. Раньше лишний добор и лишние Пряники пропадали молча: «Взять 2 карты» брала одну,
+  // и игрок не знал почему. Теперь об этом говорит короткое сообщение, не чаще раза за розыгрыш (v171)
+  let handFullAt = 0;
+  function handFull() {
+    const now = performance.now();
+    if (now - handFullAt < 1500) return;
+    handFullAt = now;
+    toast(tr('Рука полна: больше {n} карт в неё не помещается', { n: HAND_MAX }));
+  }
   function drawCards(n) {
     for (let i = 0; i < n; i++) {
       if (!C.draw.length) {
         if (!C.disc.length) break;
         C.draw = shuffle(C.disc); C.disc = [];
       }
-      if (C.hand.length >= HAND_MAX) break;
+      if (C.hand.length >= HAND_MAX) { handFull(); break; }
       C.hand.push(C.draw.pop());
     }
     // нарисованные эффекты карт в руке расшифровываются заранее, чтобы первый удар не ждал
