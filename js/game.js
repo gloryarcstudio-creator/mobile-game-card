@@ -1894,31 +1894,34 @@
       // игрок получал талисман и не узнавал, что он делает, пока сам не открывал список (v156). Сундук, лавка и трофеи описание показывают сами
       toast(`${RELICS[id].name}. ${RELICS[id].desc}`);
     },
-    removeCardPrompt: () => removeCardFlow((ok) => (ok ? afterMoment(advance) : advance())),
-    upgradePrompt: () => upgradeFlow((ok) => (ok ? afterMoment(advance) : advance())),
+    // «Отмена» в окне выбора карты возвращает к событию с теми же ответами, как у костра и в лавке. Раньше отмена
+    // заканчивала событие (ответы пропадали), а «Ледяное зеркало» ещё и забирало 7 HP ни за что (v159)
+    removeCardPrompt: () => removeCardFlow((ok) => { if (ok) afterMoment(advance); }),
+    upgradePrompt: () => upgradeFlow((ok) => { if (ok) afterMoment(advance); }),
     upgradeRandom: (n) => upgradeRandom(n),
-    duplicatePrompt: () => {
+    duplicatePrompt: (cost = 0) => {   // cost: HP за копию, снимаются только когда карта выбрана
       // легендарная карта в колоде одна (справочник, «Редкость»): зеркало её не повторяет. Раньше копия давала вторую (v152)
       const own = run.deck.filter((c) => CARDS[c.id].rarity !== 'status');
       const list = own.filter((c) => CARDS[c.id].rarity !== 'legendary');
       showDeck(list, tr('Выбери карту для копии'), (uid) => {
         hideOverlay();
         const c = uid != null && list.find((d) => d.uid === uid);
-        if (c) { run.deck.push(mk(c.id, c.up)); SND.sfx('card'); toast(tr('Копия: {name}', { name: cardName(c) })); }
+        if (!c) return;
+        if (cost) evApi.damage(cost);
+        run.deck.push(mk(c.id, c.up)); SND.sfx('card'); toast(tr('Копия: {name}', { name: cardName(c) }));
         advance();
       }, null, list.length < own.length ? tr('Легендарные карты зеркало не повторяет') : '');
     },
     transformPrompt: () => {
       showDeck(run.deck, tr('Какую карту отдать?'), (uid) => {
         hideOverlay();
-        if (uid != null) {
-          const c = run.deck.find((d) => d.uid === uid);
-          run.deck = run.deck.filter((d) => d.uid !== uid);
-          const id = pickCard('rare');
-          run.deck.push(mk(id));
-          SND.sfx('relic');
-          toast(`${cardName(c)} → ${CARDS[id].name}`);
-        }
+        if (uid == null) return;
+        const c = run.deck.find((d) => d.uid === uid);
+        run.deck = run.deck.filter((d) => d.uid !== uid);
+        const id = pickCard('rare');
+        run.deck.push(mk(id));
+        SND.sfx('relic');
+        toast(`${cardName(c)} → ${CARDS[id].name}`);
         advance();
       });
     },

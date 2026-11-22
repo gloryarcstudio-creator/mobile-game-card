@@ -1027,7 +1027,7 @@
       id: 'icemirror', title: 'Ледяное зеркало', art: 'frostglass',
       text: 'В замёрзшей луже отражается не путник, а его колода карт. Отражение протягивает руку.',
       options: [
-        { text: 'Коснуться отражения', hint: '−7 HP, копия карты', act: (r, a) => { a.damage(7); a.duplicatePrompt(); return null; } },
+        { text: 'Коснуться отражения', hint: '−7 HP, копия карты', act: (r, a) => { a.duplicatePrompt(7); return null; } },
         { text: 'Разбить лёд', hint: '+20 монет', act: (r) => { r.gold += 20; return 'Лёд треснул, и из него посыпались монетки.'; } },
         { text: 'Уйти', hint: 'Ничего', act: () => 'Отражение помахало вслед.' },
       ],
