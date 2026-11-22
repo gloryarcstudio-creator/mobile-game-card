@@ -2387,7 +2387,7 @@
         <div class="shop-cards">${shop.cards.map((c, i) => `<div class="ware ${c.sold ? 'sold' : ''}">${cardHTML(c.id, 'shopcard', `data-act="buy" data-i="${i}"`)}<div class="price ${run.gold < c.price ? 'poor' : ''}">${Art.icon('coin')}${c.price}</div></div>`).join('')}</div>
         <div class="shop-services">
           ${shop.relic ? `<button class="svc ${shop.relic.sold ? 'sold' : ''}" data-act="buyrelic">${Art.relic(shop.relic.id)}<span><b>${RELICS[shop.relic.id].name}<em class="rtier ${RELICS[shop.relic.id].tier}">${TIER_LABEL[RELICS[shop.relic.id].tier]}</em></b><small>${RELICS[shop.relic.id].desc}</small></span><i class="${run.gold < shop.relic.price ? 'poor' : ''}">${Art.icon('coin')}${shop.relic.price}</i></button>` : ''}
-          <button class="svc ${shop.tea.sold ? 'sold' : ''}" data-act="buytea">${Art.icon('tea')}<span><b>${tr('Горячий сбитень')}</b><small>${tr('Восстановить {n} HP', { n: 12 })}</small></span><i class="${run.gold < shop.tea.price ? 'poor' : ''}">${Art.icon('coin')}${shop.tea.price}</i></button>
+          <button class="svc ${shop.tea.sold ? 'sold' : ''}" data-act="buytea">${Art.icon('tea')}<span><b>${tr('Горячий сбитень')}</b><small>${tr('Восстановить {n} HP', { n: Math.min(12, run.maxHp - run.hp) || 12 })}</small></span><i class="${run.gold < shop.tea.price ? 'poor' : ''}">${Art.icon('coin')}${shop.tea.price}</i></button>
           <button class="svc ${shop.up.sold ? 'sold' : ''}" data-act="buyup">${Art.icon('whetstone')}<span><b>${tr('лавка::Заточка')}</b><small>${tr('Улучшить карту')}</small></span><i class="${run.gold < shop.up.price ? 'poor' : ''}">${Art.icon('coin')}${shop.up.price}</i></button>
           <button class="svc ${shop.remove.sold ? 'sold' : ''}" data-act="buyremove">${Art.icon('scissors')}<span><b>${tr('Распустить карту')}</b><small>${tr('Убрать карту из колоды')}</small></span><i class="${run.gold < shop.remove.price ? 'poor' : ''}">${Art.icon('coin')}${shop.remove.price}</i></button>
         </div>
@@ -2494,6 +2494,13 @@
 
   /* ---------- Привал ---------- */
   const restHeal = () => Math.round(run.maxHp * DIFF().rest) + (hasRelic('kettle') ? 10 : 0);
+  // Подпись «Отдохнуть» называет столько HP, сколько герой на самом деле получит: раньше стояло полное число отдыха,
+  // и у почти здорового героя «+18 HP» означало +1, а у здорового ноль (v158)
+  function restText() {
+    const heal = Math.min(restHeal(), run.maxHp - run.hp);
+    const cocoa = hasRelic('cocoatin') ? tr('+{n} макс.', { n: 2 }) : '';
+    return `${heal > 0 ? `+${heal} HP` : tr('Здоровье и так полное')}${cocoa ? `, ${cocoa}` : ''}`;
+  }
   function goRest() {
     setBg(null, 'rest');
     const noHeal = hasRelic('bottomless');
@@ -2511,7 +2518,7 @@
     screen.innerHTML = `${topBar()}
       <div class="fire-wrap ${last ? 'last' : ''}">${Art.icon('fire')}<p>${talk}</p></div>
       <div class="scrolls">
-        <button class="scroll ${noHeal ? 'off' : ''}" data-act="rest-heal" ${noHeal ? 'disabled' : ''}>${tr('Отдохнуть')}<small>${noHeal ? tr('Бездонная сумка не даёт присесть') : `+${restHeal()} HP${hasRelic('cocoatin') ? `, ${tr('+{n} макс.', { n: 2 })}` : ''}`}</small></button>
+        <button class="scroll ${noHeal ? 'off' : ''}" data-act="rest-heal" ${noHeal ? 'disabled' : ''}>${tr('Отдохнуть')}<small>${noHeal ? tr('Бездонная сумка не даёт присесть') : restText()}</small></button>
         <button class="scroll" data-act="rest-up">${tr('Наточить карту')}<small>${tr('Улучшить карту')}</small></button>
         <button class="scroll" data-act="rest-burn">${tr('Сжечь карту')}<small>${tr('Убрать карту из колоды')}</small></button>
       </div>
