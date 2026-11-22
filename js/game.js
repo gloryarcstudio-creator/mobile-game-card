@@ -72,7 +72,7 @@
     ['Огонёк', 'Каждый Огонёк даёт атакам +{b} урона. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.', { b: FLAME_BONUS, m: FLAME_MAX, d: BURST_DMG }],
     ['Решимость', 'Каждое очко добавляет +1 урона каждой атаке. Бывает до конца боя или до конца хода.'],
     ['Уязвим', 'Враг получает на 50% больше урона от атак, Вспышек и укусов Дружка. Число — сколько ходов это продлится.'],
-    ['Ослаблен', 'Враг наносит на 25% меньше урона.'],
+    ['Ослаблен', 'Враг наносит на 25% меньше урона. Число — сколько ходов это продлится.'],
     ['Поджог', 'В конце вашего хода враг теряет столько HP, а Поджог слабеет на 1.'],
     ['Шипы', 'Когда враг бьёт вас, он сам получает столько урона. Колючие враги так же ранят вас за каждый удар по ним.'],
     ['Хрупкость', 'Карты и талисманы дают вам на 25% меньше защиты. Число — сколько ходов это продлится.'],
@@ -2771,7 +2771,7 @@
     const final = tier === 'boss' && isFinalStep(run.step);
     C = {
       tier, id: enemyId, att, tie: tie && tie.kind, saidHurt: false, friends: final && mainStory() ? friendsOf() : [],
-      enemy: { hp: Math.round(hp * (mod.hpMul || 1)), max: hp, block: 0, str, weak, vuln: hasRelic('frostring') ? 2 : 0, burn: 0, thorns: e.thorns || 0, stun: mod.stun || 0, pi: 0, nest: e.nest || 0, layer: 0, boil: 0, mist: 0 },
+      enemy: { hp: Math.round(hp * (mod.hpMul || 1)), max: hp, block: 0, str, weak, vuln: hasRelic('frostring') ? 2 + (hasRelic('stamppad') ? 1 : 0) : 0, burn: 0, thorns: e.thorns || 0, stun: mod.stun || 0, pi: 0, nest: e.nest || 0, layer: 0, boil: 0, mist: 0 },
       draw: shuffle(run.deck.map((c) => ({ ...c }))), hand: [], disc: [], exh: [],
       energy: maxEnergy(), block: 0, flame: (hasRelic('feather') ? 1 : 0) + (hasRelic('eternaloil') ? 1 : 0), pWeak: 0, turn: 0,
       str: 0, tmpStr: 0, thorns: hasRelic('pinecone') ? (hasRelic('wreath') ? 6 : 3) : 0,
@@ -2898,6 +2898,7 @@
   function startProcs() {
     const at = { inkwell: 'enemy', frostring: 'enemy', frostglass: 'enemy', chimneycap: 'enemy' };
     ['feather', 'eternaloil', 'pinecone', 'dogfriend', 'bookmark', 'inkwell', 'frostring', 'frostglass', 'chimneycap'].forEach((id) => proc(id, at[id]));
+    if (hasRelic('frostring')) proc('stamppad', 'enemy'); // подушка продлевает и Уязвимость от Морозного кольца
     if (hasRelic('chimneycap')) FX.play('burnApply', 'enemy');
     if (hasRelic('frostring') || hasRelic('frostglass')) FX.play('frost', 'enemy');
     if (hasRelic('inkwell')) FX.play('weak', 'enemy');

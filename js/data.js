@@ -909,7 +909,7 @@
     sled: { tier: 'uncommon', name: 'Санки', art: 'sled', desc: 'В первый ход боя взять 2 лишние карты.' },
     piggy: { tier: 'uncommon', name: 'Копилка', art: 'piggy', desc: 'Победа без потери HP: +15 монет.' },
     frostglass: { tier: 'uncommon', name: 'Морозное стекло', art: 'frostglass', desc: 'Враги начинают бой с −2 Силы.' },
-    matchbox: { tier: 'common', name: 'Коробок спичек', art: 'matchbox', desc: 'Каждый ваш Поджог на 2 сильнее.' },
+    matchbox: { tier: 'common', name: 'Коробок спичек', art: 'matchbox', desc: 'Каждый Поджог от ваших карт на 2 сильнее.' },
     mirrorshard: { tier: 'epic', name: 'Осколок зеркала', art: 'mirrorshard', desc: 'Первая карта каждого хода срабатывает дважды.' },
     eternaloil: { tier: 'rare', name: 'Неугасимое масло', art: 'eternaloil', desc: 'Враги не могут гасить ваши Огоньки. В начале боя +1 Огонёк.' },
     medal: { tier: 'rare', name: 'Медаль почтальона', art: 'medal', desc: 'Если за прошлый ход сыграно 6 карт или больше, +1 энергия.' },
