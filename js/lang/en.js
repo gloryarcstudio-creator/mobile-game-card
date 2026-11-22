@@ -829,9 +829,9 @@
 
     // ---------- сложность ----------
     diff: [
-      { name: 'Stroll', hint: 'Enemies are a quarter weaker, the hero has +12 HP, more coins and more healing.' },
+      { name: 'Stroll', hint: 'Enemies have a quarter less HP and hit 20% weaker. The hero has +12 HP, more coins and more healing.' },
       { name: 'Regular Route', hint: 'The game’s intended balance.' },
-      { name: 'Early Dusk', hint: 'Enemies are 15% tougher and hit 10% harder. Less healing after bosses.' },
+      { name: 'Early Dusk', hint: 'Enemies are 15% tougher and hit 10% harder. Less healing at campfires and after bosses.' },
       { name: 'Blizzard', hint: 'Enemies are 25% tougher and hit 15% harder. Less HP, coins and rest. A Blot in your deck.' },
       { name: 'Polar Night', hint: 'Enemies are 35% tougher and hit 20% harder. Even less HP, coins and rest. A Blot and an Undelivered Letter in your deck.' },
     ],
