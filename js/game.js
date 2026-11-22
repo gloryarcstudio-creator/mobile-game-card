@@ -2334,7 +2334,10 @@
     b.textContent = tr(text);
     z.appendChild(b);
     ach.add('lines');
-    setTimeout(() => b.remove(), SETTINGS.fast ? ms * 0.7 : ms);
+    // длинная реплика висит дольше: 50 мс на знак, как у коротких сообщений (v155). Раньше любая висела 2,6 с, и личные
+    // реплики врагов (до 67 знаков, в английском до 85) надо было читать по 26–33 знака в секунду. Облачко ничего не закрывает
+    const life = Math.min(5200, Math.max(ms, 600 + b.textContent.length * 50));
+    setTimeout(() => b.remove(), SETTINGS.fast ? life * 0.7 : life);
   }
 
   /* Друзья помогают в начале финального боя (js/lore.js, FRIEND) */
