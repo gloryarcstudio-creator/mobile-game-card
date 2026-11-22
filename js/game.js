@@ -920,6 +920,9 @@
     setTimeout(() => { screen.style.pointerEvents = ''; if (run === r && screen.className === scr) fn(); }, SETTINGS.fast ? 520 : 1100);
   }
 
+  // Погашенный ответ (v166): с причиной он остаётся нажимаемым и по нажатию говорит её (data-why), без причины просто выключен
+  const offAttr = (why) => (why ? `aria-disabled="true" data-why="${tr(why)}"` : 'disabled');
+
   function showOverlay(html, onClick) {
     // окно, которое только что открылось или сменилось другим (а не перерисовалось, как настройки после переключателя),
     // первые мгновения не принимает касаний: см. TAP_LOCK
@@ -1994,7 +1997,7 @@
       <div class="ev-box"><h2>${ev.title}</h2><p>${I18N.fill(ev.text)}</p></div>
       <div class="scrolls">${ev.options.map((o, i) => {
         const ok = !o.can || o.can(run);
-        return `<button class="scroll ${ok ? '' : 'off'} ${o.ad ? 'adopt' : ''}" data-act="evopt" data-i="${i}" ${ok ? '' : 'disabled'}>${o.ad ? adTag() : ''}${o.text}<small>${o.hint}</small></button>`;
+        return `<button class="scroll ${ok ? '' : 'off'} ${o.ad ? 'adopt' : ''}" data-act="evopt" data-i="${i}" ${ok ? '' : offAttr(o.why)}>${o.ad ? adTag() : ''}${o.text}<small>${o.hint}</small></button>`;
       }).join('')}</div>
       ${heroBar(false)}${FXH}`;
     warmPeace();
@@ -2004,6 +2007,7 @@
 
   async function eventOption(i) {
     const ev = EVENTS.find((e) => e.id === screen.dataset.ev);
+    if (ev.options[i].can && !ev.options[i].can(run)) return;
     // награда за рекламу: без рекламы (покупка) она выдаётся сразу
     if (ev.options[i].ad) {
       busy = true;
@@ -2105,16 +2109,16 @@
     const ops = [{ k: 'fight', text: 'В бой', hint: mood }];
     if (tie && tie.kind === 'thanks') ops.push({ k: 'regards', text: 'Передать привет', hint: tr(tier === 'boss' ? 'Босс Ослаблен на 2 хода' : 'Без боя, монеты и +6 HP'), secret: true });
     const sc = secretOf(id);
-    if (sc) ops.push({ k: 'secret', text: sc.text, hint: tr(sc.hint), can: !(sc.effect.gold < 0) || run.gold >= -sc.effect.gold, secret: true });
-    if (e.dark) ops.push({ k: 'forgive', text: LORE.FORGIVE.text, hint: tr(LORE.FORGIVE.hint), can: run.maxHp > 12 });
+    if (sc) ops.push({ k: 'secret', text: sc.text, hint: tr(sc.hint), can: !(sc.effect.gold < 0) || run.gold >= -sc.effect.gold, why: 'Не хватает монет', secret: true });
+    if (e.dark) ops.push({ k: 'forgive', text: LORE.FORGIVE.text, hint: tr(LORE.FORGIVE.hint), can: run.maxHp > 12, why: 'Слишком мало здоровья' });
     if (att === 'like') ops.push(tier === 'boss' ? { k: 'heart', text: 'Поговорить по душам', hint: tr('Босс Ослаблен на 2 хода') }
       : { k: 'peace', text: 'Договориться миром', hint: tr(tier === 'elite' ? 'Без боя, талисман' : 'Без боя, монеты и +6 HP') });
     if (att === 'fear' && tier !== 'boss') ops.push({ k: 'scare', text: 'Прогнать', hint: tr('Без боя, половина монет') });
     if (att === 'hate' || att === 'grudge' || (tie && tie.kind === 'avenge')) {
-      ops.push({ k: 'calm', text: 'Успокоить', hint: tr('−{n} {n|монета|монеты|монет}, враг не злится', { n: calmPrice(tier) }), can: run.gold >= calmPrice(tier) });
+      ops.push({ k: 'calm', text: 'Успокоить', hint: tr('−{n} {n|монета|монеты|монет}, враг не злится', { n: calmPrice(tier) }), can: run.gold >= calmPrice(tier), why: 'Не хватает монет' });
       ops.push({ k: 'sass', text: 'Ответить дерзко', hint: tr('Сила врага +{n}, монет вдвое больше', { n: 3 + angry }) });
     } else ops.push({ k: 'taunt', text: 'Подразнить', hint: tr('Сила врага +2, монет в полтора раза больше') });
-    if (!att && !sc && tier === 'fight') ops.push({ k: 'bribe', text: 'Откупиться', hint: tr('−{n} {n|монета|монеты|монет}, без боя', { n: bribePrice() }), can: run.gold >= bribePrice() });
+    if (!att && !sc && tier === 'fight') ops.push({ k: 'bribe', text: 'Откупиться', hint: tr('−{n} {n|монета|монеты|монет}, без боя', { n: bribePrice() }), can: run.gold >= bribePrice(), why: 'Не хватает монет' });
     return ops;
   }
 
@@ -2134,7 +2138,7 @@
     screen.innerHTML = `${topBar()}
       <div class="talk-art tk-${e.tier}">${(Art.enemyLive || Art.enemy)(id)}</div>
       <div class="ev-box talk-box"><h2>${e.name}</h2><p>${quote(line)}</p>${tie ? `<small class="tienote">${tr(tie.text)}</small>` : ''}</div>
-      <div class="scrolls">${opts.map((op) => `<button class="scroll ${op.can === false ? 'off' : ''} ${op.secret ? 'secret' : ''}" data-act="talkopt" data-k="${op.k}" ${op.can === false ? 'disabled' : ''}>${tr(op.text)}<small>${op.hint}</small></button>`).join('')}</div>
+      <div class="scrolls">${opts.map((op) => `<button class="scroll ${op.can === false ? 'off' : ''} ${op.secret ? 'secret' : ''}" data-act="talkopt" data-k="${op.k}" ${op.can === false ? offAttr(op.why) : ''}>${tr(op.text)}<small>${op.hint}</small></button>`).join('')}</div>
       ${heroBar(false)}${FXH}`;
     warmPeace();
   }
@@ -2150,6 +2154,8 @@
   function talkChoose(k) {
     const id = screen.dataset.enemy; const tier = screen.dataset.tier;
     const e = ENEMIES[id];
+    const btn = screen.querySelector(`[data-act="talkopt"][data-k="${k}"]`);
+    if (btn && btn.classList.contains('off')) return;   // погашенный ответ не выбирается
     const mod = { str: 0, weak: 0, goldMul: 1, hpMul: 1, stun: 0, talked: true };
     let reply = null; let narr = null; let next = 'fight'; let fightId = id;
     const hp0 = run.hp; const gold0 = run.gold;
@@ -2272,6 +2278,7 @@
     for (const o of ops) {
       const fx = o.fx || {};
       o.can = !(fx.gold < 0 && run.gold < -fx.gold) && !(fx.hp && run.hp <= fx.hp) && !(fx.maxHp < 0 && run.maxHp <= 12);
+      o.why = fx.gold < 0 && run.gold < -fx.gold ? 'Не хватает монет' : 'Слишком мало здоровья';
       if (o.k !== 'pass') o.hint = tr(o.hint);
     }
     return ops;
@@ -2287,7 +2294,7 @@
     screen.innerHTML = `${topBar()}
       <div class="talk-art hero">${heroArt(h)}</div>
       <div class="ev-box talk-box"><h2>${tr(m.title)}</h2><p>${tr(m.text)}</p></div>
-      <div class="scrolls">${meetOptions(h).map((o) => `<button class="scroll ${o.can ? '' : 'off'} ${o.secret ? 'secret' : ''}" data-act="meetopt" data-k="${o.k}" ${o.can ? '' : 'disabled'}>${tr(o.text)}<small>${o.hint}</small></button>`).join('')}</div>
+      <div class="scrolls">${meetOptions(h).map((o) => `<button class="scroll ${o.can ? '' : 'off'} ${o.secret ? 'secret' : ''}" data-act="meetopt" data-k="${o.k}" ${o.can ? '' : offAttr(o.why)}>${tr(o.text)}<small>${o.hint}</small></button>`).join('')}</div>
       ${heroBar(false)}${FXH}`;
     warmPeace();
   }
@@ -3820,6 +3827,8 @@
     if (!t) return;
     const act = t.dataset.act;
     if (e.isTrusted && TAP_GUARD.has(act) && performance.now() - Math.max(bornAt(t), ovClosedAt) < TAP_LOCK) return;
+    // погашенный ответ объясняет, почему он недоступен, как товар в лавке (v166). Раньше он молчал
+    if (t.dataset.why) { SND.sfx('deny'); toast(t.dataset.why); return; }
     if (!['buy', 'buyrelic', 'buytea', 'buyremove', 'buyup', 'reroll', 'takecard', 'bossrelic', 'cine-next'].includes(act)) SND.sfx('click');
     switch (act) {
       case 'start': newRun(); break;
