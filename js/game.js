@@ -67,6 +67,15 @@
   const flameMax = () => (hasRelic('bellows') ? 2 : FLAME_MAX);
   const flameBonus = () => (hasRelic('bellows') ? 0 : FLAME_BONUS);
 
+  // Подсказка лампы в бою считает талисманы (v175): с Кузнечными мехами писала «+2 урона, вспышка на 3», хотя атаки не усиливаются
+  // и вспышка уже на 2; с Огнивом писала «бьёт на 8», а било на 13. Справочник по-прежнему описывает общее правило
+  let descType = ''; // тип карты, чьё описание сейчас составляется (для Лупы)
+  const lampTip = () => {
+    const m = flameMax(); const d = BURST_DMG + (hasRelic('flint') ? 5 : 0);
+    return flameBonus() ? tr('Каждый Огонёк даёт атакам +{b} урона. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.', { b: flameBonus(), m, d })
+      : tr('Огоньки не усиливают атаки. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.', { m, d });
+  };
+
   /* Пояснения к ключевым словам: показываются в справочнике и по нажатию на статус */
   const GLOSS_RU = [
     ['Огонёк', 'Каждый Огонёк даёт атакам +{b} урона. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.', { b: FLAME_BONUS, m: FLAME_MAX, d: BURST_DMG }],
@@ -739,7 +748,7 @@
     if (run) codexMark('c', inst.id); // карта попалась на глаза в забеге — открыта в базе знаний
     const g = C ? api : apiStatic;
     const cost = extra.includes('inhand') ? playCost(inst) : costOf(inst);
-    let desc = c.desc(g, inst.up, inst);
+    descType = c.type; let desc = c.desc(g, inst.up, inst); descType = '';
     if (c.retain) desc += ` ${tr('Удержание.')}`;
     if (c.exhaust && c.type !== 'status') desc += ` ${tr('Сгорает.')}`;
     const plain = desc.replace(/<[^>]+>/g, '');
@@ -830,7 +839,7 @@
         <div class="hpbar">${mv.trail}<div class="fill" style="${mv.fill}width:${hpPct}%"></div><span>${run.hp}/${run.maxHp}</span>
           ${inCombat && C.block > 0 ? `<div class="hblk">${Art.intentIcon('block')}<b>${C.block}</b></div>` : ''}</div>
         <div class="hb-row">
-          ${inCombat ? `<div class="lamp" data-tip="${GLOSS[0][1]}">${Array.from({ length: flameMax() }, (_, i) => `<i class="pip ${i < flame ? 'on' : ''}">${Art.flame(1)}</i>`).join('')}</div>` : `<div class="hero-name">${hero().name}</div>`}
+          ${inCombat ? `<div class="lamp" data-tip="${lampTip()}">${Array.from({ length: flameMax() }, (_, i) => `<i class="pip ${i < flame ? 'on' : ''}">${Art.flame(1)}</i>`).join('')}</div>` : `<div class="hero-name">${hero().name}</div>`}
         </div>
       </div>
       ${inCombat ? `<div class="energy"><b>${C.energy}</b><small>/${maxEnergy()}</small></div>
@@ -2559,7 +2568,9 @@
     get lastCard() { return C && C.last && C.last.id !== 'carbon' ? cardName(C.last) : null; },
     // spent: карта сначала тратит Огоньки, поэтому их прибавка к урону в расчёт не идёт
     dmgText(base, spent) {
-      const v = calcDmg(spent ? base - flameBonus() * C.flame : base);
+      // Лупа: первая атака боя сама бьёт уже по Уязвимому врагу, и карта в руке показывает этот урон (v175: показывала 6, наносила 9)
+      const lens = descType === 'atk' && !C.firstAtk && C.enemy.vuln <= 0 && hasRelic('magnifier');
+      const v = calcDmg(spent ? base - flameBonus() * C.flame : base, lens);
       return v > base ? `<b class="up">${v}</b>` : v < base ? `<b class="down">${v}</b>` : `${v}`;
     },
     // защита, которую карта даст на самом деле: под Хрупкостью число на карте меньше и подсвечено
@@ -2729,11 +2740,11 @@
     return true;
   }
 
-  function calcDmg(base) {
+  function calcDmg(base, vulnSoon) {
     if (!C) return base;
     let v = base + flameBonus() * C.flame + C.str + C.tmpStr + (hasRelic('pencil') && !C.atkTurn ? 3 : 0);
     if (C.pWeak > 0) v = Math.floor(v * 0.75);
-    if (C.enemy.vuln > 0) v = Math.floor(v * 1.5);
+    if (C.enemy.vuln > 0 || vulnSoon) v = Math.floor(v * 1.5);
     return Math.max(0, v);
   }
   const dogDmg = () => (C.enemy.vuln > 0 ? Math.floor(C.dog * 1.5) : C.dog);

@@ -448,6 +448,7 @@
 
     // ---------- справочник ----------
     'Огонёк': 'Flame',
+    'Огоньки не усиливают атаки. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.': 'Flames do not boost your attacks. At {m} Flames the lamp flares and hits the enemy for {d}.',
     'Каждый Огонёк даёт атакам +{b} урона. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.': 'Each Flame gives your attacks +{b} damage. At {m} Flames the lamp flares and hits the enemy for {d}.',
     'Решимость': 'Resolve',
     'Каждое очко добавляет +1 урона каждой атаке. Бывает до конца боя или до конца хода.': 'Each point adds +1 damage to every attack. It lasts until the end of combat or until the end of the turn.',
