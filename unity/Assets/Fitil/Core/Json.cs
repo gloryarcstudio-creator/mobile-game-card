@@ -24,7 +24,7 @@ namespace Fitil.Core
         public static List<object> Arr(object v) => v as List<object>;
         public static string Str(object v, string def = null) => v as string ?? def;
         public static double Num(object v, double def = 0) => v is double d ? d : def;
-        public static int Int(object v, int def = 0) => v is double d ? (int)d : def;
+        public static int Int(object v, int def = 0) => v is double d ? (int)d : v is bool b ? (b ? 1 : 0) : def;
         public static bool Bool(object v, bool def = false) => v is bool b ? b : def;
 
         public static object Get(Dictionary<string, object> o, string key) =>
