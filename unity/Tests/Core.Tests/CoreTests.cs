@@ -122,3 +122,36 @@ namespace Fitil.Tests
         }
     }
 }
+
+namespace Fitil.Tests
+{
+    using System.Collections.Generic;
+    using Fitil.Core;
+
+    public static class CardTextTests
+    {
+        /// <summary>Шаблоны описаний дают вне боя ровно тот текст, что рисует веб-версия (все 113 карт, обе версии, 3 языка).</summary>
+        public static void TestStaticDescMatchesWeb()
+        {
+            var byLang = new Dictionary<string, Dictionary<string, CardTextEntry>>();
+            foreach (var l in Loc.Langs) byLang[l] = CardText.Parse(Program.Data($"cardtext.{l}.json"));
+            int n = 0, bad = 0;
+            string first = null;
+            foreach (var x in Json.Arr(Json.Parse(Program.Fixture("carddesc.json"))))
+            {
+                var c = Json.Obj(x);
+                var e = byLang[Json.Str(c["lang"])][Json.Str(c["id"])];
+                var got = CardText.Render(Json.Bool(c["up"]) ? e.Up : e.Base, CardText.Static);
+                n++;
+                if (got != Json.Str(c["out"])) { bad++; first ??= $"[{c["lang"]}] {c["id"]}: «{got}» вместо «{c["out"]}»"; }
+            }
+            Assert.True(n == 678 && bad == 0, $"{bad} из {n} расходятся, первый: {first}");
+        }
+
+        public static void TestRenderWithBonus()
+        {
+            var s = CardText.Render("Deal ⟦dmg:6⟧ damage.", (k, b, sp) => new CardNumber(b + 2, b), v => v.Up ? $"<up>{v.Value}</up>" : v.Value.ToString());
+            Assert.Equal("Deal <up>8</up> damage.", s, "урон с бонусом");
+        }
+    }
+}

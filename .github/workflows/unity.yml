@@ -22,6 +22,7 @@ jobs:
       - name: Данные и эталоны из веб-версии совпадают с закоммиченными
         run: |
           node tools/unity/export_data.js
+          node tools/unity/export_card_text.js
           node tools/unity/parity_fixtures.js
           git diff --stat --exit-code -- unity/Assets/Fitil/Resources/Data unity/Tests/Fixtures
       - name: Тесты Core

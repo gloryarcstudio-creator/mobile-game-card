@@ -28,7 +28,7 @@
 | `Assets/Fitil/Game` | Экраны на uGUI, собираются кодом. `Boot` — запуск, `SafeArea` — безопасная зона, `Ui` — помощники вёрстки. |
 | `Assets/Fitil/Platform` | Сохранения (`SaveStore`), покупки и реклама (`Store`, пока заглушки, все покупки по $5). |
 | `Assets/Fitil/Editor` | Настройки проекта кодом: портрет, отрисовка вокруг выреза камеры, идентификатор `com.gloryarcstudio.lastray`, IL2CPP, ARM64. Меню Fitil → Применить настройки. |
-| `Assets/Fitil/Resources/Data` | JSON из веб-версии: `node tools/unity/export_data.js`. Не править руками. |
+| `Assets/Fitil/Resources/Data` | JSON из веб-версии: `node tools/unity/export_data.js` (данные и строки) и `node tools/unity/export_card_text.js` (шаблоны описаний карт). Не править руками. |
 | `Assets/Fitil/Resources/Art` | PNG из `assets/`: `tools/unity/export_assets.py`. В git не кладётся. |
 | `Tests/Core.Tests` | Тесты Core без Unity: `dotnet run --project unity/Tests/Core.Tests`. Эталоны в `Tests/Fixtures` делает `node tools/unity/parity_fixtures.js`. |
 

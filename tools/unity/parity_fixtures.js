@@ -2,7 +2,8 @@
 /* Эталоны для тестов Fitil.Core: что выдаёт веб-версия на тех же входах.
    node tools/unity/parity_fixtures.js [OUT]   (по умолчанию unity/Tests/Fixtures)
    tr.json  — tr(ключ, переменные) для всех ключей с подстановками, на трёх языках, для обоих полов героя
-   rng.json — первые числа mulberry32 для нескольких зёрен (тот же алгоритм, что в Rng.cs) */
+   rng.json — первые числа mulberry32 для нескольких зёрен (тот же алгоритм, что в Rng.cs)
+   carddesc.json — описания всех карт вне боя на трёх языках, как их рисует cardHTML с apiStatic */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -20,7 +21,8 @@ function i18n(lang) {
   };
   win.window = win;
   const ctx = vm.createContext(win);
-  for (const f of ['js/i18n.js', 'js/lang/en.js', 'js/lang/uk.js']) vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
+  for (const f of ['js/i18n.js', 'js/lang/en.js', 'js/lang/uk.js', 'js/data.js']) vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
+  win.I18N.CARDS = win.Data.CARDS;
   return win.I18N;
 }
 
@@ -46,6 +48,17 @@ for (const lang of ['ru', 'en', 'uk']) {
 }
 fs.writeFileSync(path.join(OUT, 'tr.json'), JSON.stringify(cases));
 
+// apiStatic из game.js: g вне боя
+const apiStatic = { state: null, played: 0, blockNow: 0, dmgText: (n) => `${n}`, blkText: (n) => `${n}`, blkNum: (n) => n, thornsGain: (n) => n, thornsText: (n) => `${n}`, burnNum: (n) => n, burnText: (n) => `${n}`, vulnNum: (n) => n };
+const desc = [];
+for (const lang of ['ru', 'en', 'uk']) {
+  const I = i18n(lang);
+  for (const id of Object.keys(I.CARDS)) {
+    for (const up of [false, true]) desc.push({ lang, id, up, out: I.CARDS[id].desc(apiStatic, up, { id, up }) });
+  }
+}
+fs.writeFileSync(path.join(OUT, 'carddesc.json'), JSON.stringify(desc));
+
 function mulberry32(a) {
   return () => {
     a = (a + 0x6D2B79F5) >>> 0;
@@ -60,4 +73,4 @@ const rng = [1, 42, 123456789, 4294967295].map((seed) => {
   return { seed, values: Array.from({ length: 50 }, r) };
 });
 fs.writeFileSync(path.join(OUT, 'rng.json'), JSON.stringify(rng));
-console.log(`tr: ${cases.length} случаев, rng: ${rng.length} зёрен`);
+console.log(`tr: ${cases.length} случаев, описаний карт: ${desc.length}, rng: ${rng.length} зёрен`);
