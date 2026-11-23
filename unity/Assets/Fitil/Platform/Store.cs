@@ -1,7 +1,7 @@
 // Магазин и реклама за награду: перенос js/store.js.
 // Остальная игра пользуется только Store и не знает, откуда пришла покупка или реклама.
 // Сейчас покупки и реклама — заглушки, как в веб-версии: RealBuy и RealAd заменятся
-// на Unity IAP (Google Play Billing и App Store) и SDK рекламной сети на этапе «Платформа».
+// на Unity IAP 5 (Google Play Billing 7 и App Store; IAP 4 с Billing 7 не работает) и SDK рекламной сети на этапе «Платформа».
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,6 +25,11 @@ namespace Fitil.Platform
 
         // v177: все покупки по $5 (просьба Glory 2026-11-23). Цена в магазине задаётся в Play Console и App Store Connect.
         public const string Price = "$5";
+
+        /// <summary>Id товара в Google Play и App Store: com.protekgames.lastray.&lt;товар&gt; (схема студии).
+        /// Внутри игры и в сохранении товары зовутся как в веб-версии: hero_shepherd, heroes, noads.</summary>
+        public const string StoreIdPrefix = "com.protekgames.lastray.";
+        public static string StoreId(string id) => StoreIdPrefix + id;
 
         public static readonly Dictionary<string, Product> Products = new Dictionary<string, Product>();
         static readonly List<string> owned = new List<string>();

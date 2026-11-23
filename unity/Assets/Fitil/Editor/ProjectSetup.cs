@@ -9,9 +9,11 @@ namespace Fitil.EditorTools
     [InitializeOnLoad]
     public static class ProjectSetup
     {
-        public const string Company = "Glory Arc Studio";
+        public const string Company = "Protek Games"; // издатель в сторах: PROTEK s.r.o.
         public const string Product = "Последний луч";
-        public const string BundleId = "com.gloryarcstudio.lastray"; // после выхода в магазины менять нельзя
+        // Схема студии: com.protekgames.<игра>, покупки com.protekgames.<игра>.<товар>.
+        // После первой загрузки в стор менять нельзя.
+        public const string BundleId = "com.protekgames.lastray";
 
         // Google Play блокирует сборки на Unity с уязвимостью CVE-2025-59489. Для 6000.0 исправлено с 6000.0.58f2.
         public const string MinUnity = "6000.0.58f2";
@@ -50,7 +52,9 @@ namespace Fitil.EditorTools
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
+            // Google Play требует API 36. Auto берёт самый новый установленный SDK; если его нет: sdkmanager "platforms;android-36"
             PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
+            if (PlayerSettings.Android.bundleVersionCode < 1) PlayerSettings.Android.bundleVersionCode = 1; // при каждой загрузке +1, версию 1.0.0 не трогать
 
             // iOS
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
