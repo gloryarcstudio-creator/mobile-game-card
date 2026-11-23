@@ -1,0 +1,22 @@
+# Unity
+/Library/
+/Temp/
+/Obj/
+/Build/
+/Builds/
+/Logs/
+/UserSettings/
+/MemoryCaptures/
+/*.csproj
+/*.sln
+*.pidb
+*.userprefs
+.vs/
+.idea/
+# Тесты Core (dotnet)
+/Tests/**/bin/
+/Tests/**/obj/
+# Картинки и звук для Unity собираются из assets/ скриптом tools/unity/export_assets.py:
+# в git они заняли бы сотни мегабайт PNG поверх тех же WebP
+/Assets/Fitil/Resources/Art/
+/Assets/Fitil/Resources/Art.meta

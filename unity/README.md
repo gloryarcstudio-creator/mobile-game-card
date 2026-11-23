@@ -1,0 +1,39 @@
+# Последний луч — Unity
+
+Перенос веб-версии на Unity для Android и iOS. План: документ «Последний луч: план переноса на Unity».
+Веб-версия в корне репозитория остаётся эталоном: данные, тексты и числа берутся из неё скриптами.
+
+## Версия Unity
+
+Только **6000.0 LTS не ниже 6000.0.58f2** с модулями Android Build Support и iOS Build Support.
+Более старые версии (например, 6000.0.47f1) уязвимы к CVE-2025-59489, и Google Play блокирует собранные на них приложения.
+Проект сам напишет ошибку в консоли, если открыт в старой версии.
+
+## Как открыть
+
+1. Один раз сделать картинки для Unity (Unity не читает WebP):
+   ```sh
+   pip install pillow
+   python3 -I tools/unity/export_assets.py
+   ```
+2. Unity Hub → Add → Add project from disk → папка `unity`.
+3. Нажать Play в любой сцене: игра запускается кодом (`Fitil.Game.Boot`), сцены не нужны.
+   Для проверки высоких экранов и выреза камеры: Window → General → Device Simulator.
+
+## Что где
+
+| Папка | Что |
+| --- | --- |
+| `Assets/Fitil/Core` | Логика без UnityEngine: языки (`Loc`), случайность (`Rng`), данные (`GameData`), JSON. Дальше сюда переезжают бой и забег. |
+| `Assets/Fitil/Game` | Экраны на uGUI, собираются кодом. `Boot` — запуск, `SafeArea` — безопасная зона, `Ui` — помощники вёрстки. |
+| `Assets/Fitil/Platform` | Сохранения (`SaveStore`), покупки и реклама (`Store`, пока заглушки, все покупки по $5). |
+| `Assets/Fitil/Editor` | Настройки проекта кодом: портрет, отрисовка вокруг выреза камеры, идентификатор `com.gloryarcstudio.lastray`, IL2CPP, ARM64. Меню Fitil → Применить настройки. |
+| `Assets/Fitil/Resources/Data` | JSON из веб-версии: `node tools/unity/export_data.js`. Не править руками. |
+| `Assets/Fitil/Resources/Art` | PNG из `assets/`: `tools/unity/export_assets.py`. В git не кладётся. |
+| `Tests/Core.Tests` | Тесты Core без Unity: `dotnet run --project unity/Tests/Core.Tests`. Эталоны в `Tests/Fixtures` делает `node tools/unity/parity_fixtures.js`. |
+
+## Сборка
+
+GitHub Actions (`.github/workflows/unity.yml`) на каждый пуш гоняет тесты Core и проверяет, что JSON совпадает с веб-версией.
+Сборки Android и iOS включаются, когда в Settings → Secrets → Actions есть `UNITY_LICENSE`, `UNITY_EMAIL`, `UNITY_PASSWORD`
+(бесплатная лицензия Unity Personal, как её получить: https://game.ci/docs/github/activation).

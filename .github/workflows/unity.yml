@@ -1,0 +1,74 @@
+# Unity-версия «Последнего луча»: тесты логики и сборки для телефонов.
+# Тесты Core идут всегда. Сборки Android и iOS идут, когда в секретах репозитория есть
+# UNITY_LICENSE, UNITY_EMAIL и UNITY_PASSWORD (бесплатная лицензия Unity Personal).
+name: unity
+
+on:
+  push:
+    paths: ['unity/**', 'tools/unity/**', 'js/**', 'assets/**', '.github/workflows/unity.yml']
+  pull_request:
+    paths: ['unity/**', 'tools/unity/**', 'js/**', 'assets/**', '.github/workflows/unity.yml']
+  workflow_dispatch:
+
+jobs:
+  core-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - name: Данные и эталоны из веб-версии совпадают с закоммиченными
+        run: |
+          node tools/unity/export_data.js
+          node tools/unity/parity_fixtures.js
+          git diff --stat --exit-code -- unity/Assets/Fitil/Resources/Data unity/Tests/Fixtures
+      - name: Тесты Core
+        run: dotnet run --project unity/Tests/Core.Tests
+
+  build:
+    needs: core-tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform: [Android, iOS]
+    env:
+      HAS_LICENSE: ${{ secrets.UNITY_LICENSE != '' }}
+    steps:
+      - name: Нет лицензии Unity
+        if: env.HAS_LICENSE != 'true'
+        run: echo "::notice::Сборка пропущена: добавьте секреты UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD"
+      - uses: actions/checkout@v4
+        if: env.HAS_LICENSE == 'true'
+      - uses: actions/setup-python@v5
+        if: env.HAS_LICENSE == 'true'
+        with: { python-version: '3.12' }
+      - name: Картинки для Unity из assets/
+        if: env.HAS_LICENSE == 'true'
+        run: |
+          pip install pillow
+          python3 -I tools/unity/export_assets.py
+      - uses: actions/cache@v4
+        if: env.HAS_LICENSE == 'true'
+        with:
+          path: unity/Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-${{ matrix.targetPlatform }}-
+      - uses: game-ci/unity-builder@v4
+        if: env.HAS_LICENSE == 'true'
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: LastRay
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_LICENSE == 'true'
+        with:
+          name: LastRay-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
+          retention-days: 14

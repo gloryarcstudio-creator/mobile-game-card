@@ -1,0 +1,8259 @@
+{
+ "cards": {
+  "strike": {
+   "name": "Удар ліхтарем",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "start",
+   "art": "strike"
+  },
+  "guard": {
+   "name": "Віконниця",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "start",
+   "art": "guard"
+  },
+  "kindle": {
+   "name": "Розпалити ґніт",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "start",
+   "art": "kindle"
+  },
+  "spark": {
+   "name": "Іскра",
+   "cost": 0,
+   "type": "atk",
+   "rarity": "common",
+   "art": "spark"
+  },
+  "sparks": {
+   "name": "Сніп іскор",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "common",
+   "art": "sparks"
+  },
+  "cloak": {
+   "name": "Теплий плащ",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "cloak"
+  },
+  "tea": {
+   "name": "Чай з медом",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "tea",
+   "exhaust": true
+  },
+  "wind": {
+   "name": "Вітер у спину",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "common",
+   "art": "wind",
+   "exhaust": true
+  },
+  "oil": {
+   "name": "Лампадна олія",
+   "cost": 1,
+   "upCost": 0,
+   "type": "skill",
+   "rarity": "common",
+   "art": "oil"
+  },
+  "mirror": {
+   "name": "Люстерко",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "mirror"
+  },
+  "heavy": {
+   "name": "Замах",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "common",
+   "art": "heavy"
+  },
+  "wax": {
+   "name": "Крапля воску",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "wax"
+  },
+  "ember": {
+   "name": "Жаринка",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "ember"
+  },
+  "snowkick": {
+   "name": "Копняк із замету",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "snowkick"
+  },
+  "payback": {
+   "name": "Удар у відповідь",
+   "cost": 1,
+   "upCost": 0,
+   "type": "atk",
+   "rarity": "uncommon",
+   "art": "payback"
+  },
+  "luckycoin": {
+   "name": "Щаслива монетка",
+   "cost": 0,
+   "type": "atk",
+   "rarity": "common",
+   "art": "luckycoin",
+   "exhaust": true
+  },
+  "snowball": {
+   "name": "Снігова грудка",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "uncommon",
+   "art": "snowball"
+  },
+  "flurry": {
+   "name": "Віхола",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "uncommon",
+   "art": "flurry"
+  },
+  "icethrow": {
+   "name": "Бурулька",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "icethrow"
+  },
+  "heavybag": {
+   "name": "Важка торба",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "common",
+   "art": "heavybag"
+  },
+  "sbiten": {
+   "name": "Ковток збитню",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "common",
+   "art": "sbiten",
+   "exhaust": true
+  },
+  "sledram": {
+   "name": "Санний розгін",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "sledram"
+  },
+  "hornblow": {
+   "name": "Сигнал ріжка",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "hornblow"
+  },
+  "patch": {
+   "name": "Латка",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "patch"
+  },
+  "snowstorm": {
+   "name": "Снігова буря",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "uncommon",
+   "art": "snowstorm"
+  },
+  "icelantern": {
+   "name": "Крижаний ліхтар",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "icelantern"
+  },
+  "cancel": {
+   "name": "Погашення марки",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "uncommon",
+   "art": "cancel"
+  },
+  "carbon": {
+   "name": "Копірка",
+   "cost": 1,
+   "upCost": 0,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "carbon"
+  },
+  "nightshift": {
+   "name": "Нічна зміна",
+   "cost": 1,
+   "type": "charm",
+   "rarity": "uncommon",
+   "art": "nightshift"
+  },
+  "kindling": {
+   "name": "Розпалка",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "kindling"
+  },
+  "stamp": {
+   "name": "Штемпель",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "stamp"
+  },
+  "redseal": {
+   "name": "Червона печатка",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "redseal"
+  },
+  "whistle": {
+   "name": "Свисток",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "whistle",
+   "exhaust": true
+  },
+  "cocoa": {
+   "name": "Какао з перцем",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "common",
+   "art": "cocoa"
+  },
+  "prickly": {
+   "name": "Колючий шарф",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "prickly"
+  },
+  "frostlace": {
+   "name": "Морозний візерунок",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "frostlace"
+  },
+  "parcel": {
+   "name": "Посилка",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "parcel"
+  },
+  "telegram": {
+   "name": "Телеграма",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "common",
+   "art": "telegram"
+  },
+  "surprise": {
+   "name": "Бандероль із сюрпризом",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "uncommon",
+   "art": "surprise"
+  },
+  "umbrella": {
+   "name": "Парасолька",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "umbrella",
+   "retain": true
+  },
+  "blotter": {
+   "name": "Промокашка",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "common",
+   "art": "blotter"
+  },
+  "mittens": {
+   "name": "Рукавички",
+   "cost": 1,
+   "type": "charm",
+   "rarity": "uncommon",
+   "art": "mittens"
+  },
+  "inkpen": {
+   "name": "Перо й чорнило",
+   "cost": 1,
+   "type": "charm",
+   "rarity": "uncommon",
+   "art": "inkpen"
+  },
+  "palm": {
+   "name": "Жар-долоня",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "rare",
+   "art": "palm"
+  },
+  "shadow": {
+   "name": "Тінь-хитрість",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "shadow"
+  },
+  "blaze": {
+   "name": "Пожежа",
+   "cost": 2,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "blaze"
+  },
+  "breath": {
+   "name": "Глибокий вдих",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "breath",
+   "exhaust": true
+  },
+  "lullaby": {
+   "name": "Колискова",
+   "cost": 2,
+   "upCost": 1,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "lullaby",
+   "exhaust": true
+  },
+  "lastword": {
+   "name": "Останнє слово",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "rare",
+   "art": "lastword",
+   "exhaust": true
+  },
+  "secret": {
+   "name": "Таємний лист",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "uncommon",
+   "art": "secret",
+   "retain": true
+  },
+  "finale": {
+   "name": "Фінальний акорд",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "epic",
+   "art": "finale"
+  },
+  "flashpoint": {
+   "name": "Підкрутити ґніт",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "flashpoint",
+   "exhaust": true
+  },
+  "drift": {
+   "name": "Замет",
+   "cost": 1,
+   "upCost": 0,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "drift"
+  },
+  "pockethog": {
+   "name": "Їжачок у кишені",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "pockethog",
+   "exhaust": true
+  },
+  "drafts": {
+   "name": "Спалити чернетки",
+   "cost": 1,
+   "upCost": 0,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "drafts"
+  },
+  "eveninglamp": {
+   "name": "Вечірня лампа",
+   "cost": 2,
+   "upCost": 1,
+   "type": "charm",
+   "rarity": "epic",
+   "art": "eveninglamp"
+  },
+  "stubborn": {
+   "name": "Упертість",
+   "cost": 2,
+   "upCost": 1,
+   "type": "charm",
+   "rarity": "rare",
+   "art": "stubborn"
+  },
+  "compass": {
+   "name": "Компас",
+   "cost": 1,
+   "upCost": 0,
+   "type": "charm",
+   "rarity": "rare",
+   "art": "compass"
+  },
+  "hearth": {
+   "name": "Серце багаття",
+   "cost": 1,
+   "type": "charm",
+   "rarity": "rare",
+   "art": "hearth"
+  },
+  "rhythm": {
+   "name": "Ритм кроків",
+   "cost": 1,
+   "upCost": 0,
+   "type": "charm",
+   "rarity": "uncommon",
+   "art": "rhythm"
+  },
+  "avalanche": {
+   "name": "Лавина",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "epic",
+   "art": "avalanche"
+  },
+  "moneyorder": {
+   "name": "Грошовий переказ",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "moneyorder",
+   "exhaust": true
+  },
+  "aurora": {
+   "name": "Північне сяйво",
+   "cost": 3,
+   "upCost": 2,
+   "type": "charm",
+   "rarity": "epic",
+   "art": "aurora"
+  },
+  "returnaddr": {
+   "name": "Зворотна адреса",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "returnaddr"
+  },
+  "frostbite": {
+   "name": "Обмороження",
+   "cost": 1,
+   "upCost": 0,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "frostbite",
+   "exhaust": true
+  },
+  "poste": {
+   "name": "До запитання",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "epic",
+   "art": "poste"
+  },
+  "starfall": {
+   "name": "Зорепад",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "epic",
+   "art": "starfall"
+  },
+  "iceprison": {
+   "name": "Крижана темниця",
+   "cost": 2,
+   "type": "skill",
+   "rarity": "epic",
+   "art": "iceprison",
+   "exhaust": true
+  },
+  "bonfire": {
+   "name": "Святкове вогнище",
+   "cost": 2,
+   "type": "skill",
+   "rarity": "epic",
+   "art": "bonfire"
+  },
+  "registered": {
+   "name": "Рекомендований лист",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "epic",
+   "art": "registered",
+   "retain": true
+  },
+  "chimes": {
+   "name": "Бій курантів",
+   "cost": 3,
+   "upCost": 2,
+   "type": "skill",
+   "rarity": "legendary",
+   "art": "chimes",
+   "exhaust": true
+  },
+  "lastlight": {
+   "name": "Останній промінь",
+   "cost": 3,
+   "upCost": 2,
+   "type": "atk",
+   "rarity": "legendary",
+   "art": "lastlight",
+   "exhaust": true
+  },
+  "firebird": {
+   "name": "Перо Жар-птиці",
+   "cost": 3,
+   "upCost": 2,
+   "type": "charm",
+   "rarity": "legendary",
+   "art": "firebird"
+  },
+  "eternalwinter": {
+   "name": "Вічна зима",
+   "cost": 3,
+   "upCost": 2,
+   "type": "charm",
+   "rarity": "legendary",
+   "art": "eternalwinter"
+  },
+  "firefly": {
+   "name": "Світлячок",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "common",
+   "art": "firefly",
+   "cls": "lamp",
+   "exhaust": true
+  },
+  "lampglass": {
+   "name": "Лампове скло",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "lampglass",
+   "cls": "lamp"
+  },
+  "beam": {
+   "name": "Сліпучий промінь",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "rare",
+   "art": "beam",
+   "cls": "lamp"
+  },
+  "urgent": {
+   "name": "Терміново!",
+   "cost": 0,
+   "type": "atk",
+   "rarity": "common",
+   "art": "urgent",
+   "cls": "courier"
+  },
+  "express": {
+   "name": "Експрес",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "express",
+   "cls": "courier"
+  },
+  "rushmail": {
+   "name": "Термінова пошта",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "rushmail",
+   "cls": "courier"
+  },
+  "icewall": {
+   "name": "Крижана стіна",
+   "cost": 2,
+   "type": "skill",
+   "rarity": "common",
+   "art": "icewall",
+   "cls": "guard"
+  },
+  "hedge": {
+   "name": "Колючий тин",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "hedge",
+   "cls": "guard"
+  },
+  "standfast": {
+   "name": "Стояти до ранку",
+   "cost": 2,
+   "upCost": 1,
+   "type": "charm",
+   "rarity": "rare",
+   "art": "standfast",
+   "cls": "guard"
+  },
+  "flue": {
+   "name": "Димар",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "flue",
+   "cls": "stoker"
+  },
+  "poker": {
+   "name": "Кочерга",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "poker",
+   "cls": "stoker"
+  },
+  "fan": {
+   "name": "Роздмухати жар",
+   "cost": 1,
+   "upCost": 0,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "fan",
+   "cls": "stoker",
+   "exhaust": true
+  },
+  "gingerbread": {
+   "name": "Пряник",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "token",
+   "art": "gingerbread",
+   "cls": "baker",
+   "exhaust": true
+  },
+  "dough": {
+   "name": "Замісити тісто",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "dough",
+   "cls": "baker"
+  },
+  "rollingpin": {
+   "name": "Качалка",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "rollingpin",
+   "cls": "baker"
+  },
+  "glaze": {
+   "name": "Цукрова глазур",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "glaze",
+   "cls": "baker"
+  },
+  "gingerhouse": {
+   "name": "Пряниковий терем",
+   "cost": 2,
+   "upCost": 1,
+   "type": "charm",
+   "rarity": "rare",
+   "art": "gingerhouse",
+   "cls": "baker"
+  },
+  "fair": {
+   "name": "Ярмарок",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "epic",
+   "art": "fair",
+   "cls": "baker"
+  },
+  "hone": {
+   "name": "Правити лезо",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "hone",
+   "cls": "grinder"
+  },
+  "gritsparks": {
+   "name": "Іскри з-під круга",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "gritsparks",
+   "cls": "grinder"
+  },
+  "oselok": {
+   "name": "Осілок",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "oselok",
+   "cls": "grinder",
+   "exhaust": true
+  },
+  "apprentice": {
+   "name": "Підмайстер",
+   "cost": 1,
+   "upCost": 0,
+   "type": "charm",
+   "rarity": "rare",
+   "art": "apprentice",
+   "cls": "grinder"
+  },
+  "steelring": {
+   "name": "Дзенькіт сталі",
+   "cost": 2,
+   "type": "atk",
+   "rarity": "epic",
+   "art": "steelring",
+   "cls": "grinder"
+  },
+  "sic": {
+   "name": "Фас!",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "sic",
+   "cls": "shepherd"
+  },
+  "heel": {
+   "name": "Поруч!",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "heel",
+   "cls": "shepherd"
+  },
+  "bone": {
+   "name": "Цукрова кісточка",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "bone",
+   "cls": "shepherd",
+   "exhaust": true
+  },
+  "wolfhound": {
+   "name": "Вовкодав",
+   "cost": 2,
+   "upCost": 1,
+   "type": "charm",
+   "rarity": "rare",
+   "art": "wolfhound",
+   "cls": "shepherd"
+  },
+  "howl": {
+   "name": "Виття на місяць",
+   "cost": 1,
+   "upCost": 0,
+   "type": "skill",
+   "rarity": "epic",
+   "art": "howl",
+   "cls": "shepherd",
+   "exhaust": true
+  },
+  "bitterroot": {
+   "name": "Гіркий корінь",
+   "cost": 1,
+   "type": "atk",
+   "rarity": "common",
+   "art": "bitterroot",
+   "cls": "herbalist"
+  },
+  "chamomile": {
+   "name": "Ромашковий відвар",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "common",
+   "art": "chamomile",
+   "cls": "herbalist"
+  },
+  "wormwood": {
+   "name": "Полин",
+   "cost": 0,
+   "type": "skill",
+   "rarity": "uncommon",
+   "art": "wormwood",
+   "cls": "herbalist"
+  },
+  "sleepgrass": {
+   "name": "Сон-трава",
+   "cost": 1,
+   "type": "skill",
+   "rarity": "rare",
+   "art": "sleepgrass",
+   "cls": "herbalist",
+   "exhaust": true
+  },
+  "livingwater": {
+   "name": "Жива вода",
+   "cost": 1,
+   "upCost": 0,
+   "type": "skill",
+   "rarity": "epic",
+   "art": "livingwater",
+   "cls": "herbalist",
+   "exhaust": true
+  },
+  "blot": {
+   "name": "Клякса",
+   "cost": 1,
+   "type": "status",
+   "rarity": "status",
+   "art": "blot",
+   "exhaust": true
+  },
+  "icy": {
+   "name": "Крижинка",
+   "cost": null,
+   "type": "status",
+   "rarity": "status",
+   "art": "icy",
+   "ethereal": true
+  },
+  "sealwax": {
+   "name": "Сургуч",
+   "cost": null,
+   "type": "status",
+   "rarity": "status",
+   "art": "sealwax"
+  },
+  "dread": {
+   "name": "Недоставлений лист",
+   "cost": null,
+   "type": "status",
+   "rarity": "status",
+   "art": "dread"
+  },
+  "ash": {
+   "name": "Попіл",
+   "cost": null,
+   "type": "status",
+   "rarity": "status",
+   "art": "ash"
+  },
+  "stale": {
+   "name": "Черствий пряник",
+   "cost": 2,
+   "type": "status",
+   "rarity": "status",
+   "art": "stale",
+   "exhaust": true
+  }
+ },
+ "enemies": {
+  "inkcat": {
+   "name": "Чорнильний кіт",
+   "hp": 20,
+   "tier": "normal",
+   "line": "Муркоче кляксами й краде листи.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 6
+    },
+    {
+     "k": "curse",
+     "card": "blot",
+     "n": 1,
+     "then": {
+      "k": "attack",
+      "v": 4
+     }
+    },
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 2
+    }
+   ]
+  },
+  "laundress": {
+   "name": "Туманна праля",
+   "hp": 26,
+   "tier": "normal",
+   "line": "Полоще в тумані чужі сни.",
+   "pattern": [
+    {
+     "k": "debuff",
+     "v": 2
+    },
+    {
+     "k": "attack",
+     "v": 8
+    },
+    {
+     "k": "block",
+     "v": 7,
+     "then": {
+      "k": "heal",
+      "v": 6
+     }
+    },
+    {
+     "k": "attack",
+     "v": 5
+    }
+   ]
+  },
+  "golem": {
+   "name": "Восковий голем",
+   "hp": 34,
+   "tier": "normal",
+   "line": "Зліплений з недогарків згаслих свічок.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 10
+    },
+    {
+     "k": "attack",
+     "v": 11
+    },
+    {
+     "k": "curse",
+     "card": "sealwax",
+     "n": 1,
+     "then": {
+      "k": "attack",
+      "v": 5
+     }
+    }
+   ]
+  },
+  "snowimp": {
+   "name": "Сніжок-Хуліган",
+   "hp": 16,
+   "tier": "normal",
+   "line": "Кидається сніжками в кожного перехожого.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 2
+    },
+    {
+     "k": "attack",
+     "v": 5
+    },
+    {
+     "k": "block",
+     "v": 4,
+     "then": {
+      "k": "attack",
+      "v": 3
+     }
+    }
+   ]
+  },
+  "icicle": {
+   "name": "Бурулька-Буркотунка",
+   "hp": 22,
+   "tier": "normal",
+   "line": "Висить над дверима й бурчить на всіх, хто під нею проходить.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 9
+    },
+    {
+     "k": "curse",
+     "card": "icy",
+     "n": 2
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "then": {
+      "k": "debuff",
+      "v": 1
+     }
+    }
+   ]
+  },
+  "pigeon": {
+   "name": "Голуб-Пліткар",
+   "hp": 18,
+   "tier": "normal",
+   "line": "Знає, що написано в кожному листі. І всім розповідає.",
+   "pattern": [
+    {
+     "k": "debuff",
+     "v": 1,
+     "then": {
+      "k": "attack",
+      "v": 3
+     }
+    },
+    {
+     "k": "attack",
+     "v": 2,
+     "hits": 3
+    },
+    {
+     "k": "block",
+     "v": 5
+    }
+   ]
+  },
+  "scarfsnake": {
+   "name": "Шарфовий Змій",
+   "hp": 24,
+   "tier": "normal",
+   "line": "Утік із мотузки для білизни й душить не гірше за удава.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 4,
+     "then": {
+      "k": "debuff",
+      "v": 1
+     }
+    },
+    {
+     "k": "attack",
+     "v": 7
+    },
+    {
+     "k": "block",
+     "v": 8
+    }
+   ]
+  },
+  "sootmouse": {
+   "name": "Пічна Миша",
+   "hp": 14,
+   "tier": "normal",
+   "line": "Живе в димарі й тягає сірники.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 2,
+     "hits": 3
+    },
+    {
+     "k": "steal",
+     "v": 5,
+     "gold": 6
+    },
+    {
+     "k": "buff",
+     "v": 1
+    }
+   ]
+  },
+  "mailbox": {
+   "name": "Скринька-Кусака",
+   "hp": 30,
+   "tier": "normal",
+   "line": "Поштова скринька, яка більше не хоче віддавати листи.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 10
+    },
+    {
+     "k": "attack",
+     "v": 12
+    },
+    {
+     "k": "curse",
+     "card": "dread",
+     "n": 1,
+     "then": {
+      "k": "attack",
+      "v": 4,
+      "hits": 2
+     }
+    }
+   ]
+  },
+  "matryoshka": {
+   "name": "Матрьошка-Скринька",
+   "hp": 18,
+   "tier": "normal",
+   "nest": 2,
+   "line": "Усередині однієї сердитої матрьошки ховається ще одна. І ще.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 5
+    },
+    {
+     "k": "block",
+     "v": 5,
+     "then": {
+      "k": "attack",
+      "v": 3
+     }
+    },
+    {
+     "k": "attack",
+     "v": 2,
+     "hits": 3
+    }
+   ]
+  },
+  "samovar": {
+   "name": "Самовар-Окріп",
+   "hp": 26,
+   "tier": "normal",
+   "boil": true,
+   "line": "Що сильніше його стукнеш, то сильніше він кипить.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 6
+    },
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 2
+    },
+    {
+     "k": "block",
+     "v": 8,
+     "then": {
+      "k": "heal",
+      "v": 4
+     }
+    }
+   ]
+  },
+  "cuckoo": {
+   "name": "Зозуля з ходиків",
+   "hp": 20,
+   "tier": "normal",
+   "tally": 4,
+   "line": "Рахує кожен ваш рух і кує невлад.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 5
+    },
+    {
+     "k": "sap",
+     "v": 1,
+     "then": {
+      "k": "attack",
+      "v": 3
+     }
+    },
+    {
+     "k": "attack",
+     "v": 2,
+     "hits": 3
+    }
+   ]
+  },
+  "shadowthief": {
+   "name": "Тінь-Злодюжка",
+   "hp": 20,
+   "tier": "normal",
+   "line": "Краде світло з ліхтарів і ховає в мішок.",
+   "pattern": [
+    {
+     "k": "snuff",
+     "v": 5
+    },
+    {
+     "k": "steal",
+     "v": 7,
+     "gold": 10
+    },
+    {
+     "k": "block",
+     "v": 6,
+     "then": {
+      "k": "attack",
+      "v": 4
+     }
+    }
+   ]
+  },
+  "bat": {
+   "name": "Сутінковий Кажан",
+   "hp": 18,
+   "tier": "normal",
+   "line": "Прокидається, щойно сонце торкнеться дахів.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 3
+    },
+    {
+     "k": "debuff",
+     "v": 1
+    },
+    {
+     "k": "attack",
+     "v": 6
+    }
+   ]
+  },
+  "stump": {
+   "name": "Пень-Блукач",
+   "hp": 36,
+   "tier": "normal",
+   "thorns": 2,
+   "line": "Удень прикидається пнем. У сутінках виходить на дорогу.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 12
+    },
+    {
+     "k": "attack",
+     "v": 10
+    },
+    {
+     "k": "buff",
+     "v": 2
+    }
+   ]
+  },
+  "frostfox": {
+   "name": "Морозна Лисиця",
+   "hp": 24,
+   "tier": "normal",
+   "line": "Замітає сліди й плутає дорогу.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 5,
+     "hits": 2
+    },
+    {
+     "k": "curse",
+     "card": "icy",
+     "n": 2,
+     "then": {
+      "k": "debuff",
+      "v": 1
+     }
+    },
+    {
+     "k": "attack",
+     "v": 9
+    }
+   ]
+  },
+  "wisp": {
+   "name": "Блакитний Блуд",
+   "hp": 16,
+   "tier": "normal",
+   "line": "Холодний вогонь, що заманює з дороги.",
+   "pattern": [
+    {
+     "k": "snuff",
+     "v": 4
+    },
+    {
+     "k": "buff",
+     "v": 2,
+     "then": {
+      "k": "block",
+      "v": 6
+     }
+    },
+    {
+     "k": "attack",
+     "v": 8
+    }
+   ]
+  },
+  "raven": {
+   "name": "Ворон-Рахівник",
+   "hp": 26,
+   "tier": "normal",
+   "line": "Підраховує, скільки хвилин лишилося до темряви.",
+   "pattern": [
+    {
+     "k": "debuff",
+     "v": 2
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 2
+    },
+    {
+     "k": "curse",
+     "card": "blot",
+     "n": 2,
+     "then": {
+      "k": "block",
+      "v": 8
+     }
+    },
+    {
+     "k": "attack",
+     "v": 10
+    }
+   ]
+  },
+  "mist": {
+   "name": "Туманниця",
+   "hp": 24,
+   "tier": "normal",
+   "line": "Кутається в туман, і удари грузнуть у ньому, як у ваті.",
+   "pattern": [
+    {
+     "k": "mist",
+     "v": 5,
+     "then": {
+      "k": "block",
+      "v": 5
+     }
+    },
+    {
+     "k": "attack",
+     "v": 7
+    },
+    {
+     "k": "debuff",
+     "v": 1,
+     "then": {
+      "k": "attack",
+      "v": 4
+     }
+    },
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 2
+    }
+   ]
+  },
+  "ghoul": {
+   "name": "Крижаний Упир",
+   "hp": 28,
+   "tier": "normal",
+   "line": "П’є чуже тепло й від цього тільки міцнішає.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 7,
+     "leech": true
+    },
+    {
+     "k": "block",
+     "v": 7,
+     "then": {
+      "k": "buff",
+      "v": 1
+     }
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 2,
+     "leech": true
+    }
+   ]
+  },
+  "firecracker": {
+   "name": "Шутиха",
+   "hp": 22,
+   "tier": "normal",
+   "line": "Святковий феєрверк-утікач. Ґніт уже шипить.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 2
+    },
+    {
+     "k": "block",
+     "v": 6,
+     "then": {
+      "k": "attack",
+      "v": 3
+     }
+    },
+    {
+     "k": "boom",
+     "v": 16
+    }
+   ]
+  },
+  "snowbrute": {
+   "name": "Сніговик-Громило",
+   "hp": 50,
+   "tier": "elite",
+   "line": "Його зліпили діти, а він виріс і образився.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 12
+    },
+    {
+     "k": "block",
+     "v": 10,
+     "then": {
+      "k": "buff",
+      "v": 2
+     }
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 3
+    }
+   ]
+  },
+  "icebear": {
+   "name": "Крижаний Ведмідь",
+   "hp": 58,
+   "tier": "elite",
+   "line": "Спав у заметі, доки його не розбудили Тіні.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 14
+    },
+    {
+     "k": "block",
+     "v": 14,
+     "then": {
+      "k": "spikes",
+      "v": 3
+     }
+    },
+    {
+     "k": "attack",
+     "v": 6,
+     "hits": 2
+    },
+    {
+     "k": "buff",
+     "v": 3
+    }
+   ]
+  },
+  "lampghost": {
+   "name": "Ліхтарний Привид",
+   "hp": 46,
+   "tier": "elite",
+   "line": "Старий ліхтар, якого так і не запалили.",
+   "pattern": [
+    {
+     "k": "snuff",
+     "v": 8
+    },
+    {
+     "k": "attack",
+     "v": 5,
+     "hits": 3
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "block",
+      "v": 8
+     }
+    }
+   ]
+  },
+  "owl": {
+   "name": "Совиний сторож",
+   "hp": 48,
+   "tier": "elite",
+   "line": "Охороняє темряву. Нікого не пропускає.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 8
+    },
+    {
+     "k": "buff",
+     "v": 2
+    },
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 3
+    },
+    {
+     "k": "block",
+     "v": 8
+    }
+   ]
+  },
+  "iceknight": {
+   "name": "Крижаний Лицар",
+   "hp": 44,
+   "tier": "elite",
+   "plating": true,
+   "line": "Його обладунки намерзали всю зиму, шар за шаром.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 9
+    },
+    {
+     "k": "attack",
+     "v": 10
+    },
+    {
+     "k": "block",
+     "v": 7,
+     "then": {
+      "k": "attack",
+      "v": 5
+     }
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 2
+    }
+   ]
+  },
+  "blizzard": {
+   "name": "Хуртовиця",
+   "hp": 50,
+   "tier": "elite",
+   "line": "Замітає дороги, руки й думки.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 5,
+     "hits": 2
+    },
+    {
+     "k": "bury",
+     "v": 2,
+     "then": {
+      "k": "curse",
+      "card": "icy",
+      "n": 2
+     }
+    },
+    {
+     "k": "attack",
+     "v": 12
+    },
+    {
+     "k": "frail",
+     "v": 2,
+     "then": {
+      "k": "block",
+      "v": 10
+     }
+    }
+   ]
+  },
+  "watchman": {
+   "name": "Сторож із калаталом",
+   "hp": 52,
+   "tier": "elite",
+   "alarm": 3,
+   "line": "Калатає на кожен шерех. Хитрощів він не любить.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 11
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 5
+     }
+    },
+    {
+     "k": "buff",
+     "v": 2,
+     "then": {
+      "k": "block",
+      "v": 10
+     }
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 3
+    }
+   ]
+  },
+  "moth": {
+   "name": "Нічна Міль",
+   "hp": 110,
+   "tier": "boss",
+   "line": "З’їла місяць і всі ліхтарі Сонного Броду.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 12
+    },
+    {
+     "k": "snuff",
+     "v": 8
+    },
+    {
+     "k": "attack",
+     "v": 5,
+     "hits": 3
+    },
+    {
+     "k": "block",
+     "v": 15,
+     "then": {
+      "k": "buff",
+      "v": 3
+     }
+    }
+   ]
+  },
+  "magpie": {
+   "name": "Сорока-Перехоплювачка",
+   "hp": 75,
+   "tier": "boss",
+   "line": "Краде листи, блискітки й чужі секрети.",
+   "pattern": [
+    {
+     "k": "steal",
+     "v": 10,
+     "gold": 15
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 7
+     }
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 3
+    },
+    {
+     "k": "block",
+     "v": 12,
+     "then": {
+      "k": "buff",
+      "v": 2
+     }
+    }
+   ]
+  },
+  "clockmaker": {
+   "name": "Сутінковий Годинникар",
+   "hp": 140,
+   "tier": "boss",
+   "line": "Підводить годинники, щоб ніч настала раніше.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 14
+    },
+    {
+     "k": "sap",
+     "v": 1,
+     "then": {
+      "k": "block",
+      "v": 16
+     }
+    },
+    {
+     "k": "snuff",
+     "v": 9
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 4
+    },
+    {
+     "k": "buff",
+     "v": 3,
+     "then": {
+      "k": "attack",
+      "v": 6
+     }
+    }
+   ]
+  },
+  "waxgiant": {
+   "name": "Сургучевий Велетень",
+   "hp": 90,
+   "tier": "boss",
+   "line": "Зліплений із сургучу з тисячі листів і запечатує всіх назавжди.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 14,
+     "then": {
+      "k": "attack",
+      "v": 5
+     }
+    },
+    {
+     "k": "attack",
+     "v": 13
+    },
+    {
+     "k": "curse",
+     "card": "sealwax",
+     "n": 2,
+     "then": {
+      "k": "attack",
+      "v": 8
+     }
+    },
+    {
+     "k": "buff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 7
+     }
+    }
+   ]
+  },
+  "vane": {
+   "name": "Флюгер-Півень",
+   "hp": 74,
+   "tier": "boss",
+   "line": "Крутиться на даху ратуші й здуває листонош із дороги.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 3
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 6
+     }
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 3
+    },
+    {
+     "k": "block",
+     "v": 8,
+     "then": {
+      "k": "attack",
+      "v": 10
+     }
+    }
+   ]
+  },
+  "wolf": {
+   "name": "Сутінковий Вовк",
+   "hp": 130,
+   "tier": "boss",
+   "line": "У його шерсті застрягли перші зорі.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 7,
+     "hits": 2
+    },
+    {
+     "k": "buff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 5
+     }
+    },
+    {
+     "k": "attack",
+     "v": 18
+    },
+    {
+     "k": "snuff",
+     "v": 8
+    },
+    {
+     "k": "frail",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 4,
+      "hits": 3
+     }
+    }
+   ]
+  },
+  "troll": {
+   "name": "Мостовий Троль",
+   "hp": 160,
+   "tier": "boss",
+   "line": "Бере плату за міст. Найбільше любить чужі листи.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 18,
+     "then": {
+      "k": "attack",
+      "v": 6
+     }
+    },
+    {
+     "k": "steal",
+     "v": 16,
+     "gold": 20
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 8
+     }
+    },
+    {
+     "k": "attack",
+     "v": 6,
+     "hits": 2
+    },
+    {
+     "k": "block",
+     "v": 12,
+     "then": {
+      "k": "buff",
+      "v": 3
+     }
+    }
+   ]
+  },
+  "hollowpost": {
+   "name": "Порожній Листоноша",
+   "hp": 175,
+   "tier": "boss",
+   "line": "Пальто листоноші, який так і не дійшов до адресата.",
+   "pattern": [
+    {
+     "k": "curse",
+     "card": "dread",
+     "n": 2,
+     "then": {
+      "k": "attack",
+      "v": 8
+     }
+    },
+    {
+     "k": "attack",
+     "v": 5,
+     "hits": 4
+    },
+    {
+     "k": "snuff",
+     "v": 12
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "block",
+      "v": 16
+     }
+    },
+    {
+     "k": "buff",
+     "v": 3,
+     "then": {
+      "k": "attack",
+      "v": 10
+     }
+    }
+   ]
+  },
+  "skywhale": {
+   "name": "Нічний Кит",
+   "hp": 220,
+   "tier": "boss",
+   "line": "Пливе нічним небом і ковтає зорі.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 20
+    },
+    {
+     "k": "attack",
+     "v": 22
+    },
+    {
+     "k": "attack",
+     "v": 6,
+     "hits": 3
+    },
+    {
+     "k": "buff",
+     "v": 4,
+     "then": {
+      "k": "heal",
+      "v": 15
+     }
+    }
+   ]
+  },
+  "shadowking": {
+   "name": "Король Тіней",
+   "hp": 190,
+   "tier": "boss",
+   "line": "Править усім, що не встигло до заходу сонця.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 16
+    },
+    {
+     "k": "snuff",
+     "v": 10
+    },
+    {
+     "k": "attack",
+     "v": 6,
+     "hits": 3
+    },
+    {
+     "k": "curse",
+     "card": "dread",
+     "n": 2,
+     "then": {
+      "k": "block",
+      "v": 18
+     }
+    },
+    {
+     "k": "buff",
+     "v": 3,
+     "then": {
+      "k": "attack",
+      "v": 8
+     }
+    }
+   ]
+  },
+  "dk_lamp": {
+   "name": "Згасла Іва",
+   "hp": 185,
+   "tier": "boss",
+   "dark": "lamp",
+   "line": "Вирішила, що без світла не буде й страху.",
+   "pattern": [
+    {
+     "k": "snuff",
+     "v": 10
+    },
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 4
+    },
+    {
+     "k": "curse",
+     "card": "dread",
+     "n": 2,
+     "then": {
+      "k": "block",
+      "v": 14
+     }
+    },
+    {
+     "k": "buff",
+     "v": 3,
+     "then": {
+      "k": "attack",
+      "v": 9
+     }
+    }
+   ]
+  },
+  "dk_courier": {
+   "name": "Тишко Без Адреси",
+   "hp": 170,
+   "tier": "boss",
+   "dark": "courier",
+   "line": "Біжить без дороги й без адреси.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 5
+    },
+    {
+     "k": "steal",
+     "v": 10,
+     "gold": 20
+    },
+    {
+     "k": "sap",
+     "v": 1,
+     "then": {
+      "k": "attack",
+      "v": 6,
+      "hits": 2
+     }
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 12
+     }
+    }
+   ]
+  },
+  "dk_guard": {
+   "name": "Замкнена Марта",
+   "hp": 200,
+   "tier": "boss",
+   "dark": "guard",
+   "plating": true,
+   "line": "Закрила міст назавжди й для всіх.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 16
+    },
+    {
+     "k": "attack",
+     "v": 12
+    },
+    {
+     "k": "spikes",
+     "v": 3,
+     "then": {
+      "k": "block",
+      "v": 8
+     }
+    },
+    {
+     "k": "frail",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 7,
+      "hits": 2
+     }
+    }
+   ]
+  },
+  "dk_stoker": {
+   "name": "Попелястий Хома",
+   "hp": 190,
+   "tier": "boss",
+   "dark": "stoker",
+   "boil": true,
+   "line": "Його вогонь більше нікого не гріє.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 3
+    },
+    {
+     "k": "curse",
+     "card": "ash",
+     "n": 2,
+     "then": {
+      "k": "attack",
+      "v": 6
+     }
+    },
+    {
+     "k": "attack",
+     "v": 14
+    },
+    {
+     "k": "buff",
+     "v": 2,
+     "then": {
+      "k": "block",
+      "v": 12
+     }
+    }
+   ]
+  },
+  "dk_baker": {
+   "name": "Черства Груня",
+   "hp": 200,
+   "tier": "boss",
+   "dark": "baker",
+   "line": "Більше нікого не годує.",
+   "pattern": [
+    {
+     "k": "block",
+     "v": 14,
+     "then": {
+      "k": "heal",
+      "v": 10
+     }
+    },
+    {
+     "k": "curse",
+     "card": "stale",
+     "n": 3,
+     "then": {
+      "k": "attack",
+      "v": 6
+     }
+    },
+    {
+     "k": "attack",
+     "v": 13
+    },
+    {
+     "k": "buff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 4,
+      "hits": 3
+     }
+    }
+   ]
+  },
+  "dk_grinder": {
+   "name": "Щербатий Сава",
+   "hp": 190,
+   "tier": "boss",
+   "dark": "grinder",
+   "line": "Перестав лагодити й почав різати.",
+   "pattern": [
+    {
+     "k": "buff",
+     "v": 4,
+     "then": {
+      "k": "block",
+      "v": 10
+     }
+    },
+    {
+     "k": "attack",
+     "v": 20
+    },
+    {
+     "k": "frail",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 5,
+      "hits": 2
+     }
+    },
+    {
+     "k": "buff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 9
+     }
+    }
+   ]
+  },
+  "dk_shepherd": {
+   "name": "Вовча Луша",
+   "hp": 185,
+   "tier": "boss",
+   "dark": "shepherd",
+   "line": "Її пес став тінню і кусає дедалі лютіше.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 4,
+     "hits": 2,
+     "then": {
+      "k": "buff",
+      "v": 1
+     }
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "attack",
+      "v": 8
+     }
+    },
+    {
+     "k": "attack",
+     "v": 3,
+     "hits": 4
+    },
+    {
+     "k": "block",
+     "v": 10,
+     "then": {
+      "k": "buff",
+      "v": 2
+     }
+    }
+   ]
+  },
+  "dk_herbalist": {
+   "name": "Гірка Уляна",
+   "hp": 210,
+   "tier": "boss",
+   "dark": "herbalist",
+   "line": "Тепер лікує тільки себе.",
+   "pattern": [
+    {
+     "k": "attack",
+     "v": 9,
+     "leech": true
+    },
+    {
+     "k": "debuff",
+     "v": 2,
+     "then": {
+      "k": "heal",
+      "v": 12
+     }
+    },
+    {
+     "k": "attack",
+     "v": 5,
+     "hits": 3,
+     "leech": true
+    },
+    {
+     "k": "curse",
+     "card": "dread",
+     "n": 1,
+     "then": {
+      "k": "block",
+      "v": 12
+     }
+    },
+    {
+     "k": "buff",
+     "v": 3,
+     "then": {
+      "k": "attack",
+      "v": 10,
+      "leech": true
+     }
+    }
+   ]
+  }
+ },
+ "relics": {
+  "bell": {
+   "tier": "common",
+   "name": "Мідний дзвіночок",
+   "art": "bell",
+   "desc": "На початку бою отримати 6 захисту."
+  },
+  "feather": {
+   "tier": "common",
+   "name": "Совине перо",
+   "art": "feather",
+   "desc": "Починати бій з 1 Вогником."
+  },
+  "jar": {
+   "tier": "common",
+   "name": "Банка світлячків",
+   "art": "jar",
+   "desc": "+8 до максимуму HP."
+  },
+  "flint": {
+   "tier": "common",
+   "name": "Кресало",
+   "art": "flint",
+   "desc": "Спалах лампи завдає +5 шкоди."
+  },
+  "snowman": {
+   "tier": "common",
+   "name": "Сніговик-талісман",
+   "art": "snowman",
+   "desc": "Після перемоги відновити 4 HP."
+  },
+  "scarf": {
+   "tier": "common",
+   "name": "Шарф із китицями",
+   "art": "cloak",
+   "desc": "У перший хід бою +1 енергія."
+  },
+  "envelope": {
+   "tier": "common",
+   "name": "Конверт із маркою",
+   "art": "envelope",
+   "desc": "+8 монет за кожну перемогу."
+  },
+  "thimble": {
+   "tier": "common",
+   "name": "Наперсток",
+   "art": "thimble",
+   "desc": "На початку кожного ходу 2 захисту."
+  },
+  "mug": {
+   "tier": "common",
+   "name": "Глиняне горнятко",
+   "art": "mug",
+   "desc": "На початку бою відновити 3 HP."
+  },
+  "pencil": {
+   "tier": "common",
+   "name": "Недогризок олівця",
+   "art": "pencil",
+   "desc": "Перша атака кожного ходу: +3 шкоди кожному удару."
+  },
+  "bookmark": {
+   "tier": "common",
+   "name": "Закладка з китицею",
+   "art": "bookmark",
+   "desc": "На початку бою одна випадкова карта колоди покращується до кінця бою."
+  },
+  "cocoatin": {
+   "tier": "common",
+   "name": "Бляшанка какао",
+   "art": "cocoatin",
+   "desc": "Відпочинок біля багаття також дає +2 до максимуму HP."
+  },
+  "stamppad": {
+   "tier": "common",
+   "name": "Штемпельна подушка",
+   "art": "stamppad",
+   "desc": "Ваша Вразливість триває на 1 хід довше."
+  },
+  "snowglobe": {
+   "tier": "uncommon",
+   "name": "Сніжна куля",
+   "art": "snowglobe",
+   "desc": "Кожен Спалах лампи робить ворога Ослабленим на 1 хід."
+  },
+  "oilcan": {
+   "tier": "uncommon",
+   "name": "Маслянка",
+   "art": "oilcan",
+   "desc": "Кожна Доставка дає 4 захисту."
+  },
+  "candybox": {
+   "tier": "uncommon",
+   "name": "Коробка льодяників",
+   "art": "candybox",
+   "desc": "Після перемоги над елітою відновити 10 HP."
+  },
+  "vanefeather": {
+   "tier": "uncommon",
+   "name": "Перо флюгера",
+   "art": "vanefeather",
+   "desc": "Якщо наприкінці ходу рука порожня, наступного ходу +1 енергія."
+  },
+  "stokerglove": {
+   "tier": "uncommon",
+   "name": "Рукавиця кочегара",
+   "art": "stokerglove",
+   "desc": "Щоразу, коли Підпал ранить ворога, отримати 2 захисту."
+  },
+  "luckystamp": {
+   "tier": "uncommon",
+   "name": "Щаслива марка",
+   "art": "luckystamp",
+   "desc": "Монет за перемоги на 20% більше."
+  },
+  "magnifier": {
+   "tier": "uncommon",
+   "name": "Лупа",
+   "art": "magnifier",
+   "desc": "Перша атака в бою робить ворога Вразливим на 2 ходи."
+  },
+  "kettle": {
+   "tier": "uncommon",
+   "name": "Похідний чайник",
+   "art": "kettle",
+   "desc": "Відпочинок біля багаття лікує на 10 HP більше."
+  },
+  "whetstone": {
+   "tier": "common",
+   "name": "Точильний камінь",
+   "art": "whetstone",
+   "desc": "Одразу покращує 2 випадкові карти колоди."
+  },
+  "inkwell": {
+   "tier": "uncommon",
+   "name": "Чорнильниця",
+   "art": "inkwell",
+   "desc": "На початку бою ворог Ослаблений на 2 ходи."
+  },
+  "pinecone": {
+   "tier": "common",
+   "name": "Ялинова шишка",
+   "art": "pinecone",
+   "desc": "На початку бою Шипи 3."
+  },
+  "coupon": {
+   "tier": "common",
+   "name": "Купон Голочника",
+   "art": "coupon",
+   "desc": "У крамниці все на 25% дешевше."
+  },
+  "stub": {
+   "tier": "common",
+   "name": "Недогарок",
+   "art": "stub",
+   "desc": "Кожен Спалах лампи лікує 2 HP."
+  },
+  "sled": {
+   "tier": "uncommon",
+   "name": "Санчата",
+   "art": "sled",
+   "desc": "У перший хід бою взяти 2 додаткові карти."
+  },
+  "piggy": {
+   "tier": "uncommon",
+   "name": "Скарбничка",
+   "art": "piggy",
+   "desc": "Перемога без втрати HP: +15 монет."
+  },
+  "frostglass": {
+   "tier": "uncommon",
+   "name": "Морозне скло",
+   "art": "frostglass",
+   "desc": "Вороги починають бій з −2 Сили."
+  },
+  "matchbox": {
+   "tier": "common",
+   "name": "Коробок сірників",
+   "art": "matchbox",
+   "desc": "Кожен Підпал від ваших карт на 2 сильніший."
+  },
+  "mirrorshard": {
+   "tier": "epic",
+   "name": "Уламок дзеркала",
+   "art": "mirrorshard",
+   "desc": "Перша карта кожного ходу спрацьовує двічі."
+  },
+  "eternaloil": {
+   "tier": "rare",
+   "name": "Невгасима олія",
+   "art": "eternaloil",
+   "desc": "Вороги не можуть гасити ваші Вогники. На початку бою +1 Вогник."
+  },
+  "medal": {
+   "tier": "rare",
+   "name": "Медаль листоноші",
+   "art": "medal",
+   "desc": "Якщо минулого ходу зіграно 6 карт або більше, +1 енергія."
+  },
+  "thermos": {
+   "tier": "rare",
+   "name": "Термос",
+   "art": "thermos",
+   "desc": "Після бою, якщо HP менше половини, відновити 12 HP."
+  },
+  "northstar": {
+   "tier": "epic",
+   "name": "Полярна зоря",
+   "art": "northstar",
+   "desc": "У перший хід бою +2 енергії і 2 додаткові карти."
+  },
+  "stampbook": {
+   "tier": "rare",
+   "name": "Альбом марок",
+   "art": "stampbook",
+   "desc": "Кожна шоста карта, зіграна в бою, дає +1 енергію."
+  },
+  "hotstone": {
+   "tier": "rare",
+   "name": "Гарячий камінь",
+   "art": "hotstone",
+   "desc": "На початку ходу до 6 захисту не згоряє."
+  },
+  "clover": {
+   "tier": "rare",
+   "name": "Сушена конюшина",
+   "art": "clover",
+   "desc": "Після бою на вибір на одну карту більше."
+  },
+  "horseshoe": {
+   "tier": "rare",
+   "name": "Підкова",
+   "art": "horseshoe",
+   "desc": "Перший пропущений удар у кожному бою ранить лише на 1."
+  },
+  "brazier": {
+   "tier": "rare",
+   "name": "Жаровня",
+   "art": "brazier",
+   "desc": "Коли карта згоряє, отримати 3 захисту."
+  },
+  "musicbox": {
+   "tier": "epic",
+   "name": "Музична скринька",
+   "art": "musicbox",
+   "desc": "Кожен третій хід +2 енергії."
+  },
+  "ribbon": {
+   "tier": "epic",
+   "name": "Стрічка для листів",
+   "art": "ribbon",
+   "desc": "Наприкінці ходу найдорожча карта лишається в руці."
+  },
+  "horn": {
+   "tier": "epic",
+   "name": "Поштовий ріжок",
+   "art": "horn",
+   "desc": "Кожна Доставка спрацьовує двічі."
+  },
+  "frostring": {
+   "tier": "epic",
+   "name": "Морозна каблучка",
+   "art": "frostring",
+   "desc": "На початку бою ворог Вразливий на 2 ходи й Ослаблений на 2 ходи."
+  },
+  "buckle": {
+   "tier": "epic",
+   "name": "Латунна пряжка",
+   "art": "buckle",
+   "desc": "Кожна ваша Навичка дає 3 захисту."
+  },
+  "wreath": {
+   "tier": "epic",
+   "name": "Ялиновий вінок",
+   "art": "wreath",
+   "desc": "Усі ваші Шипи вдвічі сильніші."
+  },
+  "sunstone": {
+   "tier": "legendary",
+   "name": "Сонячний камінь",
+   "art": "sunstone",
+   "desc": "+1 енергія і +1 карта щоходу."
+  },
+  "lastcandle": {
+   "tier": "legendary",
+   "name": "Остання свічка",
+   "art": "lastcandle",
+   "desc": "Один раз за забіг, коли HP падає до 0, відновити половину HP."
+  },
+  "magicbag": {
+   "tier": "legendary",
+   "name": "Зачарована торба",
+   "art": "magicbag",
+   "desc": "Карти наприкінці ходу лишаються в руці. Щоходу +1 карта."
+  },
+  "ivalamp": {
+   "tier": "class",
+   "name": "Ліхтар Іви",
+   "art": "lantern",
+   "desc": "Після кожного Спалаху в лампі лишається 1 Вогник."
+  },
+  "wingboots": {
+   "tier": "class",
+   "name": "Крилаті черевики",
+   "art": "wingboots",
+   "desc": "Кожна четверта карта за хід: +1 енергія і 1 карта."
+  },
+  "ironshutter": {
+   "tier": "class",
+   "name": "Окута віконниця",
+   "art": "ironshutter",
+   "desc": "Коли захист повністю приймає удар ворога, ворог отримує 4 шкоди."
+  },
+  "sootbroom": {
+   "tier": "class",
+   "name": "Закіптявлена мітла",
+   "art": "sootbroom",
+   "desc": "Кожен удар ваших атак додає ворогові Підпал 1."
+  },
+  "wickcutter": {
+   "tier": "uncommon",
+   "cls": "lamp",
+   "name": "Щипці для ґнота",
+   "art": "wickcutter",
+   "desc": "Кожен Спалах лампи дає 4 захисту."
+  },
+  "milestone": {
+   "tier": "uncommon",
+   "cls": "courier",
+   "name": "Верстовий стовп",
+   "art": "milestone",
+   "desc": "Кожна п’ята карта за хід завдає ворогові 8 шкоди."
+  },
+  "bridgerail": {
+   "tier": "uncommon",
+   "cls": "guard",
+   "name": "Поручні мосту",
+   "art": "bridgerail",
+   "desc": "На початку кожного ходу Шипи +1."
+  },
+  "chimneycap": {
+   "tier": "uncommon",
+   "cls": "stoker",
+   "name": "Ковпак на димар",
+   "art": "chimneycap",
+   "desc": "На початку бою ворог отримує Підпал 6."
+  },
+  "honeypot": {
+   "tier": "uncommon",
+   "cls": "baker",
+   "name": "Горщик меду",
+   "art": "honeypot",
+   "desc": "На початку бою в руку лягають 2 Пряники."
+  },
+  "leatherstrop": {
+   "tier": "rare",
+   "cls": "grinder",
+   "name": "Ремінь для правки",
+   "art": "leatherstrop",
+   "desc": "Після перемоги одна карта, нагострена в бою, лишається покращеною назавжди."
+  },
+  "collar": {
+   "tier": "uncommon",
+   "cls": "shepherd",
+   "name": "Нашийник із дзвоником",
+   "art": "collar",
+   "desc": "Кожен укус Дружка дає вам 2 захисту."
+  },
+  "herbbag": {
+   "tier": "uncommon",
+   "cls": "herbalist",
+   "name": "Торбинка трав",
+   "art": "herbbag",
+   "desc": "Після бою відновити половину HP, заплачених Ціною."
+  },
+  "moldform": {
+   "tier": "class",
+   "name": "Розписна формочка",
+   "art": "moldform",
+   "desc": "На початку кожного ходу в руку лягає Пряник."
+  },
+  "grindwheel": {
+   "tier": "class",
+   "name": "Точильний круг",
+   "art": "grindwheel",
+   "desc": "На початку кожного ходу дві карти в руці стають нагостреними: покращуються до кінця бою. Гострення вже покращеної карти дає 2 захисту."
+  },
+  "dogfriend": {
+   "tier": "class",
+   "name": "Пес Дружок",
+   "art": "dogfriend",
+   "desc": "Наприкінці кожного ходу Дружок кусає ворога: шкода дорівнює його Злості. На початку бою Злість 3."
+  },
+  "mortar": {
+   "tier": "class",
+   "name": "Ступка знахарки",
+   "art": "mortar",
+   "desc": "Коли ви платите Ціну, ворог отримує стільки ж шкоди."
+  },
+  "hourglass": {
+   "tier": "boss",
+   "name": "Пісочний годинник",
+   "art": "hourglass",
+   "desc": "+1 енергія щоходу. У руку на 1 карту менше."
+  },
+  "bottomless": {
+   "tier": "boss",
+   "name": "Бездонна торба",
+   "art": "bottomless",
+   "desc": "+1 енергія щоходу. Багаття більше не лікує."
+  },
+  "crown": {
+   "tier": "boss",
+   "name": "Сорочина корона",
+   "art": "crown",
+   "desc": "+1 енергія щоходу. Після бою на вибір на одну карту менше."
+  },
+  "bellows": {
+   "tier": "boss",
+   "name": "Ковальський міх",
+   "art": "bellows",
+   "desc": "Лампа спалахує вже на 2 Вогниках, але Вогники не посилюють атаки."
+  },
+  "moonstone": {
+   "tier": "boss",
+   "name": "Місячний камінь",
+   "art": "moonstone",
+   "desc": "Щоходу брати на 2 карти більше. −8 до максимуму HP."
+  },
+  "goldquill": {
+   "tier": "boss",
+   "name": "Золоте перо",
+   "art": "goldquill",
+   "desc": "Одразу покращує всі карти в колоді."
+  }
+ },
+ "events": [
+  {
+   "id": "well",
+   "title": "Старий колодязь",
+   "art": "well",
+   "text": "З колодязя чути тихе «дякую» за кожну монетку, що впала.",
+   "options": [
+    {
+     "text": "Загадати бажання",
+     "hint": "+20 HP і +15 монет",
+     "ad": true
+    },
+    {
+     "text": "Кинути 15 монет",
+     "hint": "−15 монет, +10 HP",
+     "why": "Не хватает монет"
+    },
+    {
+     "text": "Зазирнути всередину",
+     "hint": "50%: карта / −5 HP"
+    },
+    {
+     "text": "Пройти повз",
+     "hint": "Нічого"
+    }
+   ]
+  },
+  {
+   "id": "puppet",
+   "title": "Мандрівний ляльковод",
+   "art": "puppet",
+   "text": "Ляльковод без обличчя простягає тобі нитку: «Зіграй зі мною і здобудеш рідкість».",
+   "options": [
+    {
+     "text": "Зіграти",
+     "hint": "−6 HP, рідкісна карта"
+    },
+    {
+     "text": "Додивитися виставу",
+     "hint": "Рідкісна карта без втрати HP",
+     "ad": true
+    },
+    {
+     "text": "Купити ляльку",
+     "hint": "−30 монет, талісман",
+     "why": "Не хватает монет"
+    },
+    {
+     "text": "Відмовитися",
+     "hint": "Нічого"
+    }
+   ]
+  },
+  {
+   "id": "lantern",
+   "title": "Замерзлий ліхтар",
+   "art": "lantern",
+   "text": "Ліхтар на перехресті вкритий інеєм. Усередині ще жевріє крихітний вогник.",
+   "options": [
+    {
+     "text": "Відігріти долонями",
+     "hint": "−4 HP, талісман"
+    },
+    {
+     "text": "Забрати вогник",
+     "hint": "Карта «Іскра»"
+    }
+   ]
+  },
+  {
+   "id": "snowman",
+   "title": "Сумний сніговик",
+   "art": "snowman",
+   "text": "«Мені не видно зірок без ліхтарів», — зітхає сніговик. — «Поговориш зі мною?»",
+   "options": [
+    {
+     "text": "Поговорити",
+     "hint": "+12 HP"
+    },
+    {
+     "text": "Подарувати шарф",
+     "hint": "Прибрати карту з колоди"
+    },
+    {
+     "text": "Посміятися з нього",
+     "hint": "+25 монет, −1 до макс. HP"
+    }
+   ]
+  },
+  {
+   "id": "coins",
+   "title": "Розсипаний гаманець",
+   "art": "coin",
+   "text": "У заметі блищать монети. Поруч сліди чорнильних лап.",
+   "options": [
+    {
+     "text": "Зібрати",
+     "hint": "+30 монет, бій?"
+    },
+    {
+     "text": "Присвітити ліхтарем",
+     "hint": "+60 монет, без бою",
+     "ad": true
+    },
+    {
+     "text": "Залишити",
+     "hint": "Нічого"
+    }
+   ]
+  },
+  {
+   "id": "smith",
+   "title": "Коваль-Снігур",
+   "art": "whetstone",
+   "text": "Біля горна гріється снігур у шкіряному фартуху. «Нагострю що завгодно, хоч лист!»",
+   "options": [
+    {
+     "text": "Нагострити карту",
+     "hint": "Покращити карту на вибір"
+    },
+    {
+     "text": "Велике замовлення",
+     "hint": "Покращити 3 випадкові карти",
+     "ad": true,
+     "why": "Все карты уже улучшены"
+    },
+    {
+     "text": "Допомогти біля горна",
+     "hint": "−6 HP, покращити 2 випадкові",
+     "why": "Все карты уже улучшены"
+    },
+    {
+     "text": "Пройти повз",
+     "hint": "Нічого"
+    }
+   ]
+  },
+  {
+   "id": "postoffice",
+   "title": "Поштове відділення",
+   "art": "stampbook",
+   "text": "Нічна зміна: за віконцем дрімає стара сова, а на полиці лежать безхазяйні посилки.",
+   "options": [
+    {
+     "text": "Обміняти карту",
+     "hint": "Віддати карту, отримати рідкісну"
+    },
+    {
+     "text": "Забрати безхазяйну посилку",
+     "hint": "Карта з Доставкою"
+    },
+    {
+     "text": "Купити марки",
+     "hint": "−35 монет, талісман",
+     "why": "Не хватает монет"
+    }
+   ]
+  },
+  {
+   "id": "icemirror",
+   "title": "Крижане дзеркало",
+   "art": "frostglass",
+   "text": "У замерзлій калюжі відбивається не {f|мандрівниця|мандрівник}, а {f|її|його} колода карт. Відображення простягає руку.",
+   "options": [
+    {
+     "text": "Торкнутися відображення",
+     "hint": "−7 HP, копія карти"
+    },
+    {
+     "text": "Розбити лід",
+     "hint": "+20 монет"
+    },
+    {
+     "text": "Піти",
+     "hint": "Нічого"
+    }
+   ]
+  },
+  {
+   "id": "showbooth",
+   "title": "Балаган на площі",
+   "art": "showbooth",
+   "text": "Під строкатим наметом крутять чарівний ліхтар: на простирадлі змінюються картинки, а глядачам після вистави роздають подарунки.",
+   "options": [
+    {
+     "text": "Подивитися виставу",
+     "hint": "Талісман і +20 монет",
+     "ad": true
+    },
+    {
+     "text": "Пройти повз",
+     "hint": "Нічого"
+    }
+   ]
+  }
+ ],
+ "classes": {
+  "lamp": {
+   "name": "Іва",
+   "role": "Ліхтарниця",
+   "f": true,
+   "who": "ліхтарниця Іва",
+   "whom": "ліхтарниці Іві",
+   "look": "lamp",
+   "hp": 44,
+   "gold": 20,
+   "relic": "ivalamp",
+   "build": "Вогники й Спалахи",
+   "about": "Збирає Вогники й частіше за всіх запалює Спалахи лампи.",
+   "deck": [
+    "strike",
+    "strike",
+    "strike",
+    "guard",
+    "guard",
+    "guard",
+    "guard",
+    "kindle",
+    "spark",
+    "spark",
+    "firefly",
+    "lampglass"
+   ],
+   "favored": [
+    "kindle",
+    "spark",
+    "oil",
+    "mirror",
+    "cloak",
+    "mittens",
+    "palm",
+    "flashpoint",
+    "drafts",
+    "eveninglamp",
+    "rhythm",
+    "sparks",
+    "icelantern",
+    "snowstorm",
+    "starfall",
+    "lastlight",
+    "firebird"
+   ]
+  },
+  "courier": {
+   "name": "Тишко",
+   "role": "Скорохід",
+   "f": false,
+   "who": "скорохід Тишко",
+   "whom": "скороходові Тишкові",
+   "look": "courier",
+   "hp": 35,
+   "gold": 35,
+   "relic": "wingboots",
+   "build": "Доставка й серії",
+   "about": "Грає багато дешевих карт за хід і надсилає Доставки на наступний.",
+   "deck": [
+    "strike",
+    "strike",
+    "strike",
+    "strike",
+    "guard",
+    "guard",
+    "guard",
+    "urgent",
+    "telegram",
+    "wind"
+   ],
+   "favored": [
+    "wind",
+    "parcel",
+    "telegram",
+    "surprise",
+    "flurry",
+    "finale",
+    "breath",
+    "compass",
+    "inkpen",
+    "blotter",
+    "spark",
+    "cocoa",
+    "sledram",
+    "carbon",
+    "poste",
+    "moneyorder",
+    "avalanche",
+    "registered",
+    "chimes"
+   ]
+  },
+  "guard": {
+   "name": "Марта",
+   "role": "Сторожиха мосту",
+   "f": true,
+   "who": "сторожиха мосту Марта",
+   "whom": "сторожисі мосту Марті",
+   "look": "guard",
+   "hp": 40,
+   "gold": 15,
+   "relic": "ironshutter",
+   "build": "Захист, Шипи й мороз",
+   "about": "Витримує удар за ударом і відповідає ворогові його ж силою.",
+   "deck": [
+    "strike",
+    "strike",
+    "strike",
+    "strike",
+    "guard",
+    "guard",
+    "guard",
+    "guard",
+    "guard",
+    "snowkick"
+   ],
+   "favored": [
+    "cloak",
+    "wax",
+    "snowkick",
+    "payback",
+    "prickly",
+    "frostlace",
+    "umbrella",
+    "mittens",
+    "drift",
+    "pockethog",
+    "lullaby",
+    "icethrow",
+    "heavybag",
+    "patch",
+    "nightshift",
+    "frostbite",
+    "iceprison",
+    "eternalwinter"
+   ]
+  },
+  "stoker": {
+   "name": "Хома",
+   "role": "Сажотрус",
+   "f": false,
+   "who": "сажотрус Хома",
+   "whom": "сажотрусові Хомі",
+   "look": "stoker",
+   "hp": 42,
+   "gold": 20,
+   "relic": "sootbroom",
+   "build": "Підпал і часті удари",
+   "about": "Підпалює ворога кожним ударом і дає вогню зробити решту.",
+   "deck": [
+    "strike",
+    "strike",
+    "strike",
+    "strike",
+    "guard",
+    "guard",
+    "guard",
+    "guard",
+    "ember",
+    "poker",
+    "flue"
+   ],
+   "favored": [
+    "ember",
+    "blaze",
+    "hearth",
+    "sparks",
+    "flurry",
+    "whistle",
+    "cocoa",
+    "stubborn",
+    "stamp",
+    "redseal",
+    "kindling",
+    "snowstorm",
+    "hornblow",
+    "wax",
+    "mittens",
+    "cancel",
+    "bonfire",
+    "firebird"
+   ]
+  },
+  "baker": {
+   "name": "Груня",
+   "role": "Пряничниця",
+   "f": true,
+   "who": "пряничниця Груня",
+   "whom": "пряничниці Груні",
+   "look": "baker",
+   "hp": 42,
+   "gold": 25,
+   "relic": "moldform",
+   "build": "Пряники й швидкі ходи",
+   "about": "Пече Пряники просто в бою. Вони нічого не коштують, б’ють і захищають.",
+   "deck": [
+    "strike",
+    "strike",
+    "strike",
+    "strike",
+    "guard",
+    "guard",
+    "guard",
+    "guard",
+    "dough",
+    "rollingpin"
+   ],
+   "favored": [
+    "wind",
+    "cocoa",
+    "flurry",
+    "finale",
+    "inkpen",
+    "rhythm",
+    "carbon",
+    "sbiten",
+    "compass",
+    "breath",
+    "drafts",
+    "mittens",
+    "wax",
+    "chimes"
+   ]
+  },
+  "grinder": {
+   "name": "Сава",
+   "role": "Точильник",
+   "f": false,
+   "who": "точильник Сава",
+   "whom": "точильникові Саві",
+   "look": "grinder",
+   "paid": true,
+   "hp": 44,
+   "gold": 20,
+   "relic": "grindwheel",
+   "build": "Гострення й Рішучість",
+   "about": "Гострить карти просто в бою: нагострена карта до кінця бою діє як покращена.",
+   "deck": [
+    "strike",
+    "strike",
+    "strike",
+    "strike",
+    "guard",
+    "guard",
+    "guard",
+    "guard",
+    "hone",
+    "gritsparks",
+    "oselok"
+   ],
+   "favored": [
+    "heavy",
+    "heavybag",
+    "snowball",
+    "whistle",
+    "cocoa",
+    "hornblow",
+    "umbrella",
+    "cloak",
+    "stubborn",
+    "secret",
+    "lastword",
+    "carbon",
+    "returnaddr",
+    "snowkick",
+    "registered",
+    "lastlight"
+   ]
+  },
+  "shepherd": {
+   "name": "Луша",
+   "role": "Пастушка",
+   "f": true,
+   "who": "пастушка Луша",
+   "whom": "пастушці Луші",
+   "look": "shepherd",
+   "paid": true,
+   "hp": 36,
+   "gold": 20,
+   "relic": "dogfriend",
+   "build": "Вірний пес і команди",
+   "about": "Ходить із псом Дружком. Він кусає ворога щоходу, а команди роблять його злішим.",
+   "deck": [
+    "strike",
+    "strike",
+    "strike",
+    "strike",
+    "guard",
+    "guard",
+    "guard",
+    "guard",
+    "sic",
+    "heel"
+   ],
+   "favored": [
+    "stamp",
+    "redseal",
+    "cancel",
+    "wax",
+    "shadow",
+    "cloak",
+    "umbrella",
+    "mittens",
+    "lullaby",
+    "frostbite",
+    "nightshift",
+    "icelantern",
+    "iceprison",
+    "eternalwinter"
+   ]
+  },
+  "herbalist": {
+   "name": "Уляна",
+   "role": "Знахарка",
+   "f": true,
+   "who": "знахарка Уляна",
+   "whom": "знахарці Уляні",
+   "look": "herbalist",
+   "paid": true,
+   "hp": 46,
+   "gold": 15,
+   "relic": "mortar",
+   "build": "Ціна здоров’ям і трави",
+   "about": "Платить за сильні карти власним здоров’ям, а потім лікується травами.",
+   "deck": [
+    "strike",
+    "strike",
+    "strike",
+    "strike",
+    "guard",
+    "guard",
+    "guard",
+    "bitterroot",
+    "chamomile",
+    "chamomile"
+   ],
+   "favored": [
+    "tea",
+    "sbiten",
+    "heavy",
+    "lastword",
+    "cocoa",
+    "whistle",
+    "stubborn",
+    "snowkick",
+    "cloak",
+    "payback",
+    "bonfire",
+    "breath",
+    "lullaby",
+    "returnaddr"
+   ]
+  }
+ },
+ "difficulties": [
+  {
+   "name": "Прогулянка",
+   "hp": 0.75,
+   "dmg": 0.8,
+   "heroHp": 12,
+   "gold": 1.25,
+   "rest": 0.5,
+   "bossHeal": 0.7,
+   "curses": [],
+   "hint": "У ворогів на чверть менше HP, б’ють на 20% слабше. У героя +12 HP, більше монет і лікування."
+  },
+  {
+   "name": "Звичайний маршрут",
+   "hp": 1,
+   "dmg": 1,
+   "heroHp": 0,
+   "gold": 1,
+   "rest": 0.4,
+   "bossHeal": 0.5,
+   "curses": [],
+   "hint": "Задуманий баланс гри."
+  },
+  {
+   "name": "Ранні сутінки",
+   "hp": 1.15,
+   "dmg": 1.1,
+   "heroHp": 0,
+   "gold": 1,
+   "rest": 0.35,
+   "bossHeal": 0.4,
+   "curses": [],
+   "hint": "Вороги міцніші на 15% і б’ють на 10% сильніше. Менше лікування біля багаття й після боса."
+  },
+  {
+   "name": "Завірюха",
+   "hp": 1.25,
+   "dmg": 1.15,
+   "heroHp": -4,
+   "gold": 0.85,
+   "rest": 0.3,
+   "bossHeal": 0.35,
+   "curses": [
+    "blot"
+   ],
+   "hint": "Вороги міцніші на 25%, б’ють на 15% сильніше. Менше HP, монет і відпочинку. У колоді Клякса."
+  },
+  {
+   "name": "Полярна ніч",
+   "hp": 1.35,
+   "dmg": 1.2,
+   "heroHp": -6,
+   "gold": 0.75,
+   "rest": 0.25,
+   "bossHeal": 0.25,
+   "curses": [
+    "blot",
+    "dread"
+   ],
+   "hint": "Вороги міцніші на 35%, б’ють на 20% сильніше. Ще менше HP, монет і відпочинку. У колоді Клякса й Недоставлений лист."
+  }
+ ],
+ "story": {
+  "STORIES": {
+   "night": {
+    "sky": "night",
+    "title": "Ґніт",
+    "heroName": "Ива",
+    "stages": [
+     {
+      "name": "Розділ I · Сонний Брід",
+      "len": 12,
+      "boss": [
+       "moth"
+      ],
+      "scene": "town",
+      "early": [
+       "inkcat",
+       "laundress",
+       "snowimp",
+       "sootmouse"
+      ],
+      "normals": [
+       "inkcat",
+       "laundress",
+       "golem",
+       "icicle",
+       "scarfsnake",
+       "mailbox"
+      ],
+      "elites": [
+       "owl",
+       "snowbrute"
+      ],
+      "roman": "I"
+     }
+    ],
+    "intro": "Одного разу вночі Нічна Міль з’їла місяць і погасила всі ліхтарі Сонного Броду. Учениця ліхтарника Іва бере стару лампу й вирушає в дорогу, доки не догоріла остання свічка.",
+    "winRibbon": "Перемога!",
+    "winTitle": "Місяць повернувся",
+    "winText": "Нічна Міль упустила місяць, і він покотився дахами назад на небо. У Сонному Броді знову засвітилися ліхтарі, а Іва стала справжньою ліхтарницею.",
+    "loseTitle": "Ґніт згас…",
+    "loseText": "Темрява виявилася сильнішою. Але десь у Сонному Броді ще жевріє жаринка, а отже, історія може початися знову."
+   },
+   "sunset": {
+    "sky": "sunset",
+    "title": "Останній промінь",
+    "heroName": "Ива",
+    "heroBag": true,
+    "stages": [
+     {
+      "name": "Стадія I · Медова Гірка",
+      "len": 25,
+      "boss": [
+       "magpie",
+       "waxgiant",
+       "vane"
+      ],
+      "scene": "town",
+      "early": [
+       "inkcat",
+       "snowimp",
+       "pigeon",
+       "sootmouse",
+       "scarfsnake",
+       "icicle",
+       "matryoshka",
+       "samovar"
+      ],
+      "normals": [
+       "inkcat",
+       "snowimp",
+       "pigeon",
+       "sootmouse",
+       "scarfsnake",
+       "icicle",
+       "laundress",
+       "golem",
+       "mailbox",
+       "matryoshka",
+       "samovar",
+       "cuckoo"
+      ],
+      "elites": [
+       "owl",
+       "snowbrute",
+       "iceknight"
+      ],
+      "roman": "I"
+     },
+     {
+      "name": "Стадія II · Околиця",
+      "len": 25,
+      "boss": [
+       "clockmaker",
+       "wolf",
+       "troll"
+      ],
+      "scene": "outskirts",
+      "early": [
+       "shadowthief",
+       "bat",
+       "wisp",
+       "frostfox",
+       "laundress",
+       "mist",
+       "ghoul"
+      ],
+      "normals": [
+       "shadowthief",
+       "bat",
+       "stump",
+       "frostfox",
+       "wisp",
+       "raven",
+       "laundress",
+       "golem",
+       "mist",
+       "ghoul",
+       "firecracker"
+      ],
+      "elites": [
+       "icebear",
+       "lampghost",
+       "owl",
+       "blizzard",
+       "watchman"
+      ],
+      "roman": "II"
+     },
+     {
+      "name": "Фінал · Останній дім",
+      "len": 1,
+      "boss": [
+       "shadowking",
+       "hollowpost",
+       "skywhale"
+      ],
+      "scene": "outskirts",
+      "early": [],
+      "normals": [],
+      "elites": [],
+      "roman": "III"
+     }
+    ],
+    "cinema": [
+     {
+      "bg": "bg_stage1_town_day",
+      "from": [
+       0.5,
+       0.2,
+       1.05
+      ],
+      "to": [
+       0.5,
+       0.54,
+       1.05
+      ],
+      "lines": [
+       "Медовая Горка стоит на самом краю зимы.",
+       "Каждое утро отсюда расходятся письма."
+      ]
+     },
+     {
+      "bg": "bg_stage1_town_sunset",
+      "from": [
+       0.3,
+       0.5,
+       1.25
+      ],
+      "to": [
+       0.7,
+       0.5,
+       1.25
+      ],
+      "lines": [
+       "Разносить их нужно до заката.",
+       "С последним лучом из щелей выползают Тени."
+      ]
+     },
+     {
+      "bg": "bg_stage2_outskirts_night",
+      "from": [
+       0.5,
+       0.5,
+       1
+      ],
+      "to": [
+       0.5,
+       0.6,
+       1.14
+      ],
+      "shadows": [
+       "shadowthief",
+       "shadowking",
+       "shadowthief"
+      ],
+      "lines": [
+       "Тени съедают недоставленные слова.",
+       "«Жду». «Прости». «Возвращайся»."
+      ]
+     },
+     {
+      "bg": "splash",
+      "from": [
+       0.35,
+       0.2,
+       1.3
+      ],
+      "to": [
+       0.45,
+       0.43,
+       1.3
+      ],
+      "lines": [
+       "Сегодня почтальоны уже разошлись по домам.",
+       "А одно письмо осталось."
+      ]
+     },
+     {
+      "bg": "bg_stage2_outskirts_start",
+      "from": [
+       0.5,
+       0.78,
+       1.1
+      ],
+      "to": [
+       0.5,
+       0.5,
+       1.1
+      ],
+      "lines": [
+       "Адрес на нём за самой окраиной.",
+       "Путь долгий, а солнце уже клонится к крышам."
+      ]
+     },
+     {
+      "bg": "bg_title",
+      "from": [
+       0.5,
+       0.56,
+       1
+      ],
+      "to": [
+       0.56,
+       0.5,
+       1.12
+      ],
+      "lines": [
+       "Кто понесёт последнее письмо?"
+      ]
+     }
+    ],
+    "stageIntro": [
+     "Сонце ще високо. Час вирушати.",
+     "Сонце торкнулося дахів. Далі починається околиця.",
+     "Стемніло. До дверей адресата один крок."
+    ],
+    "winRibbon": "Доставлено!",
+    "winTitle": "Лист дійшов",
+    "loseTitle": "Сонце сіло…"
+   }
+  },
+  "SKIES": {
+   "night": [
+    [
+     0,
+     {
+      "skyTop": "#232a42",
+      "skyMid": "#3a4566",
+      "skyBot": "#4b5878",
+      "sun": "#ffd27a",
+      "sunX": 300,
+      "sunY": 120,
+      "sunR": 0,
+      "stars": 0,
+      "moonHole": true,
+      "hills": "#33405e",
+      "spires": "#2a3450",
+      "fog": "#9fb0d0",
+      "snowTop": "#7d8db0",
+      "snowBot": "#4c5a7c",
+      "snowEdge": "#a9b8d6",
+      "roof": "#c9d4ea",
+      "roofHi": "#e6edf8",
+      "wall": "#2b2733",
+      "wall2": "#252431",
+      "ink": "#141826",
+      "window": "#ff9d42",
+      "door": "#e07a2c",
+      "window2": "#1b1a24",
+      "fence": "#3b3640",
+      "lampOff": "#2a3044",
+      "lampGlow": 1,
+      "winGlow": 1
+     }
+    ]
+   ],
+   "sunset": [
+    [
+     0,
+     {
+      "skyTop": "#6fa8dc",
+      "skyMid": "#bcd8ec",
+      "skyBot": "#f5e6c4",
+      "sun": "#fff3c4",
+      "sunX": 120,
+      "sunY": 150,
+      "sunR": 36,
+      "stars": 0,
+      "moonHole": false,
+      "hills": "#a8b8cc",
+      "spires": "#8a9ab4",
+      "fog": "#fff2d8",
+      "snowTop": "#fdf6ee",
+      "snowBot": "#c8cfe2",
+      "snowEdge": "#ffffff",
+      "roof": "#ffffff",
+      "roofHi": "#ffffff",
+      "wall": "#6a4a3a",
+      "wall2": "#5a5a72",
+      "ink": "#3a3040",
+      "window": "#e8d8b0",
+      "door": "#a8553a",
+      "window2": "#c8d0e0",
+      "fence": "#7a5a48",
+      "lampOff": "#6a6a7a",
+      "lampGlow": 0,
+      "winGlow": 0
+     }
+    ],
+    [
+     0.48,
+     {
+      "skyTop": "#4a3f7a",
+      "skyMid": "#e8836a",
+      "skyBot": "#f7c98a",
+      "sun": "#ffe08a",
+      "sunX": 120,
+      "sunY": 420,
+      "sunR": 44,
+      "stars": 0,
+      "moonHole": false,
+      "hills": "#8a5c78",
+      "spires": "#6e4766",
+      "fog": "#ffd0a0",
+      "snowTop": "#f4cdb8",
+      "snowBot": "#b98aa6",
+      "snowEdge": "#ffe6d6",
+      "roof": "#f6d6c6",
+      "roofHi": "#fff0e6",
+      "wall": "#5a3a48",
+      "wall2": "#4e3444",
+      "ink": "#2a1a2a",
+      "window": "#c88a6a",
+      "door": "#a8553a",
+      "window2": "#8a6a7a",
+      "fence": "#5a3a48",
+      "lampOff": "#6a4a5a",
+      "lampGlow": 0.35,
+      "winGlow": 0.15
+     }
+    ],
+    [
+     0.5,
+     {
+      "skyTop": "#3a3266",
+      "skyMid": "#d0625a",
+      "skyBot": "#f4a35a",
+      "sun": "#ff9a4a",
+      "sunX": 120,
+      "sunY": 500,
+      "sunR": 46,
+      "stars": 0.15,
+      "moonHole": false,
+      "hills": "#6a4466",
+      "spires": "#553858",
+      "fog": "#ffb080",
+      "snowTop": "#e8b0a8",
+      "snowBot": "#8a6a90",
+      "snowEdge": "#ffd6c8",
+      "roof": "#e8c0c0",
+      "roofHi": "#f8d8d0",
+      "wall": "#48303e",
+      "wall2": "#3e2a3a",
+      "ink": "#241626",
+      "window": "#ffb860",
+      "door": "#b0502e",
+      "window2": "#5a3a4a",
+      "fence": "#48303e",
+      "lampOff": "#4a3a50",
+      "lampGlow": 0.7,
+      "winGlow": 0.6
+     }
+    ],
+    [
+     0.98,
+     {
+      "skyTop": "#141634",
+      "skyMid": "#3a2f5e",
+      "skyBot": "#a24f6a",
+      "sun": "#ff7a4a",
+      "sunX": 120,
+      "sunY": 560,
+      "sunR": 40,
+      "stars": 0.9,
+      "moonHole": false,
+      "hills": "#2e2848",
+      "spires": "#241f3c",
+      "fog": "#7a6aa0",
+      "snowTop": "#6a6a9a",
+      "snowBot": "#33365a",
+      "snowEdge": "#9a9ac8",
+      "roof": "#a8a8cc",
+      "roofHi": "#c8c8e6",
+      "wall": "#262236",
+      "wall2": "#201c30",
+      "ink": "#141226",
+      "window": "#ff9d42",
+      "door": "#c0602a",
+      "window2": "#1b1a24",
+      "fence": "#33304a",
+      "lampOff": "#2a2a44",
+      "lampGlow": 1,
+      "winGlow": 1
+     }
+    ],
+    [
+     1,
+     {
+      "skyTop": "#0e1028",
+      "skyMid": "#22224a",
+      "skyBot": "#3a3060",
+      "sun": "#ff7a4a",
+      "sunX": 120,
+      "sunY": 620,
+      "sunR": 0,
+      "stars": 1,
+      "moonHole": false,
+      "hills": "#1e1c38",
+      "spires": "#18162e",
+      "fog": "#5a5a90",
+      "snowTop": "#4a5080",
+      "snowBot": "#252a48",
+      "snowEdge": "#7a80b0",
+      "roof": "#8a90b8",
+      "roofHi": "#a8acd0",
+      "wall": "#1c1a2c",
+      "wall2": "#181628",
+      "ink": "#100e20",
+      "window": "#ff9d42",
+      "door": "#c0602a",
+      "window2": "#ff9d42",
+      "fence": "#2a2840",
+      "lampOff": "#222238",
+      "lampGlow": 1,
+      "winGlow": 1
+     }
+    ]
+   ],
+   "day": [
+    [
+     0,
+     {
+      "skyTop": "#5aa2e6",
+      "skyMid": "#a6d3f5",
+      "skyBot": "#e4f2fb",
+      "sun": "#fff6cf",
+      "sunX": 300,
+      "sunY": 110,
+      "sunR": 34,
+      "stars": 0,
+      "moonHole": false,
+      "hills": "#a9c2dc",
+      "spires": "#8fa9c6",
+      "fog": "#ffffff",
+      "snowTop": "#ffffff",
+      "snowBot": "#c8d9ec",
+      "snowEdge": "#ffffff",
+      "roof": "#ffffff",
+      "roofHi": "#ffffff",
+      "wall": "#7a4a32",
+      "wall2": "#5f6f8a",
+      "ink": "#3a3040",
+      "window": "#bfe0f5",
+      "door": "#b0482c",
+      "window2": "#bfe0f5",
+      "fence": "#8a6a4a",
+      "lampOff": "#5a6070",
+      "lampGlow": 0,
+      "winGlow": 0
+     }
+    ]
+   ],
+   "dawn": [
+    [
+     0,
+     {
+      "skyTop": "#141634",
+      "skyMid": "#3a2f5e",
+      "skyBot": "#c07a8a",
+      "sun": "#ff9a6a",
+      "sunX": 280,
+      "sunY": 580,
+      "sunR": 40,
+      "stars": 0.6,
+      "moonHole": false,
+      "hills": "#2e2848",
+      "spires": "#241f3c",
+      "fog": "#7a6aa0",
+      "snowTop": "#6a6a9a",
+      "snowBot": "#33365a",
+      "snowEdge": "#9a9ac8",
+      "roof": "#a8a8cc",
+      "roofHi": "#c8c8e6",
+      "wall": "#262236",
+      "wall2": "#201c30",
+      "ink": "#141226",
+      "window": "#ff9d42",
+      "door": "#c0602a",
+      "window2": "#1b1a24",
+      "fence": "#33304a",
+      "lampOff": "#2a2a44",
+      "lampGlow": 1,
+      "winGlow": 1
+     }
+    ],
+    [
+     1,
+     {
+      "skyTop": "#7ab0e0",
+      "skyMid": "#f5c0a0",
+      "skyBot": "#fde6c0",
+      "sun": "#fff0b0",
+      "sunX": 280,
+      "sunY": 360,
+      "sunR": 42,
+      "stars": 0,
+      "moonHole": false,
+      "hills": "#c49aa8",
+      "spires": "#a87a90",
+      "fog": "#ffe0c0",
+      "snowTop": "#fff0e6",
+      "snowBot": "#d8b8c8",
+      "snowEdge": "#ffffff",
+      "roof": "#fff4ec",
+      "roofHi": "#ffffff",
+      "wall": "#7a4a32",
+      "wall2": "#5f6f8a",
+      "ink": "#3a3040",
+      "window": "#bfe0f5",
+      "door": "#b0482c",
+      "window2": "#bfe0f5",
+      "fence": "#8a6a4a",
+      "lampOff": "#5a6070",
+      "lampGlow": 0,
+      "winGlow": 0
+     }
+    ]
+   ]
+  },
+  "story": {
+   "sky": "sunset",
+   "title": "Останній промінь",
+   "heroName": "Ива",
+   "heroBag": true,
+   "stages": [
+    {
+     "name": "Стадія I · Медова Гірка",
+     "len": 25,
+     "boss": [
+      "magpie",
+      "waxgiant",
+      "vane"
+     ],
+     "scene": "town",
+     "early": [
+      "inkcat",
+      "snowimp",
+      "pigeon",
+      "sootmouse",
+      "scarfsnake",
+      "icicle",
+      "matryoshka",
+      "samovar"
+     ],
+     "normals": [
+      "inkcat",
+      "snowimp",
+      "pigeon",
+      "sootmouse",
+      "scarfsnake",
+      "icicle",
+      "laundress",
+      "golem",
+      "mailbox",
+      "matryoshka",
+      "samovar",
+      "cuckoo"
+     ],
+     "elites": [
+      "owl",
+      "snowbrute",
+      "iceknight"
+     ],
+     "roman": "I"
+    },
+    {
+     "name": "Стадія II · Околиця",
+     "len": 25,
+     "boss": [
+      "clockmaker",
+      "wolf",
+      "troll"
+     ],
+     "scene": "outskirts",
+     "early": [
+      "shadowthief",
+      "bat",
+      "wisp",
+      "frostfox",
+      "laundress",
+      "mist",
+      "ghoul"
+     ],
+     "normals": [
+      "shadowthief",
+      "bat",
+      "stump",
+      "frostfox",
+      "wisp",
+      "raven",
+      "laundress",
+      "golem",
+      "mist",
+      "ghoul",
+      "firecracker"
+     ],
+     "elites": [
+      "icebear",
+      "lampghost",
+      "owl",
+      "blizzard",
+      "watchman"
+     ],
+     "roman": "II"
+    },
+    {
+     "name": "Фінал · Останній дім",
+     "len": 1,
+     "boss": [
+      "shadowking",
+      "hollowpost",
+      "skywhale"
+     ],
+     "scene": "outskirts",
+     "early": [],
+     "normals": [],
+     "elites": [],
+     "roman": "III"
+    }
+   ],
+   "cinema": [
+    {
+     "bg": "bg_stage1_town_day",
+     "from": [
+      0.5,
+      0.2,
+      1.05
+     ],
+     "to": [
+      0.5,
+      0.54,
+      1.05
+     ],
+     "lines": [
+      "Медовая Горка стоит на самом краю зимы.",
+      "Каждое утро отсюда расходятся письма."
+     ]
+    },
+    {
+     "bg": "bg_stage1_town_sunset",
+     "from": [
+      0.3,
+      0.5,
+      1.25
+     ],
+     "to": [
+      0.7,
+      0.5,
+      1.25
+     ],
+     "lines": [
+      "Разносить их нужно до заката.",
+      "С последним лучом из щелей выползают Тени."
+     ]
+    },
+    {
+     "bg": "bg_stage2_outskirts_night",
+     "from": [
+      0.5,
+      0.5,
+      1
+     ],
+     "to": [
+      0.5,
+      0.6,
+      1.14
+     ],
+     "shadows": [
+      "shadowthief",
+      "shadowking",
+      "shadowthief"
+     ],
+     "lines": [
+      "Тени съедают недоставленные слова.",
+      "«Жду». «Прости». «Возвращайся»."
+     ]
+    },
+    {
+     "bg": "splash",
+     "from": [
+      0.35,
+      0.2,
+      1.3
+     ],
+     "to": [
+      0.45,
+      0.43,
+      1.3
+     ],
+     "lines": [
+      "Сегодня почтальоны уже разошлись по домам.",
+      "А одно письмо осталось."
+     ]
+    },
+    {
+     "bg": "bg_stage2_outskirts_start",
+     "from": [
+      0.5,
+      0.78,
+      1.1
+     ],
+     "to": [
+      0.5,
+      0.5,
+      1.1
+     ],
+     "lines": [
+      "Адрес на нём за самой окраиной.",
+      "Путь долгий, а солнце уже клонится к крышам."
+     ]
+    },
+    {
+     "bg": "bg_title",
+     "from": [
+      0.5,
+      0.56,
+      1
+     ],
+     "to": [
+      0.56,
+      0.5,
+      1.12
+     ],
+     "lines": [
+      "Кто понесёт последнее письмо?"
+     ]
+    }
+   ],
+   "stageIntro": [
+    "Сонце ще високо. Час вирушати.",
+    "Сонце торкнулося дахів. Далі починається околиця.",
+    "Стемніло. До дверей адресата один крок."
+   ],
+   "winRibbon": "Доставлено!",
+   "winTitle": "Лист дійшов",
+   "loseTitle": "Сонце сіло…"
+  },
+  "sky": [
+   [
+    0,
+    {
+     "skyTop": "#6fa8dc",
+     "skyMid": "#bcd8ec",
+     "skyBot": "#f5e6c4",
+     "sun": "#fff3c4",
+     "sunX": 120,
+     "sunY": 150,
+     "sunR": 36,
+     "stars": 0,
+     "moonHole": false,
+     "hills": "#a8b8cc",
+     "spires": "#8a9ab4",
+     "fog": "#fff2d8",
+     "snowTop": "#fdf6ee",
+     "snowBot": "#c8cfe2",
+     "snowEdge": "#ffffff",
+     "roof": "#ffffff",
+     "roofHi": "#ffffff",
+     "wall": "#6a4a3a",
+     "wall2": "#5a5a72",
+     "ink": "#3a3040",
+     "window": "#e8d8b0",
+     "door": "#a8553a",
+     "window2": "#c8d0e0",
+     "fence": "#7a5a48",
+     "lampOff": "#6a6a7a",
+     "lampGlow": 0,
+     "winGlow": 0
+    }
+   ],
+   [
+    0.48,
+    {
+     "skyTop": "#4a3f7a",
+     "skyMid": "#e8836a",
+     "skyBot": "#f7c98a",
+     "sun": "#ffe08a",
+     "sunX": 120,
+     "sunY": 420,
+     "sunR": 44,
+     "stars": 0,
+     "moonHole": false,
+     "hills": "#8a5c78",
+     "spires": "#6e4766",
+     "fog": "#ffd0a0",
+     "snowTop": "#f4cdb8",
+     "snowBot": "#b98aa6",
+     "snowEdge": "#ffe6d6",
+     "roof": "#f6d6c6",
+     "roofHi": "#fff0e6",
+     "wall": "#5a3a48",
+     "wall2": "#4e3444",
+     "ink": "#2a1a2a",
+     "window": "#c88a6a",
+     "door": "#a8553a",
+     "window2": "#8a6a7a",
+     "fence": "#5a3a48",
+     "lampOff": "#6a4a5a",
+     "lampGlow": 0.35,
+     "winGlow": 0.15
+    }
+   ],
+   [
+    0.5,
+    {
+     "skyTop": "#3a3266",
+     "skyMid": "#d0625a",
+     "skyBot": "#f4a35a",
+     "sun": "#ff9a4a",
+     "sunX": 120,
+     "sunY": 500,
+     "sunR": 46,
+     "stars": 0.15,
+     "moonHole": false,
+     "hills": "#6a4466",
+     "spires": "#553858",
+     "fog": "#ffb080",
+     "snowTop": "#e8b0a8",
+     "snowBot": "#8a6a90",
+     "snowEdge": "#ffd6c8",
+     "roof": "#e8c0c0",
+     "roofHi": "#f8d8d0",
+     "wall": "#48303e",
+     "wall2": "#3e2a3a",
+     "ink": "#241626",
+     "window": "#ffb860",
+     "door": "#b0502e",
+     "window2": "#5a3a4a",
+     "fence": "#48303e",
+     "lampOff": "#4a3a50",
+     "lampGlow": 0.7,
+     "winGlow": 0.6
+    }
+   ],
+   [
+    0.98,
+    {
+     "skyTop": "#141634",
+     "skyMid": "#3a2f5e",
+     "skyBot": "#a24f6a",
+     "sun": "#ff7a4a",
+     "sunX": 120,
+     "sunY": 560,
+     "sunR": 40,
+     "stars": 0.9,
+     "moonHole": false,
+     "hills": "#2e2848",
+     "spires": "#241f3c",
+     "fog": "#7a6aa0",
+     "snowTop": "#6a6a9a",
+     "snowBot": "#33365a",
+     "snowEdge": "#9a9ac8",
+     "roof": "#a8a8cc",
+     "roofHi": "#c8c8e6",
+     "wall": "#262236",
+     "wall2": "#201c30",
+     "ink": "#141226",
+     "window": "#ff9d42",
+     "door": "#c0602a",
+     "window2": "#1b1a24",
+     "fence": "#33304a",
+     "lampOff": "#2a2a44",
+     "lampGlow": 1,
+     "winGlow": 1
+    }
+   ],
+   [
+    1,
+    {
+     "skyTop": "#0e1028",
+     "skyMid": "#22224a",
+     "skyBot": "#3a3060",
+     "sun": "#ff7a4a",
+     "sunX": 120,
+     "sunY": 620,
+     "sunR": 0,
+     "stars": 1,
+     "moonHole": false,
+     "hills": "#1e1c38",
+     "spires": "#18162e",
+     "fog": "#5a5a90",
+     "snowTop": "#4a5080",
+     "snowBot": "#252a48",
+     "snowEdge": "#7a80b0",
+     "roof": "#8a90b8",
+     "roofHi": "#a8acd0",
+     "wall": "#1c1a2c",
+     "wall2": "#181628",
+     "ink": "#100e20",
+     "window": "#ff9d42",
+     "door": "#c0602a",
+     "window2": "#ff9d42",
+     "fence": "#2a2840",
+     "lampOff": "#222238",
+     "lampGlow": 1,
+     "winGlow": 1
+    }
+   ]
+  ]
+ },
+ "lore": {
+  "ATT": {
+   "inkcat": {
+    "like": "baker",
+    "fear": "shepherd",
+    "hate": "courier"
+   },
+   "snowimp": {
+    "like": "stoker",
+    "fear": "guard"
+   },
+   "pigeon": {
+    "like": "courier",
+    "fear": "shepherd",
+    "hate": "stoker"
+   },
+   "sootmouse": {
+    "like": "stoker",
+    "fear": "baker"
+   },
+   "scarfsnake": {
+    "fear": "grinder",
+    "hate": "guard"
+   },
+   "icicle": {
+    "fear": "lamp",
+    "hate": "stoker"
+   },
+   "laundress": {
+    "like": "guard"
+   },
+   "golem": {
+    "like": "lamp",
+    "hate": "stoker"
+   },
+   "mailbox": {
+    "like": "baker",
+    "hate": "courier"
+   },
+   "matryoshka": {
+    "like": "baker",
+    "fear": "grinder"
+   },
+   "samovar": {
+    "like": "baker",
+    "hate": "stoker"
+   },
+   "cuckoo": {
+    "like": "courier",
+    "hate": "grinder"
+   },
+   "shadowthief": {
+    "fear": "herbalist",
+    "hate": "lamp"
+   },
+   "bat": {
+    "fear": "lamp"
+   },
+   "stump": {
+    "like": "shepherd",
+    "hate": "grinder"
+   },
+   "frostfox": {
+    "like": "courier",
+    "hate": "shepherd"
+   },
+   "wisp": {
+    "like": "lamp",
+    "fear": "herbalist"
+   },
+   "raven": {
+    "like": "grinder",
+    "hate": "herbalist"
+   },
+   "mist": {
+    "like": "herbalist",
+    "fear": "lamp"
+   },
+   "ghoul": {
+    "fear": "stoker",
+    "hate": "herbalist"
+   },
+   "firecracker": {
+    "like": "stoker",
+    "hate": "guard"
+   },
+   "snowbrute": {
+    "fear": "stoker",
+    "hate": "baker"
+   },
+   "icebear": {
+    "like": "shepherd",
+    "fear": "stoker"
+   },
+   "lampghost": {
+    "hate": "lamp"
+   },
+   "owl": {
+    "like": "guard",
+    "hate": "stoker"
+   },
+   "iceknight": {
+    "like": "guard",
+    "fear": "grinder"
+   },
+   "blizzard": {
+    "like": "guard",
+    "hate": "lamp"
+   },
+   "watchman": {
+    "like": "guard",
+    "hate": "shepherd"
+   },
+   "magpie": {
+    "like": "grinder",
+    "fear": "shepherd",
+    "hate": "courier"
+   },
+   "waxgiant": {
+    "like": "guard",
+    "fear": "stoker"
+   },
+   "vane": {
+    "like": "baker",
+    "hate": "stoker"
+   },
+   "clockmaker": {
+    "hate": "grinder"
+   },
+   "wolf": {
+    "like": "shepherd"
+   },
+   "troll": {
+    "like": "baker",
+    "hate": "guard"
+   },
+   "shadowking": {
+    "hate": "lamp"
+   },
+   "hollowpost": {
+    "like": "courier"
+   },
+   "skywhale": {
+    "like": "shepherd"
+   }
+  },
+  "SAY": {
+   "inkcat": {
+    "start": [
+     "Мрр… чьё это письмо? Теперь моё.",
+     "Кляксу на память?"
+    ],
+    "hurt": "Ш-ш-ш! Я весь в чернилах из-за тебя!",
+    "death": "Мяу… я только посмотреть хотел…",
+    "like": "Груня? А сливки сегодня будут?",
+    "fear": "Убери пса! Я просто мимо шёл!",
+    "hate": "Опять ты, бегун! В прошлый раз ты поймал меня за хвост!",
+    "peace": "Мурр. Ладно, иди. Только про сливки не забудь.",
+    "plea": "Не топи меня в чернильнице! Я отдам всё, что стащил!"
+   },
+   "snowimp": {
+    "start": [
+     "Лови снежок!",
+     "Эй, почтальон, пригнись!"
+    ],
+    "hurt": "Нечестно! Я только разогревался!",
+    "death": "Ой… растаял…",
+    "like": "Фома! Айда кидаться снежками с крыши ратуши!",
+    "fear": "Марфа?! Я ничего не кидал, честно!",
+    "peace": "Ладно, Фома, свои своих не обстреливают. Держи на удачу."
+   },
+   "pigeon": {
+    "start": [
+     "Гуль-гуль! А я знаю, что в твоём письме!",
+     "Скоро все узнают, куда ты идёшь!"
+    ],
+    "hurt": "Перья! Мои перья!",
+    "death": "Расскажите всем… каким я был красивым…",
+    "like": "Тиша! Свежие новости, слушай скорей!",
+    "fear": "Только не собака! Она про меня всё знает!",
+    "hate": "Трубочист! В прошлый раз ты испачкал мне сажей все перья!",
+    "peace": "Держи новость: за мостом собираются Тени. Будь осторожен!",
+    "plea": "Отпусти! Я расскажу тебе секрет!"
+   },
+   "sootmouse": {
+    "start": [
+     "Пи! Спички мои!",
+     "Чур, всё, что блестит, — моё!"
+    ],
+    "hurt": "Пи-и-и! Больно!",
+    "death": "Пи… в трубу… домой…",
+    "like": "Фома! Ты опять оставил мне крошки? Спасибо!",
+    "fear": "Груня с метлой! Спасайся кто может!",
+    "peace": "Фома свой. Держи, я нашла в трубе монетку.",
+    "plea": "Пощади! У меня в трубе мышата!"
+   },
+   "scarfsnake": {
+    "start": [
+     "Сейчас обниму покрепче…",
+     "Тепло ли тебе, {f|путница|путник}?"
+    ],
+    "hurt": "Ты мне петлю распустил{f|а|}!",
+    "death": "Распускаюсь… по ниточке…",
+    "fear": "Ножницы! Убери ножницы, точильщик!",
+    "hate": "Марфа! Это ты повесила меня сушиться на верёвку!",
+    "plea": "Не распускай меня! Я ещё пригожусь, я тёплый!"
+   },
+   "icicle": {
+    "start": [
+     "Ходят тут всякие под моей дверью!",
+     "Сейчас как капну за шиворот!"
+    ],
+    "hurt": "Ой, трещина! Это всё сквозняк!",
+    "death": "Таю… а ведь весна ещё не скоро…",
+    "fear": "Убери лампу, фонарщица! Я от неё таю!",
+    "hate": "Трубочист! Это ты сбиваешь нас с крыш своей щёткой!"
+   },
+   "laundress": {
+    "start": [
+     "Чужие сны полощу, и твой прополощу.",
+     "Не мешай стирке, пятно ты этакое."
+    ],
+    "hurt": "Ты мне всё бельё в тумане перепутал{f|а|}!",
+    "death": "Развеюсь… высохну…",
+    "like": "Марфа, ты одна со мной здороваешься. Проходи.",
+    "peace": "Ступай, Марфа. Я постираю тебе сон получше."
+   },
+   "golem": {
+    "start": [
+     "Гу-у-у… свет… отдай…",
+     "Мне холодно. Твой огонь подойдёт."
+    ],
+    "hurt": "Плавлюсь…",
+    "death": "Снова… огарок…",
+    "like": "Ива… Я слеплен из твоих свечей. Помнишь?",
+    "hate": "Трубочист… от тебя… я таю!",
+    "peace": "Ива… возьми мой фитиль. Мне он больше не нужен."
+   },
+   "mailbox": {
+    "start": [
+     "Не отдам письмо! Ничего не отдам!",
+     "Хрум! Это было твоё письмо?"
+    ],
+    "hurt": "Крышку прищемил{f|а|}!",
+    "death": "Ладно… забирай… всё забирай…",
+    "like": "Груня! Ты клала в меня пряники для детей. Вкусно было.",
+    "hate": "Скороход! Каждый день ты набиваешь меня письмами доверху!",
+    "peace": "Держи, Груня. Тут у меня кое-что завалялось.",
+    "plea": "Не ломай меня! Я отдам все письма!"
+   },
+   "matryoshka": {
+    "start": [
+     "Нас тут много, а ты {f|одна|один}!",
+     "Открой меня, если сможешь!"
+    ],
+    "hurt": "Ой, краска треснула!",
+    "death": "Самая маленькая… всегда… последняя…",
+    "like": "Груня! Мы же с одной ярмарки! Помнишь?",
+    "fear": "Не точи на нас нож! Мы же деревянные!",
+    "peace": "Ярмарочным друг друга бить не к лицу. Ступай.",
+    "plea": "Я самая маленькая! Не раскрывай меня больше!"
+   },
+   "samovar": {
+    "start": [
+     "Бу-буль! Сейчас закиплю!",
+     "Чаю? Горячего? Очень горячего!"
+    ],
+    "hurt": "Пш-ш-ш! Ты меня злишь!",
+    "death": "Остываю… а чай так и не допили…",
+    "like": "Хозяйка! Я просто погулять вышел, честное слово!",
+    "hate": "Трубочист! В прошлый раз ты насыпал мне сажи в чай!",
+    "peace": "Хорошо, хозяйка, иду домой. Налить тебе на дорожку?"
+   },
+   "cuckoo": {
+    "start": [
+     "Ку-ку! Время вышло!",
+     "Считаю: раз, два… ку-ку!"
+    ],
+    "hurt": "Пружина! Ты сбил{f|а|} мне ход!",
+    "death": "Ку… ку… стоят часы…",
+    "like": "Тиша, ты всегда вовремя. Тебя я не трону.",
+    "hate": "Точильщик! Это ты наточил стрелки Часовщику!",
+    "peace": "Ступай, Тиша. И смотри не опаздывай!"
+   },
+   "shadowthief": {
+    "start": [
+     "Свет — в мешок, тебя — в темноту.",
+     "Тише, тише… я только посвечу."
+    ],
+    "hurt": "Мешок прохудился!",
+    "death": "Свет… разбегается…",
+    "fear": "Полынь! От тебя пахнет полынью, знахарка!",
+    "hate": "Фонарщица! Твой свет мне никак не украсть!",
+    "plea": "Отпусти! Я верну украденный свет!"
+   },
+   "bat": {
+    "start": [
+     "Солнце село — мой час!",
+     "Пи-и-и! В темноте я хозяйка!"
+    ],
+    "hurt": "Крыло!",
+    "death": "Слишком… светло…",
+    "fear": "Не свети на меня! Глаза режет!"
+   },
+   "stump": {
+    "start": [
+     "Кто топчет мои корни?",
+     "Днём я пень. А сейчас — нет."
+    ],
+    "hurt": "Кора трещит!",
+    "death": "Снова… просто пень…",
+    "like": "Луша, ты всегда отдыхаешь на мне. Садись.",
+    "hate": "Точильщик! Это ты точишь топоры дровосекам!",
+    "peace": "Отдохни, Луша. На вот, грибок на дорогу.",
+    "plea": "Не руби меня! Я старый, я тебе ещё пригожусь!"
+   },
+   "frostfox": {
+    "start": [
+     "Следы замету, дорогу спутаю.",
+     "Куда спешишь, почтальон?"
+    ],
+    "hurt": "Хвост! Не трогай мой хвост!",
+    "death": "Хитрость… не помогла…",
+    "like": "Скороход! Ты один бегаешь быстрее меня.",
+    "hate": "Пастушка! Опять ты со своим псом. Козлят я всё равно найду!",
+    "peace": "Ладно, бегун. Наперегонки в другой раз.",
+    "plea": "Отпусти! Я покажу короткую тропинку!"
+   },
+   "wisp": {
+    "start": [
+     "Иди ко мне… сюда, с дороги…",
+     "Я тоже огонь. Только холодный."
+    ],
+    "hurt": "Гасну…",
+    "death": "Хоть бы… кто-нибудь… зажёг…",
+    "like": "Фонарщица… зажги меня по-настоящему…",
+    "fear": "Не дыши на меня травами!",
+    "peace": "Спасибо за искру, Ива. Возьми и мою."
+   },
+   "raven": {
+    "start": [
+     "До темноты осталось… кар… совсем немного.",
+     "Всё учтено. Даже ты."
+    ],
+    "hurt": "Кар! Ошибка в расчётах!",
+    "death": "Итог… подведён…",
+    "like": "Точильщик! Ты тоже всё считаешь. Уважаю.",
+    "hate": "Знахарка! Ты раздаёшь свои годы без счёта. Непорядок!",
+    "peace": "По моим расчётам, драться нам невыгодно. Проходи.",
+    "plea": "Не губи! Я спишу тебе долг!"
+   },
+   "mist": {
+    "start": [
+     "Кутайся в туман, {f|путница|путник}…",
+     "Ударь, если найдёшь меня."
+    ],
+    "hurt": "Туман редеет…",
+    "death": "Рассеиваюсь…",
+    "like": "Ульяна… мы ведь вместе собирали травы на рассвете.",
+    "fear": "Свет! Он разгоняет мой туман!",
+    "peace": "Иди, Ульяна. Я покажу, где растёт зверобой."
+   },
+   "ghoul": {
+    "start": [
+     "Тёпл{f|ая|ый}… как{f|ая|ой} ты тёпл{f|ая|ый}…",
+     "Дай погреться. Совсем чуть-чуть."
+    ],
+    "hurt": "Холодно! Мне холодно!",
+    "death": "Наконец… тепло…",
+    "fear": "Огонь! Убери огонь!",
+    "hate": "Знахарка! Ты лечишь всех, кого я пью!"
+   },
+   "firecracker": {
+    "start": [
+     "Фитиль шипит! Ш-ш-ш!",
+     "Праздник! Сейчас будет праздник!"
+    ],
+    "hurt": "Не туши! Я ещё не взорвалась!",
+    "death": "Пш-ш… отсырела…",
+    "like": "Фома! Ты тоже любишь огоньки!",
+    "hate": "Сторожиха! Ты не пустила меня на мост в праздник!",
+    "peace": "Ладно, Фома, рвану где-нибудь подальше. Для красоты."
+   },
+   "snowbrute": {
+    "start": [
+     "Я большой. Я сильный. Я обиженный.",
+     "Меня слепили — и бросили!"
+    ],
+    "hurt": "Нос! Где мой нос?!",
+    "death": "Хотел… чтобы со мной… играли…",
+    "fear": "Не подходи с огнём! Я таю!",
+    "hate": "Пряничница! Это ты прогнала детей, которые меня лепили!",
+    "plea": "Не разбивай меня. Я просто хотел, чтобы меня доделали."
+   },
+   "icebear": {
+    "start": [
+     "Р-р-р! Кто разбудил?",
+     "Спать хочу. Значит, злюсь."
+    ],
+    "hurt": "Р-р-р!",
+    "death": "Наконец… посплю…",
+    "like": "Пастушка… спой ту песню… колыбельную…",
+    "fear": "Огонь! Не надо огня, я уйду!",
+    "peace": "Р-р… хорошо поёшь… Пойду досыпать…"
+   },
+   "lampghost": {
+    "start": [
+     "Меня так и не зажгли…",
+     "Темно. Всегда темно."
+    ],
+    "hurt": "Стекло… трескается…",
+    "death": "Так и не… загорелся…",
+    "hate": "Ива. Ты обещала вернуться. И не вернулась."
+   },
+   "owl": {
+    "start": [
+     "Угу. Дальше нельзя.",
+     "Темноту стерегу. Тебя не пущу."
+    ],
+    "hurt": "Угу-у! Перо!",
+    "death": "Смена… окончена…",
+    "like": "Марфа! Коллега! У тебя тоже ночная смена?",
+    "hate": "Трубочист! Опять топчешься по крышам по ночам!",
+    "peace": "Проходи, Марфа. Сторож сторожа не задержит."
+   },
+   "iceknight": {
+    "start": [
+     "Стоять! Именем зимы!",
+     "Мои латы крепче твоих карт."
+    ],
+    "hurt": "Лёд трещит!",
+    "death": "Латы… осыпались…",
+    "like": "Марфа! Мы стояли в одном карауле на мосту!",
+    "fear": "Точильщик… ты знаешь, где трескаются латы…",
+    "peace": "Ради старой службы — проходи, Марфа."
+   },
+   "blizzard": {
+    "start": [
+     "Заметёт тебя, заметёт!",
+     "У-у-у… закружу!"
+    ],
+    "hurt": "Ветер стих!",
+    "death": "Снег… осел…",
+    "like": "Марфа! Ты же любишь мороз, как и я!",
+    "hate": "Фонарщица! От твоей лампы мой снег тает!",
+    "peace": "Иди, Марфа. Я заметаю только чужих."
+   },
+   "watchman": {
+    "start": [
+     "Тук-тук! Кто идёт?",
+     "Спите, жители! Я не сплю!"
+    ],
+    "hurt": "Колотушку сломал{f|а|}!",
+    "death": "Тук… тук…",
+    "like": "Марфа! Сторож сторожу не враг.",
+    "hate": "Пастушка! Твой пёс всю ночь лает на мою колотушку!",
+    "peace": "Ступай, Марфа. Я постучу и за тебя."
+   },
+   "magpie": {
+    "start": [
+     "Что блестит — то моё!",
+     "Письмо? Отличное письмо! Отдай!"
+    ],
+    "hurt": "Ты помял{f|а|} мне хвост!",
+    "death": "Мои блестяшки…",
+    "like": "Точильщик! Какие у тебя блестящие ножи…",
+    "fear": "Пёс! Отзови пса!",
+    "hate": "А-а, это опять ты, растяпа! Утром ты так смешно бежал за сумкой!",
+    "plea": "Пощади! Отдам самую красивую блестяшку!"
+   },
+   "waxgiant": {
+    "start": [
+     "Запечатаю. Навсегда.",
+     "Тысяча писем — и ни одно не дошло."
+    ],
+    "hurt": "Печать… треснула…",
+    "death": "Распечатан…",
+    "like": "Сторожиха. Ты тоже всё запираешь. Мы похожи.",
+    "fear": "Не грей меня! Я растекусь!"
+   },
+   "vane": {
+    "start": [
+     "Ку-ка-ре-ку! Ветер мой!",
+     "Сдую тебя с дороги!"
+    ],
+    "hurt": "Меня развернуло!",
+    "death": "Ветер… переменился…",
+    "like": "Груня! Ты всегда кормишь меня крошками. Проходи.",
+    "hate": "Фома! Весь город знает, что ты влюблён в пряничницу! Ку-ка-ре-ку!"
+   },
+   "clockmaker": {
+    "start": [
+     "Тик-так. Ночь придёт раньше.",
+     "Я подвёл часы. Ты опоздал{f|а|}."
+    ],
+    "hurt": "Шестерёнка! Ты сбил{f|а|} мне ход!",
+    "death": "Время… остановилось…",
+    "hate": "Савва! Твои острые стрелки отрезали от дня целый час. Спасибо тебе."
+   },
+   "wolf": {
+    "start": [
+     "У-у-у! Звёзды в моей шерсти горят.",
+     "Ты пахнешь домом. Я этого не люблю."
+    ],
+    "hurt": "Р-р-р!",
+    "death": "Звёзды… гаснут…",
+    "like": "Этот пёс… Я его помню. Мы спали в одной корзине."
+   },
+   "troll": {
+    "start": [
+     "Плати за мост! Письмом!",
+     "Мост мой. А ты на нём лишн{f|яя|ий}."
+    ],
+    "hurt": "Камень треснул!",
+    "death": "Мост… ничей…",
+    "like": "Пряничница! Плату беру пряниками. Проходи.",
+    "hate": "Марфа! Сто лет спорим, чей мост. Сегодня решим!",
+    "peace": "Ладно, пряничница. Пряники — плата честная."
+   },
+   "shadowking": {
+    "start": [
+     "Всё, что не успело до заката, — моё.",
+     "Твоё письмо опоздало. Как и ты."
+    ],
+    "hurt": "Свет? Откуда здесь свет?!",
+    "death": "Утро… всё-таки… придёт…",
+    "hate": "Фонарщица. Сорок фонарей, а в моём королевстве ни одного."
+   },
+   "hollowpost": {
+    "start": [
+     "Я тоже нёс письмо. И тоже не успел.",
+     "Пустая сумка… пустое пальто…"
+    ],
+    "hurt": "Пальто… рвётся…",
+    "death": "Доставлено… наконец…",
+    "like": "Мальчик… как ты на меня похож…"
+   },
+   "skywhale": {
+    "start": [
+     "Я проглочу последнюю звезду.",
+     "Ночь пришла сама. Без злобы."
+    ],
+    "hurt": "Звёзды высыпаются…",
+    "death": "Утро… тёплое…",
+    "like": "Пастушка, я пел тебе по ночам. Помнишь мою песню?"
+   },
+   "dk_lamp": {
+    "start": [
+     "Без света нет и страха. Давай погасим всё."
+    ],
+    "hurt": "Не надо… света…",
+    "death": "Тепло… как тепло…"
+   },
+   "dk_courier": {
+    "start": [
+     "Куда бежать, если адреса нет?"
+    ],
+    "hurt": "Не догонишь!",
+    "death": "Я… вспомнил адрес…"
+   },
+   "dk_guard": {
+    "start": [
+     "Мост закрыт."
+    ],
+    "hurt": "Мост… шатается…",
+    "death": "Проходи… проходи же…"
+   },
+   "dk_stoker": {
+    "start": [
+     "Пепел к пеплу."
+    ],
+    "hurt": "Жжётся? А мне — нет.",
+    "death": "Уголёк… ещё тёплый…"
+   },
+   "dk_baker": {
+    "start": [
+     "Хлеб зачерствел. Как и я."
+    ],
+    "hurt": "Корка трескается…",
+    "death": "Пахнет… свежим хлебом…"
+   },
+   "dk_grinder": {
+    "start": [
+     "Острое лучше доброго."
+    ],
+    "hurt": "Зазубрина…",
+    "death": "Затупился… наконец…"
+   },
+   "dk_shepherd": {
+    "start": [
+     "Взять, Дружок."
+    ],
+    "hurt": "Дружок, ко мне!",
+    "death": "Дружок… домой…"
+   },
+   "dk_herbalist": {
+    "start": [
+     "Горько? Это лекарство."
+    ],
+    "hurt": "Ещё… глоток…",
+    "death": "Сладко… как давно не было…"
+   }
+  },
+  "TAUNTED": [
+   "Ах так?!",
+   "Ну всё, держись!",
+   "Ты об этом пожалеешь!"
+  ],
+  "GRUDGE": "Это опять ты! Я всё помню!",
+  "CHALLENGE": "Стой! Дальше не пройдёшь!",
+  "SECRET": {
+   "lamp": {
+    "enemy": "lampghost",
+    "text": "Зажечь его",
+    "hint": "Без боя, талисман",
+    "res": "Ива поднесла лампу, и в старом фонаре вспыхнул огонь. «Наконец-то», — прошептал Призрак и стал просто фонарём. Под ним лежал талисман.",
+    "effect": {
+     "peace": true
+    }
+   },
+   "courier": {
+    "enemy": "hollowpost",
+    "text": "Назвать прадеда по имени",
+    "hint": "Бой, но у него на треть меньше HP",
+    "res": "Почтальон вздрогнул: «Ты знаешь моё имя?..» Пальто обвисло, и треть тени осыпалась в снег.",
+    "effect": {
+     "hp": 0.6666666666666666
+    }
+   },
+   "guard": {
+    "enemy": "troll",
+    "text": "Предложить делить мост",
+    "hint": "Без боя, трофей босса",
+    "res": "Тролль почесал затылок: «Днём твой, ночью мой?» Марфа кивнула. Впервые за сто лет мост перестал скрипеть.",
+    "effect": {
+     "peace": true
+    }
+   },
+   "stoker": {
+    "enemy": "vane",
+    "text": "Признаться про Груню",
+    "hint": "Петух пропустит 2 хода",
+    "res": "Фома сказал правду на всю ратушу. Петух так растерялся, что развернулся против ветра.",
+    "effect": {
+     "stun": 2
+    }
+   },
+   "baker": {
+    "enemy": "snowbrute",
+    "text": "Извиниться и подарить морковку",
+    "hint": "Без боя, талисман",
+    "res": "Груня приладила Громиле морковку вместо носа. Снеговик шмыгнул и впервые за зиму улыбнулся.",
+    "effect": {
+     "peace": true
+    }
+   },
+   "grinder": {
+    "enemy": "clockmaker",
+    "text": "Затупить стрелки",
+    "hint": "Бой, но Часовщик Ослаблен и теряет четверть HP",
+    "res": "Савва провёл бруском по стрелкам в обратную сторону. Часы охнули, и день вернул себе целый час.",
+    "effect": {
+     "hp": 0.75,
+     "weak": 3
+    }
+   },
+   "shepherd": {
+    "enemy": "wolf",
+    "text": "Дать Дружку позвать брата",
+    "hint": "Без боя, трофей босса и полное HP",
+    "res": "Дружок тихо заскулил, и Волк ответил ему. Из леса выбежал козлёнок, целый и здоровый, а братья пошли провожать вас до опушки.",
+    "effect": {
+     "peace": true,
+     "heal": 999
+    }
+   },
+   "herbalist": {
+    "enemy": "raven",
+    "text": "Выкупить свои годы",
+    "hint": "−30 монет, +6 к макс. HP, без боя",
+    "res": "Ворон пересчитал монеты и вычеркнул строчку из своей книги. Ульяне сразу стало легче дышать.",
+    "effect": {
+     "peace": true,
+     "gold": -30,
+     "maxHp": 6
+    }
+   }
+  },
+  "MEET": {
+   "lamp": {
+    "stage": 0,
+    "title": "Фонарь у мельницы",
+    "text": "Ива стоит на лестнице у старой мельницы. Лампа почти погасла. — Масло кончилось, а впереди ещё сорок фонарей. Поделишься?",
+    "help": {
+     "text": "Отдать монеты на масло",
+     "hint": "−15 монет, Ива станет другом",
+     "fx": {
+      "gold": -15,
+      "rel": 2
+     },
+     "res": "Ива зажгла фонарь и улыбнулась: «Я тебя не забуду». Свет проводил тебя до самой площади."
+    },
+    "pass": {
+     "res": "Ты {f|сделала|сделал} вид, что не {f|услышала|услышал}. За спиной погас ещё один фонарь."
+    },
+    "hurt": {
+     "text": "Забрать её лампу себе",
+     "hint": "Талисман, но Иву заберёт Тень",
+     "fx": {
+      "relic": 1,
+      "rel": -3
+     },
+     "res": "Ты {f|забрала|забрал} лампу и {f|ушла|ушёл}. Ива осталась в темноте, и тень за её спиной стала гуще."
+    },
+    "ties": {
+     "courier": {
+      "text": "Подержать лестницу, как в детстве",
+      "hint": "+8 HP, Ива станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Ты держал лестницу, а Ива зажигала фонари, совсем как в детстве. Потом она отдала тебе свой тёплый шарф."
+     },
+     "stoker": {
+      "text": "Почистить ей фонарь",
+      "hint": "−4 HP, Ива станет другом",
+      "fx": {
+       "hp": 4,
+       "rel": 3
+      },
+      "res": "Ты вычистил стекло до блеска и обжёг пальцы. Впервые за много лет вы с Ивой не поругались."
+     },
+     "herbalist": {
+      "text": "Рассказать ей про маму",
+      "hint": "Ива станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ты рассказала Иве, какой была её мама. Ива долго молчала, а потом крепко тебя обняла."
+     },
+     "guard": {
+      "text": "Дать масла из будки и подождать",
+      "hint": "+8 HP, Ива станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Ты отдала Иве запасное масло из своей будки и проворчала, что опять ждёшь, как на мосту. Ива рассмеялась, зажгла фонарь быстрее обычного и налила тебе чаю из термоса."
+     },
+     "baker": {
+      "text": "Отдать масло и пряник-фонарик",
+      "hint": "Ива станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ты отдала Иве бутылочку масла из пекарни, а в придачу пряник-фонарик. Ива откусила, зажгла фонарь и рассмеялась: «С тобой и в темноте не страшно»."
+     },
+     "grinder": {
+      "text": "Купить масла и признаться про стекло",
+      "hint": "−10 монет, Ива станет другом",
+      "fx": {
+       "gold": -10,
+       "rel": 3
+      },
+      "res": "Ты купил масла и рассказал, как в детстве разбил стекло её маминой лампы. Ива долго молчала, а потом сказала: «Мама говорила, что стекло — не беда. Беда — темнота». И вы вместе зажгли фонарь."
+     },
+     "shepherd": {
+      "text": "Помигать ей своим фонариком",
+      "hint": "+8 HP, Ива станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Ты помигала в темноте фонариком, который подарила тебе Ива, и отлила ей из него масла. «Мой подарок меня же и выручил!» — рассмеялась Ива и поделилась с тобой горячим чаем."
+     }
+    }
+   },
+   "courier": {
+    "stage": 0,
+    "title": "Пустая сумка",
+    "text": "На крыльце почты сидит Тиша с пустой сумкой. — Сорока утащила утренние письма… Если узнают, меня выгонят с почты.",
+    "help": {
+     "text": "Помочь искать",
+     "hint": "−6 HP, Тиша станет другом",
+     "fx": {
+      "hp": 6,
+      "rel": 2
+     },
+     "res": "Вы перерыли все сугробы на площади и отыскали письма. Тиша просиял: «Я твой должник!»"
+    },
+    "pass": {
+     "res": "Ты {f|прошла|прошёл} мимо. Тиша уткнулся лицом в пустую сумку."
+    },
+    "hurt": {
+     "text": "Пригрозить рассказать на почте",
+     "hint": "+35 монет, но Тишу заберёт Тень",
+     "fx": {
+      "gold": 35,
+      "rel": -3
+     },
+     "res": "Тиша отдал тебе всё, что копил, лишь бы ты {f|молчала|молчал}. Глаза у него стали совсем тёмными."
+    },
+    "ties": {
+     "lamp": {
+      "text": "Отдать ему свой фонарик",
+      "hint": "Тиша станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "С фонариком письма нашлись за минуту. Тиша пообещал бежать рядом, когда стемнеет."
+     },
+     "herbalist": {
+      "text": "Проверить старую ногу",
+      "hint": "+6 HP, Тиша станет другом",
+      "fx": {
+       "heal": 6,
+       "rel": 3
+      },
+      "res": "Нога зажила хорошо. «Вы опять меня спасаете», — смутился Тиша и отдал тебе свой сбитень."
+     },
+     "shepherd": {
+      "text": "Придержать Дружка",
+      "hint": "Тиша станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ты крепко держала Дружка, пока Тиша искал письма. Впервые пёс не погнался за ним."
+     },
+     "guard": {
+      "text": "Положить ему в сумку бублик",
+      "hint": "Тиша станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ты молча сунула Тише в сумку бублик, как всегда. Тиша шмыгнул носом: «А я думал, вы на меня сердитесь». Вдвоём вы быстро нашли письма."
+     },
+     "stoker": {
+      "text": "Догнать Сороку по крышам",
+      "hint": "−4 HP, +20 монет, Тиша станет другом",
+      "fx": {
+       "hp": 4,
+       "gold": 20,
+       "rel": 3
+      },
+      "res": "Вы с Тишей наперегонки промчались по крышам и загнали Сороку в трубу. Письма нашлись, а в её гнезде ещё и монеты блестели."
+     },
+     "baker": {
+      "text": "Дать ему пряники на доставку",
+      "hint": "+15 монет, Тиша станет другом",
+      "fx": {
+       "gold": 15,
+       "rel": 3
+      },
+      "res": "Ты дала Тише корзину пряников на доставку. Он вернулся с монетами за заказ и с письмами: Сорока обменяла их на пряник."
+     },
+     "grinder": {
+      "text": "Отдать ему письма для сестры",
+      "hint": "Тиша станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ты помог Тише найти почту, а потом отдал ему свою пачку: десять лет писем сестре. «Доставлю, — серьёзно сказал Тиша. — Это теперь моя работа»."
+     }
+    }
+   },
+   "stoker": {
+    "stage": 0,
+    "title": "Сапоги из трубы",
+    "text": "Из трубы ратуши торчат сапоги Фомы, а на крыше хохочет Флюгер-Петух. — Вытащи меня! Только никому ни слова!",
+    "help": {
+     "text": "Вытащить",
+     "hint": "−5 HP, Фома станет другом",
+     "fx": {
+      "hp": 5,
+      "rel": 2
+     },
+     "res": "Ты {f|тянула|тянул} изо всех сил, и Фома вылетел из трубы, как пробка. «Должен буду!» — крикнул он, весь в саже."
+    },
+    "pass": {
+     "res": "Ты {f|прошла|прошёл} мимо. Петух захохотал ещё громче."
+    },
+    "hurt": {
+     "text": "Посмеяться и забрать его щётку",
+     "hint": "+25 монет, но Фому заберёт Тень",
+     "fx": {
+      "gold": 25,
+      "rel": -3
+     },
+     "res": "Ты {f|смеялась|смеялся} вместе с Петухом, а щётку {f|продала|продал} старьёвщику. Из трубы потянуло холодным дымом."
+    },
+    "ties": {
+     "baker": {
+      "text": "Вытащить и угостить пряником",
+      "hint": "Фома станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Фома покраснел так, что сажа на щеках стала незаметна. «Груня… спасибо», — выдавил он."
+     },
+     "lamp": {
+      "text": "Вытащить и не язвить",
+      "hint": "−5 HP, Фома станет другом",
+      "fx": {
+       "hp": 5,
+       "rel": 3
+      },
+      "res": "Ты не сказала ни слова про сажу. Фома буркнул «спасибо», и ваша вражда немного подтаяла."
+     },
+     "courier": {
+      "text": "Взбежать на крышу и вытянуть его",
+      "hint": "−3 HP, Фома станет другом",
+      "fx": {
+       "hp": 3,
+       "rel": 3
+      },
+      "res": "Ты взбежал на крышу быстрее, чем Петух успел прокукарекать, и вытянул Фому за руку. «Ну ты и шустрый», — уважительно сказал он и показал тебе ещё одну короткую дорогу."
+     },
+     "guard": {
+      "text": "Вытащить и выписать штраф",
+      "hint": "+15 монет, Фома станет другом",
+      "fx": {
+       "gold": 15,
+       "rel": 3
+      },
+      "res": "Ты вытащила Фому одним рывком и тут же выписала штраф за лазанье по ратуше. Фома расплатился и впервые сказал: «Справедливо»."
+     },
+     "grinder": {
+      "text": "Вытащить и вспомнить Шутиху",
+      "hint": "+8 HP, Фома станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Ты вытащил Фому, и вы оба расхохотались, вспомнив, как запускали Шутиху. Петух обиделся, что смеются не над Фомой, и улетел."
+     },
+     "shepherd": {
+      "text": "Позвать Дружка на помощь",
+      "hint": "Фома станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Дружок ухватил Фому за штанину и выдернул из трубы, а потом облаял за запах сажи. Фома только рассмеялся: «Квиты. Свистну вам в следующую метель»."
+     },
+     "herbalist": {
+      "text": "Вытащить и отдать отвар от кашля",
+      "hint": "−3 HP, Фома станет другом",
+      "fx": {
+       "hp": 3,
+       "rel": 3
+      },
+      "res": "Ты вытащила Фому, и он зашёлся кашлем от сажи. Пришлось отдать ему свой отвар. «Опять горький!» — скривился он, но выпил до дна."
+     }
+    }
+   },
+   "baker": {
+    "stage": 0,
+    "title": "Остывшая печь",
+    "text": "В пекарне холодно: Самовар сбежал, печь погасла, а у дверей ждут голодные дети. — Помоги растопить, одна не успеваю!",
+    "help": {
+     "text": "Наколоть дров",
+     "hint": "−4 HP, потом +10 HP, Груня станет другом",
+     "fx": {
+      "hp": 4,
+      "heal": 10,
+      "rel": 2
+     },
+     "res": "Печь загудела, дети получили по прянику, а Груня сунула тебе самый большой."
+    },
+    "pass": {
+     "res": "Ты {f|прошла|прошёл} мимо. Дети проводили тебя голодными глазами."
+    },
+    "hurt": {
+     "text": "Унести поднос пряников",
+     "hint": "+18 HP, но Груню заберёт Тень",
+     "fx": {
+      "heal": 18,
+      "rel": -3
+     },
+     "res": "Ты {f|убежала|убежал} с подносом. Дети у дверей так и остались голодными, а Груня перестала улыбаться."
+    },
+    "ties": {
+     "stoker": {
+      "text": "Разжечь печь и признаться",
+      "hint": "+10 HP, Груня станет другом",
+      "fx": {
+       "heal": 10,
+       "rel": 3
+      },
+      "res": "Ты разжёг печь и выпалил всё как есть. Груня рассмеялась, покраснела и поцеловала тебя в чумазую щёку."
+     },
+     "guard": {
+      "text": "Посидеть с подругой",
+      "hint": "+8 HP, Груня станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Вы растопили печь и пили чай, пока не согрелись. «Без тебя я бы не справилась», — сказала Груня."
+     },
+     "lamp": {
+      "text": "Разжечь печь огоньком из лампы",
+      "hint": "+10 HP, Груня станет другом",
+      "fx": {
+       "heal": 10,
+       "rel": 3
+      },
+      "res": "Ты поднесла лампу к печи, и огонёк перепрыгнул на дрова. Груня всплеснула руками и вручила тебе тёплый пряник-фонарик."
+     },
+     "courier": {
+      "text": "Догнать сбежавший Самовар",
+      "hint": "−4 HP, Груня станет другом",
+      "fx": {
+       "hp": 4,
+       "rel": 3
+      },
+      "res": "Ты догнал Самовар у колодца и прикатил обратно. Груня так обрадовалась, что не стала считать, сколько пряников ты съел в прошлый раз."
+     },
+     "grinder": {
+      "text": "Наточить ножи и формочки",
+      "hint": "Улучшить карту, Груня станет другом",
+      "fx": {
+       "up": 1,
+       "rel": 3
+      },
+      "res": "Пока печь разгоралась, ты наточил все формочки. Груня шепнула: «Пряники для Марфы уже готовы. Опять не говорить, от кого?»"
+     },
+     "shepherd": {
+      "text": "Отдать козье молоко на тесто",
+      "hint": "+8 HP, Груня станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Ты помогла растопить печь и отдала Груне весь бидон молока. Тесто поднялось, дети наелись, а Дружку достались самые вкусные обрезки."
+     },
+     "herbalist": {
+      "text": "Добавить в тесто травы от простуды",
+      "hint": "+3 к макс. HP, Груня станет другом",
+      "fx": {
+       "maxHp": 3,
+       "rel": 3
+      },
+      "res": "Ты растопила печь и подсыпала в тесто травы, и пряники вышли целебными. «Один отложу для Сторожа Рассвета», — сказала Груня. Ты съела свой, и стало теплее."
+     }
+    }
+   },
+   "guard": {
+    "stage": 1,
+    "title": "Дыра в мосту",
+    "text": "На дальнем конце моста Марфа латает перила. — Тролль опять разломал. Подержи доску, а то до ночи не управлюсь.",
+    "help": {
+     "text": "Подержать доску",
+     "hint": "−6 HP, Марфа станет другом",
+     "fx": {
+      "hp": 6,
+      "rel": 2
+     },
+     "res": "Вы вдвоём заколотили дыру. Марфа хлопнула тебя по плечу: «Через мой мост ты всегда пройдёшь»."
+    },
+    "pass": {
+     "res": "Ты {f|прошла|прошёл} мимо. Марфа проводила тебя тяжёлым взглядом."
+    },
+    "hurt": {
+     "text": "Забрать монеты за проход",
+     "hint": "+40 монет, но Марфу заберёт Тень",
+     "fx": {
+      "gold": 40,
+      "rel": -3
+     },
+     "res": "Пока Марфа возилась с перилами, ты {f|забрала|забрал} шкатулку с монетами. Мост за спиной заскрипел и закрылся."
+    },
+    "ties": {
+     "grinder": {
+      "text": "Помириться с сестрой",
+      "hint": "+10 HP, Марфа станет другом",
+      "fx": {
+       "heal": 10,
+       "rel": 3
+      },
+      "res": "Марфа долго молчала, потом обняла тебя: «Дурак ты, Савва. Хорошо, что вернулся»."
+     },
+     "baker": {
+      "text": "Принести пряники на ночную смену",
+      "hint": "Марфа станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Марфа впервые за вечер улыбнулась: «Подруга, ты меня спасла». Перила вы доделали вместе."
+     },
+     "lamp": {
+      "text": "Зажечь фонарь на мосту",
+      "hint": "+8 HP, Марфа станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Ты зажгла фонарь на мосту и впервые не опоздала. Марфа хмыкнула: «Надо же». При свете вы доделали перила в два счёта, а потом грелись у неё в будке."
+     },
+     "courier": {
+      "text": "Отдать письма от Саввы",
+      "hint": "Марфа станет другом",
+      "fx": {
+       "rel": 3,
+       "letters": 1
+      },
+      "res": "Ты достал из сумки пачку писем: «От брата». Марфа читала долго, потом спрятала лицо в варежки и сказала только: «Спасибо, почтальон»."
+     },
+     "stoker": {
+      "text": "Заплатить все штрафы и прибить доску",
+      "hint": "−15 монет, +10 HP, Марфа станет другом",
+      "fx": {
+       "gold": -15,
+       "heal": 10,
+       "rel": 3
+      },
+      "res": "Ты заплатил все старые штрафы разом и сам прибил доску. Марфа налила тебе чаю: «Ладно уж. По перилам — только днём»."
+     },
+     "shepherd": {
+      "text": "Рассказать про козлёнка у Волка",
+      "hint": "Марфа станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Пока вы латали перила, ты рассказала, что козлёнок жив и растёт у Волка в лесу. Марфа достала книгу и аккуратно исправила зачёркнутую строчку."
+     },
+     "herbalist": {
+      "text": "Вынуть занозу и перевязать руку",
+      "hint": "+6 HP, Марфа станет другом",
+      "fx": {
+       "heal": 6,
+       "rel": 3
+      },
+      "res": "Марфа загнала занозу, а ты вынула её и перевязала ладонь. «Тебя я пущу в любую ночь», — сказала Марфа и поделилась с тобой горячим чаем."
+     }
+    }
+   },
+   "grinder": {
+    "stage": 1,
+    "title": "Треснувшее точило",
+    "text": "На развилке сидит Савва над расколотым точилом. — Без камня я никто. А на новый монет не хватает.",
+    "help": {
+     "text": "Дать монеты на камень",
+     "hint": "−25 монет, улучшить карту, Савва станет другом",
+     "fx": {
+      "gold": -25,
+      "up": 1,
+      "rel": 2
+     },
+     "res": "Савва тут же опробовал новый камень на одной из твоих карт. «Острее не бывает», — подмигнул он."
+    },
+    "pass": {
+     "res": "Ты {f|прошла|прошёл} мимо. Савва даже не поднял головы."
+    },
+    "hurt": {
+     "text": "Унести точило себе",
+     "hint": "Улучшить 2 случайные карты, но Савву заберёт Тень",
+     "fx": {
+      "upRandom": 2,
+      "rel": -3
+     },
+     "res": "Ты {f|унесла|унёс} точило и {f|наточила|наточил} карты {f|сама|сам}. Савва смотрел тебе вслед, и в глазах у него блеснула сталь."
+    },
+    "ties": {
+     "guard": {
+      "text": "Позвать брата домой",
+      "hint": "Улучшить карту, Савва станет другом",
+      "fx": {
+       "up": 1,
+       "rel": 3
+      },
+      "res": "Савва поднял голову: «Сестра?..» Он склеил точило смолой и первым делом наточил тебе карту."
+     },
+     "shepherd": {
+      "text": "Позвать к своему костру",
+      "hint": "+8 HP, Савва станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Вы грелись у костра, пока Дружок спал у Саввы в ногах. Наутро точило было как новое."
+     },
+     "lamp": {
+      "text": "Посветить, пока он чинит",
+      "hint": "Улучшить карту, Савва станет другом",
+      "fx": {
+       "up": 1,
+       "rel": 3
+      },
+      "res": "Ты светила лампой, пока Савва склеивал камень. Вдруг он сказал: «Это я разбил стекло твоей маминой лампы. Прости». Ты помолчала и протянула ему руку."
+     },
+     "courier": {
+      "text": "Предложить отнести письма сестре",
+      "hint": "Савва станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ты спросил про письма, которые Савва пишет сестре. Он долго молчал, а потом отдал тебе всю пачку: «Отнеси. Хватит прятаться»."
+     },
+     "stoker": {
+      "text": "Вспомнить Шутиху",
+      "hint": "+8 HP, Савва станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Ты напомнил про Шутиху, и Савва впервые за вечер рассмеялся. Вы вдвоём склеили точило, и он наточил тебе скребок до звона."
+     },
+     "baker": {
+      "text": "Отдать пряники для Марфы",
+      "hint": "Улучшить карту, Савва станет другом",
+      "fx": {
+       "up": 1,
+       "rel": 3
+      },
+      "res": "Ты отдала Савве свёрток: «Для сестры. Всё, как ты просил». Савва покраснел, спрятал пряники за пазуху и так приободрился, что склеил точило и наточил тебе карту."
+     },
+     "herbalist": {
+      "text": "Сказать, что сохранила его тайну",
+      "hint": "+8 HP, Савва станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Ты тихо сказала: «Про стрелки я никому не говорила». Савва выдохнул, будто сбросил мешок с плеч, и пообещал завтра же сходить к Часовщику."
+     }
+    }
+   },
+   "shepherd": {
+    "stage": 1,
+    "title": "Метель на пастбище",
+    "text": "В метели мечется Луша: пропал ещё один козлёнок, а Дружок лает в сторону леса. — Помоги найти, пока совсем не стемнело!",
+    "help": {
+     "text": "Искать вместе",
+     "hint": "−6 HP, Луша станет другом",
+     "fx": {
+      "hp": 6,
+      "rel": 2
+     },
+     "res": "Козлёнок нашёлся в сугробе у самой опушки. Луша прижала его к себе: «Спасибо! Дружок тебя запомнит»."
+    },
+    "pass": {
+     "res": "Ты {f|прошла|прошёл} мимо. Дружок долго лаял тебе вслед."
+    },
+    "hurt": {
+     "text": "Показать не ту дорогу и взять плату",
+     "hint": "+30 монет, но Лушу заберёт Тень",
+     "fx": {
+      "gold": 30,
+      "rel": -3
+     },
+     "res": "Луша заплатила и пошла туда, куда ты {f|показала|показал}. Метель сомкнулась за ней, и лай Дружка затих."
+    },
+    "ties": {
+     "herbalist": {
+      "text": "Дать Дружку травы для нюха",
+      "hint": "Луша станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Дружок понюхал травы и взял след в два счёта. «Ты лучшая учительница», — сказала Луша."
+     },
+     "grinder": {
+      "text": "Сесть у её костра",
+      "hint": "+8 HP, Луша станет другом",
+      "fx": {
+       "heal": 8,
+       "rel": 3
+      },
+      "res": "Вы нашли козлёнка, а потом грелись у её костра. Луша сказала, что ты всегда можешь у неё заночевать."
+     },
+     "courier": {
+      "text": "Обежать пастбище",
+      "hint": "−3 HP, Луша станет другом",
+      "fx": {
+       "hp": 3,
+       "rel": 3
+      },
+      "res": "Ты обежал всё пастбище за минуту и нашёл козлёнка. Даже Дружок перестал на тебя рычать."
+     },
+     "lamp": {
+      "text": "Поднять лампу повыше",
+      "hint": "−3 HP, Луша станет другом",
+      "fx": {
+       "hp": 3,
+       "rel": 3
+      },
+      "res": "Ты подняла лампу над головой, и Луша увидела свет сквозь метель. На свет прибежал и козлёнок. «Совсем как наш фонарик!» — обрадовалась Луша."
+     },
+     "guard": {
+      "text": "Свериться с книгой на мосту",
+      "hint": "Луша станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "По твоей книге выходило, что через мост козлёнок не проходил. Вы обыскали ближний овраг и нашли его там, мокрого и сердитого."
+     },
+     "stoker": {
+      "text": "Залезть на сосну и высмотреть",
+      "hint": "−6 HP, Луша станет другом",
+      "fx": {
+       "hp": 6,
+       "rel": 3
+      },
+      "res": "Ты вскарабкался на самую высокую сосну, разглядел козлёнка в сугробе и свистнул, как свистишь с крыш. Дружок облаял тебя, но уже с уважением."
+     },
+     "baker": {
+      "text": "Приманить козлёнка пряником",
+      "hint": "Луша станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ты раскрошила пряник на снегу, и козлёнок сам прибежал на запах. Дружок получил свою долю и впервые завилял тебе хвостом."
+     }
+    }
+   },
+   "herbalist": {
+    "stage": 1,
+    "title": "Горький корень",
+    "text": "На опушке Ульяна копает горький корень. Руки дрожат: слишком много лет она отдала чужим болезням. — Подержи корзину… мне бы немного сил.",
+    "help": {
+     "text": "Поделиться силой",
+     "hint": "−3 к макс. HP, Ульяна станет другом",
+     "fx": {
+      "maxHp": -3,
+      "rel": 2
+     },
+     "res": "Ты {f|взяла|взял} её за руку, и твоё тепло перешло к ней. Ульяна выпрямилась: «Я верну этот долг»."
+    },
+    "pass": {
+     "res": "Ты {f|прошла|прошёл} мимо. Ульяна осталась стоять на коленях в снегу."
+    },
+    "hurt": {
+     "text": "Забрать корзину с травами",
+     "hint": "+20 HP, но Ульяну заберёт Тень",
+     "fx": {
+      "heal": 20,
+      "rel": -3
+     },
+     "res": "Ты {f|забрала|забрал} корзину и {f|сварила|сварил} себе отвар. Ульяна осталась одна, и корни в земле почернели."
+    },
+    "ties": {
+     "shepherd": {
+      "text": "Помочь учительнице",
+      "hint": "Ульяна станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ты накопала корней за двоих, как учила Ульяна. Она погладила тебя по голове: «Вот и выросла»."
+     },
+     "courier": {
+      "text": "Вернуть долг",
+      "hint": "−4 HP, Ульяна станет другом",
+      "fx": {
+       "hp": 4,
+       "rel": 3
+      },
+      "res": "Ты донёс корзину до самой избушки. «Нога не болит?» — спросила Ульяна. Не болит."
+     },
+     "lamp": {
+      "text": "Спросить про маму",
+      "hint": "Ульяна станет другом",
+      "fx": {
+       "rel": 3
+      },
+      "res": "Ульяна рассказала про твою маму: смелую, смешную, с такой же лампой. Ты слушала до самой темноты."
+     },
+     "guard": {
+      "text": "Проводить её через мост",
+      "hint": "−4 HP, Ульяна станет другом",
+      "fx": {
+       "hp": 4,
+       "rel": 3
+      },
+      "res": "Ты донесла её корзину до моста и открыла его, хотя уже темнело. «Ты всегда меня пускаешь», — улыбнулась Ульяна."
+     },
+     "stoker": {
+      "text": "Выпить её отвар без споров",
+      "hint": "+3 к макс. HP, Ульяна станет другом",
+      "fx": {
+       "maxHp": 3,
+       "rel": 3
+      },
+      "res": "Ты выпил отвар до дна и даже не скривился. Ульяна так удивилась, что рассмеялась, и силы вернулись к ней быстрее, чем от любого лекарства."
+     },
+     "baker": {
+      "text": "Поделиться пряником для Сторожа",
+      "hint": "+10 HP, Ульяна станет другом",
+      "fx": {
+       "heal": 10,
+       "rel": 3
+      },
+      "res": "Ты разломила медовый пряник, испечённый для Сторожа Рассвета: «Старик не обидится». Ульяна съела половину, и руки перестали дрожать."
+     },
+     "grinder": {
+      "text": "Наточить ей серп",
+      "hint": "Улучшить карту, Ульяна станет другом",
+      "fx": {
+       "up": 1,
+       "rel": 3
+      },
+      "res": "Ты наточил серп, и корень поддался с первого раза. «Рука не болит?» — спросила Ульяна, глядя на старый шрам. Не болит, и всё благодаря ей."
+     }
+    }
+   }
+  },
+  "DARK": {
+   "lamp": {
+    "intro": "Ты {f|забрала|забрал} мою лампу. Теперь мне не нужен свет. И тебе он не нужен.",
+    "saved": "Тень рассыпалась, и Ива снова зажгла свою лампу."
+   },
+   "courier": {
+    "intro": "Ты {f|забрала|забрал} всё, что я копил. Теперь я бегу без адреса, и мне всё равно куда.",
+    "saved": "Тень рассыпалась, и Тиша вспомнил, куда бежал."
+   },
+   "guard": {
+    "intro": "Ты {f|ограбила|ограбил} мой мост. Теперь он закрыт для всех. Навсегда.",
+    "saved": "Тень рассыпалась, и Марфа снова открыла мост."
+   },
+   "stoker": {
+    "intro": "Ты {f|смеялась|смеялся}, пока я сидел в трубе. Теперь мой огонь никого не греет.",
+    "saved": "Тень рассыпалась, и огонь Фомы снова стал тёплым."
+   },
+   "baker": {
+    "intro": "Ты {f|унесла|унёс} пряники голодных детей. Больше я никого не кормлю.",
+    "saved": "Тень рассыпалась, и Груня снова затопила печь."
+   },
+   "grinder": {
+    "intro": "Ты {f|забрала|забрал} моё точило. Теперь я точу только себя.",
+    "saved": "Тень рассыпалась, и Савва отложил нож."
+   },
+   "shepherd": {
+    "intro": "Ты {f|отправила|отправил} меня не той дорогой. Козлёнок замёрз, а Дружок стал тенью.",
+    "saved": "Тень рассыпалась, и Дружок снова завилял хвостом."
+   },
+   "herbalist": {
+    "intro": "Ты {f|забрала|забрал} мои травы, когда мне было плохо. Теперь я лечу только себя.",
+    "saved": "Тень рассыпалась, и Ульяна снова улыбнулась."
+   }
+  },
+  "FORGIVE": {
+   "text": "Попросить прощения",
+   "hint": "−10 к макс. HP, вместо него придёт Король Теней",
+   "res": "Ты {f|опустилась|опустился} на колени в снег и {f|попросила|попросил} прощения. Тень сползла с плеч, как старое пальто. Но из темноты шагнул сам Король Теней."
+  },
+  "FRIEND": {
+   "lamp": {
+    "line": "Ива: «Я зажгу тебе дорогу до самой двери».",
+    "bonus": "+2 Огонька"
+   },
+   "courier": {
+    "line": "Тиша: «Я побегу рядом. Вдвоём быстрее!»",
+    "bonus": "+2 карты в первый ход"
+   },
+   "guard": {
+    "line": "Марфа: «Держись за мной. Никто не пройдёт».",
+    "bonus": "+12 защиты"
+   },
+   "stoker": {
+    "line": "Фома: «Я им устрою жару!»",
+    "bonus": "Поджог 6 на боссе"
+   },
+   "baker": {
+    "line": "Груня: «Сначала поешь, потом воюй».",
+    "bonus": "+10 HP"
+   },
+   "grinder": {
+    "line": "Савва: «Дай-ка сюда, подточу».",
+    "bonus": "Заточить 2 карты"
+   },
+   "shepherd": {
+    "line": "Луша: «Дружок, охраняй!»",
+    "bonus": "Дружок дерётся рядом"
+   },
+   "herbalist": {
+    "line": "Ульяна: «Глотни. Горько, зато поможет».",
+    "bonus": "Босс Ослаблен на 3 хода"
+   }
+  },
+  "PAIRS": {
+   "courier+lamp": "Ива и Тиша дружат с детства: он бегает по её маршруту и помогает зажигать фонари.",
+   "lamp+stoker": "Ива и Фома вечно спорят: его сажа пачкает её фонари, а он топчется по крышам у неё над головой.",
+   "herbalist+lamp": "Ульяна дружила с мамой Ивы и знает о ней то, чего не знает сама Ива.",
+   "guard+lamp": "Марфа не закрывает мост, пока Ива не зажжёт на нём последний фонарь. Ива вечно опаздывает, Марфа ворчит, но всегда ждёт.",
+   "baker+lamp": "Первым Ива зажигает фонарь у пекарни, чтобы дети шли на свет. За это Груня каждый вечер печёт ей пряник-фонарик.",
+   "grinder+lamp": "В детстве Савва взял поиграть мамину лампу Ивы и разбил стекло. Ива так и не узнала, кто это был, а Савва помнит до сих пор.",
+   "lamp+shepherd": "Ива подарила Луше маленький фонарик, и по вечерам Луша мигает им с пастбища: все козы дома.",
+   "courier+shepherd": "Дружок гоняет Тишу по всему пастбищу: пёс не выносит, когда кто-то бегает быстрее него.",
+   "courier+herbalist": "Ульяна когда-то вылечила Тише сломанную ногу, и он до сих пор чувствует себя её должником.",
+   "courier+guard": "Марфа не пускает Тишу через мост после заката и однажды оставила его ночевать в своей будке. Тиша её побаивается, но знает, что она тайком кладёт ему в сумку бублики.",
+   "courier+stoker": "Фома показал Тише короткие пути по крышам, и теперь они наперегонки бегают до ратуши.",
+   "baker+courier": "Тиша разносит пряники Груни по заказам и съедает по дороге половину. Груня всё знает и печёт с запасом.",
+   "courier+grinder": "Десять лет Савва пишет сестре письма и не отправляет. Об этом знает только Тиша: Савва просил научить его надписывать адрес.",
+   "baker+guard": "Марфа и Груня подруги: каждый вечер Груня печёт Марфе пряники на ночную смену.",
+   "grinder+guard": "Марфа и Савва — сестра и брат. Десять лет назад он ушёл с моста, и с тех пор они не разговаривают.",
+   "guard+stoker": "Фома ходит через мост по перилам, и Марфа каждый раз его штрафует. Платит он углём для печки в её будке.",
+   "guard+shepherd": "Каждое утро Луша гонит коз через мост, а Марфа их пересчитывает. С прошлой зимы в её книге зачёркнута одна строчка: козлёнок, которого увёл Волк.",
+   "guard+herbalist": "Ульяна — единственная, кого Марфа пускает через мост и ночью: знахарку ждут больные.",
+   "baker+stoker": "Фома тайно влюблён в Груню и чистит её трубу чаще всех остальных.",
+   "grinder+stoker": "Фома и Савва вдвоём смастерили к празднику Шутиху. Она до сих пор носится по Окраине сама по себе, а оба делают вид, что ни при чём.",
+   "shepherd+stoker": "С крыш Фома первым видит метель и свистит Луше, чтобы гнала коз домой. А Дружок всё равно лает на него из-за запаха сажи.",
+   "herbalist+stoker": "Ульяна лечит Фоме кашель от сажи горьким отваром. Фома его ненавидит, но пьёт.",
+   "baker+grinder": "Савва точит Груне ножи и формочки и денег не берёт. Он просит только пряники для Марфы и чтобы Груня не говорила, от кого они.",
+   "baker+shepherd": "Луша приносит Груне козье молоко для теста, а Груня оставляет Дружку обрезки.",
+   "baker+herbalist": "Каждый год Груня печёт медовый пряник для Сторожа Рассвета, а Ульяна относит его вместе с лекарствами.",
+   "grinder+shepherd": "Луша пускает Савву греться у своего костра на пастбище, а Дружок спит у него в ногах.",
+   "grinder+herbalist": "Ульяна зашила Савве руку, порезанную точилом. В жару он признался ей, что наточил стрелки Часовщика, и Ульяна хранит эту тайну.",
+   "herbalist+shepherd": "Ульяна учит Лушу травам, и Луша мечтает стать знахаркой."
+  },
+  "BIO": {
+   "lamp": {
+    "who": "Зажигает сорок фонарей Горки. Лампа досталась ей от мамы, тоже фонарщицы.",
+    "why": "Пока письмо в пути, фонари должны гореть. Ива боится темноты с тех пор, как однажды не успела зажечь последний фонарь у старой мельницы.",
+    "secret": "Фонарный Призрак и есть тот самый фонарь. Он ждёт Иву много лет и не нападёт, если она наконец его зажжёт."
+   },
+   "courier": {
+    "who": "Самый быстрый и самый младший на почте, ученик почтальона. Дружит с Голубем-Сплетником, который пересказывает ему новости.",
+    "why": "Хочет доказать, что он уже настоящий почтальон.",
+    "secret": "Это у Тиши утром Сорока выхватила сумку, и он никому не признался. А Пустой Почтальон, первый почтальон Горки, — его прапрадед."
+   },
+   "guard": {
+    "who": "Охраняет мост между Горкой и Окраиной и после заката никого не пускает. Строгая, но держит слово.",
+    "why": "Мост её, и через него пойдёт письмо. Ещё у Марфы давний спор с Мостовым Троллем, который хочет этот мост себе.",
+    "secret": "Савва — её младший брат. Десять лет назад он ушёл с моста бродить по свету, и с тех пор они не разговаривают. А с Мостовым Троллем Марфа могла бы поделить мост, но не даёт гордость."
+   },
+   "stoker": {
+    "who": "Знает каждую крышу и трубу Горки. Подкармливает Печную Мышь.",
+    "why": "По крышам до Окраины короче всего, а ещё Фома не может пропустить приключение.",
+    "secret": "Влюблён в Груню и чистит её трубу чаще всех остальных. Флюгер-Петух дразнит его этим на всю ратушу."
+   },
+   "baker": {
+    "who": "Печёт знаменитые пряники Горки. В её пекарне всегда тепло, и туда заходят все.",
+    "why": "В пути никто не должен остаться голодным, поэтому за спиной у неё мешок пряников.",
+    "secret": "Снеговика-Громилу слепили дети у неё во дворе, а она прогнала их метлой. С тех пор он обижен на весь свет. А Самовар-Кипяток сбежал как раз из её пекарни."
+   },
+   "grinder": {
+    "who": "Бродит с точилом по деревням Окраины, точит ножи, ножницы и косы. Знает все тропы.",
+    "why": "Хочет помириться с сестрой и, может быть, исправить свою ошибку.",
+    "secret": "Это он наточил стрелки башенных часов Сумеречного Часовщика. Острые стрелки отрезали от дня целый час, и закат теперь приходит раньше."
+   },
+   "shepherd": {
+    "who": "Пасёт коз на холмах Окраины вместе с псом Дружком. Учится травам у Ульяны.",
+    "why": "Прошлой зимой Сумеречный Волк увёл из стада козлёнка, и Луша хочет его найти.",
+    "secret": "Волк — родной брат Дружка из одного помёта, потерявшийся в метель. Он не обидел козлёнка, а растит его в лесу."
+   },
+   "herbalist": {
+    "who": "Живёт у леса и лечит горькими корнями. За сильное лекарство платит частью своего здоровья.",
+    "why": "Только она знает Сторожа Рассвета и носит ему лекарства. Старик очень слаб, и этот год может стать для него последним.",
+    "secret": "За старика Сторожа Ульяна уже отдала несколько лет своей жизни, а Ворон-Счетовод записал каждый из них в свою книгу."
+   }
+  },
+  "ETIES": [
+   [
+    "cuckoo",
+    "clockmaker",
+    "kin",
+    "Кукушка — заводная птичка из часов Сумеречного Часовщика и отсчитывает ему каждый час."
+   ],
+   [
+    "pigeon",
+    "magpie",
+    "kin",
+    "Голубь-Сплетник продаёт Сороке новости о том, у кого что плохо лежит."
+   ],
+   [
+    "inkcat",
+    "mailbox",
+    "kin",
+    "Чернильный кот спит в Ящике-Кусаке и делит с ним добычу."
+   ],
+   [
+    "snowimp",
+    "snowbrute",
+    "kin",
+    "Снежок-Хулиган — младший брат Громилы: их слепили из одного сугроба."
+   ],
+   [
+    "golem",
+    "lampghost",
+    "kin",
+    "Восковой голем слеплен из огарков, а Фонарный Призрак — старый фонарь. Оба ждут, когда их снова зажгут."
+   ],
+   [
+    "wisp",
+    "mist",
+    "kin",
+    "Голубой Морок и Туманница вместе уводят путников с дороги."
+   ],
+   [
+    "owl",
+    "watchman",
+    "kin",
+    "Совиный сторож и Сторож с колотушкой вместе стерегут ночь и сверяют часы обходов."
+   ],
+   [
+    "iceknight",
+    "blizzard",
+    "kin",
+    "Ледяной Рыцарь служит Метелице и стоит у её трона."
+   ],
+   [
+    "frostfox",
+    "wolf",
+    "kin",
+    "Морозная Лиса ходит за Сумеречным Волком по пятам и выдаёт себя за его подругу."
+   ],
+   [
+    "stump",
+    "raven",
+    "kin",
+    "Ворон-Счетовод держит контору в дупле Пня-Шатуна и платит ему за постой желудями."
+   ],
+   [
+    "laundress",
+    "scarfsnake",
+    "kin",
+    "Шарфовый Змей — любимый шарф Туманной прачки. Он ожил, когда Марфа повесила его сушиться на мосту."
+   ],
+   [
+    "shadowthief",
+    "shadowking",
+    "kin",
+    "Тень-Воришка носит Королю Теней украденный свет."
+   ],
+   [
+    "waxgiant",
+    "hollowpost",
+    "kin",
+    "Сургучный Великан вырос из сургуча на сумке Пустого Почтальона и до сих пор её сторожит."
+   ],
+   [
+    "samovar",
+    "sootmouse",
+    "kin",
+    "Печная Мышь греется у Самовара-Кипятка: оба сбежали из тёплых домов."
+   ],
+   [
+    "matryoshka",
+    "firecracker",
+    "kin",
+    "Матрёшка-Шкатулка и Шутиха подружились на ярмарке: одну там продавали, а другую запускали."
+   ],
+   [
+    "ghoul",
+    "bat",
+    "kin",
+    "Ледяной Упырь и Сумеречная Мышь вместе охотятся за теплом."
+   ],
+   [
+    "inkcat",
+    "pigeon",
+    "rival",
+    "Чернильный кот охотится на Голубя-Сплетника, а тот разносит про кота сплетни."
+   ],
+   [
+    "owl",
+    "magpie",
+    "rival",
+    "Совиный сторож гоняет Сороку-Перехватчицу от почты."
+   ],
+   [
+    "icicle",
+    "samovar",
+    "rival",
+    "Сосулька тает от пара Самовара и не может ему этого простить."
+   ],
+   [
+    "snowbrute",
+    "firecracker",
+    "rival",
+    "Однажды Шутиха взорвала Громиле нос, и он ищет её до сих пор."
+   ],
+   [
+    "icebear",
+    "wolf",
+    "rival",
+    "Ледяной Медведь гоняет Сумеречного Волка от своей берлоги."
+   ],
+   [
+    "vane",
+    "clockmaker",
+    "rival",
+    "Флюгер-Петух и Сумеречный Часовщик живут на одной башне ратуши и спорят, кто из них главнее."
+   ],
+   [
+    "troll",
+    "iceknight",
+    "rival",
+    "Ледяной Рыцарь хочет отнять у Тролля мост для Метелицы."
+   ],
+   [
+    "wisp",
+    "golem",
+    "rival",
+    "Голубой Морок дразнит Воскового голема холодным огнём, который никого не греет."
+   ]
+  ],
+  "TIE_SAY": {
+   "avenge": [
+    "Ты {f|побила|побил} моих! Теперь держись!",
+    "Мне всё рассказали. За своих я отвечу!"
+   ],
+   "thanks": [
+    "Ты {f|пощадила|пощадил} моих. Я этого не забуду.",
+    "Мои говорят, что ты {f|добрая|добрый}. Проходи."
+   ],
+   "rival": [
+    "Так это ты {f|проучила|проучил} того задаваку? Уважаю.",
+    "Ты {f|справилась|справился} с моим соперником? Я с тобой спорить не буду."
+   ],
+   "regards": [
+    "Привет от моих? Ну, раз так, проходи.",
+    "Раз мои за тебя, то и я не против. Иди."
+   ],
+   "regardsBoss": "Ради моих буду драться вполсилы."
+  }
+ },
+ "achievements": {
+  "CATS": [
+   [
+    "path",
+    "Шлях"
+   ],
+   [
+    "fight",
+    "Майстерність"
+   ],
+   [
+    "collect",
+    "Колекція"
+   ],
+   [
+    "story",
+    "Історії"
+   ]
+  ],
+  "LIST": [
+   {
+    "cat": "path",
+    "id": "first",
+    "name": "Перший крок",
+    "stars": 0,
+    "desc": "Вирушити в першу дорогу.",
+    "src": "stat",
+    "key": "runs",
+    "goal": 1,
+    "art": "h"
+   },
+   {
+    "cat": "path",
+    "id": "runs10",
+    "name": "Знову на маршрут",
+    "stars": 0,
+    "desc": "Розпочати забіги: {p}.",
+    "src": "stat",
+    "key": "runs",
+    "goal": 10,
+    "art": "i:lantern"
+   },
+   {
+    "cat": "path",
+    "id": "road1",
+    "name": "Довга дорога",
+    "stars": 1,
+    "desc": "Пройти {p} рівнів.",
+    "src": "c",
+    "key": "steps",
+    "goal": 150,
+    "art": "i:rhythm",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "road2",
+    "name": "Довга дорога",
+    "stars": 2,
+    "desc": "Пройти {p} рівнів.",
+    "src": "c",
+    "key": "steps",
+    "goal": 1000,
+    "art": "i:compass",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "road3",
+    "name": "Довга дорога",
+    "stars": 3,
+    "desc": "Пройти {p} рівнів.",
+    "src": "c",
+    "key": "steps",
+    "goal": 4000,
+    "art": "i:sled",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "win1",
+    "name": "Лист доставлено",
+    "stars": 1,
+    "desc": "Доставити лист: {p}.",
+    "src": "stat",
+    "key": "wins",
+    "goal": 1,
+    "art": "i:lastword",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "win2",
+    "name": "Лист доставлено",
+    "stars": 2,
+    "desc": "Доставити лист: {p}.",
+    "src": "stat",
+    "key": "wins",
+    "goal": 10,
+    "art": "i:parcel",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "win3",
+    "name": "Лист доставлено",
+    "stars": 3,
+    "desc": "Доставити лист: {p}.",
+    "src": "stat",
+    "key": "wins",
+    "goal": 40,
+    "art": "i:redseal",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "hero-lamp",
+    "name": "Світло до порога",
+    "stars": 0,
+    "desc": "Доставити лист, граючи за ліхтарницю Іву.",
+    "src": "has",
+    "key": "winsCls",
+    "goal": 1,
+    "art": "c:lamp",
+    "item": "lamp"
+   },
+   {
+    "cat": "path",
+    "id": "hero-courier",
+    "name": "Швидше за захід",
+    "stars": 0,
+    "desc": "Доставити лист, граючи за скорохода Тишка.",
+    "src": "has",
+    "key": "winsCls",
+    "goal": 1,
+    "art": "c:courier",
+    "item": "courier"
+   },
+   {
+    "cat": "path",
+    "id": "hero-guard",
+    "name": "Незламна",
+    "stars": 0,
+    "desc": "Доставити лист, граючи за сторожиху мосту Марту.",
+    "src": "has",
+    "key": "winsCls",
+    "goal": 1,
+    "art": "c:guard",
+    "item": "guard"
+   },
+   {
+    "cat": "path",
+    "id": "hero-stoker",
+    "name": "Із вогником",
+    "stars": 0,
+    "desc": "Доставити лист, граючи за сажотруса Хому.",
+    "src": "has",
+    "key": "winsCls",
+    "goal": 1,
+    "art": "c:stoker",
+    "item": "stoker"
+   },
+   {
+    "cat": "path",
+    "id": "hero-baker",
+    "name": "Солодка дорога",
+    "stars": 0,
+    "desc": "Доставити лист, граючи за пряничницю Груню.",
+    "src": "has",
+    "key": "winsCls",
+    "goal": 1,
+    "art": "c:baker",
+    "item": "baker"
+   },
+   {
+    "cat": "path",
+    "id": "hero-grinder",
+    "name": "Гостре око",
+    "stars": 0,
+    "desc": "Доставити лист, граючи за точильника Саву.",
+    "src": "has",
+    "key": "winsCls",
+    "goal": 1,
+    "art": "c:grinder",
+    "item": "grinder"
+   },
+   {
+    "cat": "path",
+    "id": "hero-shepherd",
+    "name": "Удвох не страшно",
+    "stars": 0,
+    "desc": "Доставити лист, граючи за пастушку Лушу.",
+    "src": "has",
+    "key": "winsCls",
+    "goal": 1,
+    "art": "c:shepherd",
+    "item": "shepherd"
+   },
+   {
+    "cat": "path",
+    "id": "hero-herbalist",
+    "name": "Гіркі ліки",
+    "stars": 0,
+    "desc": "Доставити лист, граючи за знахарку Уляну.",
+    "src": "has",
+    "key": "winsCls",
+    "goal": 1,
+    "art": "c:herbalist",
+    "item": "herbalist"
+   },
+   {
+    "cat": "path",
+    "id": "allheroes",
+    "name": "Уся пошта Гірки",
+    "stars": 0,
+    "desc": "Доставити лист різними героями: {p}.",
+    "src": "s",
+    "key": "winsCls",
+    "goal": 5,
+    "art": "i:horn"
+   },
+   {
+    "cat": "path",
+    "id": "diff-0",
+    "name": "Легкою ходою",
+    "stars": 0,
+    "desc": "Доставити лист на складності «Прогулянка».",
+    "src": "has",
+    "key": "winsDiff",
+    "goal": 1,
+    "art": "i:tea",
+    "item": 0
+   },
+   {
+    "cat": "path",
+    "id": "diff-1",
+    "name": "За розкладом",
+    "stars": 0,
+    "desc": "Доставити лист на складності «Звичайний маршрут».",
+    "src": "has",
+    "key": "winsDiff",
+    "goal": 1,
+    "art": "i:envelope",
+    "item": 1
+   },
+   {
+    "cat": "path",
+    "id": "diff-2",
+    "name": "Наввипередки із сутінками",
+    "stars": 0,
+    "desc": "Доставити лист на складності «Ранні сутінки».",
+    "src": "has",
+    "key": "winsDiff",
+    "goal": 1,
+    "art": "i:lantern",
+    "item": 2
+   },
+   {
+    "cat": "path",
+    "id": "diff-3",
+    "name": "Крізь завірюху",
+    "stars": 0,
+    "desc": "Доставити лист на складності «Завірюха».",
+    "src": "has",
+    "key": "winsDiff",
+    "goal": 1,
+    "art": "i:frostlace",
+    "item": 3
+   },
+   {
+    "cat": "path",
+    "id": "diff-4",
+    "name": "Світло в полярну ніч",
+    "stars": 0,
+    "desc": "Доставити лист на складності «Полярна ніч».",
+    "src": "has",
+    "key": "winsDiff",
+    "goal": 1,
+    "art": "i:lullaby",
+    "item": 4
+   },
+   {
+    "cat": "path",
+    "id": "events",
+    "name": "Допитлива",
+    "stars": 0,
+    "desc": "Побувати в усіх подіях дороги: {p}.",
+    "src": "s",
+    "key": "events",
+    "goal": 9,
+    "art": "i:well"
+   },
+   {
+    "cat": "path",
+    "id": "chest1",
+    "name": "Будильник",
+    "stars": 1,
+    "desc": "Розбудити {p} скринь-сонь.",
+    "src": "c",
+    "key": "chests",
+    "goal": 10,
+    "art": "i:chest",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "chest2",
+    "name": "Будильник",
+    "stars": 2,
+    "desc": "Розбудити {p} скринь-сонь.",
+    "src": "c",
+    "key": "chests",
+    "goal": 60,
+    "art": "i:bell",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "chest3",
+    "name": "Будильник",
+    "stars": 3,
+    "desc": "Розбудити {p} скринь-сонь.",
+    "src": "c",
+    "key": "chests",
+    "goal": 250,
+    "art": "i:candybox",
+    "item": null
+   },
+   {
+    "cat": "path",
+    "id": "boss-magpie",
+    "name": "Перехоплювачку перехоплено",
+    "stars": 0,
+    "desc": "Перемогти Сороку-Перехоплювачку.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:magpie",
+    "item": "magpie"
+   },
+   {
+    "cat": "path",
+    "id": "boss-waxgiant",
+    "name": "Сургуч розтанув",
+    "stars": 0,
+    "desc": "Перемогти Сургучевого Велетня.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:waxgiant",
+    "item": "waxgiant"
+   },
+   {
+    "cat": "path",
+    "id": "boss-vane",
+    "name": "Куди вітер дме",
+    "stars": 0,
+    "desc": "Перемогти Флюгера-Півня.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:vane",
+    "item": "vane"
+   },
+   {
+    "cat": "path",
+    "id": "boss-clockmaker",
+    "name": "Час вийшов",
+    "stars": 0,
+    "desc": "Перемогти Сутінкового Годинникаря.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:clockmaker",
+    "item": "clockmaker"
+   },
+   {
+    "cat": "path",
+    "id": "boss-wolf",
+    "name": "І вовк ситий, і лист цілий",
+    "stars": 0,
+    "desc": "Перемогти Сутінкового Вовка.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:wolf",
+    "item": "wolf"
+   },
+   {
+    "cat": "path",
+    "id": "boss-troll",
+    "name": "Міст вільний",
+    "stars": 0,
+    "desc": "Перемогти Мостового Троля.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:troll",
+    "item": "troll"
+   },
+   {
+    "cat": "path",
+    "id": "boss-hollowpost",
+    "name": "Зміну закінчено",
+    "stars": 0,
+    "desc": "Перемогти Порожнього Листоношу.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:hollowpost",
+    "item": "hollowpost"
+   },
+   {
+    "cat": "path",
+    "id": "boss-skywhale",
+    "name": "Небо без китів",
+    "stars": 0,
+    "desc": "Перемогти Нічного Кита.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:skywhale",
+    "item": "skywhale"
+   },
+   {
+    "cat": "path",
+    "id": "boss-shadowking",
+    "name": "Корона в снігу",
+    "stars": 0,
+    "desc": "Перемогти Короля Тіней.",
+    "src": "has",
+    "key": "bosses",
+    "goal": 1,
+    "art": "e:shadowking",
+    "item": "shadowking"
+   },
+   {
+    "cat": "fight",
+    "id": "foes1",
+    "name": "Гроза заметів",
+    "stars": 1,
+    "desc": "Перемогти {p} супротивників.",
+    "src": "stat",
+    "key": "fights",
+    "goal": 50,
+    "art": "e:snowimp",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "foes2",
+    "name": "Гроза заметів",
+    "stars": 2,
+    "desc": "Перемогти {p} супротивників.",
+    "src": "stat",
+    "key": "fights",
+    "goal": 500,
+    "art": "e:frostfox",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "foes3",
+    "name": "Гроза заметів",
+    "stars": 3,
+    "desc": "Перемогти {p} супротивників.",
+    "src": "stat",
+    "key": "fights",
+    "goal": 2000,
+    "art": "e:snowbrute",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "elite1",
+    "name": "Не з полохливих",
+    "stars": 1,
+    "desc": "Перемогти {p} еліт.",
+    "src": "stat",
+    "key": "elites",
+    "goal": 10,
+    "art": "e:owl",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "elite2",
+    "name": "Не з полохливих",
+    "stars": 2,
+    "desc": "Перемогти {p} еліт.",
+    "src": "stat",
+    "key": "elites",
+    "goal": 75,
+    "art": "e:icebear",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "elite3",
+    "name": "Не з полохливих",
+    "stars": 3,
+    "desc": "Перемогти {p} еліт.",
+    "src": "stat",
+    "key": "elites",
+    "goal": 300,
+    "art": "e:lampghost",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "burst1",
+    "name": "Ліхтарниця",
+    "stars": 1,
+    "desc": "Влаштувати {p} Спалахів.",
+    "src": "c",
+    "key": "bursts",
+    "goal": 25,
+    "art": "i:spark",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "burst2",
+    "name": "Ліхтарниця",
+    "stars": 2,
+    "desc": "Влаштувати {p} Спалахів.",
+    "src": "c",
+    "key": "bursts",
+    "goal": 300,
+    "art": "i:eveninglamp",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "burst3",
+    "name": "Ліхтарниця",
+    "stars": 3,
+    "desc": "Влаштувати {p} Спалахів.",
+    "src": "c",
+    "key": "bursts",
+    "goal": 1500,
+    "art": "i:flashpoint",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "cards1",
+    "name": "Спритні руки",
+    "stars": 1,
+    "desc": "Зіграти {p} карт.",
+    "src": "stat",
+    "key": "cards",
+    "goal": 500,
+    "art": "i:strike",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "cards2",
+    "name": "Спритні руки",
+    "stars": 2,
+    "desc": "Зіграти {p} карт.",
+    "src": "stat",
+    "key": "cards",
+    "goal": 5000,
+    "art": "i:drafts",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "cards3",
+    "name": "Спритні руки",
+    "stars": 3,
+    "desc": "Зіграти {p} карт.",
+    "src": "stat",
+    "key": "cards",
+    "goal": 25000,
+    "art": "i:flurry",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "hit1",
+    "name": "Важка рука",
+    "stars": 1,
+    "desc": "Завдати {p} шкоди одним ударом.",
+    "src": "c",
+    "key": "maxhit",
+    "goal": 25,
+    "art": "i:heavy",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "hit2",
+    "name": "Важка рука",
+    "stars": 2,
+    "desc": "Завдати {p} шкоди одним ударом.",
+    "src": "c",
+    "key": "maxhit",
+    "goal": 50,
+    "art": "i:payback",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "hit3",
+    "name": "Важка рука",
+    "stars": 3,
+    "desc": "Завдати {p} шкоди одним ударом.",
+    "src": "c",
+    "key": "maxhit",
+    "goal": 100,
+    "art": "i:blaze",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "flawless1",
+    "name": "Ані подряпини",
+    "stars": 1,
+    "desc": "Перемогти супротивників без втрати HP: {p}.",
+    "src": "c",
+    "key": "flawless",
+    "goal": 1,
+    "art": "i:guard",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "flawless2",
+    "name": "Ані подряпини",
+    "stars": 2,
+    "desc": "Перемогти супротивників без втрати HP: {p}.",
+    "src": "c",
+    "key": "flawless",
+    "goal": 40,
+    "art": "i:umbrella",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "flawless3",
+    "name": "Ані подряпини",
+    "stars": 3,
+    "desc": "Перемогти супротивників без втрати HP: {p}.",
+    "src": "c",
+    "key": "flawless",
+    "goal": 250,
+    "art": "i:icewall",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "flawlesselite",
+    "name": "Чиста робота",
+    "stars": 0,
+    "desc": "Перемогти еліту, не втративши жодного HP.",
+    "src": "c",
+    "key": "flawlesselite",
+    "goal": 1,
+    "art": "i:cloak"
+   },
+   {
+    "cat": "fight",
+    "id": "oneturn1",
+    "name": "З порога",
+    "stars": 1,
+    "desc": "Перемогти супротивників за один хід: {p}.",
+    "src": "c",
+    "key": "oneturn",
+    "goal": 1,
+    "art": "i:whistle",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "oneturn2",
+    "name": "З порога",
+    "stars": 2,
+    "desc": "Перемогти супротивників за один хід: {p}.",
+    "src": "c",
+    "key": "oneturn",
+    "goal": 25,
+    "art": "i:urgent",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "oneturn3",
+    "name": "З порога",
+    "stars": 3,
+    "desc": "Перемогти супротивників за один хід: {p}.",
+    "src": "c",
+    "key": "oneturn",
+    "goal": 150,
+    "art": "i:avalanche",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "combo",
+    "name": "Поштовий вихор",
+    "stars": 0,
+    "desc": "Зіграти 8 карт за один хід.",
+    "src": "c",
+    "key": "combo",
+    "goal": 1,
+    "art": "i:wind"
+   },
+   {
+    "cat": "fight",
+    "id": "dblburst",
+    "name": "Подвійний спалах",
+    "stars": 0,
+    "desc": "Влаштувати два Спалахи за один хід.",
+    "src": "c",
+    "key": "dblburst",
+    "goal": 1,
+    "art": "i:sparks"
+   },
+   {
+    "cat": "fight",
+    "id": "burnkill",
+    "name": "Догоріло",
+    "stars": 0,
+    "desc": "Добити супротивника Підпалом.",
+    "src": "c",
+    "key": "burnkill",
+    "goal": 1,
+    "art": "i:ember"
+   },
+   {
+    "cat": "fight",
+    "id": "thornskill",
+    "name": "Сам напросився",
+    "stars": 0,
+    "desc": "Добити супротивника Шипами.",
+    "src": "c",
+    "key": "thornskill",
+    "goal": 1,
+    "art": "i:pinecone"
+   },
+   {
+    "cat": "fight",
+    "id": "stunboss",
+    "name": "Колискова",
+    "stars": 0,
+    "desc": "Приспати боса.",
+    "src": "c",
+    "key": "stunboss",
+    "goal": 1,
+    "art": "i:lullaby"
+   },
+   {
+    "cat": "fight",
+    "id": "charms3",
+    "name": "Зачарований вечір",
+    "stars": 0,
+    "desc": "Накласти три різні Чари в одному бою.",
+    "src": "c",
+    "key": "charms3",
+    "goal": 1,
+    "art": "i:hearth"
+   },
+   {
+    "cat": "fight",
+    "id": "defuse",
+    "name": "Ґніт погашено",
+    "stars": 0,
+    "desc": "Перемогти Шутиху, доки вона не вибухнула.",
+    "src": "c",
+    "key": "defuse",
+    "goal": 1,
+    "art": "e:firecracker"
+   },
+   {
+    "cat": "fight",
+    "id": "ginger1",
+    "name": "Пекарня в дорозі",
+    "stars": 1,
+    "desc": "З’їсти {p} Пряників.",
+    "src": "c",
+    "key": "ginger",
+    "goal": 100,
+    "art": "i:gingerbread",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "ginger2",
+    "name": "Пекарня в дорозі",
+    "stars": 2,
+    "desc": "З’їсти {p} Пряників.",
+    "src": "c",
+    "key": "ginger",
+    "goal": 1000,
+    "art": "i:glaze",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "ginger3",
+    "name": "Пекарня в дорозі",
+    "stars": 3,
+    "desc": "З’їсти {p} Пряників.",
+    "src": "c",
+    "key": "ginger",
+    "goal": 5000,
+    "art": "i:gingerhouse",
+    "item": null
+   },
+   {
+    "cat": "fight",
+    "id": "sharp",
+    "name": "Усе нагострено",
+    "stars": 0,
+    "desc": "Нагострити {p} карт за один бій.",
+    "src": "c",
+    "key": "sharpfight",
+    "goal": 20,
+    "art": "i:grindwheel"
+   },
+   {
+    "cat": "fight",
+    "id": "dogmad",
+    "name": "Злий пес",
+    "stars": 0,
+    "desc": "Розлютити Дружка до {p} Злості.",
+    "src": "c",
+    "key": "dogmax",
+    "goal": 25,
+    "art": "i:dogfriend"
+   },
+   {
+    "cat": "fight",
+    "id": "price",
+    "name": "Гірка ціна",
+    "stars": 0,
+    "desc": "Заплатити Ціною {p} HP за один бій.",
+    "src": "c",
+    "key": "pricefight",
+    "goal": 25,
+    "art": "i:mortar"
+   },
+   {
+    "cat": "collect",
+    "id": "spend1",
+    "name": "Дзвінка монета",
+    "stars": 1,
+    "desc": "Витратити {p} монет.",
+    "src": "c",
+    "key": "spent",
+    "goal": 1000,
+    "art": "i:coin",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "spend2",
+    "name": "Дзвінка монета",
+    "stars": 2,
+    "desc": "Витратити {p} монет.",
+    "src": "c",
+    "key": "spent",
+    "goal": 15000,
+    "art": "i:luckycoin",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "spend3",
+    "name": "Дзвінка монета",
+    "stars": 3,
+    "desc": "Витратити {p} монет.",
+    "src": "c",
+    "key": "spent",
+    "goal": 60000,
+    "art": "e:hedgehog",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "buy1",
+    "name": "Постійна покупниця",
+    "stars": 1,
+    "desc": "Купити в крамниці {p} карт.",
+    "src": "c",
+    "key": "bought",
+    "goal": 10,
+    "art": "i:coupon",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "buy2",
+    "name": "Постійна покупниця",
+    "stars": 2,
+    "desc": "Купити в крамниці {p} карт.",
+    "src": "c",
+    "key": "bought",
+    "goal": 60,
+    "art": "i:pockethog",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "buy3",
+    "name": "Постійна покупниця",
+    "stars": 3,
+    "desc": "Купити в крамниці {p} карт.",
+    "src": "c",
+    "key": "bought",
+    "goal": 200,
+    "art": "i:magicbag",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "up1",
+    "name": "Точильниця",
+    "stars": 1,
+    "desc": "Покращити {p} карт.",
+    "src": "c",
+    "key": "upgrades",
+    "goal": 15,
+    "art": "i:whetstone",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "up2",
+    "name": "Точильниця",
+    "stars": 2,
+    "desc": "Покращити {p} карт.",
+    "src": "c",
+    "key": "upgrades",
+    "goal": 150,
+    "art": "i:stamp",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "up3",
+    "name": "Точильниця",
+    "stars": 3,
+    "desc": "Покращити {p} карт.",
+    "src": "c",
+    "key": "upgrades",
+    "goal": 600,
+    "art": "i:goldquill",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "relic1",
+    "name": "Скринька із секретами",
+    "stars": 1,
+    "desc": "Знайти різні талісмани: {p}.",
+    "src": "s",
+    "key": "relics",
+    "goal": 10,
+    "art": "i:jar",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "relic2",
+    "name": "Скринька із секретами",
+    "stars": 2,
+    "desc": "Знайти різні талісмани: {p}.",
+    "src": "s",
+    "key": "relics",
+    "goal": 20,
+    "art": "i:musicbox",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "relic3",
+    "name": "Скринька із секретами",
+    "stars": 3,
+    "desc": "Знайти різні талісмани: {p}.",
+    "src": "s",
+    "key": "relics",
+    "goal": 60,
+    "art": "i:moonstone",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "card1",
+    "name": "Повна торба",
+    "stars": 1,
+    "desc": "Зіграти різні карти: {p}.",
+    "src": "s",
+    "key": "played",
+    "goal": 25,
+    "art": "i:envelope",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "card2",
+    "name": "Повна торба",
+    "stars": 2,
+    "desc": "Зіграти різні карти: {p}.",
+    "src": "s",
+    "key": "played",
+    "goal": 60,
+    "art": "i:secret",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "card3",
+    "name": "Повна торба",
+    "stars": 3,
+    "desc": "Зіграти різні карти: {p}.",
+    "src": "s",
+    "key": "played",
+    "goal": 92,
+    "art": "i:stampbook",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "foe1",
+    "name": "Знавець околиць",
+    "stars": 1,
+    "desc": "Перемогти різних супротивників: {p}.",
+    "src": "s",
+    "key": "beaten",
+    "goal": 10,
+    "art": "e:pigeon",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "foe2",
+    "name": "Знавець околиць",
+    "stars": 2,
+    "desc": "Перемогти різних супротивників: {p}.",
+    "src": "s",
+    "key": "beaten",
+    "goal": 25,
+    "art": "e:raven",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "foe3",
+    "name": "Знавець околиць",
+    "stars": 3,
+    "desc": "Перемогти різних супротивників: {p}.",
+    "src": "s",
+    "key": "beaten",
+    "goal": 37,
+    "art": "e:wisp",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "trophy1",
+    "name": "Трофеї",
+    "stars": 1,
+    "desc": "Узяти різні талісмани боса: {p}.",
+    "src": "s",
+    "key": "trophies",
+    "goal": 3,
+    "art": "i:hourglass",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "trophy2",
+    "name": "Трофеї",
+    "stars": 2,
+    "desc": "Узяти різні талісмани боса: {p}.",
+    "src": "s",
+    "key": "trophies",
+    "goal": 6,
+    "art": "i:crown",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "rare1",
+    "name": "Рідкісна знахідка",
+    "stars": 1,
+    "desc": "Зіграти різні рідкісні карти: {p}.",
+    "src": "s",
+    "key": "rareplayed",
+    "goal": 5,
+    "art": "i:aurora",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "rare2",
+    "name": "Рідкісна знахідка",
+    "stars": 2,
+    "desc": "Зіграти різні рідкісні карти: {p}.",
+    "src": "s",
+    "key": "rareplayed",
+    "goal": 12,
+    "art": "i:avalanche",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "legendcard",
+    "name": "Легенда пошти",
+    "stars": 0,
+    "desc": "Зіграти легендарну карту.",
+    "src": "c",
+    "key": "legendcard",
+    "goal": 1,
+    "art": "i:lastlight"
+   },
+   {
+    "cat": "collect",
+    "id": "legendrelic",
+    "name": "Скарб Гірки",
+    "stars": 0,
+    "desc": "Знайти легендарний талісман.",
+    "src": "c",
+    "key": "legendrelic",
+    "goal": 1,
+    "art": "i:sunstone"
+   },
+   {
+    "cat": "collect",
+    "id": "rich",
+    "name": "Скарбничка повна",
+    "stars": 0,
+    "desc": "Накопичити {p} монет за один забіг.",
+    "src": "c",
+    "key": "maxgold",
+    "goal": 400,
+    "art": "i:piggy"
+   },
+   {
+    "cat": "collect",
+    "id": "hp",
+    "name": "Міцне здоров’я",
+    "stars": 0,
+    "desc": "Підняти максимум HP до {p}.",
+    "src": "c",
+    "key": "maxhp",
+    "goal": 60,
+    "art": "i:heart"
+   },
+   {
+    "cat": "collect",
+    "id": "updeck",
+    "name": "Майстриня",
+    "stars": 0,
+    "desc": "Зібрати колоду, у якій {p} покращених карт.",
+    "src": "c",
+    "key": "updeck",
+    "goal": 15,
+    "art": "i:mittens"
+   },
+   {
+    "cat": "collect",
+    "id": "light",
+    "name": "Налегці",
+    "stars": 0,
+    "desc": "Доставити лист із колодою не більше ніж 15 карт.",
+    "src": "c",
+    "key": "light",
+    "goal": 1,
+    "art": "i:feather"
+   },
+   {
+    "cat": "collect",
+    "id": "codex1",
+    "name": "Літописець",
+    "stars": 1,
+    "desc": "Відкрити записів у базі знань: {p}.",
+    "src": "c",
+    "key": "cxall",
+    "goal": 30,
+    "art": "i:inkpen",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "codex2",
+    "name": "Літописець",
+    "stars": 2,
+    "desc": "Відкрити записів у базі знань: {p}.",
+    "src": "c",
+    "key": "cxall",
+    "goal": 100,
+    "art": "i:stampbook",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "codex3",
+    "name": "Літописець",
+    "stars": 3,
+    "desc": "Відкрити записів у базі знань: {p}.",
+    "src": "c",
+    "key": "cxall",
+    "goal": 200,
+    "art": "i:goldquill",
+    "item": null
+   },
+   {
+    "cat": "collect",
+    "id": "codexheroes",
+    "name": "Обличчя Гірки",
+    "stars": 0,
+    "desc": "Відкрити в базі знань усіх героїв: {p}.",
+    "src": "s",
+    "key": "cxh",
+    "goal": 8,
+    "art": "c:herbalist"
+   },
+   {
+    "cat": "collect",
+    "id": "codexfoes",
+    "name": "Бестіарій",
+    "stars": 0,
+    "desc": "Відкрити в базі знань усіх противників: {p}.",
+    "src": "c",
+    "key": "cxe",
+    "goal": 45,
+    "art": "e:troll"
+   },
+   {
+    "cat": "collect",
+    "id": "codexcards",
+    "name": "Картотека",
+    "stars": 0,
+    "desc": "Відкрити в базі знань усі карти: {p}.",
+    "src": "c",
+    "key": "cxc",
+    "goal": 98,
+    "art": "i:telegram"
+   },
+   {
+    "cat": "collect",
+    "id": "codexrelics",
+    "name": "Скринька талісманів",
+    "stars": 0,
+    "desc": "Відкрити в базі знань усі талісмани: {p}.",
+    "src": "c",
+    "key": "cxr",
+    "goal": 65,
+    "art": "i:musicbox"
+   },
+   {
+    "cat": "story",
+    "id": "talk1",
+    "name": "Балакуча",
+    "stars": 1,
+    "desc": "Поговорити з противниками {p} разів.",
+    "src": "c",
+    "key": "talks",
+    "goal": 10,
+    "art": "e:pigeon",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "talk2",
+    "name": "Балакуча",
+    "stars": 2,
+    "desc": "Поговорити з противниками {p} разів.",
+    "src": "c",
+    "key": "talks",
+    "goal": 150,
+    "art": "e:raven",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "talk3",
+    "name": "Балакуча",
+    "stars": 3,
+    "desc": "Поговорити з противниками {p} разів.",
+    "src": "c",
+    "key": "talks",
+    "goal": 600,
+    "art": "e:owl",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "peace1",
+    "name": "Миром",
+    "stars": 1,
+    "desc": "Вирішити справу миром: {p}.",
+    "src": "c",
+    "key": "peace",
+    "goal": 1,
+    "art": "e:samovar",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "peace2",
+    "name": "Миром",
+    "stars": 2,
+    "desc": "Вирішити справу миром: {p}.",
+    "src": "c",
+    "key": "peace",
+    "goal": 30,
+    "art": "e:matryoshka",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "peace3",
+    "name": "Миром",
+    "stars": 3,
+    "desc": "Вирішити справу миром: {p}.",
+    "src": "c",
+    "key": "peace",
+    "goal": 150,
+    "art": "e:icebear",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "taunt1",
+    "name": "Забіяка",
+    "stars": 1,
+    "desc": "Розлютити противників: {p}.",
+    "src": "c",
+    "key": "taunts",
+    "goal": 3,
+    "art": "e:snowimp",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "taunt2",
+    "name": "Забіяка",
+    "stars": 2,
+    "desc": "Розлютити противників: {p}.",
+    "src": "c",
+    "key": "taunts",
+    "goal": 40,
+    "art": "e:firecracker",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "taunt3",
+    "name": "Забіяка",
+    "stars": 3,
+    "desc": "Розлютити противників: {p}.",
+    "src": "c",
+    "key": "taunts",
+    "goal": 200,
+    "art": "e:snowbrute",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "spare1",
+    "name": "Великодушність",
+    "stars": 1,
+    "desc": "Помилувати переможених противників: {p}.",
+    "src": "c",
+    "key": "spares",
+    "goal": 3,
+    "art": "e:sootmouse",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "spare2",
+    "name": "Великодушність",
+    "stars": 2,
+    "desc": "Помилувати переможених противників: {p}.",
+    "src": "c",
+    "key": "spares",
+    "goal": 40,
+    "art": "e:magpie",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "spare3",
+    "name": "Великодушність",
+    "stars": 3,
+    "desc": "Помилувати переможених противників: {p}.",
+    "src": "c",
+    "key": "spares",
+    "goal": 200,
+    "art": "e:wolf",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "scare",
+    "name": "Опудало",
+    "stars": 0,
+    "desc": "Прогнати переляканих противників: {p}.",
+    "src": "c",
+    "key": "scares",
+    "goal": 25,
+    "art": "e:bat"
+   },
+   {
+    "cat": "story",
+    "id": "lines",
+    "name": "Слухачка",
+    "stars": 0,
+    "desc": "Почути репліки противників: {p}.",
+    "src": "c",
+    "key": "lines",
+    "goal": 1000,
+    "art": "e:cuckoo"
+   },
+   {
+    "cat": "story",
+    "id": "help1",
+    "name": "Друг у біді",
+    "stars": 1,
+    "desc": "Допомогти героям у дорозі: {p}.",
+    "src": "c",
+    "key": "helps",
+    "goal": 1,
+    "art": "c:baker",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "help2",
+    "name": "Друг у біді",
+    "stars": 2,
+    "desc": "Допомогти героям у дорозі: {p}.",
+    "src": "c",
+    "key": "helps",
+    "goal": 25,
+    "art": "c:guard",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "help3",
+    "name": "Друг у біді",
+    "stars": 3,
+    "desc": "Допомогти героям у дорозі: {p}.",
+    "src": "c",
+    "key": "helps",
+    "goal": 100,
+    "art": "c:herbalist",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "metall",
+    "name": "Усі свої",
+    "stars": 0,
+    "desc": "Зустріти в дорозі кожного героя: {p}.",
+    "src": "s",
+    "key": "met",
+    "goal": 8,
+    "art": "i:horn"
+   },
+   {
+    "cat": "story",
+    "id": "friends3",
+    "name": "Усією Гіркою",
+    "stars": 0,
+    "desc": "Вийти на фінальний бій із трьома друзями.",
+    "src": "c",
+    "key": "friends3",
+    "goal": 1,
+    "art": "i:fire"
+   },
+   {
+    "cat": "story",
+    "id": "allhelp",
+    "name": "Жодної образи",
+    "stars": 0,
+    "desc": "Доставити листа, допомагаючи всім зустрінутим героям (щонайменше чотирьом).",
+    "src": "c",
+    "key": "allhelp",
+    "goal": 1,
+    "art": "i:mittens"
+   },
+   {
+    "cat": "story",
+    "id": "betray",
+    "name": "Темний бік",
+    "stars": 0,
+    "desc": "Скривдити героя так, що його забрала Тінь.",
+    "src": "c",
+    "key": "betray",
+    "goal": 1,
+    "art": "i:dread"
+   },
+   {
+    "cat": "story",
+    "id": "forgive",
+    "name": "Пробач мені",
+    "stars": 0,
+    "desc": "Попросити пробачення в героя, що пішов у Тінь.",
+    "src": "c",
+    "key": "forgive",
+    "goal": 1,
+    "art": "i:lullaby"
+   },
+   {
+    "cat": "story",
+    "id": "dark-lamp",
+    "name": "Світло повернулося",
+    "stars": 0,
+    "desc": "Перемогти темну версію героїні: Іва.",
+    "src": "has",
+    "key": "darkbeaten",
+    "goal": 1,
+    "art": "e:dk_lamp",
+    "item": "lamp"
+   },
+   {
+    "cat": "story",
+    "id": "dark-courier",
+    "name": "Адресу знайдено",
+    "stars": 0,
+    "desc": "Перемогти темну версію героя: Тишко.",
+    "src": "has",
+    "key": "darkbeaten",
+    "goal": 1,
+    "art": "e:dk_courier",
+    "item": "courier"
+   },
+   {
+    "cat": "story",
+    "id": "dark-guard",
+    "name": "Міст відкрито",
+    "stars": 0,
+    "desc": "Перемогти темну версію героїні: Марта.",
+    "src": "has",
+    "key": "darkbeaten",
+    "goal": 1,
+    "art": "e:dk_guard",
+    "item": "guard"
+   },
+   {
+    "cat": "story",
+    "id": "dark-stoker",
+    "name": "Попіл охолов",
+    "stars": 0,
+    "desc": "Перемогти темну версію героя: Хома.",
+    "src": "has",
+    "key": "darkbeaten",
+    "goal": 1,
+    "art": "e:dk_stoker",
+    "item": "stoker"
+   },
+   {
+    "cat": "story",
+    "id": "dark-baker",
+    "name": "Свіжий хліб",
+    "stars": 0,
+    "desc": "Перемогти темну версію героїні: Груня.",
+    "src": "has",
+    "key": "darkbeaten",
+    "goal": 1,
+    "art": "e:dk_baker",
+    "item": "baker"
+   },
+   {
+    "cat": "story",
+    "id": "dark-grinder",
+    "name": "Тупий клинок",
+    "stars": 0,
+    "desc": "Перемогти темну версію героя: Сава.",
+    "src": "has",
+    "key": "darkbeaten",
+    "goal": 1,
+    "art": "e:dk_grinder",
+    "item": "grinder"
+   },
+   {
+    "cat": "story",
+    "id": "dark-shepherd",
+    "name": "Свій пес",
+    "stars": 0,
+    "desc": "Перемогти темну версію героїні: Луша.",
+    "src": "has",
+    "key": "darkbeaten",
+    "goal": 1,
+    "art": "e:dk_shepherd",
+    "item": "shepherd"
+   },
+   {
+    "cat": "story",
+    "id": "dark-herbalist",
+    "name": "Солодке після гіркого",
+    "stars": 0,
+    "desc": "Перемогти темну версію героїні: Уляна.",
+    "src": "has",
+    "key": "darkbeaten",
+    "goal": 1,
+    "art": "e:dk_herbalist",
+    "item": "herbalist"
+   },
+   {
+    "cat": "story",
+    "id": "alldark",
+    "name": "Жодної тіні",
+    "stars": 0,
+    "desc": "Перемогти темні версії всіх героїв: {p}.",
+    "src": "s",
+    "key": "darkbeaten",
+    "goal": 8,
+    "art": "e:shadowking"
+   },
+   {
+    "cat": "story",
+    "id": "secret-lamp",
+    "name": "Незапалений ліхтар",
+    "stars": 0,
+    "desc": "Граючи за Іву, запалити Ліхтарного Привида.",
+    "src": "has",
+    "key": "secrets",
+    "goal": 1,
+    "art": "c:lamp",
+    "item": "lamp"
+   },
+   {
+    "cat": "story",
+    "id": "secret-courier",
+    "name": "Прадід",
+    "stars": 0,
+    "desc": "Граючи за Тишка, назвати Порожнього Листоношу на ім’я.",
+    "src": "has",
+    "key": "secrets",
+    "goal": 1,
+    "art": "c:courier",
+    "item": "courier"
+   },
+   {
+    "cat": "story",
+    "id": "secret-guard",
+    "name": "Міст на двох",
+    "stars": 0,
+    "desc": "Граючи за Марту, поділити міст із Мостовим Тролем.",
+    "src": "has",
+    "key": "secrets",
+    "goal": 1,
+    "art": "c:guard",
+    "item": "guard"
+   },
+   {
+    "cat": "story",
+    "id": "secret-stoker",
+    "name": "Правда на вітрі",
+    "stars": 0,
+    "desc": "Граючи за Хому, зізнатися Флюгерові-Півню про Груню.",
+    "src": "has",
+    "key": "secrets",
+    "goal": 1,
+    "art": "c:stoker",
+    "item": "stoker"
+   },
+   {
+    "cat": "story",
+    "id": "secret-baker",
+    "name": "Морква миру",
+    "stars": 0,
+    "desc": "Граючи за Груню, помиритися зі Сніговиком-Громилою.",
+    "src": "has",
+    "key": "secrets",
+    "goal": 1,
+    "art": "c:baker",
+    "item": "baker"
+   },
+   {
+    "cat": "story",
+    "id": "secret-grinder",
+    "name": "Повернути годину",
+    "stars": 0,
+    "desc": "Граючи за Саву, затупити стрілки Сутінкового Годинникаря.",
+    "src": "has",
+    "key": "secrets",
+    "goal": 1,
+    "art": "c:grinder",
+    "item": "grinder"
+   },
+   {
+    "cat": "story",
+    "id": "secret-shepherd",
+    "name": "Брат Дружка",
+    "stars": 0,
+    "desc": "Граючи за Лушу, помирити Дружка із Сутінковим Вовком.",
+    "src": "has",
+    "key": "secrets",
+    "goal": 1,
+    "art": "c:shepherd",
+    "item": "shepherd"
+   },
+   {
+    "cat": "story",
+    "id": "secret-herbalist",
+    "name": "Рахунок закрито",
+    "stars": 0,
+    "desc": "Граючи за Уляну, викупити свої роки у Ворона-Рахівника.",
+    "src": "has",
+    "key": "secrets",
+    "goal": 1,
+    "art": "c:herbalist",
+    "item": "herbalist"
+   },
+   {
+    "cat": "story",
+    "id": "allsecrets",
+    "name": "Усі таємниці Гірки",
+    "stars": 0,
+    "desc": "Дізнатися всі таємниці героїв: {p}.",
+    "src": "s",
+    "key": "secrets",
+    "goal": 8,
+    "art": "i:secret"
+   },
+   {
+    "cat": "story",
+    "id": "finalbuy",
+    "name": "Остання покупка",
+    "stars": 0,
+    "desc": "Купити щось у крамниці біля останніх дверей.",
+    "src": "c",
+    "key": "finalbuy",
+    "goal": 1,
+    "art": "e:hedgehog"
+   },
+   {
+    "cat": "story",
+    "id": "herotie1",
+    "name": "Старі знайомі",
+    "stars": 1,
+    "desc": "Вибрати різні особливі відповіді на зустрічах із героями: {p}.",
+    "src": "s",
+    "key": "ties",
+    "goal": 5,
+    "art": "c:courier",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "herotie2",
+    "name": "Старі знайомі",
+    "stars": 2,
+    "desc": "Вибрати різні особливі відповіді на зустрічах із героями: {p}.",
+    "src": "s",
+    "key": "ties",
+    "goal": 15,
+    "art": "c:stoker",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "herotie3",
+    "name": "Старі знайомі",
+    "stars": 3,
+    "desc": "Вибрати різні особливі відповіді на зустрічах із героями: {p}.",
+    "src": "s",
+    "key": "ties",
+    "goal": 35,
+    "art": "c:grinder",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "befriend",
+    "name": "Друг усієї Гірки",
+    "stars": 0,
+    "desc": "Подружитися з кожним героєм: {p}.",
+    "src": "s",
+    "key": "friends",
+    "goal": 8,
+    "art": "i:hearth"
+   },
+   {
+    "cat": "story",
+    "id": "letters",
+    "name": "Листи сестрі",
+    "stars": 0,
+    "desc": "За Тишка передати Марті листи Сави.",
+    "src": "c",
+    "key": "letters",
+    "goal": 1,
+    "art": "i:envelope"
+   },
+   {
+    "cat": "story",
+    "id": "regards1",
+    "name": "Добра слава",
+    "stars": 1,
+    "desc": "Передати привіт від пощаджених ворогів: {p}.",
+    "src": "c",
+    "key": "regards",
+    "goal": 5,
+    "art": "e:wisp",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "regards2",
+    "name": "Добра слава",
+    "stars": 2,
+    "desc": "Передати привіт від пощаджених ворогів: {p}.",
+    "src": "c",
+    "key": "regards",
+    "goal": 40,
+    "art": "e:mist",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "regards3",
+    "name": "Добра слава",
+    "stars": 3,
+    "desc": "Передати привіт від пощаджених ворогів: {p}.",
+    "src": "c",
+    "key": "regards",
+    "goal": 150,
+    "art": "e:samovar",
+    "item": null
+   },
+   {
+    "cat": "story",
+    "id": "avenged",
+    "name": "За своїх",
+    "stars": 0,
+    "desc": "Перемогти ворогів, які мстилися за своїх: {p}.",
+    "src": "c",
+    "key": "avenged",
+    "goal": 25,
+    "art": "e:snowbrute"
+   },
+   {
+    "cat": "story",
+    "id": "rivals",
+    "name": "Ворог мого ворога",
+    "stars": 0,
+    "desc": "Перемогти суперників уже переможених ворогів: {p}.",
+    "src": "c",
+    "key": "rivals",
+    "goal": 25,
+    "art": "e:vane"
+   }
+  ],
+  "CODEX": {
+   "h": [
+    "lamp",
+    "courier",
+    "guard",
+    "stoker",
+    "baker",
+    "grinder",
+    "shepherd",
+    "herbalist"
+   ],
+   "e": [
+    "inkcat",
+    "snowimp",
+    "pigeon",
+    "sootmouse",
+    "scarfsnake",
+    "icicle",
+    "laundress",
+    "golem",
+    "mailbox",
+    "matryoshka",
+    "samovar",
+    "cuckoo",
+    "owl",
+    "snowbrute",
+    "iceknight",
+    "magpie",
+    "waxgiant",
+    "vane",
+    "shadowthief",
+    "bat",
+    "stump",
+    "frostfox",
+    "wisp",
+    "raven",
+    "mist",
+    "ghoul",
+    "firecracker",
+    "icebear",
+    "lampghost",
+    "blizzard",
+    "watchman",
+    "clockmaker",
+    "wolf",
+    "troll",
+    "shadowking",
+    "hollowpost",
+    "skywhale",
+    "dk_lamp",
+    "dk_courier",
+    "dk_guard",
+    "dk_stoker",
+    "dk_baker",
+    "dk_grinder",
+    "dk_shepherd",
+    "dk_herbalist"
+   ],
+   "c": [
+    "strike",
+    "guard",
+    "kindle",
+    "spark",
+    "sparks",
+    "cloak",
+    "tea",
+    "wind",
+    "oil",
+    "mirror",
+    "heavy",
+    "wax",
+    "ember",
+    "snowkick",
+    "payback",
+    "luckycoin",
+    "snowball",
+    "flurry",
+    "icethrow",
+    "heavybag",
+    "sbiten",
+    "sledram",
+    "hornblow",
+    "patch",
+    "snowstorm",
+    "icelantern",
+    "cancel",
+    "carbon",
+    "nightshift",
+    "kindling",
+    "stamp",
+    "redseal",
+    "whistle",
+    "cocoa",
+    "prickly",
+    "frostlace",
+    "parcel",
+    "telegram",
+    "surprise",
+    "umbrella",
+    "blotter",
+    "mittens",
+    "inkpen",
+    "palm",
+    "shadow",
+    "blaze",
+    "breath",
+    "lullaby",
+    "lastword",
+    "secret",
+    "finale",
+    "flashpoint",
+    "drift",
+    "pockethog",
+    "drafts",
+    "eveninglamp",
+    "stubborn",
+    "compass",
+    "hearth",
+    "rhythm",
+    "avalanche",
+    "moneyorder",
+    "aurora",
+    "returnaddr",
+    "frostbite",
+    "poste",
+    "starfall",
+    "iceprison",
+    "bonfire",
+    "registered",
+    "chimes",
+    "lastlight",
+    "firebird",
+    "eternalwinter",
+    "firefly",
+    "lampglass",
+    "beam",
+    "urgent",
+    "express",
+    "rushmail",
+    "icewall",
+    "hedge",
+    "standfast",
+    "flue",
+    "poker",
+    "fan",
+    "gingerbread",
+    "dough",
+    "rollingpin",
+    "glaze",
+    "gingerhouse",
+    "fair",
+    "hone",
+    "gritsparks",
+    "oselok",
+    "apprentice",
+    "steelring",
+    "sic",
+    "heel",
+    "bone",
+    "wolfhound",
+    "howl",
+    "bitterroot",
+    "chamomile",
+    "wormwood",
+    "sleepgrass",
+    "livingwater",
+    "blot",
+    "icy",
+    "sealwax",
+    "dread",
+    "ash",
+    "stale"
+   ],
+   "r": [
+    "bell",
+    "feather",
+    "jar",
+    "flint",
+    "snowman",
+    "scarf",
+    "envelope",
+    "thimble",
+    "mug",
+    "pencil",
+    "bookmark",
+    "cocoatin",
+    "stamppad",
+    "snowglobe",
+    "oilcan",
+    "candybox",
+    "vanefeather",
+    "stokerglove",
+    "luckystamp",
+    "magnifier",
+    "kettle",
+    "whetstone",
+    "inkwell",
+    "pinecone",
+    "coupon",
+    "stub",
+    "sled",
+    "piggy",
+    "frostglass",
+    "matchbox",
+    "mirrorshard",
+    "eternaloil",
+    "medal",
+    "thermos",
+    "northstar",
+    "stampbook",
+    "hotstone",
+    "clover",
+    "horseshoe",
+    "brazier",
+    "musicbox",
+    "ribbon",
+    "horn",
+    "frostring",
+    "buckle",
+    "wreath",
+    "sunstone",
+    "lastcandle",
+    "magicbag",
+    "ivalamp",
+    "wingboots",
+    "ironshutter",
+    "sootbroom",
+    "wickcutter",
+    "milestone",
+    "bridgerail",
+    "chimneycap",
+    "honeypot",
+    "leatherstrop",
+    "collar",
+    "herbbag",
+    "moldform",
+    "grindwheel",
+    "dogfriend",
+    "mortar",
+    "hourglass",
+    "bottomless",
+    "crown",
+    "bellows",
+    "moonstone",
+    "goldquill"
+   ],
+   "freeC": [
+    "strike",
+    "guard",
+    "kindle",
+    "spark",
+    "sparks",
+    "cloak",
+    "tea",
+    "wind",
+    "oil",
+    "mirror",
+    "heavy",
+    "wax",
+    "ember",
+    "snowkick",
+    "payback",
+    "luckycoin",
+    "snowball",
+    "flurry",
+    "icethrow",
+    "heavybag",
+    "sbiten",
+    "sledram",
+    "hornblow",
+    "patch",
+    "snowstorm",
+    "icelantern",
+    "cancel",
+    "carbon",
+    "nightshift",
+    "kindling",
+    "stamp",
+    "redseal",
+    "whistle",
+    "cocoa",
+    "prickly",
+    "frostlace",
+    "parcel",
+    "telegram",
+    "surprise",
+    "umbrella",
+    "blotter",
+    "mittens",
+    "inkpen",
+    "palm",
+    "shadow",
+    "blaze",
+    "breath",
+    "lullaby",
+    "lastword",
+    "secret",
+    "finale",
+    "flashpoint",
+    "drift",
+    "pockethog",
+    "drafts",
+    "eveninglamp",
+    "stubborn",
+    "compass",
+    "hearth",
+    "rhythm",
+    "avalanche",
+    "moneyorder",
+    "aurora",
+    "returnaddr",
+    "frostbite",
+    "poste",
+    "starfall",
+    "iceprison",
+    "bonfire",
+    "registered",
+    "chimes",
+    "lastlight",
+    "firebird",
+    "eternalwinter",
+    "firefly",
+    "lampglass",
+    "beam",
+    "urgent",
+    "express",
+    "rushmail",
+    "icewall",
+    "hedge",
+    "standfast",
+    "flue",
+    "poker",
+    "fan",
+    "gingerbread",
+    "dough",
+    "rollingpin",
+    "glaze",
+    "gingerhouse",
+    "fair",
+    "blot",
+    "icy",
+    "sealwax",
+    "dread",
+    "ash",
+    "stale"
+   ],
+   "freeR": [
+    "bell",
+    "feather",
+    "jar",
+    "flint",
+    "snowman",
+    "scarf",
+    "envelope",
+    "thimble",
+    "mug",
+    "pencil",
+    "bookmark",
+    "cocoatin",
+    "stamppad",
+    "snowglobe",
+    "oilcan",
+    "candybox",
+    "vanefeather",
+    "stokerglove",
+    "luckystamp",
+    "magnifier",
+    "kettle",
+    "whetstone",
+    "inkwell",
+    "pinecone",
+    "coupon",
+    "stub",
+    "sled",
+    "piggy",
+    "frostglass",
+    "matchbox",
+    "mirrorshard",
+    "eternaloil",
+    "medal",
+    "thermos",
+    "northstar",
+    "stampbook",
+    "hotstone",
+    "clover",
+    "horseshoe",
+    "brazier",
+    "musicbox",
+    "ribbon",
+    "horn",
+    "frostring",
+    "buckle",
+    "wreath",
+    "sunstone",
+    "lastcandle",
+    "magicbag",
+    "ivalamp",
+    "wingboots",
+    "ironshutter",
+    "sootbroom",
+    "wickcutter",
+    "milestone",
+    "bridgerail",
+    "chimneycap",
+    "honeypot",
+    "moldform",
+    "hourglass",
+    "bottomless",
+    "crown",
+    "bellows",
+    "moonstone",
+    "goldquill"
+   ]
+  }
+ }
+}
