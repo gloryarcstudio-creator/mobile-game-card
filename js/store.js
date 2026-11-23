@@ -9,7 +9,8 @@
   const AD_SECONDS = 5;
 
   // Цены условные: их задаёт площадка, здесь только подпись на кнопке
-  const PRICE = { hero: '$1.99', pack: '$3.99', noads: '$2.99' };
+  // v177: все цены по $5, так попросил автор игры (было $1.99 герой, $3.99 все герои, $2.99 без рекламы)
+  const PRICE = { hero: '$5', pack: '$5', noads: '$5' };
 
   // Платные герои отмечены в CLASSES полем paid: true (js/data.js)
   const paidHeroes = Object.keys(CLASSES).filter((id) => CLASSES[id].paid);

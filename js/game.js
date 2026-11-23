@@ -336,14 +336,21 @@
   const backdrop = document.createElement('div');
   backdrop.id = 'backdrop';
   document.body.insertBefore(backdrop, app);
+  // Щуп безопасной области (v177): его внутренние отступы равны вырезу под камеру и системным полосам.
+  // Игра вписывается в экран без них, чтобы верх не уходил под камеру; в самих полосах виден размытый фон.
+  const safe = document.createElement('div');
+  safe.id = 'safe';
+  document.body.insertBefore(safe, app);
   function fit() {
     // Размер берём у самой страницы, а не window.innerWidth: в мобильном браузере (не во вкладке приложения)
     // innerWidth растёт вместе с содержимым, которое шире экрана, игра подгоняла себя под это число,
     // становилась ещё шире и в итоге оказывалась увеличенной и обрезанной со всех сторон.
     const root = document.documentElement;
     const vw = root.clientWidth || window.innerWidth; const vh = root.clientHeight || window.innerHeight;
-    const s = Math.min(vw / 400, vh / 860);
-    app.style.transform = `translate(-50%, -50%) scale(${s})`;
+    const cs = getComputedStyle(safe); const px = (v) => Math.max(0, parseFloat(v) || 0);
+    const it = px(cs.paddingTop); const ir = px(cs.paddingRight); const ib = px(cs.paddingBottom); const il = px(cs.paddingLeft);
+    const s = Math.min((vw - il - ir) / 400, (vh - it - ib) / 860);
+    app.style.transform = `translate(calc(-50% + ${((il - ir) / 2).toFixed(1)}px), calc(-50% + ${((it - ib) / 2).toFixed(1)}px)) scale(${s})`;
     const bands = Math.max(vw - 400 * s, vh - 860 * s);
     backdrop.hidden = bands < 12;
     app.classList.toggle('framed', bands >= 12);
