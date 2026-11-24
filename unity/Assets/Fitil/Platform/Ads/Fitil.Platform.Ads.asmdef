@@ -1,0 +1,25 @@
+{
+    "name": "Fitil.Platform.Ads",
+    "rootNamespace": "Fitil.Platform.Ads",
+    "references": [
+        "Fitil.Core",
+        "Fitil.Platform",
+        "GoogleMobileAds",
+        "GoogleMobileAds.Api",
+        "GoogleMobileAds.Core",
+        "GoogleMobileAds.Common",
+        "GoogleMobileAds.Ump",
+        "GoogleMobileAds.Ump.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": ["FITIL_ADMOB"],
+    "versionDefines": [
+        { "name": "com.google.ads.mobile", "expression": "9.0.0", "define": "FITIL_ADMOB" }
+    ],
+    "noEngineReferences": false
+}
