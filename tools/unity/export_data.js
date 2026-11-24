@@ -67,6 +67,27 @@ for (const lang of ['ru', 'en', 'uk']) {
     lore: plain(w.Lore, 'lore', fnFields),
     achievements: plain(w.Achievements, 'achievements', fnFields),
   };
+  // тексты сюжета, которые зависят от героя (intro, winText, loseText — функции от героя): готовый текст для каждого героя
+  data.storyHero = {};
+  for (const [sid, st] of Object.entries(w.Story.STORIES)) {
+    const out = {};
+    for (const f of ['intro', 'winText', 'loseText']) {
+      if (typeof st[f] !== 'function') continue;
+      out[f] = Object.fromEntries(Object.keys(D.CLASSES).map((cls) => [cls, st[f]({ ...D.CLASSES[cls], id: cls })]));
+    }
+    data.storyHero[sid] = out;
+  }
+  // строка под названием стадии на карте пути (countdown — функция): три шаблона с {left}, {level}, {total}
+  data.storyText = {};
+  for (const [sid, st] of Object.entries(w.Story.STORIES)) {
+    if (typeof st.countdown !== 'function') continue;
+    const fill = (s) => String(s).replace(/9001/g, '{left}').replace(/9002/g, '{level}').replace(/9003/g, '{total}');
+    data.storyText[sid] = {
+      countdownLeft: fill(st.countdown({ left: 9001, level: 9002, total: 9003, stage: 0, final: false })),
+      countdownBoss: fill(st.countdown({ left: 0, level: 9002, total: 9003, stage: 0, final: false })),
+      countdownFinal: fill(st.countdown({ left: 0, level: 9002, total: 9003, stage: 2, final: true })),
+    };
+  }
   // ключи записей одинаковые во всех языках: '*' вместо id
   const norm = (s) => s;
   report.functionFields[lang] = [...fnFields].map(norm).sort();

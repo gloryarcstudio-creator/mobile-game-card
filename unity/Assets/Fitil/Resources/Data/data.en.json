@@ -8255,5 +8255,52 @@
     "goldquill"
    ]
   }
+ },
+ "storyHero": {
+  "night": {},
+  "sunset": {
+   "intro": {
+    "lamp": "In Honey Hill, letters are delivered before sunset. When the sun goes down, Shadows creep out of the cracks and eat every undelivered word. The other mail carriers have already gone home, and the last letter of the day has fallen to Iva the Lamplighter. The address is past the far edge of the outskirts. The road is long, and the sun is already sinking toward the rooftops.",
+    "courier": "In Honey Hill, letters are delivered before sunset. When the sun goes down, Shadows creep out of the cracks and eat every undelivered word. The other mail carriers have already gone home, and the last letter of the day has fallen to Tisha the Courier. The address is past the far edge of the outskirts. The road is long, and the sun is already sinking toward the rooftops.",
+    "guard": "In Honey Hill, letters are delivered before sunset. When the sun goes down, Shadows creep out of the cracks and eat every undelivered word. The other mail carriers have already gone home, and the last letter of the day has fallen to Marfa the Bridge Keeper. The address is past the far edge of the outskirts. The road is long, and the sun is already sinking toward the rooftops.",
+    "stoker": "In Honey Hill, letters are delivered before sunset. When the sun goes down, Shadows creep out of the cracks and eat every undelivered word. The other mail carriers have already gone home, and the last letter of the day has fallen to Foma the Chimney Sweep. The address is past the far edge of the outskirts. The road is long, and the sun is already sinking toward the rooftops.",
+    "baker": "In Honey Hill, letters are delivered before sunset. When the sun goes down, Shadows creep out of the cracks and eat every undelivered word. The other mail carriers have already gone home, and the last letter of the day has fallen to Grunya the Baker. The address is past the far edge of the outskirts. The road is long, and the sun is already sinking toward the rooftops.",
+    "grinder": "In Honey Hill, letters are delivered before sunset. When the sun goes down, Shadows creep out of the cracks and eat every undelivered word. The other mail carriers have already gone home, and the last letter of the day has fallen to Savva the Knife Grinder. The address is past the far edge of the outskirts. The road is long, and the sun is already sinking toward the rooftops.",
+    "shepherd": "In Honey Hill, letters are delivered before sunset. When the sun goes down, Shadows creep out of the cracks and eat every undelivered word. The other mail carriers have already gone home, and the last letter of the day has fallen to Lusha the Shepherdess. The address is past the far edge of the outskirts. The road is long, and the sun is already sinking toward the rooftops.",
+    "herbalist": "In Honey Hill, letters are delivered before sunset. When the sun goes down, Shadows creep out of the cracks and eat every undelivered word. The other mail carriers have already gone home, and the last letter of the day has fallen to Ulyana the Herbalist. The address is past the far edge of the outskirts. The road is long, and the sun is already sinking toward the rooftops."
+   },
+   "winText": {
+    "lamp": "Iva knocked on the last door just as the last ray faded. The last Shadow crumbled to dust, and the letter held a single word: “Thank you.” Tomorrow the sun will rise over Honey Hill again.",
+    "courier": "Tisha knocked on the last door just as the last ray faded. The last Shadow crumbled to dust, and the letter held a single word: “Thank you.” Tomorrow the sun will rise over Honey Hill again.",
+    "guard": "Marfa knocked on the last door just as the last ray faded. The last Shadow crumbled to dust, and the letter held a single word: “Thank you.” Tomorrow the sun will rise over Honey Hill again.",
+    "stoker": "Foma knocked on the last door just as the last ray faded. The last Shadow crumbled to dust, and the letter held a single word: “Thank you.” Tomorrow the sun will rise over Honey Hill again.",
+    "baker": "Grunya knocked on the last door just as the last ray faded. The last Shadow crumbled to dust, and the letter held a single word: “Thank you.” Tomorrow the sun will rise over Honey Hill again.",
+    "grinder": "Savva knocked on the last door just as the last ray faded. The last Shadow crumbled to dust, and the letter held a single word: “Thank you.” Tomorrow the sun will rise over Honey Hill again.",
+    "shepherd": "Lusha knocked on the last door just as the last ray faded. The last Shadow crumbled to dust, and the letter held a single word: “Thank you.” Tomorrow the sun will rise over Honey Hill again.",
+    "herbalist": "Ulyana knocked on the last door just as the last ray faded. The last Shadow crumbled to dust, and the letter held a single word: “Thank you.” Tomorrow the sun will rise over Honey Hill again."
+   },
+   "loseText": {
+    "lamp": "The Shadows took the letter. But tomorrow brings a new sunset, and Iva will set out on the route again.",
+    "courier": "The Shadows took the letter. But tomorrow brings a new sunset, and Tisha will set out on the route again.",
+    "guard": "The Shadows took the letter. But tomorrow brings a new sunset, and Marfa will set out on the route again.",
+    "stoker": "The Shadows took the letter. But tomorrow brings a new sunset, and Foma will set out on the route again.",
+    "baker": "The Shadows took the letter. But tomorrow brings a new sunset, and Grunya will set out on the route again.",
+    "grinder": "The Shadows took the letter. But tomorrow brings a new sunset, and Savva will set out on the route again.",
+    "shepherd": "The Shadows took the letter. But tomorrow brings a new sunset, and Lusha will set out on the route again.",
+    "herbalist": "The Shadows took the letter. But tomorrow brings a new sunset, and Ulyana will set out on the route again."
+   }
+  }
+ },
+ "storyText": {
+  "night": {
+   "countdownLeft": "The candle burns out in {left}",
+   "countdownBoss": "The candle has burned out",
+   "countdownFinal": "The candle has burned out"
+  },
+  "sunset": {
+   "countdownLeft": "Level {level} of {total} · boss in {left}",
+   "countdownBoss": "Level {level} · stage boss",
+   "countdownFinal": "The sun has set. The final boss is here"
+  }
  }
 }
