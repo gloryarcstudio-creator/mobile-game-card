@@ -196,7 +196,7 @@ namespace Fitil.Game
                 Store.Ad(Boot.Instance, seen =>
                 {
                     busy = false;
-                    if (!seen) { Hud.Toast(Loc.Tr("Реклама не досмотрена")); return; }
+                    if (!seen) { Hud.Toast(Store.AdNote ?? Loc.Tr("Реклама не досмотрена")); return; }
                     var r = RunSave.FromSnap(defs, snap);
                     if (r == null) { EndRun(); return; }
                     var prevSt = new Dictionary<string, long>(Run.St);

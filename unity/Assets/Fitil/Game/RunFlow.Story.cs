@@ -155,7 +155,7 @@ namespace Fitil.Game
                 Store.Ad(Boot.Instance, seen =>
                 {
                     adBusy = false;
-                    if (!seen) { Hud.Toast(Loc.Tr("Реклама не досмотрена, награды нет")); return; }
+                    if (!seen) { Hud.Toast(Store.AdNote ?? Loc.Tr("Реклама не досмотрена, награды нет")); return; }
                     if (!Store.NoAds) Progress.StatAdd("ads");
                     if (sc.Col) EventPick(p, sc, id, i);
                 }, adFor);

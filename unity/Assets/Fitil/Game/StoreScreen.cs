@@ -1,6 +1,7 @@
 // Магазин (goStore в game.js) и окна тестовой покупки и тестового ролика (realBuy, realAd в js/store.js).
-// Пока в игре нет Unity IAP и рекламной сети, покупка открывается сразу, а вместо ролика идёт отсчёт:
+// Пока в проекте нет пакетов Unity IAP и рекламной сети, покупка открывается сразу, а вместо ролика идёт отсчёт:
 // так же, как в тестовой веб-версии. Платформа (Fitil.Platform.Store) зовёт эти окна через TestBuyWindow и TestAdWindow.
+// С пакетами покупки и ролики настоящие, а этот экран показывает цены площадки и её ответы.
 using System;
 using System.Collections;
 using Fitil.Core;
@@ -22,13 +23,19 @@ namespace Fitil.Game
         {
             Store.TestBuyWindow = BuyWindow;
             Store.TestAdWindow = AdWindow;
+            Store.Say = Hud.Toast;
+            Store.Changed += () => { if (shown != null && shown.Item1) Show(shown.Item2); };
         }
+
+        // открытый сейчас магазин: покупка, которая дошла позже (отложенная, восстановленная), перерисует его
+        static Tuple<GameObject, Action> shown;
 
         // ================= магазин =================
         /// <summary>Магазин: платные герои по одному, все сразу и «Без рекламы». back — куда вернуться.</summary>
         public static void Show(Action back)
         {
-            Menus.Window(out var layer);
+            var win = Menus.Window(out var layer);
+            shown = Tuple.Create(win, back);
             var col = Ui.Node("store", layer);
             col.anchorMin = Vector2.zero;
             col.anchorMax = Vector2.one;
@@ -77,7 +84,14 @@ namespace Fitil.Game
             Ui.Push(btns, Loc.Tr("Восстановить покупки"), () =>
             {
                 Sound.Sfx("click");
-                Store.Restore(n => Hud.Toast(n > 0 ? Loc.Tr("Покупки восстановлены: {n}", ("n", n)) : Loc.Tr("Покупок пока нет")));
+                if (restoring) return;
+                restoring = true;
+                if (!Store.Test) Hud.Toast(Loc.Tr("Спрашиваем магазин…"));
+                Store.Restore(n =>
+                {
+                    restoring = false;
+                    Hud.Toast(n > 0 ? Loc.Tr("Покупки восстановлены: {n}", ("n", n)) : Loc.Tr("Покупок пока нет"));
+                });
             }, true, 16, 210, 48);
             if (Store.Test)
             {
@@ -86,6 +100,8 @@ namespace Fitil.Game
                 Ui.Label("t", reset.transform, Loc.Tr("Сбросить тестовые покупки"), 12, new Color(1, 1, 1, 0.45f)).rectTransform.Fill();
             }
         }
+
+        static bool restoring, buyBusy;
 
         static RectTransform Item(RectTransform list, string text)
         {
@@ -107,21 +123,27 @@ namespace Fitil.Game
                 Ui.Label("owned", row, Loc.Tr("Куплено") + " ✓", 15, new Color32(0x9F, 0xE0, 0x8A, 0xFF), TextAnchor.MiddleCenter, true).Pref(84);
                 return;
             }
-            var price = Store.Products.TryGetValue(id, out var p) ? p.FallbackPrice : Store.Price;
-            Ui.Push(row, price, () => Buy(id, after), false, 18, 84, 44);
+            // цена площадки бывает длинной («4 990,00 ₸»): шрифт меньше, чтобы влезла в кнопку
+            var price = Store.PriceOf(id);
+            Ui.Push(row, price, () => Buy(id, after), false, price.Length > 9 ? 12 : price.Length > 6 ? 14 : 18, 84, 44);
         }
 
         /// <summary>Купить товар (storeBuy): после покупки звук, сообщение и экран заново.</summary>
         public static void Buy(string id, Action after)
         {
+            // пока окно площадки открыто, второе нажатие не начинает вторую покупку
+            if (buyBusy) return;
+            buyBusy = true;
             Sound.Sfx("click");
             Store.Buy(id, ok =>
             {
+                buyBusy = false;
                 if (ok)
                 {
                     Sound.Sfx("relic");
                     Hud.Toast(Loc.Tr("Куплено: {name}", ("name", Store.Products.TryGetValue(id, out var p) ? p.Name : id)));
                 }
+                else if (Store.BuyNote != null) Hud.Toast(Store.BuyNote);
                 after?.Invoke();
             });
         }

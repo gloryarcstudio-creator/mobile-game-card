@@ -35,6 +35,15 @@ namespace Fitil.Game
             return s;
         }
 
+        void OnEnable() => Store.Changed += Refresh;
+        void OnDisable() => Store.Changed -= Refresh;
+
+        // герой открылся (покупка здесь, в магазине или дошла отложенная): замок снять, кнопка «В путь»
+        void Refresh()
+        {
+            if (this && root && current != null) Pick(current);
+        }
+
         void OnDestroy()
         {
             if (root) Destroy(root.gameObject);
@@ -203,7 +212,7 @@ namespace Fitil.Game
                 Ui.Push(row, Loc.Tr("В путь"), () => { Sound.Sfx("click"); go?.Invoke(current, diff); }, false, 24, 210, 58);
                 return;
             }
-            var price = Store.Products.TryGetValue("hero_" + current, out var p) ? p.FallbackPrice : Store.Price;
+            var price = Store.PriceOf("hero_" + current);
             var cls = current;
             Ui.Push(row, Loc.Tr("герой::Открыть") + "\n<size=13>" + price + "</size>", () => StoreScreen.Buy("hero_" + cls, () => { if (this) Pick(cls); }), false, 19, 140, 58);
             Ui.Push(row, Loc.Tr("Магазин"), () =>

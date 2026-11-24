@@ -115,6 +115,13 @@ namespace Fitil.Game
                 link.Pref(304, 30);
                 Ui.Label("t", link.transform, "<i>" + Loc.Tr("Посмотреть заставку") + "</i>", 14, Ui.GoldHi).rectTransform.Fill();
             }
+            // Европа: игрок вправе передумать насчёт рекламы по интересам — окно Google открывается отсюда
+            if (Store.Ads != null && Store.Ads.PrivacyOptions)
+            {
+                var link = Ui.Hit("privacy", col, () => { Sound.Sfx("click"); Store.Ads.ShowPrivacyOptions(null); });
+                link.Pref(304, 30);
+                Ui.Label("t", link.transform, "<i>" + Loc.Tr("Согласие на рекламу") + "</i>", 14, Ui.GoldHi).rectTransform.Fill();
+            }
         }
 
         static void Icon(RectTransform parent, string art, string label, Action onClick)
