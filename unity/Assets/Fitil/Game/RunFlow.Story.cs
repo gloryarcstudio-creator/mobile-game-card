@@ -15,18 +15,19 @@ namespace Fitil.Game
         {
             public RectTransform Col, Art, Box, Scrolls;
             public LayoutElement ArtSize;
-            public float ArtH;
+            public float ArtH, MinH = 84;
             public EnemyAnim Live;
             public Text Title, Text, Note;
         }
 
         /// <summary>Столбик экрана: картинка (pic — нарисованная сцена в рамке), пергамент, свитки.
         /// Если ответов много, картинка становится ниже, и все свитки остаются над панелью героя.</summary>
-        Scene StoryScene(Page p, string art, bool pic, float top, float artW, float artH, string title, string text, string note = null, float gap = 16)
+        Scene StoryScene(Page p, string art, bool pic, float top, float artW, float artH, string title, string text, string note = null, float gap = 16, bool stand = false)
         {
-            var sc = new Scene { ArtH = artH };
-            sc.Col = Ui.Node("scene", p.Root).Box(0, top, 400, 768 - top);
-            sc.Col.Column(0, TextAnchor.UpperCenter);
+            var sc = new Scene { ArtH = artH, MinH = stand ? 140 : 84 };
+            // собеседник (stand) стоит на снегу: столбик прижат к низу, над панелью героя, как .scr-talk в веб-версии (отступы 66 и 104)
+            sc.Col = Ui.Node("scene", p.Root).Box(0, top, 400, (stand ? 756 : 768) - top);
+            sc.Col.Column(0, stand ? TextAnchor.LowerCenter : TextAnchor.UpperCenter);
 
             sc.Art = Ui.Node("art", sc.Col);
             sc.ArtSize = sc.Art.Pref(pic ? 330 : artW, artH);
@@ -59,7 +60,7 @@ namespace Fitil.Game
                 if (art != null && art.StartsWith("e/")) LiveIn(sc, art.Substring(2));
             }
 
-            Spacer(sc.Col, 34);
+            Spacer(sc.Col, stand ? 52 : 34);
             sc.Box = Ui.Node("box", sc.Col);
             sc.Box.Column(5, TextAnchor.UpperCenter, 28, 28, 16, 15);
             sc.Box.Pref(348);
@@ -114,7 +115,7 @@ namespace Fitil.Game
             var over = LayoutUtility.GetPreferredHeight(sc.Col) - sc.Col.rect.height;
             if (over > 0)
             {
-                sc.ArtSize.preferredHeight = Mathf.Max(84, sc.ArtH - over);
+                sc.ArtSize.preferredHeight = Mathf.Max(sc.MinH, sc.ArtH - over);
                 LayoutRebuilder.ForceRebuildLayoutImmediate(sc.Col);
             }
         }
@@ -193,8 +194,8 @@ namespace Fitil.Game
             Bars(p);
             var e = defs.Enemies[id];
             var boss = e.Tier == "boss";
-            var sc = StoryScene(p, "e/" + id, false, boss ? 56 : 64, boss ? 210 : 170, boss ? 190 : 170, e.Name,
-                Quote(G.TalkLine(id)), G.TieNote(id) is string n && n != "" ? Loc.Tr(n) : null, 14);
+            var sc = StoryScene(p, "e/" + id, false, 66, boss ? 320 : 260, boss ? 310 : 290, e.Name,
+                Quote(G.TalkLine(id)), G.TieNote(id) is string n && n != "" ? Loc.Tr(n) : null, 14, true);
             var list = new List<(string, string, bool, string, bool, Action)>();
             foreach (var o in G.TalkOptions(id, tier))
             {
@@ -235,7 +236,7 @@ namespace Fitil.Game
             Bars(p);
             var e = defs.Enemies[id];
             var boss = e.Tier == "boss";
-            var sc = StoryScene(p, "e/" + id, false, boss ? 56 : 64, boss ? 210 : 170, boss ? 190 : 170, e.Name, Quote(G.PleaLine(id)), null, 14);
+            var sc = StoryScene(p, "e/" + id, false, 66, boss ? 320 : 260, boss ? 310 : 290, e.Name, Quote(G.PleaLine(id)), null, 14, true);
             // побеждённый враг стоит чуть накренившись (.talk-art.beaten)
             sc.Art.GetChild(0).localRotation = Quaternion.Euler(0, 0, 7);
             if (sc.Live)
@@ -266,7 +267,7 @@ namespace Fitil.Game
             var p = Open("meet");
             Bars(p);
             var m = G.Lore.Meet(h);
-            var sc = StoryScene(p, "h/" + h, false, 56, 150, 180, Loc.Tr(Json.Str(Json.Get(m, "title"))), Loc.Tr(Json.Str(Json.Get(m, "text"))), null, 14);
+            var sc = StoryScene(p, "h/" + h, false, 66, 220, 290, Loc.Tr(Json.Str(Json.Get(m, "title"))), Loc.Tr(Json.Str(Json.Get(m, "text"))), null, 14, true);
             MeetAnswers(p, sc, h);
         }
 

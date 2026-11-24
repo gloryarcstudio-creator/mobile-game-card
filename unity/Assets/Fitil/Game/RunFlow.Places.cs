@@ -22,7 +22,7 @@ namespace Fitil.Game
             var root = p.Root;
 
             // ёж за прилавком и его слова
-            var keeperBox = Ui.Node("keeper", root).Box(20, 84, 140, 130);
+            var keeperBox = Ui.Node("keeper", root).Box(20, 60, 140, 130);
             var keeper = Ui.Img("hedgehog", keeperBox, "e/hedgehog");
             EnemyAnim.Stand(keeper, "hedgehog", 130);
             p.Bg.StandOn(keeperBox);
@@ -32,7 +32,7 @@ namespace Fitil.Game
                 keeper.enabled = false;
                 if (happy) keeperLive.Play("happy");   // ёж радуется покупке
             }
-            var bubble = Ui.Node("bubble", root).Box(164, 100, 210, 70);
+            var bubble = Ui.Node("bubble", root).Box(166, 84, 208, 66);
             bubble.Column(0, TextAnchor.MiddleCenter, 18, 18, 9, 8);
             Ui.Frame(bubble, "ui2/bubble", 0.3f);
             var say = Ui.Label("say", bubble, Loc.Tr(shop.Rerolls > 0 ? "Свежий товар! Только что с саней." : last ? "Последняя лавка перед дверью! Бери, не стесняйся." : "Всё по-честному! Почти."), 16, Ui.Ink);
@@ -49,7 +49,7 @@ namespace Fitil.Game
                 var rt = v.Rect;
                 rt.anchorMin = rt.anchorMax = new Vector2(0, 1);
                 rt.pivot = new Vector2(0.5f, 0.5f);
-                rt.anchoredPosition = new Vector2(x + cw / 2, -(222 + cw * CardView.Ratio / 2));
+                rt.anchoredPosition = new Vector2(x + cw / 2, -(196 + cw * CardView.Ratio / 2));
                 var cg = v.gameObject.AddComponent<CanvasGroup>();
                 if (item.Sold) { cg.alpha = 0.25f; cg.blocksRaycasts = false; }
                 var catcher = v.gameObject.AddComponent<Image>();
@@ -57,11 +57,11 @@ namespace Fitil.Game
                 var b = v.gameObject.AddComponent<Button>();
                 b.transition = Selectable.Transition.None;
                 b.onClick.AddListener(() => ShopAct(shop, last, () => G.BuyCard(shop, k)));
-                Price(root, item, x + cw / 2, 228 + cw * CardView.Ratio);
+                Price(root, item, x + cw / 2, 210 + cw * CardView.Ratio);
             }
 
             // талисман и услуги
-            var list = Ui.Node("services", root).Box(18, 412, 364, 260);
+            var list = Ui.Node("services", root).Box(18, 393, 364, 300);
             list.Column(8, TextAnchor.UpperCenter);
             if (shop.Relic != null)
             {
@@ -82,9 +82,9 @@ namespace Fitil.Game
             });
 
             var reroll = Ui.Push(root, Loc.Tr("Обновить товар") + "  " + Coin(G.RerollPrice(shop)), () => ShopAct(shop, last, () => G.Reroll(shop)), true, 16, 190, 46);
-            ((RectTransform)reroll.transform).Box(20, 710, 190, 46);
+            ((RectTransform)reroll.transform).Box(20, 714, 196, 42);
             var leave = Ui.Push(root, Loc.Tr("Уйти"), Next, false, 17, 130, 46);
-            ((RectTransform)leave.transform).Box(236, 710, 130, 46);
+            ((RectTransform)leave.transform).Box(262, 712, 104, 44);
         }
 
         static string Coin(int n) => "<color=#FFE08A>" + n + "</color>";
@@ -143,10 +143,10 @@ namespace Fitil.Game
             Bars(p);
             var chest = Ui.Img("chest", p.Root, "i/chest2");
             chest.preserveAspect = true;
-            chest.rectTransform.Box(115, 300, 170, 170);
+            chest.rectTransform.Box(115, 428, 170, 170);   // .chest-wrap { padding-top: 428px }: сундук стоит на снегу перед домами
             p.Bg.StandOn(chest.rectTransform);
-            var msg = Plate(p.Root, Loc.Tr("Сундук-соня сладко храпит."), 486);
-            var row = Ui.Node("row", p.Root).Box(0, 560, 400, 56);
+            var msg = Plate(p.Root, Loc.Tr("Сундук-соня сладко храпит."), 612);
+            var row = Ui.Node("row", p.Root).Box(0, 650, 400, 56);
             row.Line(14, TextAnchor.MiddleCenter);
             Ui.Push(row, Loc.Tr("Открыть"), () =>
             {
@@ -154,7 +154,7 @@ namespace Fitil.Game
                 var found = G.OpenChest(out var text);
                 Save(P("next"));
                 // из сундука вылетает то, что в нём лежало: горка монет или звёзды находки
-                Hud.FxOn(p.Root).PlayAt(found != null ? "find" : "loot", 200, 379, 170, 170, 385 + 170 * 0.3f);
+                Hud.FxOn(p.Root).PlayAt(found != null ? "find" : "loot", 200, 507, 170, 170, 513 + 170 * 0.3f);
                 msg.text = text;
                 Ui.Clear(row);
                 if (found != null)
@@ -202,9 +202,9 @@ namespace Fitil.Game
                 var dark = fb.StartsWith("dk_") ? defs.Enemies[fb].Dark : null;
                 if (dark != null) talk += "\n" + Loc.Tr("За деревьями мелькнула знакомая фигура: {name}. Но тень на ней гуще ночи.", ("name", defs.Data.Classes[dark].Name));
             }
-            var msg = Plate(p.Root, talk, final ? 150 : 210);
+            var msg = Plate(p.Root, talk, final ? 150 : 218);
             msg.fontSize = final ? 17 : 19;
-            var col = Ui.Node("scrolls", p.Root).Box(0, final ? 470 : 470, 400, 280);
+            var col = Ui.Node("scrolls", p.Root).Box(0, final ? 470 : 280, 400, 470);
             col.Column(13, TextAnchor.UpperCenter);
             var noHeal = !G.CanRestHeal;
             Ui.Scroll(col, Loc.Tr("Отдохнуть"), noHeal ? Loc.Tr("Бездонная сумка не даёт присесть") : G.RestText(), () =>
