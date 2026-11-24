@@ -146,7 +146,7 @@ namespace Fitil.Game
             {
                 bg.sprite = dark;
                 bg.type = Image.Type.Sliced;
-                bg.pixelsPerUnitMultiplier = 1.8f;   // края картинки 88 точек в высоту — на кнопке около 15
+                bg.pixelsPerUnitMultiplier = 24f / 13f;   // срез 24 пикселя картинки — на кнопке 13 точек, как в веб-версии
                 bg.color = Color.white;
             }
             else { bg.sprite = RoundSprite; bg.type = Image.Type.Sliced; bg.color = new Color32(0x2A, 0x2F, 0x4A, 0xF0); }
@@ -176,22 +176,147 @@ namespace Fitil.Game
 
         static readonly Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
 
+        // Срезы рамок (border-image в css/style.css), в пикселях картинки: слева, снизу, справа, сверху
+        static readonly Dictionary<string, Vector4> Borders = new Dictionary<string, Vector4>
+        {
+            ["ui2/mapcard"] = new Vector4(58, 156, 58, 160),
+            ["ui2/scroll"] = new Vector4(125, 30, 125, 35),
+            ["ui2/parch"] = new Vector4(130, 145, 130, 150),
+            ["ui2/bubble"] = new Vector4(80, 100, 80, 110),
+            ["ui2/panel"] = new Vector4(90, 170, 90, 250),
+            ["ui2/tile"] = new Vector4(215, 40, 70, 60),
+            ["ui2/row2"] = new Vector4(215, 40, 70, 60),
+            ["ui2/btn_red"] = new Vector4(75, 32, 62, 45),
+            ["ui2/btn_dark"] = new Vector4(30, 24, 30, 24),
+        };
+
         /// <summary>Картинка из Resources/Art (её собирает tools/unity/export_assets.py). Нет картинки — null.
         /// Картинки рамок и кнопок (ui2) режутся на девять частей, как border-image в веб-версии.</summary>
         public static Sprite Art(string path)
         {
+            if (string.IsNullOrEmpty(path)) return null;
             if (sprites.TryGetValue(path, out var s)) return s;
             var tex = Resources.Load<Texture2D>("Art/" + path);
             if (tex)
             {
                 tex.wrapMode = TextureWrapMode.Clamp;
-                var border = path.StartsWith("ui2/btn") ? new Vector4(tex.width * 0.18f, tex.height * 0.3f, tex.width * 0.18f, tex.height * 0.3f)
+                var border = Borders.TryGetValue(path, out var b) ? b
+                    : path.StartsWith("ui2/btn") ? new Vector4(tex.width * 0.18f, tex.height * 0.3f, tex.width * 0.18f, tex.height * 0.3f)
                     : path == "ui2/topbar" ? new Vector4(tex.width * 0.2f, tex.height * 0.35f, tex.width * 0.2f, tex.height * 0.35f)
                     : Vector4.zero;
                 s = Sprite.Create(tex, new UnityEngine.Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, border);
             }
             sprites[path] = s;
             return s;
+        }
+
+        /// <summary>Рамка-картинка за содержимым узла, как border-image: scale — масштаб срезов (--s в css),
+        /// l, t, r, b — насколько рамка выступает за край узла (outset). В раскладке не участвует.</summary>
+        public static Image Frame(RectTransform box, string art, float scale, float l = 0, float t = 0, float r = 0, float b = 0)
+        {
+            var img = Img("frame", box, art);
+            if (img.sprite) { img.type = Image.Type.Sliced; img.pixelsPerUnitMultiplier = 1f / scale; }
+            else img.color = new Color32(0xEA, 0xD9, 0xB6, 0xFF);
+            img.rectTransform.Fill();
+            img.rectTransform.offsetMin = new Vector2(-l, -b);
+            img.rectTransform.offsetMax = new Vector2(r, t);
+            img.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            img.transform.SetAsFirstSibling();
+            return img;
+        }
+
+        /// <summary>Столбик: дети друг под другом, высота каждого — по его содержимому.</summary>
+        public static VerticalLayoutGroup Column(this RectTransform rt, float spacing, TextAnchor align = TextAnchor.UpperCenter, int l = 0, int r = 0, int t = 0, int b = 0)
+        {
+            var v = rt.gameObject.AddComponent<VerticalLayoutGroup>();
+            v.spacing = spacing;
+            v.childAlignment = align;
+            v.padding = new RectOffset(l, r, t, b);
+            v.childControlWidth = true;
+            v.childControlHeight = true;
+            v.childForceExpandWidth = false;
+            v.childForceExpandHeight = false;
+            return v;
+        }
+
+        /// <summary>Строка: дети слева направо.</summary>
+        public static HorizontalLayoutGroup Line(this RectTransform rt, float spacing, TextAnchor align = TextAnchor.MiddleCenter, int l = 0, int r = 0, int t = 0, int b = 0)
+        {
+            var h = rt.gameObject.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = spacing;
+            h.childAlignment = align;
+            h.padding = new RectOffset(l, r, t, b);
+            h.childControlWidth = true;
+            h.childControlHeight = true;
+            h.childForceExpandWidth = false;
+            h.childForceExpandHeight = false;
+            return h;
+        }
+
+        /// <summary>Размер элемента в столбике или строке (-1 — не задавать).</summary>
+        public static LayoutElement Pref(this Component c, float w = -1, float h = -1, float minH = -1)
+        {
+            var le = c.GetComponent<LayoutElement>();
+            if (!le) le = c.gameObject.AddComponent<LayoutElement>();
+            if (w >= 0) le.preferredWidth = w;
+            if (h >= 0) le.preferredHeight = h;
+            if (minH >= 0) le.minHeight = minH;
+            return le;
+        }
+
+        /// <summary>Свиток-ответ (.scroll): название и пояснение мелким шрифтом. Погашенный ответ с причиной
+        /// нажимается и говорит причину (why), без причины не нажимается.</summary>
+        public static Button Scroll(Transform parent, string text, string hint, Action onClick, bool off = false, Action why = null, bool glow = false, float width = 320)
+        {
+            var rt = Node("scroll", parent);
+            var hasHint = !string.IsNullOrEmpty(hint);
+            rt.Column(1, TextAnchor.MiddleCenter, 40, 40, hasHint ? 7 : 8, hasHint ? 12 : 7);
+            rt.Pref(width, -1, hasHint ? -1 : 43);
+            var frame = Frame(rt, "ui2/scroll", 0.5f, 20, 7.5f, 20, 6);
+            frame.raycastTarget = true;
+            if (glow) frame.Outline(new Color(1f, 0.82f, 0.43f, 0.75f), 2.5f);
+            var t = Label("text", rt, text, 19, Ui.Ink, TextAnchor.MiddleCenter, true);
+            t.lineSpacing = 0.95f;
+            if (hasHint)
+            {
+                var h = Label("hint", rt, hint, 14, new Color32(0x4A, 0x38, 0x2A, 0xFF));
+                h.lineSpacing = 0.95f;
+            }
+            var b = rt.gameObject.AddComponent<Button>();
+            b.targetGraphic = frame;
+            var cg = rt.gameObject.AddComponent<CanvasGroup>();
+            if (off) cg.alpha = 0.45f;
+            b.onClick.AddListener(() => { if (off) why?.Invoke(); else onClick?.Invoke(); });
+            if (off && why == null) b.interactable = false;
+            return b;
+        }
+
+        /// <summary>Лента-свиток с крупной надписью («Победа!», «Трофей босса»).</summary>
+        public static RectTransform Ribbon(Transform parent, string text)
+        {
+            var rt = Node("ribbon", parent);
+            rt.Column(0, TextAnchor.MiddleCenter, 46, 46, 15, 13);
+            rt.Pref(-1, -1, 60);
+            Frame(rt, "ui2/scroll", 0.5f, 20, 7.5f, 20, 6);
+            var t = Label("text", rt, text, 27, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true);
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            return rt;
+        }
+
+        /// <summary>Кнопка-ящик для раскладки: красная (как .btn) или тёмная (.btn.ghost).</summary>
+        public static Button Push(Transform parent, string text, Action onClick, bool ghost = false, int size = 20, float w = 170, float h = 50)
+        {
+            var b = Btn("btn", parent, text, onClick, size);
+            var img = (Image)b.targetGraphic;
+            if (!ghost)
+            {
+                var red = Art("ui2/btn_red");
+                if (red) { img.sprite = red; img.pixelsPerUnitMultiplier = 1f / 0.44f; }
+                var label = b.GetComponentInChildren<Text>();
+                label.color = new Color32(0xFF, 0xF4, 0xD6, 0xFF);
+            }
+            b.Pref(w, h);
+            return b;
         }
 
         static Sprite round, circle;
