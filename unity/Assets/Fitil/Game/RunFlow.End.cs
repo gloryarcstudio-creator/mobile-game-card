@@ -18,6 +18,7 @@ namespace Fitil.Game
             var gold0 = Run.Gold;
             var rw = G.MakeReward(tier);
             Save(new Pending { T = "reward", Reward = rw });
+            if (tier != "boss") { Sound.Sfx("win"); Sound.Music(MapTrack); }
             var p = RenderReward(rw);
             Hud.Gain(p.Bar, Run.Hp - hp0, Run.Gold - gold0);
             Hud.Flush(G);
@@ -62,7 +63,7 @@ namespace Fitil.Game
                 catcher.color = new Color(0, 0, 0, 0);
                 var b = v.gameObject.AddComponent<Button>();
                 b.transition = Selectable.Transition.None;
-                b.onClick.AddListener(() => { G.TakeCard(id); Hud.Flush(G); Next(); });
+                b.onClick.AddListener(() => { Sound.Sfx("card"); G.TakeCard(id); Hud.Flush(G); Next(); });
             }
             Spacer(col, 10);
             Ui.Push(col, Loc.Tr("Пропустить"), Next, true, 18, 170, 48);
@@ -73,6 +74,7 @@ namespace Fitil.Game
         void BossRelic(List<string> saved = null)
         {
             var opts = saved ?? G.BossRelicOptions();
+            if (saved == null) { Sound.Sfx("win"); Sound.Music(MapTrack); }
             if (opts.Count == 0) { Reward("boss"); return; }
             Save(new Pending { T = "bossrelic", Opts = opts });
             var p = Open();
@@ -101,6 +103,7 @@ namespace Fitil.Game
                 b.onClick.AddListener(() =>
                 {
                     G.AddRelic(id);
+                    Sound.Sfx("relic");
                     Hud.Toast(Loc.Tr("Талисман: {name}", ("name", r.Name)));
                     Hud.Flush(G);
                     Reward("boss");
@@ -148,6 +151,8 @@ namespace Fitil.Game
             }
             var stats = string.Join(" · ", new[] { DiffName, Loc.Tr("Побед: {n}", ("n", Run.Fights)), Loc.Tr("Карт в колоде: {n}", ("n", Run.Deck.Count)), Loc.Tr("Талисманов: {n}", ("n", Run.Relics.Count)) });
             ClearSave(defs);
+            Sound.Music("title");
+            Sound.Sfx("victory");
             Book(pic, defs.StoryStr("winRibbon"), defs.StoryStr("winTitle"), story, stats, false);
         }
 
@@ -157,6 +162,8 @@ namespace Fitil.Game
         {
             if (snapFight == null) { EndRun(); return; }
             Save(new Pending { T = "defeat", Enemy = enemy, Tier = tier, Fight = snapFight });
+            Sound.Music(null);
+            Sound.Sfx("defeat");
             var p = Open();
             var col = Ui.Node("end", p.Root).Box(0, 70, 400, 780);
             col.Column(10, TextAnchor.UpperCenter);
@@ -183,7 +190,8 @@ namespace Fitil.Game
                     var r = RunSave.FromSnap(defs, snap);
                     if (r == null) { EndRun(); return; }
                     G.Run = r;
-                    if (fight) Fight(enemy, tier); else { Run.Choices = null; Map(); }
+                    Sound.Sfx("heal");
+                    if (fight) Fight(enemy, tier); else Map();
                     Hud.Toast(Loc.Tr("Ещё одна попытка!"));
                 });
             }
@@ -199,6 +207,7 @@ namespace Fitil.Game
             snapFight = null;
             snapStep = null;
             ClearSave(defs);
+            Sound.Music(null);
             var story = defs.StoryHero("loseText", Run.Cls) ?? defs.StoryStr("loseText") ?? "";
             var stats = string.Join(" · ", new[] { DiffName, Loc.Tr("Уровень") + " " + Loc.Tr("{a} из {b}", ("a", Run.Step + 1), ("b", defs.MaxSteps)), Loc.Tr("Побед: {n}", ("n", Run.Fights)) });
             Book("story_lose", null, defs.StoryStr("loseTitle"), story, stats, true);

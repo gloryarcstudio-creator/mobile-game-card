@@ -185,6 +185,9 @@ namespace Fitil.Game
         public static void Gain(RectTransform bar, int dHp, int dGold)
         {
             if (!bar) return;
+            if (dHp > 0) Sound.Sfx("heal");
+            if (dHp < 0) Sound.Sfx("hurt");
+            if (dGold > 0) Sound.Sfx("coin");
             var y = 0f;
             if (dHp != 0) { Float(bar, dHp > 0 ? "+" + dHp : "−" + (-dHp), dHp > 0 ? Ui.Green : Ui.Red, y); y += 26; }
             if (dGold != 0) Float(bar, dGold > 0 ? RunGame.Coins(dGold) : "−" + (-dGold), Coin, y);

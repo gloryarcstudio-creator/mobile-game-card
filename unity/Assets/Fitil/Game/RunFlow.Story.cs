@@ -86,7 +86,7 @@ namespace Fitil.Game
             foreach (var a in list)
             {
                 var why = a.why;
-                Ui.Scroll(sc.Scrolls, a.text, a.hint, a.pick, a.off, why != null ? () => Hud.Toast(Loc.Tr(why)) : (Action)null, a.glow);
+                Ui.Scroll(sc.Scrolls, a.text, a.hint, a.pick, a.off, why != null ? () => { Sound.Sfx("deny"); Hud.Toast(Loc.Tr(why)); } : (Action)null, a.glow);
             }
             Boot.Instance.StartCoroutine(FitScene(sc));
         }

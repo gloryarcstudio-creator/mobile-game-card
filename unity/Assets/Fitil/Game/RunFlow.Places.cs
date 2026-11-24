@@ -64,12 +64,12 @@ namespace Fitil.Game
             Service(list, "r2/thermos", Loc.Tr("Горячий сбитень"), Loc.Tr("Восстановить {n} HP", ("n", tea > 0 ? tea : 12)), shop.Tea, () => ShopAct(shop, last, () => G.BuyTea(shop) >= 0));
             Service(list, "r2/whetstone", Loc.Tr("лавка::Заточка"), Loc.Tr("Улучшить карту"), shop.Up, () =>
             {
-                if (!G.CanAfford(shop.Up)) { Hud.Flush(G); return; }
+                if (!G.CanAfford(shop.Up)) { Sound.Sfx("deny"); Hud.Flush(G); return; }
                 Prompt(DeckPrompt.Upgrade, 0, ok => { if (ok) G.PayService(shop.Up); ShopScreen(shop, last); });
             });
             Service(list, "i/scissors", Loc.Tr("Распустить карту"), Loc.Tr("Убрать карту из колоды"), shop.Remove, () =>
             {
-                if (!G.CanAfford(shop.Remove)) { Hud.Flush(G); return; }
+                if (!G.CanAfford(shop.Remove)) { Sound.Sfx("deny"); Hud.Flush(G); return; }
                 Prompt(DeckPrompt.Remove, 0, ok => { if (ok) G.PayService(shop.Remove); ShopScreen(shop, last); });
             });
 
@@ -121,7 +121,8 @@ namespace Fitil.Game
             var hp0 = Run.Hp;
             var gold0 = Run.Gold;
             var ok = logic();
-            if (!ok) { Hud.Flush(G); return; }
+            if (!ok) { Sound.Sfx("deny"); Hud.Flush(G); return; }
+            Sound.Sfx(Run.Hp > hp0 ? "heal" : "coin");
             ShopScreen(shop, last);
             Hud.Gain(page.Bar, Run.Hp - hp0, 0);
             Hud.Flush(G);

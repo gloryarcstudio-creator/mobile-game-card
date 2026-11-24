@@ -545,7 +545,11 @@ namespace Fitil.Game
                         Say(e.A);
                         break;
                     case Ev.Fx:
+                        Sound.Fx(e.A);
                         if (e.B == "enemy") StartCoroutine(Tint(enemyImg, new Color(1f, 0.85f, 0.7f), 0.12f));
+                        break;
+                    case Ev.Sfx:
+                        Sound.Sfx(e.A, e.N > 0 ? e.N / 100f : 1);
                         break;
                 }
             }

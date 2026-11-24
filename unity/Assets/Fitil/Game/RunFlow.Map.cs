@@ -1,4 +1,5 @@
 // Карта пути (goMap, encHTML, mapHint в game.js): подсказка уровня и две-три таблички на выбор.
+using System;
 using System.Collections;
 using Fitil.Core;
 using UnityEngine;
@@ -15,6 +16,7 @@ namespace Fitil.Game
             var p = Open();
             picking = false;
             Run.Fmod = null;   // уговоры и дразнилки из разговора действуют только на один бой
+            Sound.Music(MapTrack);
             var choices = G.Choices();
             Save();
             snapStep = RunSave.Snap(Run);   // для «Вернуться до боя»
@@ -40,9 +42,12 @@ namespace Fitil.Game
             }
         }
 
+        /// <summary>Какая пьеса звучит на пути: город, окраина или финальная ночь.</summary>
+        string MapTrack => new[] { "stage1", "stage2", "night" }[Math.Min(2, Math.Max(0, defs.StageOf(Run.Step)))];
+
         string MapHint()
         {
-            var si = System.Math.Max(0, defs.StageOf(Run.Step));
+            var si = Math.Max(0, defs.StageOf(Run.Step));
             var g = defs.Stages[si];
             var intro = Json.Arr(Json.Get(defs.Story, "stageIntro"));
             if (Run.Step == g.Start && intro != null)

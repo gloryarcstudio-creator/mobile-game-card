@@ -44,6 +44,7 @@ namespace Fitil.Game
             Input.multiTouchEnabled = false; // одна карта за раз, как в веб-версии (щипок отключён)
 
             LoadLanguage();
+            Sound.Init(gameObject);
             BuildCanvas();
             ShowTitle();
         }
@@ -158,6 +159,7 @@ namespace Fitil.Game
             screen = new GameObject("Title");
             screen.transform.SetParent(transform, false);
             Background(Back, "bg/bg_title");
+            Sound.Music("title");
 
             var logo = Ui.Art("ui2/logo_" + Loc.Lang) ?? Ui.Art("ui2/logo_ru");
             if (logo)

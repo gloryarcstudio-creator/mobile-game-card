@@ -171,6 +171,7 @@ namespace Fitil.Game
         void Next()
         {
             G.Advance();
+            Sound.Sfx("step");
             Map();
         }
 
@@ -198,6 +199,8 @@ namespace Fitil.Game
             Close();
             snapFight = RunSave.Snap(Run);
             Save(P(tier, id));
+            // бой: у боссов своя музыка, обычные бои чередуют две пьесы после каждой победы
+            Sound.Music(tier == "boss" ? (defs.IsFinalStep(Run.Step) ? "final" : "boss") : Run.Fights % 2 == 1 ? "battle2" : "battle");
             var setup = G.SetupFor(id, tier);
             combat = CombatScreen.Show(defs, Run, id, tier, setup, end => AfterFight(end));
         }
@@ -303,6 +306,7 @@ namespace Fitil.Game
                 if (c == null) { done(false); return; }
                 var name = G.CardName(c);
                 G.ApplyPrompt(p, c, cost);
+                Sound.Sfx(p == DeckPrompt.Remove ? "snuff" : "relic");
                 if (p == DeckPrompt.Upgrade) Hud.Toast(Loc.Tr("Улучшена: {name}", ("name", G.CardName(c))));
                 if (p == DeckPrompt.Remove) Hud.Toast(Loc.Tr("Убрана: {name}", ("name", name)));
                 Hud.Flush(G);
