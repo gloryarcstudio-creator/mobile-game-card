@@ -37,7 +37,7 @@ namespace Fitil.Game
         float eTrailTarget = 1, hTrailTarget = 1;
         readonly System.Random uiRnd = new System.Random();
 
-        public static CombatScreen Show(Defs defs, RunState run, string enemyId, string tier, Action<CombatEnd> done)
+        public static CombatScreen Show(Defs defs, RunState run, string enemyId, string tier, CombatSetup setup, Action<CombatEnd> done)
         {
             var go = new GameObject("CombatScreen");
             go.transform.SetParent(Boot.Instance.transform, false);
@@ -47,7 +47,7 @@ namespace Fitil.Game
             s.C = new Combat(defs, run);
             s.tier = tier;
             s.Build(enemyId);
-            s.C.Start(enemyId, tier, new CombatSetup());
+            s.C.Start(enemyId, tier, setup ?? new CombatSetup());
             s.StartCoroutine(s.Replay(true));
             return s;
         }

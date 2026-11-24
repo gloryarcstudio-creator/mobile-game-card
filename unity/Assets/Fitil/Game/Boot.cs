@@ -186,7 +186,7 @@ namespace Fitil.Game
             screen = HeroSelect.Show(Data, cls =>
             {
                 Clear();
-                new RunFlow(Defs, cls).Next();
+                new RunFlow(Defs, cls).Start();
             }, ShowTitle).gameObject;
         }
 

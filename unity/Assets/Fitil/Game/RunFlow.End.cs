@@ -1,0 +1,163 @@
+// Награда за бой, трофей босса и финалы забега (goReward, goBossRelic, goVictory, endRun в game.js).
+using System;
+using System.Collections.Generic;
+using Fitil.Core;
+using UnityEngine;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
+
+namespace Fitil.Game
+{
+    public sealed partial class RunFlow
+    {
+        // ================= награда =================
+        void Reward(string tier)
+        {
+            var hp0 = Run.Hp;
+            var gold0 = Run.Gold;
+            var rw = G.MakeReward(tier);
+            var p = Open();
+            Bars(p);
+            var col = Ui.Node("reward", p.Root).Box(0, 96, 400, 660);
+            col.Column(12, TextAnchor.UpperCenter);
+            Ui.Ribbon(col, rw.Boss ? Loc.Tr("Босс повержен!") : Loc.Tr("Победа!"));
+            var loot = Ui.Node("loot", col);
+            loot.Line(6, TextAnchor.MiddleCenter, 10, 16, 3, 3);
+            var lootBg = Ui.Round("bg", loot, new Color(0.06f, 0.07f, 0.12f, 0.72f));
+            lootBg.rectTransform.Fill();
+            lootBg.Outline(new Color(0.85f, 0.66f, 0.29f, 0.55f), 1.2f);
+            lootBg.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            var coin = Ui.Img("coin", loot, "i/coin");
+            coin.preserveAspect = true;
+            coin.Pref(30, 30);
+            Ui.Label("n", loot, RunGame.Coins(rw.Gold) + (rw.Healed > 0 ? " · +" + rw.Healed + " HP" : ""), 22, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1.5f).Pref(-1, 32);
+
+            var hint = Ui.Label("hint", col, Loc.Tr("Возьми одну карту в колоду"), 18, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
+            hint.Pref(380, 30);
+
+            var n = rw.Ids.Count;
+            var w = n >= 4 ? 92f : 112f;
+            var gap = n >= 4 ? 6f : 12f;
+            var row = Ui.Node("cards", col);
+            row.Pref(400, w * CardView.Ratio + 8);
+            var x0 = 200 - (n * w + (n - 1) * gap) / 2;
+            for (var i = 0; i < n; i++)
+            {
+                var id = rw.Ids[i];
+                var v = CardView.Make(row, new CardInst { Id = id }, defs, null, w);
+                var rt = v.Rect;
+                rt.anchorMin = rt.anchorMax = new Vector2(0, 1);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.anchoredPosition = new Vector2(x0 + w / 2 + i * (w + gap), -(4 + w * CardView.Ratio / 2));
+                var catcher = v.gameObject.AddComponent<Image>();
+                catcher.color = new Color(0, 0, 0, 0);
+                var b = v.gameObject.AddComponent<Button>();
+                b.transition = Selectable.Transition.None;
+                b.onClick.AddListener(() => { G.TakeCard(id); Hud.Flush(G); Next(); });
+            }
+            Spacer(col, 10);
+            Ui.Push(col, Loc.Tr("Пропустить"), Next, true, 18, 170, 48);
+            Hud.Gain(p.Bar, Run.Hp - hp0, Run.Gold - gold0);
+            Hud.Flush(G);
+        }
+
+        // ================= трофей босса =================
+        void BossRelic()
+        {
+            var opts = G.BossRelicOptions();
+            if (opts.Count == 0) { Reward("boss"); return; }
+            var p = Open();
+            Bars(p);
+            var col = Ui.Node("trophy", p.Root).Box(0, 96, 400, 660);
+            col.Column(10, TextAnchor.UpperCenter);
+            Ui.Ribbon(col, Loc.Tr("Трофей босса"));
+            Ui.Label("hint", col, Loc.Tr("Выбери один талисман"), 18, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow(2f, 1f).Pref(380, 36);
+            foreach (var id in opts)
+            {
+                var r = defs.Relics[id];
+                var rowBtn = Ui.Node("relic", col);
+                rowBtn.Line(12, TextAnchor.MiddleLeft, 14, 14, 10, 10);
+                rowBtn.Pref(356, -1, 86);
+                var frame = Ui.Frame(rowBtn, "ui2/row2", 0.36f);
+                frame.raycastTarget = true;
+                frame.Outline(new Color(0.85f, 0.66f, 0.29f, 0.8f), 1.5f);
+                var ic = Ui.Img("icon", rowBtn, "r2/" + id);
+                ic.preserveAspect = true;
+                ic.Pref(56, 56);
+                var t = Ui.Label("text", rowBtn, "<color=#" + Ui.Hex(Ui.GoldHi) + ">" + r.Name + "</color>\n<size=15>" + r.Desc + "</size>", 19, Ui.Paper, TextAnchor.MiddleLeft, true).Shadow(1f);
+                t.Pref(262);
+                var b = rowBtn.gameObject.AddComponent<Button>();
+                b.transition = Selectable.Transition.None;
+                b.targetGraphic = frame;
+                b.onClick.AddListener(() =>
+                {
+                    G.AddRelic(id);
+                    Hud.Toast(Loc.Tr("Талисман: {name}", ("name", r.Name)));
+                    Hud.Flush(G);
+                    Reward("boss");
+                });
+            }
+            Spacer(col, 6);
+            Ui.Push(col, Loc.Tr("Не брать"), () => Reward("boss"), true, 18, 160, 46);
+        }
+
+        // ================= финалы =================
+        /// <summary>Книга финала: картинка, заголовок, рассказ и строка итогов; под ней кнопка в главное меню.</summary>
+        void Book(string pic, string ribbon, string title, string story, string stats, bool dim)
+        {
+            var p = Open();
+            var col = Ui.Node("end", p.Root).Box(0, ribbon != null ? 40 : 84, 400, 780);
+            col.Column(10, TextAnchor.UpperCenter);
+            if (ribbon != null) Ui.Ribbon(col, ribbon);
+            Spacer(col, 30);
+            var page = Ui.Node("page", col);
+            page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
+            page.Pref(372);
+            Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
+            Ui.Label("title", page, title, 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250);
+            var art = Ui.Node("art", page);
+            art.Pref(318, dim ? 170 : 200);
+            art.gameObject.AddComponent<RectMask2D>();
+            var img = Ui.Img("pic", art, "pic/" + pic);
+            img.rectTransform.Fill();
+            if (img.sprite)
+            {
+                var fit = img.gameObject.AddComponent<AspectRatioFitter>();
+                fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+                fit.aspectRatio = (float)img.sprite.texture.width / img.sprite.texture.height;
+                if (dim) img.color = new Color(0.62f, 0.62f, 0.66f);
+            }
+            else img.color = new Color32(0x1C, 0x27, 0x40, 0xFF);
+            Ui.Label("story", page, story, 17, Ui.Ink).Pref(318);
+            Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF)).Pref(318);
+            Spacer(col, 14);
+            Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, false, 22, 220, 56);
+        }
+
+        string DiffName => G.Diff.Name;
+
+        void Victory()
+        {
+            var fin = Run.Final;
+            var pic = fin == null ? "story_win" : fin.StartsWith("dk_") ? "ending_darkhero" : "ending_" + fin;
+            if (!Ui.Art("pic/" + pic)) pic = "story_win";
+            var saved = Run.FinalDark ?? Run.Forgiven;
+            var story = defs.StoryHero("winText", Run.Cls) ?? defs.StoryStr("winText") ?? "";
+            if (saved != null)
+            {
+                var dark = G.Lore.Dark(saved);
+                var s = Json.Str(Json.Get(dark, "saved"));
+                if (!string.IsNullOrEmpty(s)) story += " " + Loc.Tr(s);
+            }
+            var stats = string.Join(" · ", new[] { DiffName, Loc.Tr("Побед: {n}", ("n", Run.Fights)), Loc.Tr("Карт в колоде: {n}", ("n", Run.Deck.Count)), Loc.Tr("Талисманов: {n}", ("n", Run.Relics.Count)) });
+            Book(pic, defs.StoryStr("winRibbon"), defs.StoryStr("winTitle"), story, stats, false);
+        }
+
+        void Defeat(string by)
+        {
+            var story = defs.StoryHero("loseText", Run.Cls) ?? defs.StoryStr("loseText") ?? "";
+            var stats = string.Join(" · ", new[] { DiffName, Loc.Tr("Уровень") + " " + Loc.Tr("{a} из {b}", ("a", Run.Step + 1), ("b", defs.MaxSteps)), Loc.Tr("Побед: {n}", ("n", Run.Fights)) });
+            Book("story_lose", null, defs.StoryStr("loseTitle"), story, stats, true);
+        }
+    }
+}
