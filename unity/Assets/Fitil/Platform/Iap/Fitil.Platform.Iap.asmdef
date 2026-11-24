@@ -1,0 +1,16 @@
+{
+    "name": "Fitil.Platform.Iap",
+    "rootNamespace": "Fitil.Platform.Iap",
+    "references": ["Fitil.Core", "Fitil.Platform", "Unity.Purchasing"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": ["FITIL_IAP"],
+    "versionDefines": [
+        { "name": "com.unity.purchasing", "expression": "5.0.0", "define": "FITIL_IAP" }
+    ],
+    "noEngineReferences": false
+}
