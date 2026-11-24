@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Fitil.Core;
+using Fitil.Platform;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -135,13 +136,31 @@ namespace Fitil.Game
             {
                 var k = i;
                 var o = opts[i];
-                list.Add((o.Text, o.Hint, !o.Can, o.Why, o.Ad, () => EventPick(p, sc, id, k)));
+                // ответ за рекламу помечен: «▶ Реклама», а с «Без рекламы» — «Бонус» (adTag)
+                var text = o.Ad ? "<size=12><color=#" + Ui.Hex(Store.NoAds ? Ui.Green : Ui.Orange) + ">" + (Store.NoAds ? Loc.Tr("Бонус") : "▶ " + Loc.Tr("Реклама")) + "</color></size>\n" + o.Text : o.Text;
+                list.Add((text, o.Hint, !o.Can, o.Why, o.Ad, () => EventPick(p, sc, id, k, o.Ad ? o.Hint : null)));
             }
             Answers(sc, list);
         }
 
-        void EventPick(Page p, Scene sc, string id, int i)
+        bool adBusy;
+
+        /// <summary>Ответ события. adFor — ответ за рекламу: сначала ролик (без рекламы — сразу), не досмотрен — награды нет.</summary>
+        void EventPick(Page p, Scene sc, string id, int i, string adFor = null)
         {
+            if (adFor != null)
+            {
+                if (adBusy) return;
+                adBusy = true;
+                Store.Ad(Boot.Instance, seen =>
+                {
+                    adBusy = false;
+                    if (!seen) { Hud.Toast(Loc.Tr("Реклама не досмотрена, награды нет")); return; }
+                    if (!Store.NoAds) Progress.StatAdd("ads");
+                    if (sc.Col) EventPick(p, sc, id, i);
+                }, adFor);
+                return;
+            }
             var hp0 = Run.Hp;
             var gold0 = Run.Gold;
             var res = G.EventAct(id, i);

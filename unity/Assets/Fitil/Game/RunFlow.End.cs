@@ -206,7 +206,7 @@ namespace Fitil.Game
                     Sound.Sfx("heal");
                     if (fight) Fight(enemy, tier); else Map();
                     Hud.Toast(Loc.Tr("Ещё одна попытка!"));
-                });
+                }, Loc.Tr(fight ? "Бой начнётся заново" : "Вернуться на развилку перед боем"));
             }
             var again = Ui.Push(col, ad + Loc.Tr("Начать бой заново") + "\n<size=13>" + Loc.Tr("с теми же HP и колодой, что перед боем") + "</size>", () => Revive(fightSnap, true), false, 20, 300, 62);
             if (stepSnap != null)
