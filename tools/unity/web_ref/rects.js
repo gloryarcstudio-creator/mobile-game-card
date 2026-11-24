@@ -38,6 +38,22 @@ const { chromium } = require('playwright');
   if (want === 'chest') { await G(() => Game.goChest()); await dump('chest', 4); }
   if (want === 'meet') { await G(() => Game.goMeet('courier')); await dump('meet', 4); }
   if (want === 'after') { await G(() => Game.goAfter('fight', 'scarfsnake')); await dump('after', 4); }
+  if (want === 'event') { await G(() => Game.goEvent('well')); await dump('event', 4); }
+  if (want === 'reward') {
+    await G(() => Game.startCombat('scarfsnake')); await p.waitForTimeout(2500);
+    await G(() => { const C = Game.combat; const e = C.enemy || C.e; e.hp = 1; });
+    for (let i = 0; i < 6 && !(await p.$('.scr-reward')); i++) {
+      const c = p.locator('.hand .card.atk').first();
+      if (!(await c.count())) break;
+      await c.click({ force: true }).catch(() => {}); await p.waitForTimeout(300);
+      await p.locator('#enemy').click({ force: true }).catch(() => {}); await p.waitForTimeout(2500);
+    }
+    for (let i = 0; i < 4 && !(await p.$('.scr-reward')); i++) { await p.mouse.click(200, 300); await p.waitForTimeout(1500); }
+    for (let i = 0; i < 3 && (await p.$('.scr-talk')); i++) { await p.locator('.scroll').first().click({ force: true }).catch(() => {}); await p.waitForTimeout(1800); }
+    await p.waitForTimeout(3500);
+    await p.screenshot({ path: 'reward.png' });
+    await dump('reward', 5);
+  }
   if (want === 'boss') { await G(() => Game.startCombat(Object.keys(Game.combat ? {} : {}).length ? '' : 'x')).catch(()=>{}); }
   await b.close();
 })();

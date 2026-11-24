@@ -28,8 +28,8 @@ namespace Fitil.Game
         {
             var p = Open();
             Bars(p);
-            var col = Ui.Node("reward", p.Root).Box(0, 96, 400, 660);
-            col.Column(12, TextAnchor.UpperCenter);
+            var col = Ui.Node("reward", p.Root).Box(0, 70, 400, 686);   // лента на 70, как .ribbon в веб-версии
+            col.Column(13, TextAnchor.UpperCenter);
             Ui.Ribbon(col, rw.Boss ? Loc.Tr("Босс повержен!") : Loc.Tr("Победа!"));
             var loot = Ui.Node("loot", col);
             loot.Line(6, TextAnchor.MiddleCenter, 10, 16, 3, 3);
@@ -46,7 +46,7 @@ namespace Fitil.Game
             hint.Pref(380, 30);
 
             var n = rw.Ids.Count;
-            var w = n >= 4 ? 92f : 112f;
+            var w = n >= 4 ? 92f : 118f;
             var gap = n >= 4 ? 6f : 12f;
             var row = Ui.Node("cards", col);
             row.Pref(400, w * CardView.Ratio + 8);
@@ -65,8 +65,8 @@ namespace Fitil.Game
                 b.transition = Selectable.Transition.None;
                 b.onClick.AddListener(() => { Sound.Sfx("card"); G.TakeCard(id); Hud.Flush(G); Next(); });
             }
-            Spacer(col, 10);
-            Ui.Push(col, Loc.Tr("Пропустить"), Next, true, 18, 170, 48);
+            Spacer(col, 14);
+            Ui.Push(col, Loc.Tr("Пропустить"), Next, true, 20, 151, 50);
             return p;
         }
 

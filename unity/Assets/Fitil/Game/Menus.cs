@@ -88,11 +88,15 @@ namespace Fitil.Game
 
             // язык: названия языков на них самих; смена языка перезапускает экран
             var langs = new[] { ("en", "English"), ("ru", "Русский"), ("uk", "Українська") };
-            var row = Row(col, Loc.Tr("Язык"));
+            // название строки сверху, три языка под ним во всю ширину: в одну строку «Українська» не помещалась
+            Ui.Label("label", col, Loc.Tr("Язык"), 15, Ui.Paper, TextAnchor.MiddleLeft, true).Pref(304, 22);
+            var row = Ui.Node("trow", col);
+            row.Line(4, TextAnchor.MiddleLeft);
+            row.Pref(304, 30);
             foreach (var (k, name) in langs)
             {
                 var key = k;
-                Radio(row, name, Loc.Lang == key, 0, () =>
+                Radio(row, name, Loc.Lang == key, 99, () =>
                 {
                     if (Loc.Lang == key) return;
                     Settings.Lang = key;
