@@ -77,6 +77,7 @@ namespace Fitil.Game
             if (saved == null) { Sound.Sfx("win"); Sound.Music(MapTrack); }
             if (opts.Count == 0) { Reward("boss"); return; }
             Save(new Pending { T = "bossrelic", Opts = opts });
+            foreach (var r in opts) Progress.Codex("r", r);
             var p = Open();
             Bars(p);
             var col = Ui.Node("trophy", p.Root).Box(0, 96, 400, 660);
@@ -115,9 +116,10 @@ namespace Fitil.Game
 
         // ================= финалы =================
         /// <summary>Книга финала: картинка, заголовок, рассказ и строка итогов; под ней кнопка в главное меню.</summary>
-        Page Book(string pic, string ribbon, string title, string story, string stats, bool dim)
+        Page Book(string pic, string ribbon, string title, string story, string stats, bool dim, Dictionary<string, object> rec)
         {
             var p = Open();
+            Boot.Instance.Corner("end");
             var col = Ui.Node("end", p.Root).Box(0, ribbon != null ? 40 : 84, 400, 780);
             col.Column(10, TextAnchor.UpperCenter);
             if (ribbon != null) Ui.Ribbon(col, ribbon);
@@ -131,11 +133,12 @@ namespace Fitil.Game
             Ui.Label("story", page, story, 17, Ui.Ink).Pref(318);
             Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF)).Pref(318);
             Spacer(col, 14);
-            Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, false, 22, 220, 56);
+            if (rec != null) Ui.Push(col, Loc.Tr("Итоги забега"), () => Summary(rec), false, 22, 240, 56);
+            Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, rec != null, rec != null ? 18 : 22, rec != null ? 200 : 220, rec != null ? 48 : 56);
             return p;
         }
 
-        string DiffName => G.Diff.Name;
+        public string DiffName => G.Diff.Name;
 
         void Victory()
         {
@@ -152,9 +155,11 @@ namespace Fitil.Game
             }
             var stats = string.Join(" · ", new[] { DiffName, Loc.Tr("Побед: {n}", ("n", Run.Fights)), Loc.Tr("Карт в колоде: {n}", ("n", Run.Deck.Count)), Loc.Tr("Талисманов: {n}", ("n", Run.Relics.Count)) });
             ClearSave(defs);
+            ended = true;
+            var rec = Progress.Victory(G, defs.MaxSteps);
             Sound.Music("title");
             Sound.Sfx("victory");
-            var page = Book(pic, defs.StoryStr("winRibbon"), defs.StoryStr("winTitle"), story, stats, false);
+            var page = Book(pic, defs.StoryStr("winRibbon"), defs.StoryStr("winTitle"), story, stats, false, rec);
             // праздник: хлопушки у ленты и звёзды над книгой, когда экран уже проявился
             Delay(0.52f, () => { if (page.Root) Hud.FxOn(page.Root).Play("fanfare", null); });
         }
@@ -164,10 +169,12 @@ namespace Fitil.Game
         void Defeat(string enemy, string tier)
         {
             if (snapFight == null) { EndRun(); return; }
+            lastFoe = enemy;
             Save(new Pending { T = "defeat", Enemy = enemy, Tier = tier, Fight = snapFight });
             Sound.Music(null);
             Sound.Sfx("defeat");
             var p = Open();
+            Boot.Instance.Corner("end");
             var col = Ui.Node("end", p.Root).Box(0, 70, 400, 780);
             col.Column(10, TextAnchor.UpperCenter);
             var page = Ui.Node("page", col);
@@ -192,7 +199,10 @@ namespace Fitil.Game
                     if (!seen) { Hud.Toast(Loc.Tr("Реклама не досмотрена")); return; }
                     var r = RunSave.FromSnap(defs, snap);
                     if (r == null) { EndRun(); return; }
+                    var prevSt = new Dictionary<string, long>(Run.St);
                     G.Run = r;
+                    Progress.KeepSt(r, prevSt);
+                    Progress.Revive(r);
                     Sound.Sfx("heal");
                     if (fight) Fight(enemy, tier); else Map();
                     Hud.Toast(Loc.Tr("Ещё одна попытка!"));
@@ -210,10 +220,29 @@ namespace Fitil.Game
             snapFight = null;
             snapStep = null;
             ClearSave(defs);
+            ended = true;
+            var rec = Progress.Loss(G, lastFoe, defs.MaxSteps);
             Sound.Music(null);
+            Sound.Sfx("defeat");
             var story = defs.StoryHero("loseText", Run.Cls) ?? defs.StoryStr("loseText") ?? "";
             var stats = string.Join(" · ", new[] { DiffName, Loc.Tr("Уровень") + " " + Loc.Tr("{a} из {b}", ("a", Run.Step + 1), ("b", defs.MaxSteps)), Loc.Tr("Побед: {n}", ("n", Run.Fights)) });
-            Book("story_lose", null, defs.StoryStr("loseTitle"), story, stats, true);
+            Book("story_lose", null, defs.StoryStr("loseTitle"), story, stats, true, rec);
+        }
+
+        /// <summary>Итоги забега (goSummary): карточка итогов, «Новый забег» и «Главное меню».</summary>
+        void Summary(Dictionary<string, object> rec)
+        {
+            var p = Open();
+            Boot.Instance.Corner("end");
+            var col = Ui.Node("summary", p.Root).Box(0, 30, 400, 810);
+            col.Column(12, TextAnchor.UpperCenter);
+            Ui.Ribbon(col, Loc.Tr("Итоги забега"));
+            Progress.SummaryCard(col, rec, defs);
+            var btns = Ui.Node("btns", col);
+            btns.Line(12, TextAnchor.MiddleCenter);
+            btns.Pref(380, 56);
+            Ui.Push(btns, Loc.Tr("Новый забег"), () => { Close(); Boot.Instance.ShowHeroes(); }, false, 20, 190, 54);
+            Ui.Push(btns, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, true, 18, 170, 50);
         }
 
         static void BookPic(RectTransform page, string pic, float h, bool dim)

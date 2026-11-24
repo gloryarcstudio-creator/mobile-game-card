@@ -34,26 +34,54 @@ namespace Fitil.Game
         Page page;
         CombatScreen combat;
 
+        /// <summary>Забег, который сейчас на экране (пауза, смена языка), или null.</summary>
+        public static RunFlow Current { get; private set; }
+
         public RunFlow(Defs defs, string cls, int diff = 1)
         {
             this.defs = defs;
             G = RunGame.New(defs, cls, diff, Rng.NewSeed());
+            G.OnTrack = Progress.Track;
             Loc.Gender = () => G.Hero.Female;
+            Current = this;
+            Progress.NewRun(G.Run);
         }
 
         RunFlow(Defs defs, SaveFile s)
         {
             this.defs = defs;
             G = new RunGame(defs, s.Run);
+            G.OnTrack = Progress.Track;
             snapStep = s.Back;
             Loc.Gender = () => G.Hero.Female;
+            Current = this;
         }
+
+        public HeroClass Hero => G.Hero;
+        /// <summary>Идёт бой (выход из него начнёт бой заново).</summary>
+        public bool InFight => combat;
+        /// <summary>Бой проигрывает ход: выходить нельзя, пока он не закончится.</summary>
+        public bool FightBusy => combat && combat.Busy;
+
+        /// <summary>Выйти из забега (он уже сохранён); toTitle — сразу в главное меню.</summary>
+        public void Quit(bool toTitle = true)
+        {
+            Close();
+            if (Current == this) Current = null;
+            if (toTitle) Boot.Instance.ShowTitle();
+        }
+
+        /// <summary>Главное меню открылось: забега на экране больше нет.</summary>
+        public static void Drop() => Current = null;
 
         public void Start() => Map();
 
         // ================= сохранение =================
         string snapStep;                     // забег на развилке перед боем (вторая попытка «Вернуться до боя»)
         string snapFight;                    // забег в начале боя (вторая попытка «Начать бой заново»)
+        Pending lastP;                       // экран, на котором забег сохранён последний раз
+        bool ended;                          // забег закончен: сохранения больше нет
+        string lastFoe;                      // враг последнего боя (итоги проигранного забега)
 
         public static string SaveKey(Defs d) => "lastray.save." + d.StoryId;
 
@@ -69,8 +97,17 @@ namespace Fitil.Game
         /// <summary>Записать забег и экран, на котором он сейчас (save в game.js).</summary>
         void Save(Pending p = null)
         {
+            Progress.Tick(Run);
+            lastP = p;
             var back = p != null && snapStep != null ? snapStep : null;
             SaveStore.Write(SaveKey(defs), RunSave.Write(new SaveFile { Run = Run, P = p, Back = back, At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }));
+        }
+
+        /// <summary>Игра свернулась или закрывается: дописать время в пути (вне боя — бой и так начнётся заново).</summary>
+        public void SaveNow()
+        {
+            if (ended || combat) return;
+            Save(lastP);
         }
 
         Pending P(string t, string enemy = null, string tier = null) => new Pending { T = t, Enemy = enemy, Tier = tier };
@@ -131,6 +168,7 @@ namespace Fitil.Game
             };
             var art = place == "shop" ? "bg/scene_shop" : place == "rest" ? "bg/scene_campfire" : place == "meet" ? "bg/scene_meet" : Boot.BgFor(defs, Run.Step);
             page.Bg = Boot.Background(page.Back, art);
+            boot.Corner("run");
             return page;
         }
 
@@ -199,10 +237,13 @@ namespace Fitil.Game
             Close();
             snapFight = RunSave.Snap(Run);
             Save(P(tier, id));
+            lastFoe = id;
+            Progress.Codex("e", id);
             // бой: у боссов своя музыка, обычные бои чередуют две пьесы после каждой победы
             Sound.Music(tier == "boss" ? (defs.IsFinalStep(Run.Step) ? "final" : "boss") : Run.Fights % 2 == 1 ? "battle2" : "battle");
             var setup = G.SetupFor(id, tier);
             combat = CombatScreen.Show(defs, Run, id, tier, setup, end => AfterFight(end));
+            Boot.Instance.Corner("combat");
         }
 
         void AfterFight(CombatEnd end)

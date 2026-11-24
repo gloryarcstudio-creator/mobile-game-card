@@ -129,6 +129,7 @@ namespace Fitil.Game
             var pic = art != null && art.StartsWith("pic/");
             var sc = StoryScene(p, art, pic, 86, 150, pic ? 248 : 150, Json.Str(Json.Get(ev, "title")), Loc.Fill(Json.Str(Json.Get(ev, "text"))));
             var opts = G.EventOptions(id);
+            Progress.Put("events", id);
             var list = new List<(string, string, bool, string, bool, Action)>();
             for (var i = 0; i < opts.Count; i++)
             {
@@ -167,6 +168,7 @@ namespace Fitil.Game
         void Talk(string id, string tier)
         {
             Save(P("talk", id, tier));
+            Progress.Codex("e", id);
             var p = Open();
             Bars(p);
             var e = defs.Enemies[id];

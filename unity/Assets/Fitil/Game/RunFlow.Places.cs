@@ -16,6 +16,7 @@ namespace Fitil.Game
         void ShopScreen(ShopState shop, bool last, bool happy = false)
         {
             Save(new Pending { T = "shop", Shop = shop, Last = last });
+            if (shop.Relic != null) Progress.Codex("r", shop.Relic.Id);
             var p = Open("shop");
             Bars(p);
             var root = p.Root;

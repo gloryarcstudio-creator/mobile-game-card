@@ -22,7 +22,7 @@ namespace Fitil.Game
         bool busy;
         int evAt;
         int selected = -1;
-        float speed = 0.85f;   // доля длительности пауз из боя (в веб-версии настройка «быстрые анимации»)
+        float speed = Settings.Fast ? 0.5f : 0.85f;   // доля длительности пауз из боя (настройка «Анимации: быстрые» — вдвое короче)
 
         RectTransform root, back, hand, fxLayer, intentRow, eStatus, hStatus;
         RectTransform enemyBox, heroBar;
@@ -38,7 +38,8 @@ namespace Fitil.Game
         FxPlayer fx;                    // нарисованные эффекты боя
         RectTransform faceRt, lampRt, orbRt;
         bool dying;
-        float animSpeed = 1;            // скорость нарисованных движений (2 — ускоренный бой)
+        float animSpeed = Settings.AnimSpeed;   // скорость нарисованных движений (2 — быстрые анимации)
+        public bool Busy => busy;
         float eTrailTarget = 1, hTrailTarget = 1;
         readonly System.Random uiRnd = new System.Random();
 
@@ -481,7 +482,7 @@ namespace Fitil.Game
         public void Tap(int i)
         {
             if (busy) return;
-            if (selected == i) Play(i);
+            if (selected == i || Settings.OneTap) Play(i);
             else Select(i);
         }
 
@@ -599,6 +600,9 @@ namespace Fitil.Game
                         break;
                     case Ev.Sfx:
                         Sound.Sfx(e.A, e.N > 0 ? e.N / 100f : 1);
+                        break;
+                    case Ev.Track:
+                        Progress.Track(e.A, e.B, e.N);
                         break;
                 }
             }
@@ -883,12 +887,15 @@ namespace Fitil.Game
         Coroutine sayCo;
         bool Say(string kind)
         {
-            var line = LineOf(C.Id, kind);
+            var line = Settings.Lines ? LineOf(C.Id, kind) : null;   // «Реплики врагов: скрывать»
             if (string.IsNullOrEmpty(line)) return false;
             sayText.text = line;
             sayBubble.SetActive(true);
+            Progress.Add("lines");
+            // длинная реплика висит дольше: 50 мс на знак (v155)
+            var life = Mathf.Min(5.2f, Mathf.Max(2.6f, 0.6f + line.Length * 0.05f)) * (Settings.Fast ? 0.7f : 1);
             if (sayCo != null) StopCoroutine(sayCo);
-            sayCo = StartCoroutine(HideLater(sayBubble, 2.6f));
+            sayCo = StartCoroutine(HideLater(sayBubble, life));
             return true;
         }
 
