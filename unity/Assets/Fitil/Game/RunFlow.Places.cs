@@ -13,7 +13,7 @@ namespace Fitil.Game
         // ================= лавка =================
         void Shop(bool last) => ShopScreen(G.NewShop(), last);
 
-        void ShopScreen(ShopState shop, bool last)
+        void ShopScreen(ShopState shop, bool last, bool happy = false)
         {
             Save(new Pending { T = "shop", Shop = shop, Last = last });
             var p = Open("shop");
@@ -21,9 +21,15 @@ namespace Fitil.Game
             var root = p.Root;
 
             // ёж за прилавком и его слова
-            var keeper = Ui.Img("hedgehog", root, "e/hedgehog");
-            keeper.preserveAspect = true;
-            keeper.rectTransform.Box(20, 84, 140, 130);
+            var keeperBox = Ui.Node("keeper", root).Box(20, 84, 140, 130);
+            var keeper = Ui.Img("hedgehog", keeperBox, "e/hedgehog");
+            EnemyAnim.Stand(keeper, "hedgehog", 130);
+            var keeperLive = EnemyAnim.Make(keeperBox, "hedgehog");
+            if (keeperLive)
+            {
+                keeper.enabled = false;
+                if (happy) keeperLive.Play("happy");   // ёж радуется покупке
+            }
             var bubble = Ui.Node("bubble", root).Box(164, 100, 210, 70);
             bubble.Column(0, TextAnchor.MiddleCenter, 18, 18, 9, 8);
             Ui.Frame(bubble, "ui2/bubble", 0.3f);
@@ -65,12 +71,12 @@ namespace Fitil.Game
             Service(list, "r2/whetstone", Loc.Tr("лавка::Заточка"), Loc.Tr("Улучшить карту"), shop.Up, () =>
             {
                 if (!G.CanAfford(shop.Up)) { Sound.Sfx("deny"); Hud.Flush(G); return; }
-                Prompt(DeckPrompt.Upgrade, 0, ok => { if (ok) G.PayService(shop.Up); ShopScreen(shop, last); });
+                Prompt(DeckPrompt.Upgrade, 0, ok => { if (ok) G.PayService(shop.Up); ShopScreen(shop, last, ok); });
             });
             Service(list, "i/scissors", Loc.Tr("Распустить карту"), Loc.Tr("Убрать карту из колоды"), shop.Remove, () =>
             {
                 if (!G.CanAfford(shop.Remove)) { Sound.Sfx("deny"); Hud.Flush(G); return; }
-                Prompt(DeckPrompt.Remove, 0, ok => { if (ok) G.PayService(shop.Remove); ShopScreen(shop, last); });
+                Prompt(DeckPrompt.Remove, 0, ok => { if (ok) G.PayService(shop.Remove); ShopScreen(shop, last, ok); });
             });
 
             var reroll = Ui.Push(root, Loc.Tr("Обновить товар") + "  " + Coin(G.RerollPrice(shop)), () => ShopAct(shop, last, () => G.Reroll(shop)), true, 16, 190, 46);
@@ -123,7 +129,7 @@ namespace Fitil.Game
             var ok = logic();
             if (!ok) { Sound.Sfx("deny"); Hud.Flush(G); return; }
             Sound.Sfx(Run.Hp > hp0 ? "heal" : "coin");
-            ShopScreen(shop, last);
+            ShopScreen(shop, last, Run.Gold < gold0);
             Hud.Gain(page.Bar, Run.Hp - hp0, 0);
             Hud.Flush(G);
         }
@@ -144,6 +150,8 @@ namespace Fitil.Game
                 var gold0 = Run.Gold;
                 var found = G.OpenChest(out var text);
                 Save(P("next"));
+                // из сундука вылетает то, что в нём лежало: горка монет или звёзды находки
+                Hud.FxOn(p.Root).PlayAt(found != null ? "find" : "loot", 200, 379, 170, 170, 385 + 170 * 0.3f);
                 msg.text = text;
                 Ui.Clear(row);
                 if (found != null)

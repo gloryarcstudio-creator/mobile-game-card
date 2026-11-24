@@ -115,7 +115,7 @@ namespace Fitil.Game
 
         // ================= финалы =================
         /// <summary>Книга финала: картинка, заголовок, рассказ и строка итогов; под ней кнопка в главное меню.</summary>
-        void Book(string pic, string ribbon, string title, string story, string stats, bool dim)
+        Page Book(string pic, string ribbon, string title, string story, string stats, bool dim)
         {
             var p = Open();
             var col = Ui.Node("end", p.Root).Box(0, ribbon != null ? 40 : 84, 400, 780);
@@ -132,6 +132,7 @@ namespace Fitil.Game
             Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF)).Pref(318);
             Spacer(col, 14);
             Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, false, 22, 220, 56);
+            return p;
         }
 
         string DiffName => G.Diff.Name;
@@ -153,7 +154,9 @@ namespace Fitil.Game
             ClearSave(defs);
             Sound.Music("title");
             Sound.Sfx("victory");
-            Book(pic, defs.StoryStr("winRibbon"), defs.StoryStr("winTitle"), story, stats, false);
+            var page = Book(pic, defs.StoryStr("winRibbon"), defs.StoryStr("winTitle"), story, stats, false);
+            // праздник: хлопушки у ленты и звёзды над книгой, когда экран уже проявился
+            Delay(0.52f, () => { if (page.Root) Hud.FxOn(page.Root).Play("fanfare", null); });
         }
 
         /// <summary>Поражение: можно начать бой заново или вернуться на развилку перед ним (за рекламу,

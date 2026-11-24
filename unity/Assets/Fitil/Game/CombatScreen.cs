@@ -34,6 +34,11 @@ namespace Fitil.Game
         Button endBtn;
         readonly List<CardView> cards = new List<CardView>();
         Vector2 enemyHome;
+        EnemyAnim live;                 // живой враг (раскадровки); null — неподвижная картинка
+        FxPlayer fx;                    // нарисованные эффекты боя
+        RectTransform faceRt, lampRt, orbRt;
+        bool dying;
+        float animSpeed = 1;            // скорость нарисованных движений (2 — ускоренный бой)
         float eTrailTarget = 1, hTrailTarget = 1;
         readonly System.Random uiRnd = new System.Random();
 
@@ -83,6 +88,13 @@ namespace Fitil.Game
             flash.rectTransform.Fill();
             vignette = Ui.Img("hurt", fxLayer, null, new Color(0.8f, 0.05f, 0.05f, 0));
             vignette.rectTransform.Fill();
+            fx = FxPlayer.On(fxLayer);
+            fx.Targets["enemy"] = enemyBox;
+            fx.Targets["hero"] = faceRt;
+            fx.Targets["lamp"] = lampRt;
+            fx.Targets["energy"] = orbRt;
+            fx.Shake = p => { if (!dying) StartCoroutine(ZoneShake(p)); };
+            fx.Tint = (c, s) => StartCoroutine(EnemyTint(c, s));
 
             toast = Ui.Round("toast", root, new Color32(14, 16, 28, 235)).gameObject;
             var tr = (RectTransform)toast.transform;
@@ -123,17 +135,21 @@ namespace Fitil.Game
             intentRow = Ui.Node("intent", root).Box(0, 66, 400, 42);
             Row(intentRow, TextAnchor.MiddleCenter, 10);
 
-            enemyBox = Ui.Node("enemy", root).Box(75, 120, 250, 260);
+            // рамка врага (.enemy): у босса шире и выше
+            var boss = tier == "boss";
+            enemyBox = boss ? Ui.Node("enemy", root).Box(40, 106, 320, 300) : Ui.Node("enemy", root).Box(75, 120, 250, 260);
             enemyHome = enemyBox.anchoredPosition;
             enemyImg = Ui.Img("art", enemyBox, "e/" + enemyId);
-            enemyImg.preserveAspect = true;
-            enemyImg.rectTransform.Fill();
+            EnemyAnim.Stand(enemyImg, enemyId, boss ? 300 : 250);
             enemyImg.raycastTarget = true;
             // нажатие на врага разыгрывает выбранную карту
             var hit = enemyImg.gameObject.AddComponent<Button>();
             hit.transition = Selectable.Transition.None;
             hit.onClick.AddListener(() => { if (!busy && selected >= 0) Play(selected); });
             if (!enemyImg.sprite) enemyImg.color = new Color(0, 0, 0, 0);
+            // живой враг рисуется поверх, неподвижная картинка остаётся невидимой целью для нажатия
+            live = EnemyAnim.Make(enemyBox, enemyId);
+            if (live) enemyImg.color = new Color(1, 1, 1, 0);
 
             // реплика врага: светлая плашка слева над ним (.saybub)
             var bubble = Ui.Round("say", root, new Color32(250, 240, 214, 242));
@@ -169,9 +185,11 @@ namespace Fitil.Game
 
             var face = Ui.CircleArt("face", heroBar, Ui.Art("h/" + C.Run.Cls + "_face"));
             face.rectTransform.Box(9, 20, 65, 65);
+            faceRt = face.rectTransform;
 
             // Огоньки лампы
             var lamp = Ui.Node("flame", heroBar).Box(86, 8, 90, 23);
+            lampRt = lamp;
             pips = new Image[C.FlameMaxNow];
             for (var i = 0; i < pips.Length; i++)
             {
@@ -187,6 +205,7 @@ namespace Fitil.Game
             var orb = Ui.Img("energy", heroBar, "ui2/round");
             orb.preserveAspect = true;
             orb.rectTransform.Box(232, 32, 50, 54);
+            orbRt = orb.rectTransform;
             if (!orb.sprite) { orb.sprite = Ui.Circle; orb.color = new Color32(0x1F, 0x8D, 0x88, 0xFF); }
             energyText = Ui.Label("n", orb.transform, "", 24, Color.white, TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
             energyText.rectTransform.Fill();
@@ -501,12 +520,30 @@ namespace Fitil.Game
         }
 
         // ================= проигрывание событий =================
+        readonly Dictionary<string, float> floats = new Dictionary<string, float>();
+
         IEnumerator Replay(bool deal)
         {
             busy = true;
             endBtn.interactable = false;
+            yield return Drain();
+            if (C.End == CombatEnd.Win) yield return WinShow();
+            RenderAll();
+            if (deal) StartCoroutine(Deal());
+            busy = false;
+            endBtn.interactable = C.End == CombatEnd.None;
+            if (C.End != CombatEnd.None)
+            {
+                busy = true;
+                yield return new WaitForSeconds(0.9f);
+                done?.Invoke(C.End);
+            }
+        }
+
+        /// <summary>Проиграть всё, что бой успел записать.</summary>
+        IEnumerator Drain()
+        {
             var events = C.Events;
-            var floats = new Dictionary<string, float>();
             while (evAt < events.Count)
             {
                 var e = events[evAt++];
@@ -528,9 +565,18 @@ namespace Fitil.Game
                         RenderHeroStatus();
                         break;
                     case Ev.EnemyAct:
-                        if (e.A == "attack") yield return EnemyLunge();
-                        else if (e.A == "hurt") StartCoroutine(Shake(enemyBox, enemyHome, 7, 0.22f, enemyImg));
-                        else if (e.A == "death") StartCoroutine(Fade(enemyImg, 0.5f));
+                        if (e.A == "attack")
+                        {
+                            // урон приходит в момент нарисованного удара
+                            var strike = live ? live.Play("attack", animSpeed) : 0;
+                            if (strike > 0) yield return new WaitForSeconds(Mathf.Clamp(strike, 0.18f, 0.6f));
+                            else yield return EnemyLunge();
+                        }
+                        else if (e.A == "hurt")
+                        {
+                            if (live && live.Play("hurt", animSpeed) > 0) StartCoroutine(Shake(enemyBox, enemyHome, 5, 0.25f, null));
+                            else StartCoroutine(Shake(enemyBox, enemyHome, 7, 0.22f, enemyImg));
+                        }
                         break;
                     case Ev.HeroMove:
                         if (e.A == "hurt") { StartCoroutine(Pulse(vignette, 0.28f, 0.35f)); StartCoroutine(Shake(heroBar, heroBar.anchoredPosition, 5, 0.2f, null)); }
@@ -545,24 +591,120 @@ namespace Fitil.Game
                         Say(e.A);
                         break;
                     case Ev.Fx:
-                        Sound.Fx(e.A);
-                        if (e.B == "enemy") StartCoroutine(Tint(enemyImg, new Color(1f, 0.85f, 0.7f), 0.12f));
+                        {
+                            // удар по врагу ждёт, пока долетит снаряд или опустится штемпель
+                            var hit = PlayFx(e.A, e.B);
+                            if (e.N == 1 && hit > 0) yield return new WaitForSeconds(hit);
+                        }
                         break;
                     case Ev.Sfx:
                         Sound.Sfx(e.A, e.N > 0 ? e.N / 100f : 1);
                         break;
                 }
             }
-            if (C.End == CombatEnd.Win) { Say("death"); StartCoroutine(Fade(enemyImg, 0.6f)); }
-            RenderAll();
-            if (deal) StartCoroutine(Deal());
-            busy = false;
-            endBtn.interactable = C.End == CombatEnd.None;
-            if (C.End != CombatEnd.None)
+        }
+
+        /// <summary>Эффект боя (js/fx.js) над врагом или героем и его звук. Возвращает секунды до удара.</summary>
+        float PlayFx(string kind, string target)
+        {
+            fx.Speed = animSpeed;
+            return fx.Play(kind, target);
+        }
+
+        // встряска зоны врага (shake в fx.js): 6 точек на единицу силы, 0,34 с
+        IEnumerator ZoneShake(float power)
+        {
+            var d = 6 * power;
+            var keys = new[] { 0f, d, -d, d * 0.6f, -d * 0.3f, 0f };
+            const float dur = 0.34f;
+            for (var t = 0f; t < dur; t += Time.deltaTime)
             {
-                busy = true;
-                yield return new WaitForSeconds(0.9f);
-                done?.Invoke(C.End);
+                if (!enemyBox || dying) yield break;
+                var p = t / dur * 5;
+                var i = Mathf.Min(4, (int)p);
+                var x = Mathf.Lerp(keys[i], keys[i + 1], p - i);
+                enemyBox.anchoredPosition = enemyHome + new Vector2(x, i % 2 == 0 ? 1 : -1);
+                yield return null;
+            }
+            if (enemyBox && !dying) enemyBox.anchoredPosition = enemyHome;
+        }
+
+        // окраска врага на время: горит, замёрз, ослаб (.enemy.burning / .frosty / .withered)
+        int tintSeq;
+        IEnumerator EnemyTint(string kind, float dur)
+        {
+            var c = kind == "burning" ? new Color(1f, 0.78f, 0.55f) : kind == "frosty" ? new Color(0.72f, 0.88f, 1f) : new Color(0.82f, 0.7f, 0.95f);
+            var my = ++tintSeq;
+            SetTint(c);
+            yield return new WaitForSeconds(dur);
+            if (my == tintSeq) SetTint(Color.white);
+        }
+
+        void SetTint(Color c)
+        {
+            if (live) live.Tint = c;
+            else if (enemyImg) enemyImg.color = new Color(c.r, c.g, c.b, enemyImg.color.a);
+        }
+
+        // гибель без своей раскадровки (.enemy.dying): враг оседает, уменьшается и тает
+        IEnumerator Dying(float dur)
+        {
+            dying = true;
+            var c = enemyImg.color;
+            for (var t = 0f; t < dur; t += Time.deltaTime)
+            {
+                if (!enemyBox) yield break;
+                var k = t / dur;
+                var sc = 1 - 0.4f * k;
+                var size = enemyBox.sizeDelta;
+                // уменьшается к ногам: низ рамки по середине остаётся на месте и оседает на 30 точек
+                enemyBox.anchoredPosition = enemyHome + new Vector2((1 - sc) * size.x / 2, -(1 - sc) * size.y - 30 * k);
+                enemyBox.localScale = Vector3.one * sc;
+                if (live) live.Alpha = 1 - k;
+                else enemyImg.color = new Color(c.r, c.g, c.b, c.a * (1 - k));
+                yield return null;
+            }
+            if (live) live.Alpha = 0;
+            else enemyImg.color = new Color(c.r, c.g, c.b, 0);
+        }
+
+        /// <summary>Гибель врага (winCombat в game.js): последняя фраза, нарисованная гибель или растворение,
+        /// из врага сыплются монеты. Шутиха взрывается в момент вспышки своей гибели и может забрать героя с собой.</summary>
+        IEnumerator WinShow()
+        {
+            if (!C.Boomed && Say("death")) yield return new WaitForSeconds(0.8f);
+            var prize = tier == "boss" ? "triumph" : "loot";
+            var juice = 0.9f / animSpeed;
+            var dur = live ? live.Duration("death", animSpeed) : 0;
+            if (dur > 0)
+            {
+                var flash = live.Play("death", animSpeed);
+                var lead = dur * 0.4f;
+                var gone = 0f;
+                if (C.Blast > 0)
+                {
+                    gone = Mathf.Min(flash > 0 ? flash : lead, lead);
+                    yield return new WaitForSeconds(gone);
+                    if (C.BlastHero()) { yield return Drain(); yield break; }
+                    yield return Drain();
+                    gone += 0.3f;
+                }
+                yield return new WaitForSeconds(Mathf.Max(0, lead - gone));
+                PlayFx(prize, "enemy");
+                yield return new WaitForSeconds(Mathf.Max(dur + 0.2f - Mathf.Max(lead, gone), juice));
+            }
+            else
+            {
+                StartCoroutine(Dying(0.8f / animSpeed));
+                yield return new WaitForSeconds(0.25f);
+                if (C.Blast > 0)
+                {
+                    var dead = C.BlastHero();
+                    yield return Drain();
+                    if (dead) yield break;
+                }
+                PlayFx(prize, "enemy");
+                yield return new WaitForSeconds(Mathf.Max(0.55f, juice));
             }
         }
 
@@ -739,14 +881,15 @@ namespace Fitil.Game
 
         // ================= реплики врага (js/lore.js SAY) =================
         Coroutine sayCo;
-        void Say(string kind)
+        bool Say(string kind)
         {
             var line = LineOf(C.Id, kind);
-            if (string.IsNullOrEmpty(line)) return;
+            if (string.IsNullOrEmpty(line)) return false;
             sayText.text = line;
             sayBubble.SetActive(true);
             if (sayCo != null) StopCoroutine(sayCo);
             sayCo = StartCoroutine(HideLater(sayBubble, 2.6f));
+            return true;
         }
 
         string LineOf(string id, string kind)

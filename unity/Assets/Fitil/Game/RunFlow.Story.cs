@@ -15,6 +15,7 @@ namespace Fitil.Game
             public RectTransform Col, Art, Box, Scrolls;
             public LayoutElement ArtSize;
             public float ArtH;
+            public EnemyAnim Live;
             public Text Title, Text, Note;
         }
 
@@ -52,6 +53,8 @@ namespace Fitil.Game
                 img.preserveAspect = true;
                 img.rectTransform.Fill();
                 if (!img.sprite) img.color = new Color(0, 0, 0, 0);
+                // собеседник-враг оживает (Art.enemyLive)
+                if (art != null && art.StartsWith("e/")) LiveIn(sc, art.Substring(2));
             }
 
             Spacer(sc.Col, 34);
@@ -75,6 +78,15 @@ namespace Fitil.Game
             sc.Scrolls.Column(13, TextAnchor.UpperCenter);
             sc.Scrolls.Pref(400);
             return sc;
+        }
+
+        // живой враг вместо неподвижной картинки; прежний живой (другой враг вступил в разговор) убирается
+        static void LiveIn(Scene sc, string id)
+        {
+            if (sc.Live) UnityEngine.Object.Destroy(sc.Live.gameObject);
+            sc.Live = EnemyAnim.Make(sc.Art, id);
+            var img = sc.Art.GetComponentInChildren<Image>();
+            if (img) img.enabled = !sc.Live;
         }
 
         static void Spacer(Transform parent, float h) => Ui.Node("gap", parent).Pref(1, h);
@@ -183,8 +195,9 @@ namespace Fitil.Game
             if (res.Fight != null && res.Fight != id)
             {
                 sc.Title.text = defs.Enemies[res.Fight].Name;
-                var img = sc.Art.GetComponentInChildren<Image>();
+                var img = sc.Art.GetComponentInChildren<Image>(true);
                 if (img) img.sprite = Ui.Art("e/" + res.Fight);
+                LiveIn(sc, res.Fight);
             }
             After(p, hp0, gold0);
             if (res.Next == "fight") { Save(P(tier, res.Fight)); One(sc, Loc.Tr("В бой"), () => Fight(res.Fight, tier)); }
@@ -201,8 +214,13 @@ namespace Fitil.Game
             var e = defs.Enemies[id];
             var boss = e.Tier == "boss";
             var sc = StoryScene(p, "e/" + id, false, boss ? 56 : 64, boss ? 210 : 170, boss ? 190 : 170, e.Name, Quote(G.PleaLine(id)), null, 14);
-            // побеждённый враг стоит чуть накренившись
+            // побеждённый враг стоит чуть накренившись (.talk-art.beaten)
             sc.Art.GetChild(0).localRotation = Quaternion.Euler(0, 0, 7);
+            if (sc.Live)
+            {
+                sc.Live.transform.localRotation = Quaternion.Euler(0, 0, 5);
+                sc.Live.transform.localScale = Vector3.one * 0.95f;
+            }
             Answers(sc, new (string, string, bool, string, bool, Action)[]
             {
                 (Loc.Tr("Пощадить"), Loc.Tr(tier == "boss" ? "Враг отдаст талисман" : "Враг оставит подарок"), false, null, false, () => PleaPick(p, sc, id, tier, true)),
