@@ -120,28 +120,29 @@ namespace Fitil.Core
             var e = Defs.Enemies[id];
             var mod = new FightMod { Talked = true };
             string reply = null, narr = null, next = "fight", fightId = id;
+            var gold0 = Run.Gold;
             if (k != "fight") Track("ach.add", "talks");
             if (k == "taunt" || k == "sass")
             {
                 mod.Str = k == "sass" ? 3 : 2; mod.GoldMul = k == "sass" ? 2 : 1.5;
-                reply = Pick(Lore.Taunted); Run.Anger++;
+                reply = Pick(Lore.Taunted); Run.Anger++; Track("ach.add", "taunts");
             }
             else if (k == "calm") { Spend(CalmPrice(tier)); mod.Calm = true; Run.Grudge.Remove(id); reply = "Ладно, ладно. Уже не злюсь."; }
             else if (k == "heart") { mod.Weak = 2; reply = LineOf(id, "peace") ?? "Ладно… только ради тебя."; Run.Peace++; }
             else if (k == "regards")
             {
-                Run.Peace++;
+                Track("ach.add", "regards"); Run.Peace++;
                 if (tier == "boss") { mod.Weak = 2; reply = Json.Str(Lore.TieSay("regardsBoss")); }
-                else { next = "next"; BeKind(id); reply = Pick(Lore.Strs(Lore.TieSay("regards"))); Gain(GoldFor("fight")); Heal(6); }
+                else { next = "next"; BeKind(id); Track("ach.add", "peace"); reply = Pick(Lore.Strs(Lore.TieSay("regards"))); Gain(GoldFor("fight")); Heal(6); }
             }
             else if (k == "peace")
             {
-                next = "next"; BeKind(id); reply = LineOf(id, "peace") ?? "Ладно, иди с миром."; Run.Peace++;
+                next = "next"; BeKind(id); reply = LineOf(id, "peace") ?? "Ладно, иди с миром."; Run.Peace++; Track("ach.add", "peace");
                 if (tier == "elite") GiveRelic(); else { Gain(GoldFor("fight")); Heal(6); }
             }
             else if (k == "scare")
             {
-                next = "next"; var g = (int)Math.Ceiling(GoldFor(tier) / 2.0); Gain(g);
+                next = "next"; Track("ach.add", "scares"); var g = (int)Math.Ceiling(GoldFor(tier) / 2.0); Gain(g);
                 narr = Loc.Tr("{name} убегает, бросив {n} {n|монету|монеты|монет}.", ("name", e.Name), ("n", g));
             }
             else if (k == "bribe") { Spend(BribePrice); next = "next"; narr = Loc.Tr("Монеты звякнули, и {name} уступает дорогу.", ("name", e.Name)); }
@@ -149,6 +150,8 @@ namespace Fitil.Core
             {
                 var sc = SecretOf(id); var fx = Json.Obj(Json.Get(sc, "effect"));
                 Run.Secrets.Add(id); Run.Peace++;
+                Track("ach.put", "secrets:" + Run.Cls);
+                if (Json.Bool(Json.Get(fx, "peace"))) Track("ach.add", "peace");   // «Миром» только там, где тайна обходится без боя
                 narr = Loc.Tr(Json.Str(Json.Get(sc, "res")));
                 var gold = Json.Int(Json.Get(fx, "gold")); if (gold != 0) Gain(gold);
                 var mh = Json.Int(Json.Get(fx, "maxHp")); if (mh != 0) { Run.MaxHp += mh; Run.Hp += mh; }
@@ -160,10 +163,12 @@ namespace Fitil.Core
             {
                 Run.MaxHp -= 10; Run.Hp = Math.Min(Run.Hp, Run.MaxHp);
                 Run.Rel[e.Dark] = 2; Run.Fallen.Remove(e.Dark); Run.Forgiven = e.Dark;
+                Track("ach.put", "friends:" + e.Dark); Track("ach.flag", "forgive");
                 Run.Final = "shadowking"; fightId = "shadowking";
                 narr = Loc.Tr(Json.Str(Json.Get(Lore.Forgive, "res")));
             }
             if (next == "fight") Run.Fmod = mod;
+            Track("ach.add", "spent", gold0 - Run.Gold);   // «Звонкая монета» считает и монеты, отданные в разговоре
             quoteIt = reply != null;
             return new Outcome { Text = reply != null ? Loc.Tr(reply) : narr, Fight = next == "fight" ? fightId : null, FightTier = tier, Next = next };
         }
@@ -175,7 +180,7 @@ namespace Fitil.Core
         {
             if (spare)
             {
-                Run.Peace++;
+                Run.Peace++; Track("ach.add", "spares");
                 Run.Killed.Remove(id); BeKind(id);
                 if (tier == "boss") GiveRelic();
                 else
@@ -234,6 +239,7 @@ namespace Fitil.Core
         public string MeetChoose(string h, Option o)
         {
             var fx = o.Fx ?? new Dictionary<string, object>();
+            var gold0 = Run.Gold;
             if (Json.Bool(Json.Get(fx, "up")) && !Run.Deck.Any(CanUp)) Note(Loc.Tr("Все карты уже улучшены"));
             int gold = Json.Int(Json.Get(fx, "gold")), hp = Json.Int(Json.Get(fx, "hp")), heal = Json.Int(Json.Get(fx, "heal")), mh = Json.Int(Json.Get(fx, "maxHp"));
             if (gold != 0) Gain(gold);
@@ -243,7 +249,11 @@ namespace Fitil.Core
             if (Json.Bool(Json.Get(fx, "relic"))) GiveRelic();
             var upr = Json.Int(Json.Get(fx, "upRandom")); if (upr != 0) UpgradeRandom(upr);
             if (o.K == "pass") Run.Pass++;
+            if (o.K == "help" || o.K == "tie") Track("ach.add", "helps");
+            if (o.K == "tie") Track("ach.put", "ties:" + Run.Cls + ">" + h);
+            if (Json.Bool(Json.Get(fx, "letters"))) Track("ach.flag", "letters");
             Run.MeetLog.Add(o.K);
+            Track("ach.add", "spent", gold0 - Run.Gold);   // и монеты, отданные героям на встречах
             RelChange(h, Json.Int(Json.Get(fx, "rel")));
             return Loc.Tr(o.Res ?? "");
         }
@@ -252,8 +262,8 @@ namespace Fitil.Core
         {
             Run.Rel[h] = (Run.Rel.TryGetValue(h, out var v) ? v : 0) + d;
             var name = Data.Classes[h].Name;
-            if (Run.Rel[h] <= -2 && !Run.Fallen.Contains(h)) { Run.Fallen.Add(h); Note(Loc.Tr("Тень коснулась героя: {name}", ("name", name))); }
-            else if (d > 0 && Run.Rel[h] >= 2) Note(Loc.Tr("Новый друг: {name}", ("name", name)));
+            if (Run.Rel[h] <= -2 && !Run.Fallen.Contains(h)) { Run.Fallen.Add(h); Track("ach.flag", "betray"); Note(Loc.Tr("Тень коснулась героя: {name}", ("name", name))); }
+            else if (d > 0 && Run.Rel[h] >= 2) { Track("ach.put", "friends:" + h); Note(Loc.Tr("Новый друг: {name}", ("name", name))); }
         }
     }
 }

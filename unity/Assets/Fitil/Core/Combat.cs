@@ -23,7 +23,7 @@ namespace Fitil.Core
         HeroMove,  // A — lunge | bite | hurt | guard
         Burst,     // вспышка лампы
         Say,       // A — вид реплики врага: start, hurt, death, …
-        Track,     // A — ach.flag | ach.max | ach.put | ach.add | stat, B — ключ, N — число
+        Track,     // A — ach.flag | ach.max | ach.put | ach.add | stats.cards, B — ключ, N — число
         Music,     // A — трек
     }
 
@@ -115,7 +115,8 @@ namespace Fitil.Core
         void Wait(int ms) => E(Ev.Wait, null, null, null, ms);
         void Render() => E(Ev.Render);
         void Track(string kind, string key, int n = 1) => E(Ev.Track, kind, key, null, n);
-        void StAdd(string key, int n = 1) => Track("stat", key, n);
+        /// <summary>Итоги забега (run.st) копятся прямо в забеге: урон, лечение, карты, монеты.</summary>
+        void StAdd(string key, int n = 1) => Run.StAdd(key, n);
 
         /// <summary>Талисман сработал: его значок всплывает над героем (или врагом). proc в game.js.</summary>
         bool Proc(string id, string where = "hero")
@@ -444,7 +445,7 @@ namespace Fitil.Core
             e.Hp -= real;
             Track("ach.max", "maxhit", dmg);
             StAdd("dmg", real);
-            Track("stat.hit", null, dmg);
+            if (dmg > (Run.St.TryGetValue("hit", out var hit) ? hit : 0)) Run.St["hit"] = dmg;
             if (real > 0 && ED.Boil > 0 && e.Hp > 0 && e.Boil < 5) e.Boil++;
             NestCheck();
             RageCheck();

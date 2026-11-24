@@ -51,6 +51,8 @@ namespace Fitil.Core
             var r = Run;
             var o = new Outcome();
             string T(string s) => Loc.Tr(s);
+            // монеты, которые событие меняет само (r.Gold += 15), тоже идут в итоги забега (stMark и stGoldSince)
+            int g0 = r.Gold; long a0 = StOf("gold"), b0 = StOf("spent");
             switch (id + ":" + i)
             {
                 case "well:0": Heal(20); r.Gold += 15; o.Text = T("Колодец звякнул, вода засияла, и на сруб выкатились монетки."); break;
@@ -117,6 +119,9 @@ namespace Fitil.Core
                 default: o.Text = ""; break;
             }
             if (o.Fight != null) o.Next = "fight";
+            var rest = (r.Gold - g0) - ((StOf("gold") - a0) - (StOf("spent") - b0));
+            if (rest > 0) Run.StAdd("gold", rest); else Run.StAdd("spent", -rest);
+            Track("ach.add", "spent", g0 - r.Gold);
             return o;
         }
     }

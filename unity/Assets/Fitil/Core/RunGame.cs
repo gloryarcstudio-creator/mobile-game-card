@@ -65,6 +65,9 @@ namespace Fitil.Core
         public RunState Run;
         public readonly List<string> Notes = new List<string>();
         public readonly List<(string kind, string key, int n)> Tracks = new List<(string, string, int)>();
+        /// <summary>Куда отдавать учёт для достижений сразу (экран игры); null — копить в Tracks.
+        /// Виды: ach.add | ach.max | ach.flag | ach.put (ключ «набор:что»), codex (ключ «вид:id»), stats, stats.max, kill.</summary>
+        public Action<string, string, int> OnTrack;
         /// <summary>Генератор для реплик и прочего, что не влияет на игру.</summary>
         public Random UiRnd = new Random();
 
@@ -84,7 +87,14 @@ namespace Fitil.Core
         int Rnd(int a, int b) => R.Range(a, b);
         T Pick<T>(IList<T> l) => R.Pick(l);
         void Note(string s) => Notes.Add(s);
-        void Track(string kind, string key, int n = 1) => Tracks.Add((kind, key, n));
+        void Track(string kind, string key, int n = 1)
+        {
+            if (OnTrack != null) OnTrack(kind, key, n);
+            else Tracks.Add((kind, key, n));
+        }
+        long StOf(string k) => Run.St.TryGetValue(k, out var v) ? v : 0;
+        /// <summary>Счётчик улучшений и число улучшенных карт в колоде — для достижений (achUpgraded).</summary>
+        void Upgraded(int n) { Track("ach.add", "upgrades", n); Track("ach.max", "updeck", Run.Deck.Count(c => c.Up)); }
         static int Round(double x) => Combat.JsRound(x);
         public string CardName(CardInst c) => Defs.Cards[c.Id].Name + (c.Up ? "+" : "");
         public static bool CanUpgrade(Defs d, CardInst c) => !c.Up && d.Cards[c.Id].Rarity != "status";
@@ -167,11 +177,15 @@ namespace Fitil.Core
         public void AddRelic(string id)
         {
             Run.Relics.Add(id);
+            Track("codex", "r:" + id);
             Track("ach.put", "relics:" + id);
+            var tier = Defs.Relics.TryGetValue(id, out var rd) ? rd.Tier : null;
+            if (tier == "boss") Track("ach.put", "trophies:" + id);
+            if (tier == "legendary") Track("ach.flag", "legendrelic");
             if (id == "jar") { Run.MaxHp += 8; Run.Hp += 8; }
             if (id == "moonstone") { Run.MaxHp -= 8; Run.Hp = Math.Min(Run.Hp, Run.MaxHp); }
             if (id == "whetstone") UpgradeRandom(2, true);
-            if (id == "goldquill") { foreach (var c in Run.Deck.Where(CanUp).ToList()) c.Up = true; }
+            if (id == "goldquill") { var l = Run.Deck.Where(CanUp).ToList(); foreach (var c in l) c.Up = true; Upgraded(l.Count); }
         }
 
         public int UpgradeRandom(int n, bool quiet = false)
@@ -180,6 +194,7 @@ namespace Fitil.Core
             R.Shuffle(cand);
             var list = cand.Take(n).ToList();
             foreach (var c in list) c.Up = true;
+            Upgraded(list.Count);
             if (list.Count > 0 && !quiet) Note(Loc.Tr("Улучшены: {list}", ("list", string.Join(", ", list.Select(CardName)))));
             return list.Count;
         }
@@ -314,6 +329,7 @@ namespace Fitil.Core
             if (o.T == "event") { Run.EvSeen[o.Ev] = (Run.EvSeen.TryGetValue(o.Ev, out var v) ? v : 0) + 1; Run.EvLast = o.Ev; }
             if (o.T == "fight" || o.T == "elite" || o.T == "boss") talk = PreFight(o);
             if (o.T == "meet" && !Run.Met.Contains(o.Hero)) Run.Met.Add(o.Hero);
+            if (o.T == "meet") { Track("ach.put", "met:" + o.Hero); Track("codex", "h:" + o.Hero); }
             return o;
         }
 
@@ -329,7 +345,10 @@ namespace Fitil.Core
             }
             Run.Step++;
             Run.Choices = null;
+            Track("stats.max", "best", Run.Step + 1);
             Track("ach.add", "steps");
+            Track("ach.max", "maxgold", Run.Gold);
+            Track("ach.max", "maxhp", Run.MaxHp);
         }
 
         // ================= бой =================
@@ -359,16 +378,25 @@ namespace Fitil.Core
             if (Has("leatherstrop"))
             {
                 var cand = Run.Deck.Where(x => sharp.Contains(x.Uid) && CanUp(x)).ToList();
-                if (cand.Count > 0) { var x = Pick(cand); x.Up = true; Note(Defs.Relics["leatherstrop"].Name + ": " + Loc.Tr("{card} навсегда", ("card", CardName(x)))); }
+                if (cand.Count > 0) { var x = Pick(cand); x.Up = true; Upgraded(1); Note(Defs.Relics["leatherstrop"].Name + ": " + Loc.Tr("{card} навсегда", ("card", CardName(x)))); }
             }
             var lowHp = Run.Hp < Run.MaxHp / 2.0;
             var lastWin = c.Tier == "boss" && Defs.IsFinalStep(Run.Step);
             void HealBy(string rid, int n) { var b = Run.Hp; Heal(n); if (Run.Hp > b && !lastWin) Note(Defs.Relics[rid].Name + ": +" + (Run.Hp - b) + " HP"); }
             if (Has("herbbag") && c.Paid > 1) HealBy("herbbag", c.Paid / 2);
-            if (c.Tier == "elite") Run.StAdd("elites");
-            if (c.Tier == "boss") Run.StAdd("bosses");
+            Track("stats", "fights");
+            if (c.Tier == "elite") { Track("stats", "elites"); Run.StAdd("elites"); }
+            if (c.Tier == "boss") { Track("stats", "bosses"); Run.StAdd("bosses"); }
+            Track("kill", c.Id);   // для базы знаний: сколько раз побеждён этот враг
             if (!Run.Killed.Contains(c.Id)) Run.Killed.Add(c.Id);
+            if (c.Tie == "avenge") Track("ach.add", "avenged");
+            if (c.Tie == "rival") Track("ach.add", "rivals");
             Track("ach.put", "beaten:" + c.Id);
+            if (c.Tier == "boss") Track("ach.put", "bosses:" + c.Id);
+            if (!c.HpLost) Track("ach.add", "flawless");
+            if (!c.HpLost && c.Tier == "elite") Track("ach.flag", "flawlesselite");
+            if (c.Turn == 1) Track("ach.add", "oneturn");
+            if (c.Id == "firecracker" && !c.Boomed) Track("ach.flag", "defuse");
             Run.Fights++; Run.Lit++;
             if (c.Stolen > 0) { Run.Gold += c.Stolen; Note(Loc.Tr("Монеты возвращены: +{n}", ("n", c.Stolen))); }
             if (Has("piggy") && !c.HpLost) { Gain(15); Note(Defs.Relics["piggy"].Name + ": " + Coins(15)); }
@@ -378,7 +406,7 @@ namespace Fitil.Core
             if (lastWin)
             {
                 var dk = Defs.Enemies[c.Id].Dark;
-                if (dk != null) Run.FinalDark = dk;
+                if (dk != null) { Track("ach.put", "darkbeaten:" + dk); Run.FinalDark = dk; }
                 return AfterWin.Victory;
             }
             if (WantsPlea(c.Id, c.Tier)) return AfterWin.Plea;
@@ -489,6 +517,7 @@ namespace Fitil.Core
             if (item.Sold) return false;
             if (Run.Gold < item.Price) { Note(Loc.Tr("Не хватает монет")); return false; }
             Spend(item.Price); item.Sold = true;
+            Track("ach.add", "spent", item.Price);
             if (Defs.IsFinalStep(Run.Step)) Track("ach.flag", "finalbuy");
             return true;
         }
@@ -497,6 +526,7 @@ namespace Fitil.Core
         {
             if (!Pay(s.Cards[i])) return false;
             Run.Deck.Add(Run.Mk(s.Cards[i].Id));
+            Track("ach.add", "bought");
             Note(Loc.Tr("Куплено: {name}", ("name", Defs.Cards[s.Cards[i].Id].Name)));
             return true;
         }
@@ -524,6 +554,7 @@ namespace Fitil.Core
             var price = RerollPrice(s);
             if (Run.Gold < price) { Note(Loc.Tr("Не хватает монет")); return false; }
             Spend(price);
+            Track("ach.add", "spent", price);
             Stock(s, s.Relic != null ? new List<string> { s.Relic.Id } : new List<string>());
             s.Rerolls++;
             Note(Loc.Tr("Товар обновлён"));
@@ -538,7 +569,7 @@ namespace Fitil.Core
             return true;
         }
 
-        public void PayService(ShopItem item) { Spend(item.Price); item.Sold = true; if (Defs.IsFinalStep(Run.Step)) Track("ach.flag", "finalbuy"); }
+        public void PayService(ShopItem item) { Spend(item.Price); item.Sold = true; Track("ach.add", "spent", item.Price); if (Defs.IsFinalStep(Run.Step)) Track("ach.flag", "finalbuy"); }
 
         // ================= выбор карты из колоды =================
         public List<CardInst> PromptList(DeckPrompt p)
@@ -551,7 +582,7 @@ namespace Fitil.Core
             }
         }
 
-        public void UpgradeCard(CardInst c) { c.Up = true; Track("ach.add", "upgrades"); }
+        public void UpgradeCard(CardInst c) { c.Up = true; Upgraded(1); }
 
         public void RemoveCard(CardInst c) => Run.Deck = Run.Deck.Where(d => d.Uid != c.Uid).ToList();
 
