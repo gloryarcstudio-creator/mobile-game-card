@@ -32,7 +32,15 @@ namespace Fitil.Core
         public Ev Kind;
         public string A, B, C;
         public int N;
+        public CombatSnap S;   // числа боя в момент события: экран показывает их по ходу анимации
         public override string ToString() => $"{Kind} {A} {B} {C} {N}".TrimEnd();
+    }
+
+    /// <summary>Главные числа боя на момент события. Бой считается сразу, а экран проигрывает события
+    /// по очереди: полоски здоровья и защита берутся отсюда, чтобы меняться вместе с ударами.</summary>
+    public struct CombatSnap
+    {
+        public int Hp, MaxHp, Block, Energy, Flame, Gold, EHp, EMax, EBlock;
     }
 
     public sealed class EnemyState
@@ -91,7 +99,13 @@ namespace Fitil.Core
         bool Has(string id) => Run.HasRelic(id);
 
         // ---------- события для экрана ----------
-        void E(Ev k, string a = null, string b = null, string c = null, int n = 0) => Events.Add(new CombatEvent { Kind = k, A = a, B = b, C = c, N = n });
+        void E(Ev k, string a = null, string b = null, string c = null, int n = 0) => Events.Add(new CombatEvent { Kind = k, A = a, B = b, C = c, N = n, S = Snap() });
+
+        public CombatSnap Snap() => new CombatSnap
+        {
+            Hp = Run.Hp, MaxHp = Run.MaxHp, Block = BlockNow, Energy = EnergyNow, Flame = FlameNow, Gold = Run.Gold,
+            EHp = Enemy?.Hp ?? 0, EMax = Enemy?.Max ?? 0, EBlock = Enemy?.Block ?? 0,
+        };
         void Fx(string kind, string target = null) => E(Ev.Fx, kind, target);
         void FloatHero(string text, string cls) => E(Ev.Float, "hero", text, cls);
         void FloatEnemy(string text, string cls) => E(Ev.Float, "enemy", text, cls);

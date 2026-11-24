@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Проверка, что код игры для Unity собирается, без самого Unity: компиляция против
+       справочных сборок UnityEngine из NuGet (Unity 2021.3 и uGUI 2020.3). API, которого в них нет
+       (только Unity 6), закрыт в коде условием FITIL_REFCHECK. Запуск: dotnet build unity/Tests/CompileCheck -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>$(DefineConstants);FITIL_REFCHECK</DefineConstants>
+    <NoWarn>CS0618;CS1701;CS1702;NU1701</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Assets/Fitil/Core/**/*.cs" />
+    <Compile Include="../../Assets/Fitil/Platform/**/*.cs" />
+    <Compile Include="../../Assets/Fitil/Game/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" ExcludeAssets="runtime" />
+    <PackageReference Include="Unity3D.UnityEngine.UI" Version="2020.3.21" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>

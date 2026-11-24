@@ -17,6 +17,9 @@ namespace Fitil.Core
         public readonly List<string> Killed = new List<string>();
         public readonly Dictionary<string, int> Seen = new Dictionary<string, int>();
         public readonly List<string> Recent = new List<string>();
+        public readonly Dictionary<string, int> Offered = new Dictionary<string, int>();
+        public readonly List<string> LastOffered = new List<string>();
+        public readonly List<string> Bosses = new List<string>();
         public Rng Rng = new Rng(1);
         public int UidSeq = 1;
 

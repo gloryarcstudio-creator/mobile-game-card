@@ -37,3 +37,10 @@
 GitHub Actions (`.github/workflows/unity.yml`) на каждый пуш гоняет тесты Core и проверяет, что JSON совпадает с веб-версией.
 Сборки Android и iOS включаются, когда в Settings → Secrets → Actions есть `UNITY_LICENSE`, `UNITY_EMAIL`, `UNITY_PASSWORD`
 (бесплатная лицензия Unity Personal, как её получить: https://game.ci/docs/github/activation).
+
+## Проверка сборки без Unity
+
+`dotnet build unity/Tests/CompileCheck` компилирует Core, Platform и Game против справочных сборок
+UnityEngine из NuGet (Unity 2021.3 и uGUI 2020.3). Так ошибки в коде видны сразу, ещё до открытия
+проекта в редакторе. API, которого в этих сборках нет (только в Unity 6), закрыт условием `FITIL_REFCHECK`.
+

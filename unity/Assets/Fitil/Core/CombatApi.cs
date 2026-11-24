@@ -15,6 +15,22 @@ namespace Fitil.Core
         public string LastCard => Last != null && Last.Id != "carbon" ? CardName(Last) : null;
         public string CardName(CardInst c) => Defs.Cards[c.Id].Name + (c.Up ? "+" : "");
 
+        /// <summary>Число для описания карты в руке (g.dmgText, blkText, thornsText, burnText в game.js).
+        /// atk: описание атаки — для Лупы, которая делает первую атаку боя уже по Уязвимому врагу.</summary>
+        public CardNumber Num(string kind, int n, bool spent, bool atk)
+        {
+            switch (kind)
+            {
+                case "dmg":
+                    var lens = atk && !FirstAtk && Enemy.Vuln <= 0 && Has("magnifier");
+                    return new CardNumber(CalcDmg(spent ? n - FlameBonusNow * FlameNow : n, lens), n);
+                case "blk": return new CardNumber(Frailed(n), n);
+                case "thorns": return new CardNumber(Has("wreath") ? n * 2 : n, n);
+                case "burn": return new CardNumber(n + (Has("matchbox") ? 2 : 0), n);
+                default: return new CardNumber(n, n);
+            }
+        }
+
         // ---------- то, что карты делают ----------
         public void Attack(int @base, int hits = 1)
         {

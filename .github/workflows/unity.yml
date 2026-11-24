@@ -27,6 +27,8 @@ jobs:
           git diff --stat --exit-code -- unity/Assets/Fitil/Resources/Data unity/Tests/Fixtures
       - name: Тесты Core
         run: dotnet run --project unity/Tests/Core.Tests
+      - name: Код для Unity собирается (справочные сборки UnityEngine из NuGet)
+        run: dotnet build unity/Tests/CompileCheck -nologo
 
   build:
     needs: core-tests

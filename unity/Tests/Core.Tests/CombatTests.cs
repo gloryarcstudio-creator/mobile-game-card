@@ -99,5 +99,34 @@ namespace Fitil.Tests
             }
             return null;
         }
+
+        /// <summary>Цепочка боёв экрана Unity (Runs.NextFight) проходит без ошибок у каждого героя:
+        /// бот играет первую доступную карту, после победы берёт первую карту награды.</summary>
+        public static void TestRunChainPlays()
+        {
+            Loc.Use("ru", null);
+            foreach (var cls in D.Data.Classes.Keys)
+            {
+                var run = Runs.New(D, cls, 1, 42);
+                Assert.True(run.Deck.Count >= 8 && run.Relics.Count == 1, cls + ": стартовая колода и талисман");
+                for (var f = 0; f < 60 && run.Hp > 0; f++)
+                {
+                    var (id, tier) = Runs.NextFight(D, run);
+                    Assert.True(D.Enemies.ContainsKey(id), cls + ": враг " + id);
+                    var g = new Combat(D, run);
+                    g.Start(id, tier);
+                    for (var k = 0; k < 400 && g.End == CombatEnd.None; k++)
+                    {
+                        var i = g.Hand.FindIndex(c => g.CantPlay(c) == null);
+                        if (i >= 0) g.PlayCard(i); else g.EndTurn();
+                    }
+                    Assert.True(g.End != CombatEnd.None, $"{cls}: бой с {id} не закончился");
+                    if (g.End == CombatEnd.Defeat) break;
+                    run.Fights++;
+                    if (D.IsFinalStep(run.Step)) break;
+                    run.Step++;
+                }
+            }
+        }
     }
 }
