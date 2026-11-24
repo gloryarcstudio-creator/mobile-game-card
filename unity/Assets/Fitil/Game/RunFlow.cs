@@ -264,6 +264,13 @@ namespace Fitil.Game
         }
 
         // ================= колода =================
+        /// <summary>Стопка в бою: что осталось в колоде или что уже в сбросе. Только посмотреть.</summary>
+        public void ShowPile(List<CardInst> list, string title)
+        {
+            Sound.Sfx("click");
+            ShowDeck(list, title + " · " + list.Count, null);
+        }
+
         /// <summary>Колода или выбор карты из неё (showDeck): карты по названию, улучшенные после обычных.
         /// onPick == null — только посмотреть; иначе нажатие на карту выбирает её, «Отмена» отдаёт null.</summary>
         void ShowDeck(List<CardInst> list, string title, Action<CardInst> onPick, bool previewUp = false, string note = null)

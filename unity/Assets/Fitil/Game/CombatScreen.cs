@@ -199,6 +199,9 @@ namespace Fitil.Game
                 p.rectTransform.Box(i * 24, 0, 22, 22);
                 pips[i] = p;
             }
+            // нажатие на лампу объясняет Огоньки с учётом талисманов
+            var lampHit = Ui.Hit("tip", lamp, () => { Sound.Sfx("click"); Tip.Show(lampRt, LampTip()); });
+            ((RectTransform)lampHit.transform).Fill();
 
             Bar(heroBar, 108, 50, 110, 19, out hFill, out hTrail, out hHpText, 0, 1);
             hBlock = Badge(heroBar, "hblk", 80, 42, out hBlockText, 1);
@@ -219,6 +222,11 @@ namespace Fitil.Game
             discB.rectTransform.Box(339, 4, 54, 18);
             discText = Ui.Label("t", discB.transform, "", 11, Ui.Paper).Shadow(1f);
             discText.rectTransform.Fill();
+            // нажатие на стопку показывает её карты (pile-draw, pile-disc); зона нажатия выше самой плашки
+            var drawHit = Ui.Hit("draw hit", heroBar, () => { if (!busy) RunFlow.Current?.ShowPile(C.Draw, Loc.Tr("Осталось в колоде")); });
+            ((RectTransform)drawHit.transform).Box(277, 0, 59, 30);
+            var discHit = Ui.Hit("disc hit", heroBar, () => { if (!busy) RunFlow.Current?.ShowPile(C.Disc, Loc.Tr("Сброс")); });
+            ((RectTransform)discHit.transform).Box(337, 0, 58, 30);
 
             endBtn = Ui.Btn("end", heroBar, Loc.Tr("Конец<br>хода").Replace("<br>", "\n"), EndTurn, 15);
             ((RectTransform)endBtn.transform).Box(294, 32, 96, 50);
@@ -263,9 +271,19 @@ namespace Fitil.Game
         }
 
         /// <summary>Значок с подписью (статус, намерение): плашка, картинка слева, текст справа.</summary>
-        static void Chip(Transform row, string icon, string text, Color color, int size = 13, float h = 22)
+        /// tip — пояснение по нажатию (showTip); withTitle — подпись значка идёт заголовком (у статусов со словом).
+        static void Chip(Transform row, string icon, string text, Color color, int size = 13, float h = 22, string tip = null, bool withTitle = false)
         {
             var plate = Ui.Round("chip", row, new Color32(20, 24, 38, 215));
+            if (!string.IsNullOrEmpty(tip))
+            {
+                plate.raycastTarget = true;
+                var b = plate.gameObject.AddComponent<Button>();
+                b.transition = Selectable.Transition.None;
+                b.targetGraphic = plate;
+                var title = withTitle && HasWord(text) ? text : null;
+                b.onClick.AddListener(() => { Sound.Sfx("click"); Tip.Show(plate.rectTransform, tip, title); });
+            }
             var lay = plate.gameObject.AddComponent<HorizontalLayoutGroup>();
             lay.padding = new RectOffset(4, 8, 1, 1);
             lay.spacing = 3;
@@ -290,6 +308,84 @@ namespace Fitil.Game
             {
                 var t = Ui.Label("t", plate.transform, text, size, color, TextAnchor.MiddleLeft, true).Shadow(1f);
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            }
+        }
+
+        /// <summary>«Вспышка!» над врагом, когда лампа набрала Огоньки (.burst): вырастает, поднимается и тает.</summary>
+        IEnumerator BurstLabel()
+        {
+            var t = Ui.Label("burst", root, Loc.Tr("Вспышка!"), 30, new Color32(0xFF, 0xE3, 0x8A, 0xFF), TextAnchor.MiddleCenter, true).Shadow(3f, 1f);
+            var rt = t.rectTransform.Box(60, 250, 280, 40);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            var home = rt.anchoredPosition + new Vector2(140, -20);
+            var dur = Settings.Fast ? 0.6f : 0.9f;
+            for (float age = 0; age < dur && t; age += Time.deltaTime)
+            {
+                var k = age / dur;
+                var sc = k < 0.3f ? Mathf.Lerp(0.3f, 1.2f, k / 0.3f) : Mathf.Lerp(1.2f, 1.4f, (k - 0.3f) / 0.7f);
+                rt.localScale = new Vector3(sc, sc, 1);
+                rt.anchoredPosition = home + new Vector2(0, k < 0.3f ? 0 : 30 * (k - 0.3f) / 0.7f);
+                t.color = new Color(t.color.r, t.color.g, t.color.b, k < 0.3f ? k / 0.3f : 1 - (k - 0.3f) / 0.7f);
+                yield return null;
+            }
+            if (t) Destroy(t.gameObject);
+        }
+
+        // подпись из одних цифр и знаков (число у чар) заголовком не идёт
+        static bool HasWord(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return false;
+            foreach (var ch in text) if (!char.IsDigit(ch) && !char.IsWhiteSpace(ch)) return true;
+            return false;
+        }
+
+        /// <summary>Пояснение из справочника по его русскому названию (GL в game.js).</summary>
+        static string Gl(string name)
+        {
+            var key = Loc.Tr(name);
+            var gl = Json.Arr(Json.Get(Boot.Instance.Data.Raw, "gloss"));
+            if (gl != null)
+                foreach (var item in gl)
+                {
+                    var pair = Json.Arr(item);
+                    if (pair != null && pair.Count >= 2 && Json.Str(pair[0]) == key) return Json.Str(pair[1]);
+                }
+            return "";
+        }
+
+        string CardName(string id) => defs.Cards.TryGetValue(id, out var c) ? c.Name : id;
+
+        /// <summary>Что делает лампа сейчас (lampTip): талисманы меняют и прибавку, и число Огоньков, и вспышку.</summary>
+        string LampTip()
+        {
+            var m = C.FlameMaxNow;
+            var d = Balance.BurstDmg + (C.Run.HasRelic("flint") ? 5 : 0);
+            return C.FlameBonusNow != 0
+                ? Loc.Tr("Каждый Огонёк даёт атакам +{b} урона. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.", ("b", C.FlameBonusNow), ("m", m), ("d", d))
+                : Loc.Tr("Огоньки не усиливают атаки. На {m} Огоньках лампа вспыхивает и бьёт врага на {d}.", ("m", m), ("d", d));
+        }
+
+        /// <summary>Что делают активные чары (CHARM_TIP): перед текстом ставится название карты.</summary>
+        static string CharmTip(string id, int n)
+        {
+            switch (id)
+            {
+                case "mittens": return Loc.Tr("в начале хода {n} защиты", ("n", n));
+                case "inkpen": return Loc.Tr("каждый Навык наносит {n} урона", ("n", n));
+                case "eveninglamp": return Loc.Tr("в начале хода +{n} {n|Огонёк|Огонька|Огоньков}", ("n", n));
+                case "stubborn": return Loc.Tr("в начале хода +{n} Решимость", ("n", n));
+                case "compass": return Loc.Tr("каждый ход +{n} {n|карта|карты|карт}", ("n", n));
+                case "hearth": return Loc.Tr("в начале хода Поджог {n}", ("n", n));
+                case "rhythm": return Loc.Tr("каждая третья карта за ход даёт +{n} {n|Огонёк|Огонька|Огоньков}", ("n", n));
+                case "standfast": return Loc.Tr("защита не сгорает в начале хода");
+                case "firebird": return Loc.Tr("в начале хода +{a} {a|Огонёк|Огонька|Огоньков} и Поджог {b}", ("a", 2 * n), ("b", 3 * n));
+                case "eternalwinter": return Loc.Tr("в начале хода враг теряет {a} Силы, а вы получаете {b} защиты", ("a", 2 * n), ("b", 8 * n));
+                case "nightshift": return Loc.Tr("в конце хода {n} защиты за каждую неистраченную энергию", ("n", n));
+                case "aurora": return Loc.Tr("в начале хода +{n} {n|энергия|энергии|энергии}", ("n", n));
+                case "gingerhouse": return Loc.Tr("каждый Пряник наносит ещё {n} урона", ("n", 4 * n));
+                case "apprentice": return Loc.Tr("в начале хода заточить {n} {n|карту|карты|карт}", ("n", 2 * n));
+                case "wolfhound": return Loc.Tr("Дружок кусает в конце хода {n} {n|раз|раза|раз}", ("n", 1 + n));
+                default: return "";
             }
         }
 
@@ -364,6 +460,34 @@ namespace Fitil.Game
             }
         }
 
+        /// <summary>Что враг сделает этим намерением, словами (подсказки в intentHTML).</summary>
+        string IntentTip(IntentDef it)
+        {
+            var d = C.EnemyDmg(it.V);
+            switch (it.K)
+            {
+                case "attack":
+                    return Loc.Tr("Атака: {d} урона", ("d", d))
+                        + (it.Hits > 0 ? " " + Loc.Tr("{n} {n|раз|раза|раз}", ("n", it.Hits)) : "")
+                        + (it.Leech ? ". " + Loc.Tr("Враг вылечится на весь урон, который пройдёт сквозь защиту") : "");
+                case "sap": return Loc.Tr("Собьёт с ритма: в ваш следующий ход −{n} {n|энергия|энергии|энергии}", ("n", it.V));
+                case "mist": return Loc.Tr("Напустит туман: до её следующего хода любой удар по ней наносит не больше {n} урона. Поджог проходит", ("n", it.V));
+                case "boom": return Loc.Tr("Взорвётся: {d} урона, и после этого исчезнет", ("d", d));
+                case "bury": return Loc.Tr("Заметёт руку: в следующий ход на {n} {n|карту|карты|карт} меньше", ("n", it.V));
+                case "frail": return Loc.Tr("Хрупкость на {n} {n|ход|хода|ходов}: ваша защита слабее на 25%", ("n", it.V));
+                case "block": return Loc.Tr("Защита {n}", ("n", it.V));
+                case "buff": return Loc.Tr("Враг станет сильнее: Сила +{n}", ("n", it.V));
+                case "debuff": return Loc.Tr("Слабость на {n} {n|ход|хода|ходов}: ваши атаки слабее на 25%", ("n", it.V));
+                case "snuff": return Loc.Tr("Погасит все Огоньки и ударит на {d}", ("d", d));
+                case "curse": return Loc.Tr("Подкинет в колоду: {name} ×{n}", ("name", defs.Cards.TryGetValue(it.Card ?? "", out var card) ? card.Name : ""), ("n", it.N));
+                case "steal": return Loc.Tr("Ударит на {d} и украдёт до {g} {g|монеты|монет|монет}", ("d", d), ("g", it.Gold));
+                case "heal": return Loc.Tr("Восстановит {n} HP", ("n", it.V));
+                case "spikes": return Loc.Tr("Отрастит Шипы {n}: каждый ваш удар по нему будет ранить вас", ("n", it.V));
+                case "sleep": return Loc.Tr("Враг спит и пропустит ход");
+                default: return null;
+            }
+        }
+
         void IntentChip(IntentDef it)
         {
             string icon = "it/" + it.K, text;
@@ -383,7 +507,7 @@ namespace Fitil.Game
                 case "sleep": text = Loc.Tr("Спит"); col = new Color32(0xF4, 0xE6, 0xA8, 0xFF); break;
                 default: text = it.V.ToString(); break;
             }
-            Chip(intentRow, icon, text, col, 20, 38);
+            Chip(intentRow, icon, text, col, 20, 38, IntentTip(it));
         }
 
         void RenderEnemyStatus()
@@ -391,42 +515,44 @@ namespace Fitil.Game
             Ui.Clear(eStatus);
             var e = C.Enemy;
             var ed = defs.Enemies[C.Id];
-            if (e.Str != 0) Chip(eStatus, "st/enemy_strength", Loc.Tr("Сила {n}", ("n", e.Str)), Ui.Orange);
-            if (e.Raged) Chip(eStatus, "st/enemy_strength", Loc.Tr("Ярость"), Ui.Red);
-            if (e.Weak > 0) Chip(eStatus, "st/weak", Loc.Tr("Ослаблен {n}", ("n", e.Weak)), Ui.Violet);
-            if (e.Vuln > 0) Chip(eStatus, "st/vulnerable", Loc.Tr("Уязвим {n}", ("n", e.Vuln)), Ui.Violet);
-            if (e.Burn > 0) Chip(eStatus, "st/burn", Loc.Tr("Поджог {n}", ("n", e.Burn)), Ui.Orange);
-            if (e.Thorns > 0) Chip(eStatus, "st/thorns", Loc.Tr("Колючки {n}", ("n", e.Thorns)), Ui.Paper);
-            if (e.Nest > 0) Chip(eStatus, null, Loc.Tr("Матрёшка ×{n}", ("n", e.Nest)), Ui.Paper);
-            if (ed.Boil > 0) Chip(eStatus, null, Loc.Tr("Кипит +{n}", ("n", e.Boil)), e.Boil > 0 ? Ui.Orange : Ui.Paper);
-            if (ed.Tally > 0) Chip(eStatus, null, Loc.Tr("Ку-ку {a}/{b}", ("a", C.PlayedTurn % ed.Tally), ("b", ed.Tally)), Ui.Paper);
-            if (ed.Plating) Chip(eStatus, null, Loc.Tr("Латы"), Ui.Paper);
-            if (ed.Alarm > 0) Chip(eStatus, null, Loc.Tr("Колотушка +{n}", ("n", ed.Alarm)), Ui.Paper);
-            if (e.Mist > 0) Chip(eStatus, null, Loc.Tr("Туман ≤{n}", ("n", e.Mist)), Ui.Blue);
+            if (e.Str != 0) Chip(eStatus, "st/enemy_strength", Loc.Tr("Сила {n}", ("n", e.Str)), Ui.Orange, tip: Gl("Сила врага"), withTitle: true);
+            if (e.Raged) Chip(eStatus, "st/enemy_strength", Loc.Tr("Ярость"), Ui.Red, tip: Gl("Ярость босса"), withTitle: true);
+            if (e.Weak > 0) Chip(eStatus, "st/weak", Loc.Tr("Ослаблен {n}", ("n", e.Weak)), Ui.Violet, tip: Gl("Ослаблен"), withTitle: true);
+            if (e.Vuln > 0) Chip(eStatus, "st/vulnerable", Loc.Tr("Уязвим {n}", ("n", e.Vuln)), Ui.Violet, tip: Gl("Уязвим"), withTitle: true);
+            if (e.Burn > 0) Chip(eStatus, "st/burn", Loc.Tr("Поджог {n}", ("n", e.Burn)), Ui.Orange, tip: Gl("Поджог"), withTitle: true);
+            if (e.Thorns > 0) Chip(eStatus, "st/thorns", Loc.Tr("Колючки {n}", ("n", e.Thorns)), Ui.Paper, tip: Loc.Tr("Каждый ваш удар по врагу ранит вас на {n}", ("n", e.Thorns)), withTitle: true);
+            if (e.Nest > 0) Chip(eStatus, null, Loc.Tr("Матрёшка ×{n}", ("n", e.Nest)), Ui.Paper, tip: Loc.Tr("Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: {n}.", ("n", e.Nest)), withTitle: true);
+            if (ed.Boil > 0) Chip(eStatus, null, Loc.Tr("Кипит +{n}", ("n", e.Boil)), e.Boil > 0 ? Ui.Orange : Ui.Paper, tip: Loc.Tr("Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После своего хода он остывает. Поджог его не злит."), withTitle: true);
+            if (ed.Tally > 0) Chip(eStatus, null, Loc.Tr("Ку-ку {a}/{b}", ("a", C.PlayedTurn % ed.Tally), ("b", ed.Tally)), Ui.Paper, tip: Loc.Tr("Каждая {n}-я карта за ход: кукушка кукует и бьёт вас на 3.", ("n", ed.Tally)), withTitle: true);
+            if (ed.Plating) Chip(eStatus, null, Loc.Tr("Латы"), Ui.Paper, tip: Loc.Tr("Латы: защита не сгорает, а копится от хода к ходу. Поджог бьёт прямо по HP."), withTitle: true);
+            if (ed.Alarm > 0) Chip(eStatus, null, Loc.Tr("Колотушка +{n}", ("n", ed.Alarm)), Ui.Paper, tip: Loc.Tr("Каждый ваш Навык даёт сторожу {n} защиты до конца вашего хода. Бейте до хитростей.", ("n", ed.Alarm)), withTitle: true);
+            if (e.Mist > 0) Chip(eStatus, null, Loc.Tr("Туман ≤{n}", ("n", e.Mist)), Ui.Blue, tip: Loc.Tr("Пока туман, любой удар по ней наносит не больше {n} урона. Поджог проходит. Туман рассеется, когда она снова сходит.", ("n", e.Mist)), withTitle: true);
             var bi = ed.Pattern.FindIndex(p => p.K == "boom");
             if (bi >= 0)
             {
                 var L = ed.Pattern.Count;
                 var left = ((bi - (e.Pi % L)) + L) % L + 1;
-                Chip(eStatus, null, Loc.Tr("Фитиль {n}", ("n", left)), Ui.Orange);
+                Chip(eStatus, null, Loc.Tr("Фитиль {n}", ("n", left)), Ui.Orange, tip: Loc.Tr("Через {n} {n|ход|хода|ходов} шутиха взорвётся: сильно ударит и исчезнет. Победите её раньше, если успеете.", ("n", left)), withTitle: true);
             }
-            if (e.Stun > 0) Chip(eStatus, "st/asleep", Loc.Tr("Спит"), Ui.Violet);
-            if (C.Stolen > 0) Chip(eStatus, "st/steal", Loc.Tr("Украдено {n}", ("n", C.Stolen)), Ui.GoldHi);
+            if (e.Stun > 0) Chip(eStatus, "st/asleep", Loc.Tr("Спит"), Ui.Violet, tip: Gl("Спит"), withTitle: true);
+            if (C.Stolen > 0) Chip(eStatus, "st/steal", Loc.Tr("Украдено {n}", ("n", C.Stolen)), Ui.GoldHi, tip: Gl("Кража"), withTitle: true);
         }
 
         void RenderHeroStatus()
         {
             Ui.Clear(hStatus);
             var res = C.Str + C.TmpStr;
-            if (res != 0) Chip(hStatus, "st/resolve", Loc.Tr("Решимость {n}", ("n", res)), Ui.Orange);
-            if (C.ThornsNow > 0) Chip(hStatus, "st/thorns", Loc.Tr("Шипы {n}", ("n", C.ThornsNow)), Ui.Blue);
-            if (C.DogNow > 0) Chip(hStatus, "r2/dogfriend", C.DogNow.ToString(), Ui.Orange);
-            if (C.Glazed) Chip(hStatus, "c/glaze", "", Ui.Paper);
-            if (C.Paid > 0) Chip(hStatus, "st/price", Loc.Tr("Цена {n}", ("n", C.Paid)), Ui.Red);
-            if (C.PWeak > 0) Chip(hStatus, "st/weak", Loc.Tr("Слабость {n}", ("n", C.PWeak)), Ui.Violet);
-            if (C.Frail > 0) Chip(hStatus, "st/frail", Loc.Tr("Хрупкость {n}", ("n", C.Frail)), Ui.Violet);
-            if (C.Deliveries.Count > 0) Chip(hStatus, "st/delivery", Loc.Tr("Доставка {n}", ("n", C.Deliveries.Count)), Ui.Paper);
-            foreach (var kv in C.Charms) Chip(hStatus, "c/" + kv.Key, kv.Value.ToString(), Ui.Violet);
+            if (res != 0) Chip(hStatus, "st/resolve", Loc.Tr("Решимость {n}", ("n", res)), Ui.Orange, tip: Gl("Решимость") + (C.TmpStr != 0 ? " " + Loc.Tr("До конца хода: {n}.", ("n", C.TmpStr)) : ""), withTitle: true);
+            if (C.ThornsNow > 0) Chip(hStatus, "st/thorns", Loc.Tr("Шипы {n}", ("n", C.ThornsNow)), Ui.Blue, tip: Gl("Шипы"), withTitle: true);
+            if (C.DogNow > 0)
+                Chip(hStatus, "r2/dogfriend", C.DogNow.ToString(), Ui.Orange, tip: Gl("Дружок") + " " + Loc.Tr("Злость {n}: укус на {d}", ("n", C.DogNow), ("d", C.DogDmg))
+                    + (C.Charms.TryGetValue("wolfhound", out var wolf) && wolf > 0 ? ", " + Loc.Tr("{n} {n|раз|раза|раз} за ход", ("n", 1 + wolf)) : "") + ".");
+            if (C.Glazed) Chip(hStatus, "c/glaze", "", Ui.Paper, tip: CardName("glaze") + ": " + Loc.Tr("до конца боя все Пряники улучшены"));
+            if (C.Paid > 0) Chip(hStatus, "st/price", Loc.Tr("Цена {n}", ("n", C.Paid)), Ui.Red, tip: Gl("Цена") + " " + Loc.Tr("В этом бою уже отдано {n} HP.", ("n", C.Paid)), withTitle: true);
+            if (C.PWeak > 0) Chip(hStatus, "st/weak", Loc.Tr("Слабость {n}", ("n", C.PWeak)), Ui.Violet, tip: Gl("Слабость"), withTitle: true);
+            if (C.Frail > 0) Chip(hStatus, "st/frail", Loc.Tr("Хрупкость {n}", ("n", C.Frail)), Ui.Violet, tip: Gl("Хрупкость"), withTitle: true);
+            if (C.Deliveries.Count > 0) Chip(hStatus, "st/delivery", Loc.Tr("Доставка {n}", ("n", C.Deliveries.Count)), Ui.Paper, tip: Gl("Доставка") + " " + Loc.Tr("В пути: {list}.", ("list", string.Join(", ", C.Deliveries.Select(x => x.Name)))), withTitle: true);
+            foreach (var kv in C.Charms) Chip(hStatus, "c/" + kv.Key, kv.Value.ToString(), Ui.Violet, tip: CardName(kv.Key) + ": " + CharmTip(kv.Key, kv.Value));
         }
 
         // ================= рука =================
@@ -476,6 +602,7 @@ namespace Fitil.Game
         {
             if (busy) return;
             selected = i >= 0 && i < C.Hand.Count && selected != i ? i : -1;
+            if (selected >= 0) Sound.Sfx("draw");
             RenderHand();
         }
 
@@ -510,7 +637,7 @@ namespace Fitil.Game
             if (!release)
             {
                 // карту не пересоздаём посреди перетаскивания: только поднимаем над остальными
-                if (selected != i) { selected = i; rt.SetAsLastSibling(); rt.localScale = Vector3.one * 1.18f; }
+                if (selected != i) { selected = i; rt.SetAsLastSibling(); rt.localScale = Vector3.one * 1.18f; Sound.Sfx("draw"); }
                 rt.anchoredPosition += delta;
                 rt.localRotation = Quaternion.identity;
                 return;
@@ -584,6 +711,7 @@ namespace Fitil.Game
                         break;
                     case Ev.Burst:
                         StartCoroutine(Pulse(flash, 0.45f, 0.4f));
+                        StartCoroutine(BurstLabel());
                         break;
                     case Ev.Relic:
                         RelicPop(e.A, e.B == "enemy");
@@ -838,32 +966,53 @@ namespace Fitil.Game
             if (t) Destroy(t.gameObject);
         }
 
+        // Талисман сработал (FX.relic): значок с названием всплывает у героя или у врага и тает, звучит «proc».
+        // Несколько подряд (начало боя) идут по очереди, чтобы названия не легли одно на другое.
+        readonly float[] relicFree = new float[2];
+
         void RelicPop(string id, bool onEnemy)
         {
-            var img = Ui.Img("relic " + id, fxLayer, "r2/" + id);
-            if (!img.sprite) { Destroy(img.gameObject); return; }
-            img.preserveAspect = true;
-            var rt = img.rectTransform;
-            rt.anchorMin = rt.anchorMax = new Vector2(0, 1);
-            rt.sizeDelta = new Vector2(46, 46);
-            rt.anchoredPosition = onEnemy ? new Vector2(300, -170) : new Vector2(42, -(Boot.Instance.Safe.rect.height - 120));
-            StartCoroutine(RelicRise(img));
+            var side = onEnemy ? 1 : 0;
+            var now = Time.time;
+            var at = Mathf.Max(now, relicFree[side]);
+            relicFree[side] = at + (Settings.Fast ? 0.22f : 0.4f);
+            StartCoroutine(RelicRise(id, onEnemy, at - now));
         }
 
-        static IEnumerator RelicRise(Image img)
+        IEnumerator RelicRise(string id, bool onEnemy, float delay)
         {
-            var rt = img.rectTransform;
-            var from = rt.anchoredPosition;
-            for (var t = 0f; t < 0.9f; t += Time.deltaTime)
+            if (delay > 0) yield return new WaitForSeconds(delay);
+            var sprite = Ui.Art("r2/" + id);
+            if (!sprite || !fxLayer) yield break;
+            var box = Ui.Node("relic " + id, fxLayer);
+            box.anchorMin = box.anchorMax = new Vector2(0, 1);
+            box.pivot = new Vector2(0.5f, 0.5f);
+            box.sizeDelta = new Vector2(46, 46);
+            var from = onEnemy ? new Vector2(300, -170) : new Vector2(42, -(Boot.Instance.Safe.rect.height - 120));
+            box.anchoredPosition = from;
+            var cg = box.gameObject.AddComponent<CanvasGroup>();
+            cg.blocksRaycasts = false;
+            var img = Ui.Img("i", box, sprite, Color.white);
+            img.preserveAspect = true;
+            img.rectTransform.Fill();
+            if (defs.Relics.TryGetValue(id, out var def) && !string.IsNullOrEmpty(def.Name))
             {
-                if (!img) yield break;
-                var p = t / 0.9f;
-                rt.anchoredPosition = from + new Vector2(0, 30 * p);
-                rt.localScale = Vector3.one * (p < 0.15f ? p / 0.15f * 1.2f : 1.2f - 0.2f * p);
-                img.color = new Color(1, 1, 1, p < 0.6f ? 1 : 1 - (p - 0.6f) / 0.4f);
+                var name = Ui.Label("b", box, def.Name, 13, Ui.GoldHi, TextAnchor.UpperCenter, true).Shadow(1.5f, 1f);
+                name.horizontalOverflow = HorizontalWrapMode.Overflow;
+                name.rectTransform.At(new Vector2(0.5f, 0), new Vector2(0, -9), new Vector2(150, 18));
+            }
+            Sound.Sfx("proc");
+            var dur = Settings.Fast ? 0.7f : 1.1f;
+            for (var t = 0f; t < dur; t += Time.deltaTime)
+            {
+                if (!box) yield break;
+                var p = t / dur;
+                box.anchoredPosition = from + new Vector2(0, 30 * p);
+                box.localScale = Vector3.one * (p < 0.15f ? p / 0.15f * 1.2f : 1.2f - 0.2f * p);
+                cg.alpha = p < 0.6f ? 1 : 1 - (p - 0.6f) / 0.4f;
                 yield return null;
             }
-            if (img) Destroy(img.gameObject);
+            if (box) Destroy(box.gameObject);
         }
 
         Coroutine toastCo;

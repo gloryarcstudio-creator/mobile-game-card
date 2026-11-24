@@ -57,9 +57,15 @@ namespace Fitil.Game
                 var r = Ui.Img("relic", bar, "r2/" + last);
                 r.preserveAspect = true;
                 r.rectTransform.Box(339, 35, 29, 29);
-                var hit = Ui.Hit("relics", bar, () => ShowRelics(g));
-                ((RectTransform)hit.transform).Box(326, 22, 60, 56);
+                // нажатие на талисман говорит, что он делает; на «+N» — открывает весь список (relicIcons)
                 var more = run.Relics.Count - 1;
+                var def = g.Defs.Relics.TryGetValue(last, out var rd) ? rd : null;
+                var hit = Ui.Hit("relic tip", bar, () =>
+                {
+                    Sound.Sfx("click");
+                    if (def != null) Tip.Show(r.rectTransform, def.Desc, def.Name); else ShowRelics(g);
+                });
+                ((RectTransform)hit.transform).Box(326, 22, 60, 56);
                 if (more > 0)
                 {
                     var m = Ui.Round("more", bar, new Color32(0x1A, 0x15, 0x24, 0xFF));
@@ -67,6 +73,8 @@ namespace Fitil.Game
                     m.Outline(new Color32(0xD8, 0xA9, 0x4A, 0xFF), 1.2f);
                     var mt = Ui.Label("n", m.transform, "+" + more, 11, Ui.Paper, TextAnchor.MiddleCenter, true);
                     mt.rectTransform.Fill();
+                    var list = Ui.Hit("relics", bar, () => ShowRelics(g));
+                    ((RectTransform)list.transform).Box(352, 46, 38, 36);
                 }
             }
             return bar;

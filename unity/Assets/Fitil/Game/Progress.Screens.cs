@@ -567,7 +567,32 @@ namespace Fitil.Game
                 var tierName = Loc.Tr(final ? "Финал" : e.Tier == "boss" ? "Босс" : e.Tier == "elite" ? "Элита" : "Противник");
                 Ui.Label("sub", txt, tierName + (stage != null && e.Dark == null ? " · " + stage.Name : ""), 13, Soft, TextAnchor.UpperLeft).Pref(244);
                 Ui.Label("about", txt, e.Line, 14, Ui.Paper, TextAnchor.UpperLeft).Pref(244);
-                P(list, Loc.Tr("Побед над этим врагом: {n}", ("n", Kills(id))), Ui.GoldHi);
+                // в длинном сюжете босс крепче своей записи, начинает с Силой и впадает в Ярость (Balance)
+                var bsi = defs.Long && e.Tier == "boss" ? (final ? 2 : Math.Max(0, defs.Stages.IndexOf(stage))) : -1;
+                // обычные враги и элиты крепнут с каждым уровнем: показываем, сколько HP у врага бывает там, где он встречается
+                // (обычная сложность, те же правила, что при выборе дороги и в начале боя)
+                int hpLo = int.MaxValue, hpHi = 0;
+                if (defs.Long && bsi < 0)
+                    for (var si = 0; si < defs.Stages.Count; si++)
+                    {
+                        var g = defs.Stages[si];
+                        for (var st = g.Start; st < g.End; st++)
+                        {
+                            var k = st - g.Start;
+                            var muls = new List<double>();
+                            if ((k < 8 && g.Early.Count > 0 ? g.Early : g.Normals).Contains(id)) muls.Add(1);
+                            if (g.Elites.Contains(id) && (si > 0 || k >= 6)) muls.Add(Balance.EliteHp[Math.Min(1, si)]);
+                            foreach (var m in muls)
+                            {
+                                var v = (int)Math.Floor(e.Hp * (1 + st * Balance.HpStep) * m + 0.5);
+                                hpLo = Math.Min(hpLo, v);
+                                hpHi = Math.Max(hpHi, v);
+                            }
+                        }
+                    }
+                var hpShown = bsi >= 0 ? ((int)Math.Floor(e.Hp * Balance.BossHp[bsi] + 0.5)).ToString()
+                    : hpHi > hpLo ? hpLo + "–" + hpHi : (hpHi > 0 ? hpHi : e.Hp).ToString();
+                P(list, hpShown + " HP  ·  " + Loc.Tr("Побед над этим врагом: {n}", ("n", Kills(id))), Ui.GoldHi);
                 var say = Json.Obj(Json.Get(Json.Obj(Json.Get(lore, "SAY")), id));
                 var start = Json.Get(say, "start");
                 var said = start is List<object> l && l.Count > 0 ? Json.Str(l[0]) : Json.Str(start);
@@ -596,6 +621,8 @@ namespace Fitil.Game
                 }
                 var traits = new[]
                 {
+                    bsi >= 0 && Balance.BossStr[bsi] > 0 ? Loc.Tr("Начинает бой с Силой {n}.", ("n", Balance.BossStr[bsi])) : null,
+                    bsi >= 0 ? Loc.Tr("Ярость: на половине HP получает Силу +{n} и {b} защиты.", ("n", Balance.RageStr[bsi]), ("b", Balance.RageBlock[bsi])) : null,
                     e.Thorns > 0 ? Loc.Tr("Каждый ваш удар по врагу ранит вас на {n}", ("n", e.Thorns)) : null,
                     e.Nest > 0 ? Loc.Tr("Когда её HP кончится, она раскроется и выпустит новую, поменьше. Осталось внутри: {n}.", ("n", e.Nest)) : null,
                     e.Boil > 0 ? Loc.Tr("Каждый пропущенный удар добавляет +1 урона его следующей атаке (до +5). После своего хода он остывает. Поджог его не злит.") : null,
