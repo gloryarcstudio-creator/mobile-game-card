@@ -110,6 +110,9 @@ namespace Fitil.Game
             void Render()
             {
                 s = MakeSheet(Loc.Tr("Достижения"), "medal", () => Close(back), all.Count(Done), all.Count);
+                var lg = s.List.GetComponent<VerticalLayoutGroup>();
+                lg.spacing = 16;                       // рамки плиток выступают за строку: без зазора они ложились бы друг на друга
+                lg.padding = new RectOffset(6, 6, 16, 16);
                 foreach (var a in all.Where(a => Json.Str(Json.Get(a, "cat")) == tab)) AchRow(s.List, a, since);
                 var w = (372f - 6 * (cats.Count - 1)) / Math.Max(1, cats.Count);
                 foreach (var (id, name) in cats)
@@ -128,22 +131,27 @@ namespace Fitil.Game
             var done = Done(a);
             var goal = Goal(a);
             var p = Math.Min(ProgressOf(a), goal);
-            var row = Ui.Round("arow", list, done ? RowDone : RowBg);
-            if (done) row.Outline(new Color(0.85f, 0.66f, 0.29f, 0.6f), 1.2f);
-            var rt = row.rectTransform;
-            rt.Line(10, TextAnchor.MiddleLeft, 8, 8, 7, 7);
-            rt.Pref(360, -1, 68);
+            // плитка с окошком для значка (.arow в веб-версии: рамка ui2/tile, окошко 71×71 слева, строка 93)
+            var rt = Ui.Node("arow", list);
+            rt.Line(12, TextAnchor.MiddleLeft, 34, 10, 12, 10);
+            rt.Pref(360, -1, 93);
+            var frame = Ui.Frame(rt, "ui2/tile", 0.5205f, 9.4f, 15.6f, 6.2f, 8.8f);
+            if (!frame.sprite) frame.color = done ? RowDone : RowBg;
 
             var port = Ui.Node("port", rt);
-            port.Pref(54, 54);
-            var pic = Ui.CircleArt("art", port, ArtOf(a));
+            port.Pref(71, 71);
+            var plate = Ui.Round("bg", port, done ? (Color)new Color32(0xE8, 0x83, 0x6A, 0xFF) : new Color32(0x8A, 0x5A, 0x52, 0xFF));
+            plate.rectTransform.Fill();
+            var pic = Ui.Img("art", port, ArtOf(a), done ? Color.white : new Color(0.12f, 0.12f, 0.14f, 0.92f));
+            pic.preserveAspect = true;
             pic.rectTransform.Fill();
-            if (!done) pic.transform.GetChild(0).GetComponent<Image>().color = new Color(0.45f, 0.45f, 0.5f, 0.9f);
+            pic.rectTransform.offsetMin = new Vector2(4, 4);
+            pic.rectTransform.offsetMax = new Vector2(-4, -4);
             var stars = Json.Int(Json.Get(a, "stars"));
             if (stars > 0)
             {
                 var st = Ui.Label("stars", port, new string('★', stars), 12, Ui.Gold).Shadow(1f);
-                st.rectTransform.Box(0, 42, 54, 16);
+                st.rectTransform.Box(0, 54, 71, 16);
             }
             if (done && Num(Got, Id(a)) > since)
             {
@@ -154,13 +162,13 @@ namespace Fitil.Game
 
             var text = Ui.Node("text", rt);
             text.Column(3, TextAnchor.MiddleLeft);
-            text.Pref(done ? 206 : 270);
-            Ui.Label("name", text, Json.Str(Json.Get(a, "name")), 17, done ? Ui.GoldHi : Ui.Paper, TextAnchor.MiddleLeft, true).Pref(done ? 206 : 270);
+            text.Pref(done ? 157 : 233);
+            Ui.Label("name", text, Json.Str(Json.Get(a, "name")), 17, done ? Ui.GoldHi : Ui.Paper, TextAnchor.MiddleLeft, true).Pref(done ? 157 : 233);
             var desc = (Json.Str(Json.Get(a, "desc")) ?? "").Replace("{p}", "<b>" + Fmt(p) + "/" + Fmt(goal) + "</b>");
-            var d = Ui.Label("desc", text, desc, 13, Soft, TextAnchor.MiddleLeft);
+            var d = Ui.Label("desc", text, desc, 14, Soft, TextAnchor.MiddleLeft);
             d.lineSpacing = 0.95f;
-            d.Pref(done ? 206 : 270);
-            if (!done && goal > 1) Bar(text, p, goal, 270, 6, false);
+            d.Pref(done ? 157 : 233);
+            if (!done && goal > 1) Bar(text, p, goal, 233, 6, false);
 
             if (done)
             {
