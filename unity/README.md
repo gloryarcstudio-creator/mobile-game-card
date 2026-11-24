@@ -32,11 +32,51 @@
 | --- | --- |
 | `Assets/Fitil/Core` | Логика без UnityEngine: языки (`Loc`), случайность (`Rng`), данные (`GameData`), JSON. Дальше сюда переезжают бой и забег. |
 | `Assets/Fitil/Game` | Экраны на uGUI, собираются кодом. `Boot` — запуск и титул, `RunFlow*` — забег, `CombatScreen` — бой, `Menus` — настройки и пауза, `Progress*` — достижения, статистика и база знаний, `StoreScreen` — магазин, `Cinema` — заставка, `Snow` — снегопад, `Ui` — помощники вёрстки. |
-| `Assets/Fitil/Platform` | Сохранения (`SaveStore`), покупки и реклама (`Store`: пока тестовые окна, как в веб-версии; все покупки по $5). |
+| `Assets/Fitil/Platform` | Сохранения (`SaveStore`), покупки и реклама (`Store`; все покупки по $5). `Iap` — настоящие покупки через Unity IAP 5, `Ads` — реклама за награду через Google Mobile Ads. Без их пакетов — тестовые окна, как в веб-версии. |
 | `Assets/Fitil/Editor` | Настройки проекта кодом: портрет, отрисовка вокруг выреза камеры, идентификатор `com.protekgames.lastray`, IL2CPP, ARM64. Меню Fitil → Применить настройки. |
 | `Assets/Fitil/Resources/Data` | JSON из веб-версии: `node tools/unity/export_data.js` (данные и строки) и `node tools/unity/export_card_text.js` (шаблоны описаний карт). Не править руками. |
 | `Assets/Fitil/Resources/Art` | PNG из `assets/`: `tools/unity/export_assets.py`. В git не кладётся. |
 | `Tests/Core.Tests` | Тесты Core без Unity: `dotnet run --project unity/Tests/Core.Tests`. Эталоны в `Tests/Fixtures` делает `node tools/unity/parity_fixtures.js`. | Бои: `node tools/unity/combat_fixtures.js` (128 настоящих боёв из браузера через Playwright, после любого изменения боя в веб-версии).
+
+## Покупки и реклама
+
+Ключей и паролей для этого в проекте нет и быть не должно: площадки узнают игру по подписи сборки и идентификатору.
+
+**Покупки.** Пакет Unity IAP 5.5.1 уже в `Packages/manifest.json` (Google Play Billing 9 и App Store).
+
+| Где запущена игра | Покупки |
+| --- | --- |
+| Редактор Unity | Тестовое окно, деньги не списываются. |
+| Сборка Development Build | Тестовое окно, пока товары не заведены на площадке; потом настоящие. |
+| Обычная сборка | Только настоящие. |
+
+Товары заводятся в Play Console (Монетизация → Товары → Разовые товары) и App Store Connect (In-App Purchases → Non-Consumable),
+все по $5:
+
+| Id товара | Что открывает |
+| --- | --- |
+| `com.protekgames.lastray.hero_grinder` | Савва |
+| `com.protekgames.lastray.hero_shepherd` | Луша |
+| `com.protekgames.lastray.hero_herbalist` | Ульяна |
+| `com.protekgames.lastray.heroes` | все три героя |
+| `com.protekgames.lastray.noads` | «Без рекламы» |
+
+Проверять настоящие покупки можно только сборкой, установленной из Google Play (внутреннее тестирование) или TestFlight.
+Если пакет мешает, строку `com.unity.purchasing` можно убрать из манифеста: покупки снова станут тестовыми.
+
+**Реклама.** Пока плагина нет, вместо ролика идёт тестовый отсчёт. Чтобы включить настоящую:
+
+1. Поставить Google Mobile Ads for Unity версии 9 или новее: файл `.unitypackage` со страницы выпусков
+   https://github.com/googleads/googleads-mobile-unity/releases (Assets → Import Package → Custom Package).
+2. Assets → Google Mobile Ads → Settings: вписать id приложения из AdMob для Android и iOS (вида `ca-app-pub-…~…`).
+   Без него сборка для Android не запускается. Для пробы годятся общие id Google:
+   Android `ca-app-pub-3940256099942544~3347511713`, iOS `ca-app-pub-3940256099942544~1458002511`.
+3. Рекламные блоки вписать в `Assets/Fitil/Platform/Ads/AdMobAds.cs` (`AndroidUnit`, `IosUnit`). Сейчас там пробные блоки
+   Google: ролики показываются, денег не приносят.
+4. Для Европы в AdMob (Конфиденциальность и сообщения) создать сообщение о согласии GDPR: игра сама покажет его перед
+   рекламой, а в настройках игры появится «Согласие на рекламу».
+
+Перед сборкой для магазина редактор пишет предупреждение в консоль, если покупки или реклама в ней ещё тестовые.
 
 ## Сборка
 
