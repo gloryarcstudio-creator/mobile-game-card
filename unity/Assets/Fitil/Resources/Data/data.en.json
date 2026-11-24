@@ -8295,12 +8295,14 @@
   "night": {
    "countdownLeft": "The candle burns out in {left}",
    "countdownBoss": "The candle has burned out",
-   "countdownFinal": "The candle has burned out"
+   "countdownFinal": "The candle has burned out",
+   "pathRule": "<b>The candle.</b> In {total} steps the Moth will come."
   },
   "sunset": {
    "countdownLeft": "Level {level} of {total} · boss in {left}",
    "countdownBoss": "Level {level} · stage boss",
-   "countdownFinal": "The sun has set. The final boss is here"
+   "countdownFinal": "The sun has set. The final boss is here",
+   "pathRule": "<b>The road.</b> {total} levels: two stages of 25, each ending with a boss, and the final boss waits on the last level. The bosses are different every time."
   }
  },
  "gloss": [

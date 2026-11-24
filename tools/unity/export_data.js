@@ -102,6 +102,8 @@ for (const lang of ['ru', 'en', 'uk']) {
       countdownBoss: fill(st.countdown({ left: 0, level: 9002, total: 9003, stage: 0, final: false })),
       countdownFinal: fill(st.countdown({ left: 0, level: 9002, total: 9003, stage: 2, final: true })),
     };
+    // правило пути на странице вступления (pathRule — функция от числа уровней)
+    if (typeof st.pathRule === 'function') data.storyText[sid].pathRule = fill(st.pathRule(9003));
   }
   // справочник (GLOSS_RU в game.js): термин и пояснение на языке игры
   data.gloss = glossRu().map(([k, v, vars]) => [w.tr(k), w.tr(v, vars)]);

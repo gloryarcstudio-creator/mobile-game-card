@@ -8295,12 +8295,14 @@
   "night": {
    "countdownLeft": "Свічка догорить через {left}",
    "countdownBoss": "Свічка догоріла",
-   "countdownFinal": "Свічка догоріла"
+   "countdownFinal": "Свічка догоріла",
+   "pathRule": "<b>Свічка.</b> Через {total} кроки прийде Міль."
   },
   "sunset": {
    "countdownLeft": "Рівень {level} з {total} · бос через {left}",
    "countdownBoss": "Рівень {level} · бос стадії",
-   "countdownFinal": "Сонце сіло. Фінальний бос тут"
+   "countdownFinal": "Сонце сіло. Фінальний бос тут",
+   "pathRule": "<b>Шлях.</b> {total} рівні: дві стадії по 25, наприкінці кожної бос, а на останньому рівні чекає фінальний. Боси щоразу різні."
   }
  },
  "gloss": [

@@ -8295,12 +8295,14 @@
   "night": {
    "countdownLeft": "Свеча догорит через {left}",
    "countdownBoss": "Свеча догорела",
-   "countdownFinal": "Свеча догорела"
+   "countdownFinal": "Свеча догорела",
+   "pathRule": "<b>Свеча.</b> Через {total} шагов придёт Моль."
   },
   "sunset": {
    "countdownLeft": "Уровень {level} из {total} · босс через {left}",
    "countdownBoss": "Уровень {level} · босс стадии",
-   "countdownFinal": "Солнце село. Финальный босс здесь"
+   "countdownFinal": "Солнце село. Финальный босс здесь",
+   "pathRule": "<b>Путь.</b> {total} уровень: две стадии по 25, в конце каждой босс, а на последнем ждёт финальный. Боссы каждый раз разные."
   }
  },
  "gloss": [

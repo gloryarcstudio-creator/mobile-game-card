@@ -49,8 +49,11 @@ namespace Fitil.Game
 
             LoadLanguage();
             Sound.Init(gameObject);
+            StoreScreen.Install();
             BuildCanvas();
-            ShowTitle();
+            // при первом запуске — заставка, потом титул
+            if (Cinema.Has(Defs) && !Cinema.Seen) PlayCinema();
+            else ShowTitle();
         }
 
         void LoadLanguage()
@@ -112,6 +115,7 @@ namespace Fitil.Game
             scaler.referencePixelsPerUnit = 100;
 
             Back = Ui.Node("Back", canvasGo.transform).Fill();
+            Ui.Node("Snow", canvasGo.transform).Fill().gameObject.AddComponent<Snow>();   // снегопад над фонами, под экраном
             Safe = Ui.Node("Safe", canvasGo.transform).Fill();
             Safe.gameObject.AddComponent<SafeArea>();
             corner = Ui.Node("Corner", canvasGo.transform).Fill();
@@ -243,16 +247,17 @@ namespace Fitil.Game
                 var diff = Data.Difficulties[Mathf.Clamp(r.Diff, 0, Data.Difficulties.Count - 1)].Name;
                 var info = hero + " · " + diff + "\n" + Loc.Tr("ур. {n}", ("n", r.Step + 1)) + " · " + r.Hp + "/" + r.MaxHp + " HP";
                 var cont = Ui.Push(Safe, Loc.Tr("Продолжить") + "\n<size=13>" + info + "</size>", () => { Clear(); RunFlow.Continue(Defs, save); }, false, 24, 260, 84);
-                ((RectTransform)cont.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 352), new Vector2(260, 84));
+                ((RectTransform)cont.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 404), new Vector2(260, 84));
             }
             var play = save != null ? Ui.Push(Safe, Loc.Tr("Новая игра"), () => AskNewGame(save), true, 20, 220, 54) : Ui.Btn("new", Safe, Loc.Tr("Новая игра"), ShowHeroes, 24);
-            ((RectTransform)play.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 270), save != null ? new Vector2(220, 54) : new Vector2(240, 64));
+            ((RectTransform)play.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 322), save != null ? new Vector2(220, 54) : new Vector2(240, 64));
 
             // достижения, база знаний и статистика: значок, название и счёт под ним (.achbtn)
             var ach = Progress.List;
-            MenuRow("medal", Loc.Tr("Достижения"), Loc.Tr("{a} из {b}", ("a", ach.Count(Progress.Done)), ("b", ach.Count)), 208, () => Progress.ShowAchievements(ShowTitle), Progress.HasNew);
-            MenuRow("magnifier", Loc.Tr("База знаний"), Loc.Tr("{a} из {b}", ("a", Progress.CodexCount), ("b", Progress.CodexTotal)), 156, () => Progress.ShowCodex(ShowTitle));
-            MenuRow("hourglass", Loc.Tr("Статистика"), Progress.Stat("runs") > 0 ? Loc.Tr("Забегов: {a} · доставлено писем: {b}", ("a", Progress.Stat("runs")), ("b", Progress.Stat("wins"))) : Loc.Tr("Итоги твоих забегов"), 104, () => Progress.ShowStats(ShowTitle));
+            MenuRow("medal", Loc.Tr("Достижения"), Loc.Tr("{a} из {b}", ("a", ach.Count(Progress.Done)), ("b", ach.Count)), 260, () => Progress.ShowAchievements(ShowTitle), Progress.HasNew);
+            MenuRow("magnifier", Loc.Tr("База знаний"), Loc.Tr("{a} из {b}", ("a", Progress.CodexCount), ("b", Progress.CodexTotal)), 208, () => Progress.ShowCodex(ShowTitle));
+            MenuRow("candybox", Loc.Tr("Магазин"), Loc.Tr("Герои и режим без рекламы"), 104, () => StoreScreen.Show(ShowTitle));
+            MenuRow("hourglass", Loc.Tr("Статистика"), Progress.Stat("runs") > 0 ? Loc.Tr("Забегов: {a} · доставлено писем: {b}", ("a", Progress.Stat("runs")), ("b", Progress.Stat("wins"))) : Loc.Tr("Итоги твоих забегов"), 156, () => Progress.ShowStats(ShowTitle));
             var gloss = Ui.Push(Safe, Loc.Tr("Справочник"), () => Menus.ShowGlossary(ShowTitle), true, 17, 128, 42);
             ((RectTransform)gloss.transform).At(new Vector2(0.5f, 0f), new Vector2(-67, 52), new Vector2(128, 42));
             var sets = Ui.Push(Safe, Loc.Tr("Настройки"), () => Menus.ShowSettings(ShowTitle), true, 17, 128, 42);
@@ -260,11 +265,62 @@ namespace Fitil.Game
             if (save != null)
             {
                 var hint = Ui.Label("savehint", Safe, Loc.Tr("Прогресс сохраняется после каждого уровня"), 12, new Color(1, 1, 1, 0.55f));
-                hint.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 404), new Vector2(380, 18));
+                hint.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 456), new Vector2(380, 18));
             }
 
             var ver = Ui.Label("version", Safe, "Unity " + Application.unityVersion + " · " + Loc.Lang, 11, new Color(1, 1, 1, 0.45f));
             ver.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 12), new Vector2(380, 16));
+        }
+
+        /// <summary>Заставка (первый запуск или «Посмотреть заставку» в настройках), потом титул.</summary>
+        public void PlayCinema()
+        {
+            RunFlow.Drop();
+            Clear();
+            Corner("end");
+            Cinema.Play(Defs, ShowTitle);
+        }
+
+        /// <summary>Страница вступления перед новым забегом (goIntro): картинка, название, рассказ и три правила.</summary>
+        void ShowIntro(string cls, System.Action start)
+        {
+            Clear();
+            Corner("heroes");
+            screen = new GameObject("Intro");
+            screen.transform.SetParent(transform, false);
+            Background(Back, BgFor(Defs, 0));
+            var col = Ui.Node("intro", Safe).Box(0, 34, 400, 800);
+            col.Column(14, TextAnchor.UpperCenter);
+            var page = Ui.Node("page", col);
+            page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
+            page.Pref(372);
+            Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
+            var brown = new Color32(0x5A, 0x2A, 0x26, 0xFF);
+            // на картинке вступления нарисована Ива: другим героям вместо неё — сам герой
+            var pic = cls == "lamp" ? Ui.Art("pic/story_intro") : null;
+            var art = Ui.Node("art", page);
+            art.Pref(318, pic ? 180 : 200);
+            art.gameObject.AddComponent<RectMask2D>();
+            var img = Ui.Img("pic", art, pic ? pic : Ui.Art("h/" + cls), Color.white);
+            img.rectTransform.Fill();
+            if (pic)
+            {
+                var fit = img.gameObject.AddComponent<AspectRatioFitter>();
+                fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+                fit.aspectRatio = (float)pic.texture.width / pic.texture.height;
+            }
+            else img.preserveAspect = true;
+            Ui.Label("title", page, Defs.StoryStr("title") ?? "", 28, brown, TextAnchor.MiddleCenter, true).Pref(318);
+            Ui.Label("story", page, Defs.StoryHero("intro", cls) ?? "", 16, Ui.Ink).Pref(318);
+            var rules = new List<string>
+            {
+                Loc.Tr("<b>Огонёк.</b> Каждый даёт атакам +{b} урона. На {m} Огоньках лампа бьёт врага на {d}.", ("b", Balance.FlameBonus), ("m", Balance.FlameMax), ("d", Balance.BurstDmg)),
+                Loc.Tr("<b>Меню</b> в углу: пауза, справочник и выход. Прогресс сохраняется сам."),
+            };
+            var path = Json.Str(Json.Get(Json.Obj(Json.Get(Json.Obj(Json.Get(Data.Raw, "storyText")), Defs.StoryId)), "pathRule"));
+            if (path != null) rules.Add(path.Replace("{total}", Defs.MaxSteps.ToString()));
+            foreach (var r in rules) Ui.Label("rule", page, "•  " + r, 14, brown, TextAnchor.UpperLeft).Pref(318);
+            Ui.Push(col, Loc.Tr("В путь"), () => { Sound.Sfx("click"); start(); }, false, 24, 230, 60);
         }
 
         /// <summary>Строка меню на титуле: значок, название и мелкая строка под ним; точка — есть новое.</summary>
@@ -305,11 +361,14 @@ namespace Fitil.Game
         {
             Clear();
             Corner("heroes");
-            screen = HeroSelect.Show(Data, cls =>
+            screen = HeroSelect.Show(Data, Defs, Settings.Cls, Settings.Diff, (cls, diff) =>
             {
-                Clear();
                 Settings.Cls = cls;
-                new RunFlow(Defs, cls, Settings.Diff).Start();
+                Settings.Diff = diff;
+                Clear();
+                // страница вступления перед первым шагом; в настройках её можно пропускать
+                if (Settings.SkipIntro) new RunFlow(Defs, cls, diff).Start();
+                else ShowIntro(cls, () => { Clear(); new RunFlow(Defs, cls, diff).Start(); });
             }, ShowTitle).gameObject;
         }
 

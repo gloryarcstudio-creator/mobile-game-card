@@ -108,6 +108,13 @@ namespace Fitil.Game
             Sep(col);
             var foot = Ui.Label("sfoot", col, Loc.Tr("Версия {v}", ("v", Application.version)), 12, new Color(1, 1, 1, 0.6f), TextAnchor.MiddleLeft);
             foot.Pref(304, 18);
+            // заставку можно пересмотреть, пока не идёт забег
+            if (RunFlow.Current == null && Cinema.Has(Boot.Instance.Defs))
+            {
+                var link = Ui.Hit("cinema", col, () => { Sound.Sfx("click"); Close(); Boot.Instance.PlayCinema(); });
+                link.Pref(304, 30);
+                Ui.Label("t", link.transform, "<i>" + Loc.Tr("Посмотреть заставку") + "</i>", 14, Ui.GoldHi).rectTransform.Fill();
+            }
         }
 
         static void Icon(RectTransform parent, string art, string label, Action onClick)
