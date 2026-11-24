@@ -144,9 +144,7 @@ namespace Fitil.Game
             var cardsBtn = Ui.Push(info, "", () => { Sound.Sfx("click"); ShowCards(id); }, true, 16, 376, 44);
             ((RectTransform)cardsBtn.transform).Box(12, 312, 376, 44);
             var cl = cardsBtn.GetComponentInChildren<Text>();
-            cl.alignment = TextAnchor.MiddleLeft;
-            cl.text = Loc.Tr("Карты героя") + "  ›\n<size=11><color=#E8DCC0>" + string.Join(", ", own.Select(c => c.Name)) + "</color></size>";
-            cl.lineSpacing = 0.9f;
+            Ui.TwoLines(cl, Loc.Tr("Карты героя") + "  ›", string.Join(", ", own.Select(c => c.Name)), 14, 11);
 
             Difficulty();
             Buttons(owned);

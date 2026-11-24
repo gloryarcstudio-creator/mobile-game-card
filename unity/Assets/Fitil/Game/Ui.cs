@@ -319,6 +319,32 @@ namespace Fitil.Game
             return b;
         }
 
+        /// <summary>Кнопка в две строки: название шрифтом заголовков сверху и пояснение мелким обычным шрифтом снизу.
+        /// Каждая строка в своей половине кнопки: одна надпись с переносом вылезала за рамку (у шрифтов разная высота строки).</summary>
+        public static void TwoLines(Text label, string title, string sub, float left, int subSize)
+        {
+            var box = (RectTransform)label.transform.parent;
+            label.text = title;
+            label.alignment = TextAnchor.LowerLeft;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+            var rt = label.rectTransform;
+            rt.anchorMin = new Vector2(0, 0.5f);
+            rt.anchorMax = new Vector2(1, 1);
+            rt.offsetMin = new Vector2(left, -3);
+            rt.offsetMax = new Vector2(-10, -3);
+            var s = Label("sub", box, sub, subSize, new Color32(0xE8, 0xDC, 0xC0, 0xFF), TextAnchor.UpperLeft);
+            s.horizontalOverflow = HorizontalWrapMode.Wrap;
+            s.verticalOverflow = VerticalWrapMode.Truncate;
+            s.resizeTextForBestFit = true;
+            s.resizeTextMaxSize = subSize;
+            s.resizeTextMinSize = 8;
+            s.rectTransform.anchorMin = new Vector2(0, 0);
+            s.rectTransform.anchorMax = new Vector2(1, 0.5f);
+            s.rectTransform.offsetMin = new Vector2(left, 5);
+            s.rectTransform.offsetMax = new Vector2(-10, -2);
+        }
+
         static Sprite round, circle;
 
         /// <summary>Белый скруглённый квадрат 32×32 с углами 10: основа для плашек (тянется без искажения углов).</summary>

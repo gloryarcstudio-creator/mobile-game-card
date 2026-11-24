@@ -116,21 +116,34 @@ namespace Fitil.Game
 
             Back = Ui.Node("Back", canvasGo.transform).Fill();
             Ui.Node("Snow", canvasGo.transform).Fill().gameObject.AddComponent<Snow>();   // снегопад над фонами, под экраном
-            Safe = Ui.Node("Safe", canvasGo.transform).Fill();
-            Safe.gameObject.AddComponent<SafeArea>();
-            corner = Ui.Node("Corner", canvasGo.transform).Fill();
-            corner.gameObject.AddComponent<SafeArea>();
-            Top = Ui.Node("Top", canvasGo.transform).Fill();
-            Top.gameObject.AddComponent<SafeArea>();
+            Safe = Stage("Safe", canvasGo.transform);
+            corner = Stage("Corner", canvasGo.transform);
+            Top = Stage("Top", canvasGo.transform);
 
             // #gear и #menu: настройки и пауза забега (вне забега — справочник)
             gearBtn = CornerButton("gear", () => Menus.ShowSettings());
             menuBtn = CornerButton("menu", () => { if (RunFlow.Current != null) Menus.ShowPause(); else Menus.ShowGlossary(); });
         }
 
+        /// <summary>Слой экрана: колонка шириной 400 посреди безопасной зоны, как #app в веб-версии.
+        /// На экране шире 400:860 (9:16, планшет) вёрстка стоит по центру, а не прижата к левому краю; фон идёт во всю ширину.</summary>
+        static RectTransform Stage(string name, Transform canvas)
+        {
+            var area = Ui.Node(name + " area", canvas).Fill();
+            area.gameObject.AddComponent<SafeArea>();
+            var col = Ui.Node(name, area);
+            col.anchorMin = new Vector2(0.5f, 0);
+            col.anchorMax = new Vector2(0.5f, 1);
+            col.pivot = new Vector2(0.5f, 0.5f);
+            col.sizeDelta = new Vector2(Logical.x, 0);
+            col.anchoredPosition = Vector2.zero;
+            return col;
+        }
+
         Button CornerButton(string icon, System.Action onClick)
         {
             var ring = Ui.Img(icon, corner, Ui.Circle, new Color(0.08f, 0.09f, 0.15f, 0.75f));
+            ring.raycastTarget = true;   // Ui.Img по умолчанию не ловит нажатия: без этого кнопка молчит
             ring.Outline(Ui.Gold, 2f);
             ring.rectTransform.anchorMin = ring.rectTransform.anchorMax = new Vector2(1, 1);
             ring.rectTransform.pivot = new Vector2(1, 1);
@@ -152,10 +165,10 @@ namespace Fitil.Game
         public void Corner(string mode)
         {
             if (!gearBtn) return;
-            var gy = mode == "title" ? 12 : mode == "combat" ? 54 : 68;
+            var gy = mode == "title" || mode == "heroes" ? 12 : mode == "combat" ? 54 : 68;
             ((RectTransform)gearBtn.transform).anchoredPosition = new Vector2(-8, -gy);
             ((RectTransform)menuBtn.transform).anchoredPosition = new Vector2(-8, -(gy + 44));
-            menuBtn.gameObject.SetActive(mode != "title" && mode != "end");
+            menuBtn.gameObject.SetActive(mode != "title" && mode != "end" && mode != "heroes");
         }
 
         /// <summary>Сменился язык: тексты читаются заново, экран открывается на новом языке
@@ -189,6 +202,20 @@ namespace Fitil.Game
 
         /// <summary>Нарисованный фон шага забега (setBg в game.js): город днём, вечером и на закате,
         /// окраина в начале, в середине и ночью, в финале — дом.</summary>
+        /// <summary>Линия снега на картинке фона в точках макета (FEET в js/paint.js): сюда встают ноги.</summary>
+        public static float FeetOf(string art)
+        {
+            switch (art)
+            {
+                case "bg/bg_stage2_outskirts_start": return 660;
+                case "bg/bg_stage2_outskirts_mid": return 670;
+                case "bg/bg_stage2_outskirts_night": return 685;
+                case "bg/bg_final_house": return 650;
+                case "bg/bg_title": return 726;
+                default: return 690;
+            }
+        }
+
         public static string BgFor(Defs defs, int step)
         {
             if (defs.Stages.Count > 1 && defs.IsFinalStep(step)) return "bg/bg_final_house";
@@ -221,7 +248,6 @@ namespace Fitil.Game
             Corner("title");
             screen = new GameObject("Title");
             screen.transform.SetParent(transform, false);
-            Background(Back, "bg/bg_title");
             Sound.Music("title");
 
             var logo = Ui.Art("ui2/logo_" + Loc.Lang) ?? Ui.Art("ui2/logo_ru");
@@ -240,7 +266,10 @@ namespace Fitil.Game
 
             // «Продолжить» с героем, сложностью, уровнем и здоровьем сохранённого забега
             var save = RunFlow.LoadSave(Defs);
-            TitleHero(save != null ? save.Run.Cls : Settings.Cls, save != null);
+            var feet = TitleHero(save != null ? save.Run.Cls : Settings.Cls, save != null);
+            // камера фона опускается герою под ноги: снег с картинки встаёт под сапоги (726 — FEET.bg_title в js/paint.js)
+            if (feet) GroundBg.Make(Back, "bg/bg_title", FeetOf("bg/bg_title"), feet);
+            else Background(Back, "bg/bg_title");
             if (save != null)
             {
                 var r = save.Run;
@@ -314,10 +343,10 @@ namespace Fitil.Game
 
         /// <summary>Герой на титуле (.title-hero): тот, кто идёт в сохранённом забеге, или выбранный в прошлый раз.
         /// Стоит между названием и кнопками, под ногами мягкая тень, чуть покачивается. С сохранением — поменьше.</summary>
-        void TitleHero(string cls, bool small)
+        RectTransform TitleHero(string cls, bool small)
         {
             var art = Ui.Art("h/" + cls) ?? Ui.Art("h/lamp");
-            if (!art) return;
+            if (!art) return null;
             float w = small ? 170 : 230, h = small ? 200 : 270, top = small ? 190 : 204;
             var box = Ui.Node("title hero", Safe);
             box.anchorMin = box.anchorMax = new Vector2(0.5f, 1);
@@ -331,6 +360,14 @@ namespace Fitil.Game
             img.rectTransform.Fill();
             box.gameObject.AddComponent<HeroSway>();
             box.SetAsFirstSibling();   // кнопки и название — поверх героя
+            // неподвижная метка линии ног: сама фигура поднимается и покачивается, фон за ней ходить не должен
+            var mark = Ui.Node("feet", Safe);
+            mark.anchorMin = mark.anchorMax = new Vector2(0.5f, 1);
+            mark.pivot = new Vector2(0.5f, 0);
+            mark.sizeDelta = new Vector2(w, 1);
+            mark.anchoredPosition = new Vector2(0, -(top + h) + 6);
+            mark.SetAsFirstSibling();
+            return mark;
         }
 
         /// <summary>Заставка (первый запуск или «Посмотреть заставку» в настройках), потом титул.</summary>
@@ -353,7 +390,7 @@ namespace Fitil.Game
             var col = Ui.Node("intro", Safe).Box(0, 34, 400, 800);
             col.Column(14, TextAnchor.UpperCenter);
             var page = Ui.Node("page", col);
-            page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
+            page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 30);
             page.Pref(372);
             Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
             var brown = new Color32(0x5A, 0x2A, 0x26, 0xFF);
@@ -391,10 +428,7 @@ namespace Fitil.Game
             var rt = (RectTransform)b.transform;
             rt.At(new Vector2(0.5f, 0f), new Vector2(0, y), new Vector2(270, 46));
             var label = b.GetComponentInChildren<Text>();
-            label.alignment = TextAnchor.MiddleLeft;
-            label.text = title + "\n<size=12><color=#E8DCC0>" + sub + "</color></size>";
-            label.lineSpacing = 0.9f;
-            label.rectTransform.offsetMin = new Vector2(58, 2);
+            Ui.TwoLines(label, title, sub, 58, 12);
             var ic = Ui.Img("icon", rt, "r2/" + icon);
             ic.preserveAspect = true;
             ic.rectTransform.At(new Vector2(0, 0.5f), new Vector2(32, 0), new Vector2(34, 34));

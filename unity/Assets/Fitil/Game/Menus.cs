@@ -131,6 +131,7 @@ namespace Fitil.Game
             box.Column(1, TextAnchor.UpperCenter);
             var ring = Ui.Img("round", box, "ui2/round");
             if (!ring.sprite) { ring.sprite = Ui.Circle; ring.color = new Color32(0x3A, 0x2E, 0x48, 0xFF); }
+            ring.raycastTarget = true;
             ring.Pref(56, 62);
             var pic = Ui.Img("pic", ring.transform, "r2/" + art);
             pic.preserveAspect = true;
@@ -175,6 +176,9 @@ namespace Fitil.Game
         {
             var rt = Ui.Node("slider", parent);
             rt.Pref(w, 32);
+            // невидимая площадка на всю строку ползунка: по ней ловится нажатие и перетаскивание
+            var hit = rt.gameObject.AddComponent<Image>();
+            hit.color = new Color(0, 0, 0, 0);
             var s = rt.gameObject.AddComponent<Slider>();
             var track = Ui.Round("track", rt, new Color32(0x1A, 0x15, 0x20, 0xFF));
             track.rectTransform.anchorMin = new Vector2(0, 0.5f);
@@ -192,7 +196,9 @@ namespace Fitil.Game
             harea.offsetMin = new Vector2(10, 0);
             harea.offsetMax = new Vector2(-10, 0);
             var handle = Ui.Round("handle", harea, new Color32(0xC9, 0xCC, 0xD8, 0xFF));
-            handle.rectTransform.sizeDelta = new Vector2(20, 30);
+            // Slider сам растягивает ручку на всю высоту строки (32): sizeDelta по высоте — добавка к ней, а не размер
+            handle.rectTransform.sizeDelta = new Vector2(20, -2);
+            handle.raycastTarget = true;
             handle.Outline(Ui.Ink, 1.5f);
             s.fillRect = fill.rectTransform;
             s.handleRect = handle.rectTransform;
