@@ -31,7 +31,7 @@
 | Папка | Что |
 | --- | --- |
 | `Assets/Fitil/Core` | Логика без UnityEngine: языки (`Loc`), случайность (`Rng`), данные (`GameData`), JSON. Дальше сюда переезжают бой и забег. |
-| `Assets/Fitil/Game` | Экраны на uGUI, собираются кодом. `Boot` — запуск и титул, `RunFlow*` — забег, `CombatScreen` — бой, `Menus` — настройки и пауза, `Progress*` — достижения, статистика и база знаний, `StoreScreen` — магазин, `Cinema` — заставка, `Snow` — снегопад, `Ui` — помощники вёрстки. |
+| `Assets/Fitil/Game` | Экраны на uGUI, собираются кодом. `Boot` — запуск и титул, `RunFlow*` — забег, `CombatScreen` — бой, `Menus` — настройки и пауза, `Progress*` — достижения, статистика и база знаний, `StoreScreen` — магазин, `Cinema` — заставка, `Snow` — снегопад, `Tip` — подсказки к значкам, `TapGuard` — защита от двойного касания, `Ui` — помощники вёрстки. |
 | `Assets/Fitil/Platform` | Сохранения (`SaveStore`), покупки и реклама (`Store`; все покупки по $5). `Iap` — настоящие покупки через Unity IAP 5, `Ads` — реклама за награду через Google Mobile Ads. Без их пакетов — тестовые окна, как в веб-версии. |
 | `Assets/Fitil/Editor` | Настройки проекта кодом: портрет, отрисовка вокруг выреза камеры, идентификатор `com.protekgames.lastray`, IL2CPP, ARM64. Меню Fitil → Применить настройки. |
 | `Assets/Fitil/Resources/Data` | JSON из веб-версии: `node tools/unity/export_data.js` (данные и строки) и `node tools/unity/export_card_text.js` (шаблоны описаний карт). Не править руками. |
@@ -89,4 +89,7 @@ GitHub Actions (`.github/workflows/unity.yml`) на каждый пуш гоня
 `dotnet build unity/Tests/CompileCheck` компилирует Core, Platform и Game против справочных сборок
 UnityEngine из NuGet (Unity 2021.3 и uGUI 2020.3). Так ошибки в коде видны сразу, ещё до открытия
 проекта в редакторе. API, которого в этих сборках нет (только в Unity 6), закрыт условием `FITIL_REFCHECK`.
+
+`dotnet build unity/Tests/SdkCheck` так же проверяет код настоящих покупок и рекламы (`Platform/Iap`, `Platform/Ads`):
+вызовы Unity IAP 5 и Google Mobile Ads описаны заглушками в `Tests/SdkCheck/Stubs.cs`.
 

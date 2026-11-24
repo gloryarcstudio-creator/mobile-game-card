@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Проверка, что код настоящих покупок (Unity IAP 5) и рекламы (Google Mobile Ads) собирается, без самих пакетов:
+       их вызовы описаны заглушками в Stubs.cs, подписи взяты из исходников пакетов. Так опечатка в этом коде
+       видна сразу, а не при сборке под телефон. Запуск: dotnet build unity/Tests/SdkCheck -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>$(DefineConstants);FITIL_REFCHECK;FITIL_IAP;FITIL_ADMOB</DefineConstants>
+    <NoWarn>CS0618;CS1701;CS1702;NU1701;CS0067;CS0649;CS0414</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Assets/Fitil/Core/**/*.cs" />
+    <Compile Include="../../Assets/Fitil/Platform/**/*.cs" />
+    <Compile Include="Stubs.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>
