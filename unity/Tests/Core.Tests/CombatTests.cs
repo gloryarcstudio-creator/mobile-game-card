@@ -100,33 +100,115 @@ namespace Fitil.Tests
             return null;
         }
 
-        /// <summary>Цепочка боёв экрана Unity (Runs.NextFight) проходит без ошибок у каждого героя:
-        /// бот играет первую доступную карту, после победы берёт первую карту награды.</summary>
-        public static void TestRunChainPlays()
+        /// <summary>Бот проходит целые забеги на C# за каждого героя: развилки, бои, разговоры, события,
+        /// лавка, костёр, сундук, встречи, награды. Ловит исключения и зависания логики забега.</summary>
+        public static void TestBotRunsWholeGame()
         {
             Loc.Use("ru", null);
+            var report = new List<string>();
             foreach (var cls in D.Data.Classes.Keys)
             {
-                var run = Runs.New(D, cls, 1, 42);
-                Assert.True(run.Deck.Count >= 8 && run.Relics.Count == 1, cls + ": стартовая колода и талисман");
-                for (var f = 0; f < 60 && run.Hp > 0; f++)
+                for (var seed = 1u; seed <= 6; seed++)
                 {
-                    var (id, tier) = Runs.NextFight(D, run);
-                    Assert.True(D.Enemies.ContainsKey(id), cls + ": враг " + id);
-                    var g = new Combat(D, run);
-                    g.Start(id, tier);
-                    for (var k = 0; k < 400 && g.End == CombatEnd.None; k++)
-                    {
-                        var i = g.Hand.FindIndex(c => g.CantPlay(c) == null);
-                        if (i >= 0) g.PlayCard(i); else g.EndTurn();
-                    }
-                    Assert.True(g.End != CombatEnd.None, $"{cls}: бой с {id} не закончился");
-                    if (g.End == CombatEnd.Defeat) break;
-                    run.Fights++;
-                    if (D.IsFinalStep(run.Step)) break;
-                    run.Step++;
+                    var (step, won, types) = BotRun(cls, seed * 7919);
+                    report.Add($"{cls}/{seed}: {(won ? "победа" : "шаг " + (step + 1))} {types}");
                 }
             }
+            var wins = report.Count(x => x.Contains("победа"));
+            Console.WriteLine($"   забегов: {report.Count}, побед: {wins}; " + string.Join(" | ", report.Take(3)));
+        }
+
+        static (int step, bool won, string types) BotRun(string cls, uint seed)
+        {
+            var g = RunGame.New(D, cls, 1, seed);
+            var run = g.Run;
+            var seen = new HashSet<string>();
+            bool Fight(string id, string tier)
+            {
+                var c = new Combat(D, run);
+                c.Start(id, tier, g.SetupFor(id, tier));
+                for (var k = 0; k < 600 && c.End == CombatEnd.None; k++)
+                {
+                    var i = c.Hand.FindIndex(x => c.CantPlay(x) == null);
+                    if (i >= 0) c.PlayCard(i); else c.EndTurn();
+                }
+                Assert.True(c.End != CombatEnd.None, $"{cls}: бой с {id} не закончился");
+                if (c.End == CombatEnd.Defeat) return false;
+                switch (g.Win(c))
+                {
+                    case AfterWin.Victory: return true;
+                    case AfterWin.Plea:
+                        Assert.True(g.PleaLine(id) != null, "реплика пощады " + id);
+                        g.AfterChoose(id, tier, true);
+                        if (tier == "boss") { BossRelic(); } else Take(g.MakeReward(tier));
+                        break;
+                    case AfterWin.BossRelic: BossRelic(); break;
+                    default: Take(g.MakeReward(tier)); break;
+                }
+                return true;
+            }
+            void BossRelic() { var o = g.BossRelicOptions(); if (o.Count > 0) g.AddRelic(o[0]); Take(g.MakeReward("boss")); }
+            void Take(Reward r) { Assert.True(r.Ids.Count >= 2, "карт в награде"); g.TakeCard(r.Ids[0]); }
+            for (var guard = 0; guard < 400; guard++)
+            {
+                var ch = g.Choices();
+                Assert.True(ch.Count > 0, "пустая развилка");
+                // бот выбирает по кругу, чтобы побывать везде
+                var pickI = guard % ch.Count;
+                var o = g.Choose(pickI, out var talk);
+                seen.Add(o.T);
+                var final = o.T == "boss" && D.IsFinalStep(run.Step);
+                switch (o.T)
+                {
+                    case "fight": case "elite": case "boss":
+                    {
+                        var id = o.Enemy; var tier = o.T;
+                        if (talk)
+                        {
+                            Assert.True(g.TalkLine(id) != null, "реплика разговора " + id);
+                            var ops = g.TalkOptions(id, tier);
+                            var op = ops.Last(x => x.Can);
+                            var res = g.TalkChoose(id, tier, op.K, out _);
+                            seen.Add("talk:" + op.K);
+                            if (res.Next == "next") break;
+                            if (res.Next == "bossrelic") { BossRelic(); break; }
+                            id = res.Fight;
+                        }
+                        if (!Fight(id, tier)) return (run.Step, false, string.Join(",", seen.OrderBy(x => x)));
+                        if (final) return (run.Step, true, string.Join(",", seen.OrderBy(x => x)));
+                        break;
+                    }
+                    case "event":
+                    {
+                        var ops = g.EventOptions(o.Ev);
+                        var i = ops.FindIndex(x => x.Can);
+                        var res = g.EventAct(o.Ev, i);
+                        if (res.Prompt != DeckPrompt.None) { var l = g.PromptList(res.Prompt); if (l.Count > 0) g.ApplyPrompt(res.Prompt, l[0], res.PromptCost); }
+                        if (res.Fight != null && !Fight(res.Fight, "fight")) return (run.Step, false, string.Join(",", seen.OrderBy(x => x)));
+                        break;
+                    }
+                    case "shop":
+                    {
+                        var s = g.NewShop();
+                        g.BuyCard(s, 0); g.BuyTea(s); g.Reroll(s);
+                        break;
+                    }
+                    case "rest": if (g.CanRestHeal) g.Rest(); else g.UpgradeRandom(1); break;
+                    case "chest": g.OpenChest(out _); break;
+                    case "meet":
+                    {
+                        var ops = g.MeetOptions(o.Hero);
+                        var op = ops.First(x => x.Can);
+                        if (g.MeetNeedsUpgrade(op)) g.UpgradeCard(g.PromptList(DeckPrompt.Upgrade)[0]);
+                        Assert.True(g.MeetChoose(o.Hero, op) != null, "итог встречи");
+                        break;
+                    }
+                }
+                Assert.True(run.Hp > 0 && run.Hp <= run.MaxHp, $"{cls}: HP {run.Hp}/{run.MaxHp} после {o.T}");
+                g.Advance();
+                g.Notes.Clear();
+            }
+            throw new AssertException(cls + ": забег не закончился за 400 шагов");
         }
     }
 }

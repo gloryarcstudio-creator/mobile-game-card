@@ -1,5 +1,6 @@
 // Описания карт, врагов и талисманов из data.<lang>.json в виде классов C#.
 // Код розыгрыша карт (play) — в Cards.cs, правила боя — в Combat.cs.
+using System;
 using System.Collections.Generic;
 
 namespace Fitil.Core
@@ -95,9 +96,27 @@ namespace Fitil.Core
         public int StageOf(int step) { for (var i = 0; i < Stages.Count; i++) if (step <= Stages[i].End) return i; return -1; }
         public bool IsFinalStep(int step) => step == MaxSteps - 1;
 
+        /// <summary>Сюжет забега (STORIES в js/story.js): заголовки, тексты финалов.</summary>
+        public string StoryId;
+        public Dictionary<string, object> Story => Json.Obj(Json.Get(Json.Obj(Data.Story["STORIES"]), StoryId));
+        public string StoryStr(string key) => Json.Str(Json.Get(Story, key));
+
+        /// <summary>Текст сюжета, зависящий от героя (intro, winText, loseText).</summary>
+        public string StoryHero(string key, string cls) => Json.Str(Json.Get(Json.Obj(Json.Get(Json.Obj(Json.Get(Json.Obj(Json.Get(Data.Raw, "storyHero")), StoryId)), key)), cls));
+
+        /// <summary>Строка под названием стадии на карте пути (STORY.countdown).</summary>
+        public string Countdown(int step)
+        {
+            var t = Json.Obj(Json.Get(Json.Obj(Json.Get(Data.Raw, "storyText")), StoryId));
+            var si = Math.Max(0, StageOf(step));
+            var left = Stages[si].End - step;
+            var key = IsFinalStep(step) ? "countdownFinal" : left > 0 ? "countdownLeft" : "countdownBoss";
+            return (Json.Str(Json.Get(t, key)) ?? "").Replace("{left}", left.ToString()).Replace("{level}", (step + 1).ToString()).Replace("{total}", MaxSteps.ToString());
+        }
+
         public static Defs From(GameData g, string story = "sunset")
         {
-            var d = new Defs { Data = g };
+            var d = new Defs { Data = g, StoryId = story };
             foreach (var kv in g.Cards)
             {
                 var o = Json.Obj(kv.Value);
