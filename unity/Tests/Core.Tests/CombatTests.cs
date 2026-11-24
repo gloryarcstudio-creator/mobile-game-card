@@ -118,14 +118,15 @@ namespace Fitil.Tests
             Console.WriteLine($"   забегов: {report.Count}, побед: {wins}; " + string.Join(" | ", report.Take(3)));
         }
 
-        static (int step, bool won, string types) BotRun(string cls, uint seed)
+        /// <summary>Бот играет забег. reload — на каждой развилке забег сохраняется и читается заново (проверка сохранений).
+        /// log — состояние забега на каждой развилке.</summary>
+        internal static (int step, bool won, string types) BotRun(string cls, uint seed, bool reload = false, List<string> log = null)
         {
             var g = RunGame.New(D, cls, 1, seed);
-            var run = g.Run;
             var seen = new HashSet<string>();
             bool Fight(string id, string tier)
             {
-                var c = new Combat(D, run);
+                var c = new Combat(D, g.Run);
                 c.Start(id, tier, g.SetupFor(id, tier));
                 for (var k = 0; k < 600 && c.End == CombatEnd.None; k++)
                 {
@@ -151,13 +152,15 @@ namespace Fitil.Tests
             void Take(Reward r) { Assert.True(r.Ids.Count >= 2, "карт в награде"); g.TakeCard(r.Ids[0]); }
             for (var guard = 0; guard < 400; guard++)
             {
+                if (reload) g.Run = RunSave.FromSnap(D, RunSave.Snap(g.Run));
                 var ch = g.Choices();
+                log?.Add(RunSave.Snap(g.Run));
                 Assert.True(ch.Count > 0, "пустая развилка");
                 // бот выбирает по кругу, чтобы побывать везде
                 var pickI = guard % ch.Count;
                 var o = g.Choose(pickI, out var talk);
                 seen.Add(o.T);
-                var final = o.T == "boss" && D.IsFinalStep(run.Step);
+                var final = o.T == "boss" && D.IsFinalStep(g.Run.Step);
                 switch (o.T)
                 {
                     case "fight": case "elite": case "boss":
@@ -174,8 +177,8 @@ namespace Fitil.Tests
                             if (res.Next == "bossrelic") { BossRelic(); break; }
                             id = res.Fight;
                         }
-                        if (!Fight(id, tier)) return (run.Step, false, string.Join(",", seen.OrderBy(x => x)));
-                        if (final) return (run.Step, true, string.Join(",", seen.OrderBy(x => x)));
+                        if (!Fight(id, tier)) return (g.Run.Step, false, string.Join(",", seen.OrderBy(x => x)));
+                        if (final) return (g.Run.Step, true, string.Join(",", seen.OrderBy(x => x)));
                         break;
                     }
                     case "event":
@@ -184,7 +187,7 @@ namespace Fitil.Tests
                         var i = ops.FindIndex(x => x.Can);
                         var res = g.EventAct(o.Ev, i);
                         if (res.Prompt != DeckPrompt.None) { var l = g.PromptList(res.Prompt); if (l.Count > 0) g.ApplyPrompt(res.Prompt, l[0], res.PromptCost); }
-                        if (res.Fight != null && !Fight(res.Fight, "fight")) return (run.Step, false, string.Join(",", seen.OrderBy(x => x)));
+                        if (res.Fight != null && !Fight(res.Fight, "fight")) return (g.Run.Step, false, string.Join(",", seen.OrderBy(x => x)));
                         break;
                     }
                     case "shop":
@@ -204,7 +207,7 @@ namespace Fitil.Tests
                         break;
                     }
                 }
-                Assert.True(run.Hp > 0 && run.Hp <= run.MaxHp, $"{cls}: HP {run.Hp}/{run.MaxHp} после {o.T}");
+                Assert.True(g.Run.Hp > 0 && g.Run.Hp <= g.Run.MaxHp, $"{cls}: HP {g.Run.Hp}/{g.Run.MaxHp} после {o.T}");
                 g.Advance();
                 g.Notes.Clear();
             }
