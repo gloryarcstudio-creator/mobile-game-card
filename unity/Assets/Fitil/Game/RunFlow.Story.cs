@@ -167,7 +167,7 @@ namespace Fitil.Game
             if (res.Prompt != DeckPrompt.None)
             {
                 // выбор карты: отмена возвращает к тем же ответам, выбор ведёт дальше по пути
-                Prompt(res.Prompt, res.PromptCost, ok => { if (ok) { Save(P("next")); Delay(0.5f, Next); } });
+                Prompt(res.Prompt, res.PromptCost, ok => { if (ok) { Save(P("next")); AfterPrompt(res.Prompt, Next); } });
                 return;
             }
             sc.Text.text = res.Text;

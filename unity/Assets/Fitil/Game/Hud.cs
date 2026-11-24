@@ -6,6 +6,7 @@ using System.Linq;
 using Fitil.Core;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace Fitil.Game
 {
@@ -169,6 +170,154 @@ namespace Fitil.Game
             stack++;
             var life = Mathf.Min(6.5f, 1.5f + Mathf.Max(0, text.Length - 22) * 0.05f) + Mathf.Min(4, stack - 1) * 0.5f;
             Boot.Instance.StartCoroutine(Fade(plate.gameObject, life));
+        }
+
+        // ================= крупный миг =================
+        /// <summary>Сколько экран ждёт, пока идёт крупный показ карты (afterMoment).</summary>
+        public static float MomentWait => Settings.Fast ? 0.52f : 1.1f;
+
+        /// <summary>Новый талисман крупно посреди экрана, с лучами (moment, вид talis).</summary>
+        public static void MomentRelic(Defs defs, string id)
+        {
+            if (!defs.Relics.TryGetValue(id, out var r)) return;
+            Moment("talis", new Vector2(124, 124), body =>
+            {
+                var ring = Ui.Img("ring", body, Ui.Circle, new Color32(0xE6, 0xC4, 0x5A, 0xFF));
+                ring.rectTransform.Fill();
+                var disc = Ui.Img("disc", body, Ui.Circle, new Color32(0x2B, 0x25, 0x3D, 0xFF));
+                disc.rectTransform.Fill();
+                disc.rectTransform.offsetMin = new Vector2(4, 4);
+                disc.rectTransform.offsetMax = new Vector2(-4, -4);
+                var ic = Ui.Img("i", body, "r2/" + id);
+                ic.preserveAspect = true;
+                ic.rectTransform.At(new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(92, 92));
+            }, Loc.Tr("Талисман: {name}", ("name", r.Name)));
+        }
+
+        /// <summary>Карта крупно посреди экрана: улучшена (с лучами) или убрана (темнеет и падает).</summary>
+        public static void MomentCard(Defs defs, CardInst card, string label, bool gone)
+        {
+            const float w = 168;
+            Moment(gone ? "gone" : "up", new Vector2(w, w * CardView.Ratio), body =>
+            {
+                var v = CardView.Make(body, card, defs, null, w);
+                v.Rect.At(new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(w, w * CardView.Ratio));
+            }, label);
+        }
+
+        /// <summary>Крупный миг (moment в game.js): живёт поверх экранов и сам исчезает, касаний не ловит.</summary>
+        static void Moment(string kind, Vector2 size, Action<RectTransform> build, string label)
+        {
+            if (!Boot.Instance) return;
+            var top = Boot.Instance.Top;
+            var old = top.Find("moment");
+            if (old) Object.Destroy(old.gameObject);
+            var box = Ui.Node("moment", top);
+            box.At(new Vector2(0.5f, 0.5f), new Vector2(0, 34), new Vector2(372, 320));
+            var cg = box.gameObject.AddComponent<CanvasGroup>();
+            cg.blocksRaycasts = false;
+            cg.interactable = false;
+            cg.alpha = 0;
+            RectTransform rays = null;
+            if (kind != "gone")
+            {
+                var r = Ui.Img("rays", box, Rays, new Color32(255, 220, 140, 255));
+                rays = r.rectTransform;
+                rays.At(new Vector2(0.5f, 0.5f), new Vector2(0, 26), new Vector2(380, 380));
+            }
+            var body = Ui.Node("body", box);
+            body.At(new Vector2(0.5f, 0.5f), new Vector2(0, 26), size);
+            build(body);
+            var plate = Ui.Round("label", box, new Color32(15, 18, 30, 240));
+            plate.Outline(Ui.Gold, 1.6f);
+            var prt = plate.rectTransform;
+            prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
+            prt.pivot = new Vector2(0.5f, 1);
+            prt.anchoredPosition = new Vector2(0, 26 - size.y / 2 - 12);
+            prt.Column(0, TextAnchor.MiddleCenter, 16, 16, 6, 7);
+            var t = Ui.Label("b", prt, label, 18, new Color32(0xFF, 0xE9, 0xB0, 0xFF), TextAnchor.MiddleCenter, true);
+            t.Pref(Mathf.Min(318, t.preferredWidth + 2));
+            var fit = plate.gameObject.AddComponent<ContentSizeFitter>();
+            fit.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            Boot.Instance.StartCoroutine(MomentLife(box.gameObject, cg, body, rays, kind == "gone"));
+        }
+
+        static IEnumerator MomentLife(GameObject box, CanvasGroup cg, RectTransform body, RectTransform rays, bool gone)
+        {
+            var dur = Settings.Fast ? 0.7f : 1.4f;
+            var home = body.anchoredPosition;
+            var bodyFade = gone ? body.gameObject.AddComponent<CanvasGroup>() : null;
+            for (float age = 0; age < dur && box; age += Time.unscaledDeltaTime)
+            {
+                var k = age / dur;
+                // mlife: проявиться, постоять, растаять
+                cg.alpha = k < 0.1f ? k / 0.1f : k < 0.82f ? 1 : 1 - (k - 0.82f) / 0.18f;
+                if (rays) rays.localRotation = Quaternion.Euler(0, 0, -72 * age);
+                if (!gone)
+                {
+                    // mpop: вырасти с запасом и встать
+                    var sc = k < 0.16f ? Mathf.Lerp(0.5f, 1.12f, k / 0.16f) : k < 0.28f ? Mathf.Lerp(1.12f, 1f, (k - 0.16f) / 0.12f) : 1f;
+                    body.localScale = new Vector3(sc, sc, 1);
+                }
+                else if (k < 0.4f)
+                {
+                    var sc = k < 0.14f ? Mathf.Lerp(0.7f, 1f, k / 0.14f) : 1f;
+                    body.localScale = new Vector3(sc, sc, 1);
+                }
+                else
+                {
+                    // mgone: карта темнеет, уменьшается и падает вбок
+                    var q = (k - 0.4f) / 0.6f;
+                    var sc = Mathf.Lerp(1f, 0.72f, q);
+                    body.localScale = new Vector3(sc, sc, 1);
+                    body.anchoredPosition = home + new Vector2(0, -46 * q);
+                    body.localRotation = Quaternion.Euler(0, 0, -7 * q);
+                    bodyFade.alpha = 1 - 0.6f * q;
+                }
+                yield return null;
+            }
+            if (box) Object.Destroy(box);
+        }
+
+        static Sprite rays;
+
+        /// <summary>Лучи за находкой (.mrays): расходящиеся полосы, плотные в середине и тающие к краю.</summary>
+        static Sprite Rays
+        {
+            get
+            {
+                if (rays) return rays;
+                const int n = 256;
+                var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                var px = new Color32[n * n];
+                for (var y = 0; y < n; y++)
+                for (var x = 0; x < n; x++)
+                {
+                    float dx = x + 0.5f - n / 2f, dy = y + 0.5f - n / 2f;
+                    var r = Mathf.Sqrt(dx * dx + dy * dy) / (n / 2f);
+                    var deg = Mathf.Repeat(Mathf.Atan2(dy, dx) * Mathf.Rad2Deg, 22f);
+                    // полоса 9° из каждых 22°, со сглаженными краями
+                    var edge = deg <= 9f ? Mathf.Min(deg, 9f - deg) : -Mathf.Min(deg - 9f, 22f - deg);
+                    var band = Mathf.Clamp01(edge * r * 2.2f + 0.5f);
+                    var mask = Mathf.Clamp01((0.96f - r) / 0.68f);
+                    px[y * n + x] = new Color32(255, 255, 255, (byte)(255 * 0.5f * band * mask));
+                }
+                tex.SetPixels32(px);
+                tex.Apply();
+                rays = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100);
+                return rays;
+            }
+        }
+
+        /// <summary>На время s секунд экран не принимает касаний (переход после крупного показа карты).</summary>
+        public static void Block(float s)
+        {
+            if (!Boot.Instance || s <= 0) return;
+            var img = Ui.Img("guard", Boot.Instance.Top, null, new Color(0, 0, 0, 0));
+            img.rectTransform.Fill();
+            img.raycastTarget = true;
+            Object.Destroy(img.gameObject, s);
         }
 
         static IEnumerator Fade(GameObject go, float life)

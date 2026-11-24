@@ -42,6 +42,7 @@ namespace Fitil.Game
             this.defs = defs;
             G = RunGame.New(defs, cls, diff, Rng.NewSeed());
             G.OnTrack = Progress.Track;
+            G.OnRelic = ShowRelic;
             Loc.Gender = () => G.Hero.Female;
             Current = this;
             Progress.NewRun(G.Run);
@@ -52,6 +53,7 @@ namespace Fitil.Game
             this.defs = defs;
             G = new RunGame(defs, s.Run);
             G.OnTrack = Progress.Track;
+            G.OnRelic = ShowRelic;
             snapStep = s.Back;
             Loc.Gender = () => G.Hero.Female;
             Current = this;
@@ -205,6 +207,15 @@ namespace Fitil.Game
 
         void Delay(float s, Action fn) => Boot.Instance.StartCoroutine(Later(s, fn));
 
+        /// <summary>Переход после выбора карты: после крупного показа (улучшена, убрана) экран ждёт его конца
+        /// и не принимает касаний (afterMoment), иначе короткая пауза.</summary>
+        void AfterPrompt(DeckPrompt p, Action fn)
+        {
+            var wait = p == DeckPrompt.Upgrade || p == DeckPrompt.Remove ? Hud.MomentWait : 0.5f;
+            Hud.Block(wait);
+            Delay(wait, fn);
+        }
+
         // ================= путь =================
         void Next()
         {
@@ -264,6 +275,13 @@ namespace Fitil.Game
         }
 
         // ================= колода =================
+        // новый талисман: звук и крупный показ с лучами; находку из сундука показывает сам экран сундука
+        void ShowRelic(string id, bool quiet)
+        {
+            Sound.Sfx("relic");
+            if (!quiet) Hud.MomentRelic(defs, id);
+        }
+
         /// <summary>Стопка в бою: что осталось в колоде или что уже в сбросе. Только посмотреть.</summary>
         public void ShowPile(List<CardInst> list, string title)
         {
@@ -355,8 +373,9 @@ namespace Fitil.Game
                 var name = G.CardName(c);
                 G.ApplyPrompt(p, c, cost);
                 Sound.Sfx(p == DeckPrompt.Remove ? "snuff" : "relic");
-                if (p == DeckPrompt.Upgrade) Hud.Toast(Loc.Tr("Улучшена: {name}", ("name", G.CardName(c))));
-                if (p == DeckPrompt.Remove) Hud.Toast(Loc.Tr("Убрана: {name}", ("name", name)));
+                // карту показывают крупно: улучшенную с лучами, убранную — темнеющей. Экран под ней ждёт конца показа
+                if (p == DeckPrompt.Upgrade) Hud.MomentCard(defs, c, Loc.Tr("Улучшена: {name}", ("name", G.CardName(c))), false);
+                if (p == DeckPrompt.Remove) Hud.MomentCard(defs, c, Loc.Tr("Убрана: {name}", ("name", name)), true);
                 Hud.Flush(G);
                 done(true);
             }, p == DeckPrompt.Upgrade, note);

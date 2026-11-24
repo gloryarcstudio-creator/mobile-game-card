@@ -174,7 +174,10 @@ namespace Fitil.Core
             return list[list.Count - 1];
         }
 
-        public void AddRelic(string id)
+        /// <summary>Игра показывает новый талисман (звук, крупный показ). quiet — экран сам показывает находку (сундук).</summary>
+        public Action<string, bool> OnRelic;
+
+        public void AddRelic(string id, bool quiet = false)
         {
             Run.Relics.Add(id);
             Track("codex", "r:" + id);
@@ -186,6 +189,7 @@ namespace Fitil.Core
             if (id == "moonstone") { Run.MaxHp -= 8; Run.Hp = Math.Min(Run.Hp, Run.MaxHp); }
             if (id == "whetstone") UpgradeRandom(2, true);
             if (id == "goldquill") { var l = Run.Deck.Where(CanUp).ToList(); foreach (var c in l) c.Up = true; Upgraded(l.Count); }
+            OnRelic?.Invoke(id, quiet);
         }
 
         public int UpgradeRandom(int n, bool quiet = false)
@@ -455,7 +459,7 @@ namespace Fitil.Core
             if (free.Count > 0 && R.Next() < (Defs.Long ? Balance.ChestRelic : 0.5))
             {
                 var id = PickRelic(free);
-                AddRelic(id);
+                AddRelic(id, true);
                 msg = Loc.Tr("Внутри: {name}. {desc}", ("name", Defs.Relics[id].Name), ("desc", Defs.Relics[id].Desc));
                 return id;
             }

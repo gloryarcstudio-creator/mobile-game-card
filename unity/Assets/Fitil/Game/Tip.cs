@@ -15,10 +15,13 @@ namespace Fitil.Game
         RectTransform target;
         float age, life;
 
-        public static void Close()
+        /// <summary>Убрать подсказку. true — она была на экране.</summary>
+        public static bool Close()
         {
+            var was = (bool)open;
             if (open) Destroy(open.gameObject);
             open = null;
+            return was;
         }
 
         /// <summary>Показать подсказку у значка target. title — заголовок (название статуса), может быть пустым.</summary>

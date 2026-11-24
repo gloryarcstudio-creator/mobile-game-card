@@ -240,6 +240,7 @@ namespace Fitil.Game
 
             // «Продолжить» с героем, сложностью, уровнем и здоровьем сохранённого забега
             var save = RunFlow.LoadSave(Defs);
+            TitleHero(save != null ? save.Run.Cls : Settings.Cls, save != null);
             if (save != null)
             {
                 var r = save.Run;
@@ -270,6 +271,66 @@ namespace Fitil.Game
 
             var ver = Ui.Label("version", Safe, "Unity " + Application.unityVersion + " · " + Loc.Lang, 11, new Color(1, 1, 1, 0.45f));
             ver.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 12), new Vector2(380, 16));
+        }
+
+        // ================= кнопка «Назад» на Android =================
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape)) GoBack();
+        }
+
+        /// <summary>Системная «Назад» (и Esc в редакторе) делает то же, что кнопка закрытия на экране: закрывает подсказку,
+        /// верхнее окно («✕», «Назад», «Закрыть», «Отмена»), в забеге открывает паузу, на титуле выходит из игры.</summary>
+        void GoBack()
+        {
+            if (Tip.Close()) return;
+            for (var i = Top.childCount - 1; i >= 0; i--)
+            {
+                var c = Top.GetChild(i);
+                if (!c.gameObject.activeInHierarchy) continue;
+                if (c.name == "guard") return;                       // идёт переход: касания и «Назад» ждут
+                if (c.name != "overlay" && c.name != "cinema") continue; // плашки сообщений и крупный показ не окна
+                PressBack(c);                                         // окно без кнопки закрытия ждёт ответа игрока
+                return;
+            }
+            if (RunFlow.Current != null) { Menus.ShowPause(); return; }
+            if (PressBack(Safe)) return;                              // выбор героя, вступление
+            if (screen && screen.name == "Title" && Application.platform == RuntimePlatform.Android) Application.Quit();
+        }
+
+        static bool PressBack(Transform root)
+        {
+            var words = new[] { "✕", Loc.Tr("Назад"), Loc.Tr("Закрыть"), Loc.Tr("Отмена"), Loc.Tr("Пропустить") };
+            var buttons = root.GetComponentsInChildren<Button>(false);
+            foreach (var w in words)
+                foreach (var b in buttons)
+                {
+                    if (!b.interactable) continue;
+                    foreach (var t in b.GetComponentsInChildren<Text>(false))
+                        if (t.text == w) { b.onClick.Invoke(); return true; }
+                }
+            return false;
+        }
+
+        /// <summary>Герой на титуле (.title-hero): тот, кто идёт в сохранённом забеге, или выбранный в прошлый раз.
+        /// Стоит между названием и кнопками, под ногами мягкая тень, чуть покачивается. С сохранением — поменьше.</summary>
+        void TitleHero(string cls, bool small)
+        {
+            var art = Ui.Art("h/" + cls) ?? Ui.Art("h/lamp");
+            if (!art) return;
+            float w = small ? 170 : 230, h = small ? 200 : 270, top = small ? 190 : 204;
+            var box = Ui.Node("title hero", Safe);
+            box.anchorMin = box.anchorMax = new Vector2(0.5f, 1);
+            box.pivot = new Vector2(0.5f, 0);
+            box.sizeDelta = new Vector2(w, h);
+            box.anchoredPosition = new Vector2(0, -(top + h));
+            var shade = Ui.Img("shade", box, Ui.Circle, new Color(0.086f, 0.055f, 0.2f, 0.5f));
+            shade.rectTransform.At(new Vector2(0.5f, 0), new Vector2(0, 4), new Vector2(w * 0.72f, 20));
+            var img = Ui.Img("hero", box, art, Color.white);
+            img.preserveAspect = true;
+            img.rectTransform.Fill();
+            box.gameObject.AddComponent<HeroSway>();
+            box.SetAsFirstSibling();   // кнопки и название — поверх героя
         }
 
         /// <summary>Заставка (первый запуск или «Посмотреть заставку» в настройках), потом титул.</summary>
@@ -382,6 +443,41 @@ namespace Fitil.Game
         {
             RunFlow.Current?.SaveNow();
             Progress.Flush();
+        }
+    }
+}
+
+namespace Fitil.Game
+{
+    /// <summary>Герой на титуле поднимается на место и тихо покачивается (rise и herosway в css/style.css).</summary>
+    public sealed class HeroSway : MonoBehaviour
+    {
+        RectTransform rt;
+        CanvasGroup cg;
+        Vector2 home;
+        float age;
+
+        void Awake()
+        {
+            rt = (RectTransform)transform;
+            cg = gameObject.AddComponent<CanvasGroup>();
+            cg.blocksRaycasts = false;
+            cg.alpha = 0;
+        }
+
+        void Start() => home = rt.anchoredPosition;
+
+        void Update()
+        {
+            age += Time.unscaledDeltaTime;
+            // rise: 0,6 с после короткой задержки
+            var k = Mathf.Clamp01((age - 0.1f) / 0.6f);
+            var e = 1 - (1 - k) * (1 - k);
+            cg.alpha = e;
+            rt.anchoredPosition = home + new Vector2(0, -40 * (1 - e));
+            // herosway: ±0,6° за 5,2 с вокруг ступней
+            var sway = age > 0.7f ? Mathf.Cos((age - 0.7f) / 5.2f * Mathf.PI * 2) : 1f;
+            rt.localRotation = Quaternion.Euler(0, 0, 0.6f * sway);
         }
     }
 }

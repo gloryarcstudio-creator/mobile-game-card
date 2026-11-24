@@ -103,9 +103,7 @@ namespace Fitil.Game
                 b.targetGraphic = frame;
                 b.onClick.AddListener(() =>
                 {
-                    G.AddRelic(id);
-                    Sound.Sfx("relic");
-                    Hud.Toast(Loc.Tr("Талисман: {name}", ("name", r.Name)));
+                    G.AddRelic(id);   // звук и крупный показ талисмана — в RunFlow.ShowRelic
                     Hud.Flush(G);
                     Reward("boss");
                 });

@@ -214,8 +214,8 @@ namespace Fitil.Game
                 Ui.Clear(col);
                 Delay(0.8f, Next);
             }, noHeal);
-            Ui.Scroll(col, Loc.Tr("Наточить карту"), Loc.Tr("Улучшить карту"), () => Prompt(DeckPrompt.Upgrade, 0, ok => { if (ok) { Save(P("next")); Delay(0.5f, Next); } }));
-            Ui.Scroll(col, Loc.Tr("Сжечь карту"), Loc.Tr("Убрать карту из колоды"), () => Prompt(DeckPrompt.Remove, 0, ok => { if (ok) { Save(P("next")); Delay(0.5f, Next); } }));
+            Ui.Scroll(col, Loc.Tr("Наточить карту"), Loc.Tr("Улучшить карту"), () => Prompt(DeckPrompt.Upgrade, 0, ok => { if (ok) { Save(P("next")); AfterPrompt(DeckPrompt.Upgrade, Next); } }));
+            Ui.Scroll(col, Loc.Tr("Сжечь карту"), Loc.Tr("Убрать карту из колоды"), () => Prompt(DeckPrompt.Remove, 0, ok => { if (ok) { Save(P("next")); AfterPrompt(DeckPrompt.Remove, Next); } }));
         }
     }
 }
