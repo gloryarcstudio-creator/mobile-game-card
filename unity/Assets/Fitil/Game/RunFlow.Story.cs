@@ -135,23 +135,26 @@ namespace Fitil.Game
             if (res.Prompt != DeckPrompt.None)
             {
                 // выбор карты: отмена возвращает к тем же ответам, выбор ведёт дальше по пути
-                Prompt(res.Prompt, res.PromptCost, ok => { if (ok) Delay(0.5f, Next); });
+                Prompt(res.Prompt, res.PromptCost, ok => { if (ok) { Save(P("next")); Delay(0.5f, Next); } });
                 return;
             }
             sc.Text.text = res.Text;
             After(p, hp0, gold0);
             if (res.Fight != null)
             {
+                Save(P("fight", res.Fight));
                 Ui.Clear(sc.Scrolls);
                 Delay(0.6f, () => Fight(res.Fight, res.FightTier));
                 return;
             }
+            Save(P("next"));
             One(sc, Loc.Tr("Дальше"), Next);
         }
 
         // ================= разговор до боя =================
         void Talk(string id, string tier)
         {
+            Save(P("talk", id, tier));
             var p = Open();
             Bars(p);
             var e = defs.Enemies[id];
@@ -184,14 +187,15 @@ namespace Fitil.Game
                 if (img) img.sprite = Ui.Art("e/" + res.Fight);
             }
             After(p, hp0, gold0);
-            if (res.Next == "fight") One(sc, Loc.Tr("В бой"), () => Fight(res.Fight, tier));
-            else if (res.Next == "bossrelic") One(sc, Loc.Tr("Дальше"), BossRelic);
-            else One(sc, Loc.Tr("Дальше"), Next);
+            if (res.Next == "fight") { Save(P(tier, res.Fight)); One(sc, Loc.Tr("В бой"), () => Fight(res.Fight, tier)); }
+            else if (res.Next == "bossrelic") { Save(P("bossrelic")); One(sc, Loc.Tr("Дальше"), () => BossRelic()); }
+            else { Save(P("next")); One(sc, Loc.Tr("Дальше"), Next); }
         }
 
         // ================= пощада после боя =================
         void Plea(string id, string tier)
         {
+            Save(P("after", id, tier));
             var p = Open();
             Bars(p);
             var e = defs.Enemies[id];
@@ -211,6 +215,7 @@ namespace Fitil.Game
             var hp0 = Run.Hp;
             var gold0 = Run.Gold;
             sc.Text.text = G.AfterChoose(id, tier, spare);
+            Save(P("afterdone", null, tier));
             After(p, hp0, gold0);
             One(sc, Loc.Tr("Дальше"), () => { if (tier == "boss") BossRelic(); else Reward(tier); });
         }
@@ -247,6 +252,7 @@ namespace Fitil.Game
             var hp0 = Run.Hp;
             var gold0 = Run.Gold;
             sc.Text.text = G.MeetChoose(h, o);
+            Save(P("next"));
             After(p, hp0, gold0);
             One(sc, Loc.Tr("Дальше"), Next);
         }

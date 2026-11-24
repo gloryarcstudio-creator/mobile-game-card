@@ -16,6 +16,8 @@ namespace Fitil.Game
             picking = false;
             Run.Fmod = null;   // уговоры и дразнилки из разговора действуют только на один бой
             var choices = G.Choices();
+            Save();
+            snapStep = RunSave.Snap(Run);   // для «Вернуться до боя»
             Bars(p);
 
             var hint = Ui.Label("hint", p.Root, MapHint(), 22, new Color32(0xE6, 0xED, 0xF8, 0xFF), TextAnchor.UpperCenter, true).Shadow(2f, 1f).Outline(new Color(0.03f, 0.05f, 0.12f, 0.6f), 1.5f);

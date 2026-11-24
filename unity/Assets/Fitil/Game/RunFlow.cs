@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Fitil.Core;
+using Fitil.Platform;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -40,7 +41,82 @@ namespace Fitil.Game
             Loc.Gender = () => G.Hero.Female;
         }
 
+        RunFlow(Defs defs, SaveFile s)
+        {
+            this.defs = defs;
+            G = new RunGame(defs, s.Run);
+            snapStep = s.Back;
+            Loc.Gender = () => G.Hero.Female;
+        }
+
         public void Start() => Map();
+
+        // ================= сохранение =================
+        string snapStep;                     // забег на развилке перед боем (вторая попытка «Вернуться до боя»)
+        string snapFight;                    // забег в начале боя (вторая попытка «Начать бой заново»)
+
+        public static string SaveKey(Defs d) => "lastray.save." + d.StoryId;
+
+        /// <summary>Сохранение, с которого можно продолжить, или null.</summary>
+        public static SaveFile LoadSave(Defs d)
+        {
+            var json = SaveStore.Read(SaveKey(d));
+            return json == null ? null : RunSave.Read(d, json);
+        }
+
+        public static void ClearSave(Defs d) => SaveStore.Remove(SaveKey(d));
+
+        /// <summary>Записать забег и экран, на котором он сейчас (save в game.js).</summary>
+        void Save(Pending p = null)
+        {
+            var back = p != null && snapStep != null ? snapStep : null;
+            SaveStore.Write(SaveKey(defs), RunSave.Write(new SaveFile { Run = Run, P = p, Back = back, At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }));
+        }
+
+        Pending P(string t, string enemy = null, string tier = null) => new Pending { T = t, Enemy = enemy, Tier = tier };
+
+        /// <summary>Продолжить сохранённый забег с того экрана, на котором из него вышли (continueRun).</summary>
+        public static void Continue(Defs defs, SaveFile s)
+        {
+            var f = new RunFlow(defs, s);
+            try { f.Resume(s.P); }
+            catch (Exception e)
+            {
+                // последняя страховка: экран из сохранения не открылся — к выбору дороги на том же уровне
+                Debug.LogException(e);
+                f.Close();
+                Object.Destroy(GameObject.Find("overlay"));
+                if (f.Run.Hp <= 0) { f.EndRun(); return; }
+                f.Run.Choices = null;
+                f.Map();
+            }
+        }
+
+        void Resume(Pending p)
+        {
+            if (p == null) { Map(); return; }
+            switch (p.T)
+            {
+                case "defeat":
+                    if (p.Fight == null) { EndRun(); return; }
+                    snapFight = p.Fight;
+                    Defeat(p.Enemy, p.Tier);
+                    return;
+                case "fight": case "elite": case "boss": Fight(p.Enemy, p.T); return;
+                case "event": Event(p.Ev); return;
+                case "shop": ShopScreen(p.Shop ?? G.NewShop(), p.Last); return;
+                case "chest": Chest(); return;
+                case "rest": Rest(p.Last); return;
+                case "next": Next(); return;
+                case "reward": RenderReward(p.Reward); return;
+                case "bossrelic": BossRelic(p.Opts); return;
+                case "meet": Meet(p.Hero); return;
+                case "talk": Talk(p.Enemy, p.Tier); return;
+                case "after": Plea(p.Enemy, p.Tier); return;
+                case "afterdone": if (p.Tier == "boss") BossRelic(); else Reward(p.Tier); return;
+                default: Map(); return;
+            }
+        }
 
         // ================= экраны =================
         /// <summary>Новый экран на месте прежнего. place — нарисованная сцена (shop, rest, meet), иначе фон пути.</summary>
@@ -101,6 +177,7 @@ namespace Fitil.Game
         void Choose(int i)
         {
             var o = G.Choose(i, out var talk);
+            Save(Pending.Of(o));
             switch (o.T)
             {
                 case "fight": case "elite": case "boss":
@@ -119,6 +196,8 @@ namespace Fitil.Game
         void Fight(string id, string tier)
         {
             Close();
+            snapFight = RunSave.Snap(Run);
+            Save(P(tier, id));
             var setup = G.SetupFor(id, tier);
             combat = CombatScreen.Show(defs, Run, id, tier, setup, end => AfterFight(end));
         }
@@ -127,7 +206,7 @@ namespace Fitil.Game
         {
             if (!combat) return;
             var c = combat.C;
-            if (end != CombatEnd.Win) { Defeat(c.Id); return; }
+            if (end != CombatEnd.Win) { Defeat(c.Id, c.Tier); return; }
             var next = G.Win(c);
             Hud.Flush(G);
             switch (next)
@@ -137,6 +216,7 @@ namespace Fitil.Game
                 case AfterWin.BossRelic: BossRelic(); break;
                 default: Reward(c.Tier); break;
             }
+            snapFight = null;
         }
 
         // ================= колода =================

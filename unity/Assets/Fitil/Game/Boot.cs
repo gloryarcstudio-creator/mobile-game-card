@@ -173,11 +173,35 @@ namespace Fitil.Game
                 title.rectTransform.At(new Vector2(0.5f, 1f), new Vector2(0, -90), new Vector2(380, 60));
             }
 
-            var play = Ui.Btn("new", Safe, Loc.Tr("Новая игра"), ShowHeroes, 24);
-            ((RectTransform)play.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 150), new Vector2(240, 64));
+            // «Продолжить» с героем, сложностью, уровнем и здоровьем сохранённого забега
+            var save = RunFlow.LoadSave(Defs);
+            if (save != null)
+            {
+                var r = save.Run;
+                var hero = Data.Classes.TryGetValue(r.Cls, out var h) ? h.Name : r.Cls;
+                var diff = Data.Difficulties[Mathf.Clamp(r.Diff, 0, Data.Difficulties.Count - 1)].Name;
+                var info = hero + " · " + diff + "\n" + Loc.Tr("ур. {n}", ("n", r.Step + 1)) + " · " + r.Hp + "/" + r.MaxHp + " HP";
+                var cont = Ui.Push(Safe, Loc.Tr("Продолжить") + "\n<size=13>" + info + "</size>", () => { Clear(); RunFlow.Continue(Defs, save); }, false, 24, 260, 84);
+                ((RectTransform)cont.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 236), new Vector2(260, 84));
+            }
+            var play = save != null ? Ui.Push(Safe, Loc.Tr("Новая игра"), () => AskNewGame(save), true, 20, 220, 54) : Ui.Btn("new", Safe, Loc.Tr("Новая игра"), ShowHeroes, 24);
+            ((RectTransform)play.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 150), save != null ? new Vector2(220, 54) : new Vector2(240, 64));
 
             var ver = Ui.Label("version", Safe, "Unity " + Application.unityVersion + " · " + Loc.Lang, 12, new Color(1, 1, 1, 0.6f));
             ver.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 16), new Vector2(380, 20));
+        }
+
+        /// <summary>Новая игра поверх сохранения: сначала спросить, ведь сохранённый забег пропадёт.</summary>
+        void AskNewGame(SaveFile save)
+        {
+            var layer = Overlay.Open(out var root);
+            var col = Ui.Node("ask", root).Box(26, 250, 348, 320);
+            col.Column(14, TextAnchor.MiddleCenter, 24, 24, 50, 30);
+            Ui.Frame(col, "ui2/panel", 0.494f, 2, 49, 2, 10);
+            Ui.Label("title", col, Loc.Tr("Начать заново?"), 26, new Color32(0xFF, 0xE2, 0xA0, 0xFF), TextAnchor.MiddleCenter, true).Shadow(2f).Pref(290, 36);
+            Ui.Label("hint", col, Loc.Tr("Сохранённый забег на уровне {n} из {total} будет потерян.", ("n", save.Run.Step + 1), ("total", Defs.MaxSteps)), 17, Ui.Paper).Pref(290);
+            Ui.Push(col, Loc.Tr("Начать заново"), () => { Destroy(layer); ShowHeroes(); }, false, 20, 220, 52);
+            Ui.Push(col, Loc.Tr("Отмена"), () => Destroy(layer), true, 18, 160, 46);
         }
 
         void ShowHeroes()

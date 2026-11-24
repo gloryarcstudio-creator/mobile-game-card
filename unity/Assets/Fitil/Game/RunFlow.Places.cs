@@ -15,6 +15,7 @@ namespace Fitil.Game
 
         void ShopScreen(ShopState shop, bool last)
         {
+            Save(new Pending { T = "shop", Shop = shop, Last = last });
             var p = Open("shop");
             Bars(p);
             var root = p.Root;
@@ -141,6 +142,7 @@ namespace Fitil.Game
             {
                 var gold0 = Run.Gold;
                 var found = G.OpenChest(out var text);
+                Save(P("next"));
                 msg.text = text;
                 Ui.Clear(row);
                 if (found != null)
@@ -197,12 +199,13 @@ namespace Fitil.Game
             {
                 var hp0 = Run.Hp;
                 G.Rest();
+                Save(P("next"));
                 After(p, hp0, Run.Gold);
                 Ui.Clear(col);
                 Delay(0.8f, Next);
             }, noHeal);
-            Ui.Scroll(col, Loc.Tr("Наточить карту"), Loc.Tr("Улучшить карту"), () => Prompt(DeckPrompt.Upgrade, 0, ok => { if (ok) Delay(0.5f, Next); }));
-            Ui.Scroll(col, Loc.Tr("Сжечь карту"), Loc.Tr("Убрать карту из колоды"), () => Prompt(DeckPrompt.Remove, 0, ok => { if (ok) Delay(0.5f, Next); }));
+            Ui.Scroll(col, Loc.Tr("Наточить карту"), Loc.Tr("Улучшить карту"), () => Prompt(DeckPrompt.Upgrade, 0, ok => { if (ok) { Save(P("next")); Delay(0.5f, Next); } }));
+            Ui.Scroll(col, Loc.Tr("Сжечь карту"), Loc.Tr("Убрать карту из колоды"), () => Prompt(DeckPrompt.Remove, 0, ok => { if (ok) { Save(P("next")); Delay(0.5f, Next); } }));
         }
     }
 }

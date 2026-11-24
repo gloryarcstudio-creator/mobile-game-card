@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Fitil.Core;
+using Fitil.Platform;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -16,6 +17,14 @@ namespace Fitil.Game
             var hp0 = Run.Hp;
             var gold0 = Run.Gold;
             var rw = G.MakeReward(tier);
+            Save(new Pending { T = "reward", Reward = rw });
+            var p = RenderReward(rw);
+            Hud.Gain(p.Bar, Run.Hp - hp0, Run.Gold - gold0);
+            Hud.Flush(G);
+        }
+
+        Page RenderReward(Reward rw)
+        {
             var p = Open();
             Bars(p);
             var col = Ui.Node("reward", p.Root).Box(0, 96, 400, 660);
@@ -57,15 +66,15 @@ namespace Fitil.Game
             }
             Spacer(col, 10);
             Ui.Push(col, Loc.Tr("Пропустить"), Next, true, 18, 170, 48);
-            Hud.Gain(p.Bar, Run.Hp - hp0, Run.Gold - gold0);
-            Hud.Flush(G);
+            return p;
         }
 
         // ================= трофей босса =================
-        void BossRelic()
+        void BossRelic(List<string> saved = null)
         {
-            var opts = G.BossRelicOptions();
+            var opts = saved ?? G.BossRelicOptions();
             if (opts.Count == 0) { Reward("boss"); return; }
+            Save(new Pending { T = "bossrelic", Opts = opts });
             var p = Open();
             Bars(p);
             var col = Ui.Node("trophy", p.Root).Box(0, 96, 400, 660);
@@ -115,19 +124,7 @@ namespace Fitil.Game
             page.Pref(372);
             Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
             Ui.Label("title", page, title, 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250);
-            var art = Ui.Node("art", page);
-            art.Pref(318, dim ? 170 : 200);
-            art.gameObject.AddComponent<RectMask2D>();
-            var img = Ui.Img("pic", art, "pic/" + pic);
-            img.rectTransform.Fill();
-            if (img.sprite)
-            {
-                var fit = img.gameObject.AddComponent<AspectRatioFitter>();
-                fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
-                fit.aspectRatio = (float)img.sprite.texture.width / img.sprite.texture.height;
-                if (dim) img.color = new Color(0.62f, 0.62f, 0.66f);
-            }
-            else img.color = new Color32(0x1C, 0x27, 0x40, 0xFF);
+            BookPic(page, pic, dim ? 170 : 200, dim);
             Ui.Label("story", page, story, 17, Ui.Ink).Pref(318);
             Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF)).Pref(318);
             Spacer(col, 14);
@@ -150,14 +147,78 @@ namespace Fitil.Game
                 if (!string.IsNullOrEmpty(s)) story += " " + Loc.Tr(s);
             }
             var stats = string.Join(" · ", new[] { DiffName, Loc.Tr("Побед: {n}", ("n", Run.Fights)), Loc.Tr("Карт в колоде: {n}", ("n", Run.Deck.Count)), Loc.Tr("Талисманов: {n}", ("n", Run.Relics.Count)) });
+            ClearSave(defs);
             Book(pic, defs.StoryStr("winRibbon"), defs.StoryStr("winTitle"), story, stats, false);
         }
 
-        void Defeat(string by)
+        /// <summary>Поражение: можно начать бой заново или вернуться на развилку перед ним (за рекламу,
+        /// с «Без рекламы» сразу), или закончить забег.</summary>
+        void Defeat(string enemy, string tier)
         {
+            if (snapFight == null) { EndRun(); return; }
+            Save(new Pending { T = "defeat", Enemy = enemy, Tier = tier, Fight = snapFight });
+            var p = Open();
+            var col = Ui.Node("end", p.Root).Box(0, 70, 400, 780);
+            col.Column(10, TextAnchor.UpperCenter);
+            var page = Ui.Node("page", col);
+            page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
+            page.Pref(372);
+            Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
+            Ui.Label("title", page, Loc.Tr("Тени настигли"), 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250);
+            BookPic(page, "story_lose", 170, true);
+            Ui.Label("story", page, Loc.Tr("Но письмо ещё можно спасти. Попробуй этот бой снова или вернись на развилку перед ним и выбери другой путь."), 17, Ui.Ink).Pref(318);
+            Spacer(col, 16);
+            var ad = Store.NoAds ? "" : "▶ ";
+            var fightSnap = snapFight;
+            var stepSnap = snapStep;
+            var busy = false;
+            void Revive(string snap, bool fight)
+            {
+                if (busy) return;
+                busy = true;
+                Store.Ad(Boot.Instance, seen =>
+                {
+                    busy = false;
+                    if (!seen) { Hud.Toast(Loc.Tr("Реклама не досмотрена")); return; }
+                    var r = RunSave.FromSnap(defs, snap);
+                    if (r == null) { EndRun(); return; }
+                    G.Run = r;
+                    if (fight) Fight(enemy, tier); else { Run.Choices = null; Map(); }
+                    Hud.Toast(Loc.Tr("Ещё одна попытка!"));
+                });
+            }
+            var again = Ui.Push(col, ad + Loc.Tr("Начать бой заново") + "\n<size=13>" + Loc.Tr("с теми же HP и колодой, что перед боем") + "</size>", () => Revive(fightSnap, true), false, 20, 300, 62);
+            if (stepSnap != null)
+                Ui.Push(col, ad + Loc.Tr("Вернуться до боя") + "\n<size=13>" + Loc.Tr("снова на развилке перед этим боем") + "</size>", () => Revive(stepSnap, false), false, 18, 280, 56);
+            Ui.Push(col, Loc.Tr("Закончить забег"), EndRun, true, 17, 200, 46);
+        }
+
+        /// <summary>Конец забега без второй попытки: книга поражения.</summary>
+        void EndRun()
+        {
+            snapFight = null;
+            snapStep = null;
+            ClearSave(defs);
             var story = defs.StoryHero("loseText", Run.Cls) ?? defs.StoryStr("loseText") ?? "";
             var stats = string.Join(" · ", new[] { DiffName, Loc.Tr("Уровень") + " " + Loc.Tr("{a} из {b}", ("a", Run.Step + 1), ("b", defs.MaxSteps)), Loc.Tr("Побед: {n}", ("n", Run.Fights)) });
             Book("story_lose", null, defs.StoryStr("loseTitle"), story, stats, true);
+        }
+
+        static void BookPic(RectTransform page, string pic, float h, bool dim)
+        {
+            var art = Ui.Node("art", page);
+            art.Pref(318, h);
+            art.gameObject.AddComponent<RectMask2D>();
+            var img = Ui.Img("pic", art, "pic/" + pic);
+            img.rectTransform.Fill();
+            if (img.sprite)
+            {
+                var fit = img.gameObject.AddComponent<AspectRatioFitter>();
+                fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+                fit.aspectRatio = (float)img.sprite.texture.width / img.sprite.texture.height;
+                if (dim) img.color = new Color(0.62f, 0.62f, 0.66f);
+            }
+            else img.color = new Color32(0x1C, 0x27, 0x40, 0xFF);
         }
     }
 }
