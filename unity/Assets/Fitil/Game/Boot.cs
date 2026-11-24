@@ -2,6 +2,7 @@
 // и проверять без ручной работы в редакторе. Этот файл — каркас: данные, язык, экран
 // и безопасная зона. Экраны игры появляются по этапам плана переноса.
 using System.Collections.Generic;
+using System.Linq;
 using Fitil.Core;
 using Fitil.Platform;
 using UnityEngine;
@@ -22,6 +23,9 @@ namespace Fitil.Game
         GameObject screen;   // текущий экран (титул, выбор героя); бой живёт в RunFlow
         public RectTransform Back { get; private set; }  // фоны: весь экран, под вырезом камеры тоже
         public RectTransform Safe { get; private set; }  // кнопки и текст: только безопасная зона
+        public RectTransform Top { get; private set; }   // окна поверх экрана и всплывающие сообщения
+        RectTransform corner;                            // шестерёнка и меню в правом верхнем углу
+        Button gearBtn, menuBtn;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Start0()
@@ -110,6 +114,58 @@ namespace Fitil.Game
             Back = Ui.Node("Back", canvasGo.transform).Fill();
             Safe = Ui.Node("Safe", canvasGo.transform).Fill();
             Safe.gameObject.AddComponent<SafeArea>();
+            corner = Ui.Node("Corner", canvasGo.transform).Fill();
+            corner.gameObject.AddComponent<SafeArea>();
+            Top = Ui.Node("Top", canvasGo.transform).Fill();
+            Top.gameObject.AddComponent<SafeArea>();
+
+            // #gear и #menu: настройки и пауза забега (вне забега — справочник)
+            gearBtn = CornerButton("gear", () => Menus.ShowSettings());
+            menuBtn = CornerButton("menu", () => { if (RunFlow.Current != null) Menus.ShowPause(); else Menus.ShowGlossary(); });
+        }
+
+        Button CornerButton(string icon, System.Action onClick)
+        {
+            var ring = Ui.Img(icon, corner, Ui.Circle, new Color(0.08f, 0.09f, 0.15f, 0.75f));
+            ring.Outline(Ui.Gold, 2f);
+            ring.rectTransform.anchorMin = ring.rectTransform.anchorMax = new Vector2(1, 1);
+            ring.rectTransform.pivot = new Vector2(1, 1);
+            ring.rectTransform.sizeDelta = new Vector2(38, 38);
+            var pic = Ui.Img("icon", ring.transform, "i/" + icon);
+            pic.preserveAspect = true;
+            pic.rectTransform.Fill();
+            pic.rectTransform.offsetMin = new Vector2(3, 3);
+            pic.rectTransform.offsetMax = new Vector2(-3, -3);
+            if (!pic.sprite) Ui.Label("t", pic.transform, icon == "gear" ? "⚙" : "≡", 22, Ui.Gold).rectTransform.Fill();
+            var b = ring.gameObject.AddComponent<Button>();
+            b.targetGraphic = ring;
+            b.onClick.AddListener(() => { Sound.Sfx("click"); onClick(); });
+            return b;
+        }
+
+        /// <summary>Где стоят шестерёнка и меню (#gear, #menu): title — меню скрыто, шестерёнка выше;
+        /// combat — чуть выше обычного; end — меню скрыто; run и heroes — обычное место.</summary>
+        public void Corner(string mode)
+        {
+            if (!gearBtn) return;
+            var gy = mode == "title" ? 12 : mode == "combat" ? 54 : 68;
+            ((RectTransform)gearBtn.transform).anchoredPosition = new Vector2(-8, -gy);
+            ((RectTransform)menuBtn.transform).anchoredPosition = new Vector2(-8, -(gy + 44));
+            menuBtn.gameObject.SetActive(mode != "title" && mode != "end");
+        }
+
+        /// <summary>Сменился язык: тексты читаются заново, экран открывается на новом языке
+        /// (забег — с сохранения, как перезагрузка страницы в веб-версии), потом after.</summary>
+        public void Relaunch(System.Action after)
+        {
+            var inRun = RunFlow.Current != null;
+            RunFlow.Current?.Quit(false);
+            Clear();
+            LoadLanguage();
+            var save = inRun ? RunFlow.LoadSave(Defs) : null;
+            if (save != null) RunFlow.Continue(Defs, save);
+            else ShowTitle();
+            after?.Invoke();
         }
 
         /// <summary>Фон на весь экран, с обрезкой по краям без искажения (background-size: cover).</summary>
@@ -145,6 +201,7 @@ namespace Fitil.Game
             screen = null;
             Ui.Clear(Back);
             Ui.Clear(Safe);
+            Ui.Clear(Top);
             for (var i = transform.childCount - 1; i >= 0; i--)
             {
                 var c = transform.GetChild(i);
@@ -155,7 +212,9 @@ namespace Fitil.Game
         /// <summary>Титульный экран: заставка, нарисованное название и «Новая игра».</summary>
         public void ShowTitle()
         {
+            RunFlow.Drop();
             Clear();
+            Corner("title");
             screen = new GameObject("Title");
             screen.transform.SetParent(transform, false);
             Background(Back, "bg/bg_title");
@@ -184,13 +243,49 @@ namespace Fitil.Game
                 var diff = Data.Difficulties[Mathf.Clamp(r.Diff, 0, Data.Difficulties.Count - 1)].Name;
                 var info = hero + " · " + diff + "\n" + Loc.Tr("ур. {n}", ("n", r.Step + 1)) + " · " + r.Hp + "/" + r.MaxHp + " HP";
                 var cont = Ui.Push(Safe, Loc.Tr("Продолжить") + "\n<size=13>" + info + "</size>", () => { Clear(); RunFlow.Continue(Defs, save); }, false, 24, 260, 84);
-                ((RectTransform)cont.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 236), new Vector2(260, 84));
+                ((RectTransform)cont.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 352), new Vector2(260, 84));
             }
             var play = save != null ? Ui.Push(Safe, Loc.Tr("Новая игра"), () => AskNewGame(save), true, 20, 220, 54) : Ui.Btn("new", Safe, Loc.Tr("Новая игра"), ShowHeroes, 24);
-            ((RectTransform)play.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 150), save != null ? new Vector2(220, 54) : new Vector2(240, 64));
+            ((RectTransform)play.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 270), save != null ? new Vector2(220, 54) : new Vector2(240, 64));
 
-            var ver = Ui.Label("version", Safe, "Unity " + Application.unityVersion + " · " + Loc.Lang, 12, new Color(1, 1, 1, 0.6f));
-            ver.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 16), new Vector2(380, 20));
+            // достижения, база знаний и статистика: значок, название и счёт под ним (.achbtn)
+            var ach = Progress.List;
+            MenuRow("medal", Loc.Tr("Достижения"), Loc.Tr("{a} из {b}", ("a", ach.Count(Progress.Done)), ("b", ach.Count)), 208, () => Progress.ShowAchievements(ShowTitle), Progress.HasNew);
+            MenuRow("magnifier", Loc.Tr("База знаний"), Loc.Tr("{a} из {b}", ("a", Progress.CodexCount), ("b", Progress.CodexTotal)), 156, () => Progress.ShowCodex(ShowTitle));
+            MenuRow("hourglass", Loc.Tr("Статистика"), Progress.Stat("runs") > 0 ? Loc.Tr("Забегов: {a} · доставлено писем: {b}", ("a", Progress.Stat("runs")), ("b", Progress.Stat("wins"))) : Loc.Tr("Итоги твоих забегов"), 104, () => Progress.ShowStats(ShowTitle));
+            var gloss = Ui.Push(Safe, Loc.Tr("Справочник"), () => Menus.ShowGlossary(ShowTitle), true, 17, 128, 42);
+            ((RectTransform)gloss.transform).At(new Vector2(0.5f, 0f), new Vector2(-67, 52), new Vector2(128, 42));
+            var sets = Ui.Push(Safe, Loc.Tr("Настройки"), () => Menus.ShowSettings(ShowTitle), true, 17, 128, 42);
+            ((RectTransform)sets.transform).At(new Vector2(0.5f, 0f), new Vector2(67, 52), new Vector2(128, 42));
+            if (save != null)
+            {
+                var hint = Ui.Label("savehint", Safe, Loc.Tr("Прогресс сохраняется после каждого уровня"), 12, new Color(1, 1, 1, 0.55f));
+                hint.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 404), new Vector2(380, 18));
+            }
+
+            var ver = Ui.Label("version", Safe, "Unity " + Application.unityVersion + " · " + Loc.Lang, 11, new Color(1, 1, 1, 0.45f));
+            ver.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 12), new Vector2(380, 16));
+        }
+
+        /// <summary>Строка меню на титуле: значок, название и мелкая строка под ним; точка — есть новое.</summary>
+        void MenuRow(string icon, string title, string sub, float y, System.Action onClick, bool dot = false)
+        {
+            var b = Ui.Push(Safe, "", () => { Sound.Sfx("click"); onClick(); }, true, 18, 270, 46);
+            var rt = (RectTransform)b.transform;
+            rt.At(new Vector2(0.5f, 0f), new Vector2(0, y), new Vector2(270, 46));
+            var label = b.GetComponentInChildren<Text>();
+            label.alignment = TextAnchor.MiddleLeft;
+            label.text = title + "\n<size=12><color=#E8DCC0>" + sub + "</color></size>";
+            label.lineSpacing = 0.9f;
+            label.rectTransform.offsetMin = new Vector2(58, 2);
+            var ic = Ui.Img("icon", rt, "r2/" + icon);
+            ic.preserveAspect = true;
+            ic.rectTransform.At(new Vector2(0, 0.5f), new Vector2(32, 0), new Vector2(34, 34));
+            if (dot)
+            {
+                var d = Ui.Img("newdot", rt, Ui.Circle, Ui.Red);
+                d.rectTransform.At(new Vector2(1, 1), new Vector2(-8, -8), new Vector2(12, 12));
+            }
         }
 
         /// <summary>Новая игра поверх сохранения: сначала спросить, ведь сохранённый забег пропадёт.</summary>
@@ -206,16 +301,28 @@ namespace Fitil.Game
             Ui.Push(col, Loc.Tr("Отмена"), () => Destroy(layer), true, 18, 160, 46);
         }
 
-        void ShowHeroes()
+        public void ShowHeroes()
         {
             Clear();
+            Corner("heroes");
             screen = HeroSelect.Show(Data, cls =>
             {
                 Clear();
-                new RunFlow(Defs, cls).Start();
+                Settings.Cls = cls;
+                new RunFlow(Defs, cls, Settings.Diff).Start();
             }, ShowTitle).gameObject;
         }
 
-        void OnApplicationPause(bool paused) => AudioListener.pause = paused;
+        void OnApplicationPause(bool paused)
+        {
+            AudioListener.pause = paused;
+            if (paused) { RunFlow.Current?.SaveNow(); Progress.Flush(); }
+        }
+
+        void OnApplicationQuit()
+        {
+            RunFlow.Current?.SaveNow();
+            Progress.Flush();
+        }
     }
 }

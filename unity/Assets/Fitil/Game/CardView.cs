@@ -55,6 +55,7 @@ namespace Fitil.Game
             rt.sizeDelta = new Vector2(width, width * Ratio);
             var v = rt.gameObject.AddComponent<CardView>();
             v.Build(card, defs, combat, width);
+            if (RunFlow.Current != null) Progress.Codex("c", card.Id);   // карта попалась на глаза в забеге — открыта в базе знаний
             return v;
         }
 

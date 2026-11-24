@@ -50,6 +50,7 @@ namespace Fitil.Game
             sub.rectTransform.Box(83, 57, 188, 14);
             sub.horizontalOverflow = HorizontalWrapMode.Overflow;
 
+            foreach (var id in run.Relics) Progress.Codex("r", id);
             if (run.Relics.Count > 0)
             {
                 var last = run.Relics[run.Relics.Count - 1];
@@ -143,7 +144,7 @@ namespace Fitil.Game
         public static void Toast(string text)
         {
             if (string.IsNullOrEmpty(text) || !Boot.Instance) return;
-            var plate = Ui.Round("toast", Boot.Instance.Safe, new Color32(15, 18, 30, 245));
+            var plate = Ui.Round("toast", Boot.Instance.Top, new Color32(15, 18, 30, 245));
             plate.Outline(Ui.Gold, 1.5f);
             var rt = plate.rectTransform;
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1);
@@ -245,7 +246,7 @@ namespace Fitil.Game
     {
         public static GameObject Open(out RectTransform root)
         {
-            var shade = Ui.Img("overlay", Boot.Instance.Safe, null, new Color(0.03f, 0.04f, 0.08f, 0.9f));
+            var shade = Ui.Img("overlay", Boot.Instance.Top, null, new Color(0.03f, 0.04f, 0.08f, 0.9f));
             shade.raycastTarget = true;
             // подложка шире безопасной зоны: закрывает и вырез камеры
             shade.rectTransform.Fill();
