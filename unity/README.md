@@ -11,6 +11,12 @@
 
 ## Как открыть
 
+Из архивов (без репозитория): распаковать `lastray-unity-project.zip` в пустую папку, а `lastray-unity-enemies.zip`
+(раскадровки живых врагов, около 480 МБ) — в ту же папку поверх: он кладёт файлы в `Assets/Fitil/Resources/Art/ea`.
+Без него враги стоят неподвижными картинками. Дальше — с шага 2.
+
+Из репозитория:
+
 1. Один раз сделать картинки для Unity (Unity не читает WebP):
    ```sh
    pip install pillow
@@ -25,8 +31,8 @@
 | Папка | Что |
 | --- | --- |
 | `Assets/Fitil/Core` | Логика без UnityEngine: языки (`Loc`), случайность (`Rng`), данные (`GameData`), JSON. Дальше сюда переезжают бой и забег. |
-| `Assets/Fitil/Game` | Экраны на uGUI, собираются кодом. `Boot` — запуск, `SafeArea` — безопасная зона, `Ui` — помощники вёрстки. |
-| `Assets/Fitil/Platform` | Сохранения (`SaveStore`), покупки и реклама (`Store`, пока заглушки, все покупки по $5). |
+| `Assets/Fitil/Game` | Экраны на uGUI, собираются кодом. `Boot` — запуск и титул, `RunFlow*` — забег, `CombatScreen` — бой, `Menus` — настройки и пауза, `Progress*` — достижения, статистика и база знаний, `StoreScreen` — магазин, `Cinema` — заставка, `Snow` — снегопад, `Ui` — помощники вёрстки. |
+| `Assets/Fitil/Platform` | Сохранения (`SaveStore`), покупки и реклама (`Store`: пока тестовые окна, как в веб-версии; все покупки по $5). |
 | `Assets/Fitil/Editor` | Настройки проекта кодом: портрет, отрисовка вокруг выреза камеры, идентификатор `com.protekgames.lastray`, IL2CPP, ARM64. Меню Fitil → Применить настройки. |
 | `Assets/Fitil/Resources/Data` | JSON из веб-версии: `node tools/unity/export_data.js` (данные и строки) и `node tools/unity/export_card_text.js` (шаблоны описаний карт). Не править руками. |
 | `Assets/Fitil/Resources/Art` | PNG из `assets/`: `tools/unity/export_assets.py`. В git не кладётся. |
