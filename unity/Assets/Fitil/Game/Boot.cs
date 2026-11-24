@@ -212,6 +212,10 @@ namespace Fitil.Game
                 case "bg/bg_stage2_outskirts_night": return 685;
                 case "bg/bg_final_house": return 650;
                 case "bg/bg_title": return 726;
+                case "bg/scene_talk": return 700;
+                case "bg/scene_meet": return 715;
+                case "bg/scene_shop": return 515;
+                case "bg/scene_campfire": return 700;
                 default: return 690;
             }
         }

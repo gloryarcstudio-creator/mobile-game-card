@@ -17,7 +17,7 @@ namespace Fitil.Game
     public sealed class Page
     {
         public RectTransform Back, Root, Top, Bar;
-        public Image Bg;
+        public GroundBg Bg;
 
         public void Close()
         {
@@ -169,7 +169,8 @@ namespace Fitil.Game
                 Root = Ui.Node("run", boot.Safe).Fill(),
             };
             var art = place == "shop" ? "bg/scene_shop" : place == "rest" ? "bg/scene_campfire" : place == "meet" ? "bg/scene_meet" : Boot.BgFor(defs, Run.Step);
-            page.Bg = Boot.Background(page.Back, art);
+            // фон умеет опускаться под ноги того, кто стоит на экране (собеседник, сундук, ёж): Bg.StandOn
+            page.Bg = GroundBg.Make(page.Back, art, Boot.FeetOf(art), null);
             boot.Corner("run");
             return page;
         }

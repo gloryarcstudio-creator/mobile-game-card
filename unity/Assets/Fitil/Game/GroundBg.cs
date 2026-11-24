@@ -30,6 +30,9 @@ namespace Fitil.Game
             return g;
         }
 
+        /// <summary>Кто стоит на этом фоне (его нижний край — линия ног). null — обычный вид.</summary>
+        public void StandOn(RectTransform who) => stand = who;
+
         float StandY()
         {
             if (!stand) return float.NaN;

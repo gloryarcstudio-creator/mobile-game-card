@@ -54,6 +54,7 @@ namespace Fitil.Game
                 img.preserveAspect = true;
                 img.rectTransform.Fill();
                 if (!img.sprite) img.color = new Color(0, 0, 0, 0);
+                else p.Bg.StandOn(sc.Art);   // собеседник стоит на снегу, а не на фоне неба
                 // собеседник-враг оживает (Art.enemyLive)
                 if (art != null && art.StartsWith("e/")) LiveIn(sc, art.Substring(2));
             }

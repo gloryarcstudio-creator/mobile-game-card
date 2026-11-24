@@ -25,6 +25,7 @@ namespace Fitil.Game
             var keeperBox = Ui.Node("keeper", root).Box(20, 84, 140, 130);
             var keeper = Ui.Img("hedgehog", keeperBox, "e/hedgehog");
             EnemyAnim.Stand(keeper, "hedgehog", 130);
+            p.Bg.StandOn(keeperBox);
             var keeperLive = EnemyAnim.Make(keeperBox, "hedgehog");
             if (keeperLive)
             {
@@ -143,6 +144,7 @@ namespace Fitil.Game
             var chest = Ui.Img("chest", p.Root, "i/chest2");
             chest.preserveAspect = true;
             chest.rectTransform.Box(115, 300, 170, 170);
+            p.Bg.StandOn(chest.rectTransform);
             var msg = Plate(p.Root, Loc.Tr("Сундук-соня сладко храпит."), 486);
             var row = Ui.Node("row", p.Root).Box(0, 560, 400, 56);
             row.Line(14, TextAnchor.MiddleCenter);
