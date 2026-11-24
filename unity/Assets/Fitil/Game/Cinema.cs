@@ -191,6 +191,7 @@ namespace Fitil.Game
         static IEnumerator Line(Text t, float delay)
         {
             yield return new WaitForSecondsRealtime(delay);
+            if (!t) yield break;   // сцену пролистали нажатием, пока строка ждала своей очереди
             var y0 = t.rectTransform.anchoredPosition.y;
             for (float k = 0; t && k < 1.1f; k += Time.unscaledDeltaTime)
             {
