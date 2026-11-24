@@ -63,9 +63,10 @@ namespace Fitil.Game
             var sub = Ui.Label("sub", root, Loc.Tr("У каждого героя свой путь к победе"), 14, new Color(1, 1, 1, 0.75f)).Shadow(1f);
             sub.rectTransform.Box(0, 44, 400, 20);
 
-            grid = Ui.Node("grid", root).Box(12, 68, 376, 208);
-            info = Ui.Node("info", root).Box(0, 282, 400, 384);
-            bottom = Ui.Node("bottom", root).Box(0, 860 - 192, 400, 192, 0);   // сложность и кнопки — у нижнего края
+            // размеры и места — как у .clsrow, .clsinfo, .clsrelic, .clscards, .diffbox и .clsbtns в веб-версии
+            grid = Ui.Node("grid", root).Box(11, 75, 378, 205);
+            info = Ui.Node("info", root).Box(14, 282, 372, 358);
+            bottom = Ui.Node("bottom", root).Box(0, 860 - 214, 400, 214, 0);   // сложность и кнопки — у нижнего края
             Pick(first);
         }
 
@@ -80,23 +81,21 @@ namespace Fitil.Game
                 var on = h.Id == current;
                 var tile = Ui.Hit("hero " + h.Id, grid, () => { Sound.Sfx("click"); Pick(h.Id); });
                 var rt = (RectTransform)tile.transform;
-                rt.Box((i % 4) * 95, (i / 4) * 106, 90, 100);
+                rt.Box((i % 4) * 96, (i / 4) * 103, 90, 97);
                 var plate = Ui.Round("plate", rt, on ? (Color)new Color32(0x5A, 0x40, 0x22, 0xEE) : new Color32(20, 24, 38, 200));
                 plate.rectTransform.Fill();
                 if (on) plate.Outline(Ui.Gold, 1.5f);
                 var face = Ui.CircleArt("face", rt, Ui.Art("h/" + h.Id + "_face"));
-                face.rectTransform.Box(17, 5, 56, 56);
+                face.rectTransform.Box(15, 4, 60, 60);
                 if (!owned)
                 {
                     face.transform.GetChild(0).GetComponent<Image>().color = new Color(0.45f, 0.45f, 0.5f);
                     var lockIc = Ui.Img("lock", rt, "i/lock");
                     lockIc.preserveAspect = true;
-                    lockIc.rectTransform.Box(58, 40, 22, 22);
+                    lockIc.rectTransform.Box(58, 40, 26, 26);
                 }
-                var name = Ui.Label("name", rt, h.Name, 14, owned ? Ui.Paper : new Color(0.75f, 0.75f, 0.8f), TextAnchor.MiddleCenter, true).Shadow().Fit(9);
-                name.rectTransform.Box(2, 62, 86, 20);
-                var role = Ui.Label("role", rt, h.Role, 11, new Color(1, 1, 1, 0.7f)).Fit(7);
-                role.rectTransform.Box(2, 81, 86, 16);
+                var name = Ui.Label("name", rt, h.Name, 16, on ? Ui.GoldHi : owned ? (Color)new Color32(0xD8, 0xD0, 0xE4, 0xFF) : new Color(0.75f, 0.75f, 0.8f), TextAnchor.MiddleCenter, true).Shadow().Fit(9);
+                name.rectTransform.Box(2, 68, 86, 24);
                 i++;
             }
         }
@@ -111,40 +110,56 @@ namespace Fitil.Game
             var owned = Store.HeroOwned(data, id);
             var d = data.Difficulties[diff];
 
-            var body = Ui.Img("body", info, "h/" + id);
+            // рамка с героем слева и рассказом о нём справа (.clsinfo 372×180)
+            var card = Ui.Round("card", info, new Color32(0x24, 0x1E, 0x36, 0xF5));
+            card.rectTransform.Box(0, 0, 372, 180);
+            card.Outline(Ui.Gold, 1.5f);
+            var big = Ui.Round("big", info, new Color32(0x4A, 0x3F, 0x7A, 0xFF));
+            big.rectTransform.Box(12, 10, 128, 160);
+            big.Outline(Ui.Gold, 1.5f);
+            var body = Ui.Img("body", big.transform, "h/" + id);
             body.preserveAspect = true;
-            body.rectTransform.Box(0, 0, 168, 240);
-            var name = Ui.Label("name", info, h.Name + "  <size=14><color=#E8DCC0>" + h.Role + "</color></size>", 25, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(2f);
-            name.rectTransform.Box(170, 2, 222, 34);
+            body.rectTransform.Fill();
+            body.rectTransform.offsetMin = new Vector2(4, 4);
+            body.rectTransform.offsetMax = new Vector2(-4, -4);
+            var name = Ui.Label("name", info, h.Name, 26, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(2f);
+            name.rectTransform.Box(152, 8, 208, 30);
+            var role = Ui.Label("role", info, h.Role, 15, new Color32(0xE8, 0xDC, 0xC0, 0xFF), TextAnchor.MiddleLeft);
+            role.rectTransform.Box(152, 37, 208, 18);
             // HP с поправкой сложности, как в забеге (v157)
-            Stat(info, "i/heart", (h.Hp + d.HeroHp) + " HP", 172, 40);
-            Stat(info, "i/coin", h.Gold.ToString(), 268, 40);
-            var build = Ui.Label("build", info, h.Build, 14, Ui.Gold, TextAnchor.UpperLeft, true).Shadow(1f);
-            build.rectTransform.Box(172, 70, 218, 40);
+            Stat(info, "i/heart", (h.Hp + d.HeroHp) + " HP", 152, 60);
+            Stat(info, "i/coin", h.Gold.ToString(), 240, 60);
+            // чем силён герой: красная плашка (.clsbuild)
+            var tag = Ui.Round("build", info, new Color32(0x8A, 0x2A, 0x24, 0xFF));
+            tag.Outline(Ui.Ink, 1f);
+            var build = Ui.Label("t", tag.transform, h.Build, 15, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleCenter, true);
+            var tw = Mathf.Min(208, build.preferredWidth + 20);
+            tag.rectTransform.Box(152, 92, tw, 26);
+            build.rectTransform.Fill();
             build.Fit(10);
-            var about = Ui.Label("about", info, h.About ?? h.Who ?? "", 14, Ui.Paper, TextAnchor.UpperLeft).Shadow(1f);
-            about.rectTransform.Box(172, 112, 218, 128);
+            var about = Ui.Label("about", info, h.About ?? h.Who ?? "", 15, Ui.Paper, TextAnchor.UpperLeft).Shadow(1f);
+            about.rectTransform.Box(152, 124, 208, 50);
             about.Fit(10);
 
-            // особенность героя: его талисман
+            // особенность героя: его талисман (.clsrelic 372×92)
             if (h.Relic != null && defs.Relics.TryGetValue(h.Relic, out var r))
             {
-                var row = Ui.Round("relic", info, new Color32(0x14, 0x14, 0x22, 0xD8));
-                row.rectTransform.Box(12, 246, 376, 60);
+                var row = Ui.Round("relic", info, new Color32(0x14, 0x11, 0x1E, 0xEB));
+                row.rectTransform.Box(0, 186, 372, 92);
                 row.Outline(new Color(0.85f, 0.66f, 0.29f, 0.5f), 1.2f);
                 var ic = Ui.Img("ic", row.transform, "r2/" + h.Relic);
                 ic.preserveAspect = true;
-                ic.rectTransform.Box(8, 6, 48, 48);
-                var t = Ui.Label("t", row.transform, "<size=11><color=#C9C0D8>" + Loc.Tr("Особенность") + "</color></size>  <b>" + r.Name + "</b>\n<size=13>" + r.Desc + "</size>", 15, Ui.Paper, TextAnchor.MiddleLeft);
-                t.rectTransform.Box(64, 2, 304, 56);
-                t.Fit(9);
+                ic.rectTransform.Box(13, 23, 46, 46);
+                var t = Ui.Label("t", row.transform, "<size=12><color=#C9C0D8>" + Loc.Tr("Особенность").ToUpperInvariant() + "</color></size>\n<b><size=17>" + r.Name + "</size></b>\n" + r.Desc, 15, Ui.Paper, TextAnchor.MiddleLeft);
+                t.rectTransform.Box(69, 6, 292, 80);
+                t.Fit(10);
             }
             // карты героя
             var own = defs.Cards.Values.Where(c => c.Cls == id).ToList();
-            var cardsBtn = Ui.Push(info, "", () => { Sound.Sfx("click"); ShowCards(id); }, true, 16, 376, 44);
-            ((RectTransform)cardsBtn.transform).Box(12, 312, 376, 44);
+            var cardsBtn = Ui.Push(info, "", () => { Sound.Sfx("click"); ShowCards(id); }, true, 17, 372, 74);
+            ((RectTransform)cardsBtn.transform).Box(0, 284, 372, 74);
             var cl = cardsBtn.GetComponentInChildren<Text>();
-            Ui.TwoLines(cl, Loc.Tr("Карты героя") + "  ›", string.Join(", ", own.Select(c => c.Name)), 14, 11);
+            Ui.TwoLines(cl, Loc.Tr("Карты героя") + "  ›", string.Join(", ", own.Select(c => c.Name)), 20, 13);
 
             Difficulty();
             Buttons(owned);
@@ -164,33 +179,33 @@ namespace Fitil.Game
             var n = data.Difficulties.Count;
             var d = data.Difficulties[diff];
             var box = Ui.Round("diffbox", bottom, new Color32(0x14, 0x14, 0x22, 0xDC));
-            box.rectTransform.Box(12, 4, 376, 116);
+            box.rectTransform.Box(14, 0, 372, 119);
             box.Outline(new Color(0.85f, 0.66f, 0.29f, 0.45f), 1.2f);
             var won = Progress.Has("winsDiff", (double)diff);
-            var head = Ui.Label("head", box.transform, "<size=12><color=#C9C0D8>" + Loc.Tr("Сложность {a} из {b}", ("a", diff + 1), ("b", n)) + "</color></size>\n" + d.Name + (won ? " <color=#9FE08A>✓</color>" : ""), 19, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(1f);
-            head.rectTransform.Box(56, 4, 264, 44);
-            Arrow(box.rectTransform, "‹", 8, diff > 0, () => SetDiff(diff - 1));
-            Arrow(box.rectTransform, "›", 324, diff < n - 1, () => SetDiff(diff + 1));
-            var pipW = 34f;
-            var x0 = 188 - (n * pipW + (n - 1) * 8) / 2;
+            var head = Ui.Label("head", box.transform, "<size=12><color=#C9C0D8>" + Loc.Tr("Сложность {a} из {b}", ("a", diff + 1), ("b", n)) + "</color></size>\n" + d.Name + (won ? " <color=#9FE08A>✓</color>" : ""), 21, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(1f);
+            head.rectTransform.Box(56, 8, 260, 50);
+            Arrow(box.rectTransform, "‹", 13, diff > 0, () => SetDiff(diff - 1));
+            Arrow(box.rectTransform, "›", 319, diff < n - 1, () => SetDiff(diff + 1));
+            var pipW = 44f;
+            var x0 = 186 - (n * pipW + (n - 1) * 8) / 2;
             for (var i = 0; i < n; i++)
             {
                 var k = i;
                 var pip = Ui.Hit("pip", box.transform, () => SetDiff(k));
-                ((RectTransform)pip.transform).Box(x0 + i * (pipW + 8), 50, pipW, 16);
+                ((RectTransform)pip.transform).Box(x0 + i * (pipW + 8), 57, pipW, 16);
                 var bar = Ui.Round("bar", pip.transform, i <= diff ? (Color)new Color32(0xD9, 0xA8, 0x4A, 0xFF) : new Color32(0x3A, 0x36, 0x4C, 0xFF));
                 bar.rectTransform.Box(0, 4, pipW, 8);
                 if (Progress.Has("winsDiff", (double)i)) bar.Outline(new Color32(0x9F, 0xE0, 0x8A, 0xFF), 1.2f);
             }
-            var hint = Ui.Label("hint", box.transform, d.Hint, 13, new Color(1, 1, 1, 0.78f));
-            hint.rectTransform.Box(10, 68, 356, 46);
+            var hint = Ui.Label("hint", box.transform, d.Hint, 14, new Color(1, 1, 1, 0.78f));
+            hint.rectTransform.Box(13, 74, 346, 40);
             hint.Fit(9);
         }
 
         void Arrow(RectTransform box, string text, float x, bool on, Action act)
         {
             var b = Ui.Btn("arrow", box, text, () => { if (on) { Sound.Sfx("click"); act(); } }, 26);
-            ((RectTransform)b.transform).Box(x, 6, 44, 40);
+            ((RectTransform)b.transform).Box(x, 15, 40, 40);
             b.interactable = on;
         }
 
@@ -202,12 +217,12 @@ namespace Fitil.Game
 
         void Buttons(bool owned)
         {
-            var row = Ui.Node("btns", bottom).Box(0, 126, 400, 60);
+            var row = Ui.Node("btns", bottom).Box(0, 142, 400, 62);
             row.Line(10, TextAnchor.MiddleCenter);
             Ui.Push(row, Loc.Tr("Назад"), () => { Sound.Sfx("click"); cancel?.Invoke(); }, true, 18, 110, 50);
             if (owned)
             {
-                Ui.Push(row, Loc.Tr("В путь"), () => { Sound.Sfx("click"); go?.Invoke(current, diff); }, false, 24, 210, 58);
+                Ui.Push(row, Loc.Tr("В путь"), () => { Sound.Sfx("click"); go?.Invoke(current, diff); }, false, 28, 164, 62);
                 return;
             }
             var price = Store.PriceOf("hero_" + current);

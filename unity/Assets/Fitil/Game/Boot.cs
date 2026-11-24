@@ -165,7 +165,8 @@ namespace Fitil.Game
         public void Corner(string mode)
         {
             if (!gearBtn) return;
-            var gy = mode == "title" || mode == "heroes" ? 12 : mode == "combat" ? 54 : 68;
+            // как в веб-версии: в забеге и в бою под верхней панелью (84 и 128), на титуле 6, на выборе героя, вступлении и финалах 12
+            var gy = mode == "title" ? 6 : mode == "heroes" || mode == "end" ? 12 : 84;
             ((RectTransform)gearBtn.transform).anchoredPosition = new Vector2(-8, -gy);
             ((RectTransform)menuBtn.transform).anchoredPosition = new Vector2(-8, -(gy + 44));
             menuBtn.gameObject.SetActive(mode != "title" && mode != "end" && mode != "heroes");
@@ -259,7 +260,7 @@ namespace Fitil.Game
             {
                 var img = Ui.Img("logo", Safe, logo, Color.white);
                 img.preserveAspect = true;
-                img.rectTransform.At(new Vector2(0.5f, 1f), new Vector2(0, -110), new Vector2(360, 160));
+                img.rectTransform.At(new Vector2(0.5f, 1f), new Vector2(0, -114), new Vector2(360, 150));
             }
             else
             {
@@ -281,29 +282,31 @@ namespace Fitil.Game
                 var diff = Data.Difficulties[Mathf.Clamp(r.Diff, 0, Data.Difficulties.Count - 1)].Name;
                 var info = hero + " · " + diff + "\n" + Loc.Tr("ур. {n}", ("n", r.Step + 1)) + " · " + r.Hp + "/" + r.MaxHp + " HP";
                 var cont = Ui.Push(Safe, Loc.Tr("Продолжить") + "\n<size=13>" + info + "</size>", () => { Clear(); RunFlow.Continue(Defs, save); }, false, 24, 260, 84);
-                ((RectTransform)cont.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 404), new Vector2(260, 84));
+                ((RectTransform)cont.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 420), new Vector2(270, 84));
             }
-            var play = save != null ? Ui.Push(Safe, Loc.Tr("Новая игра"), () => AskNewGame(save), true, 20, 220, 54) : Ui.Btn("new", Safe, Loc.Tr("Новая игра"), ShowHeroes, 24);
-            ((RectTransform)play.transform).At(new Vector2(0.5f, 0f), new Vector2(0, 322), save != null ? new Vector2(220, 54) : new Vector2(240, 64));
+            // без сохранения «Новая игра» — главная красная кнопка (.btn.big 270×62), с сохранением главная «Продолжить»
+            var play = save != null ? Ui.Push(Safe, Loc.Tr("Новая игра"), () => AskNewGame(save), true, 20, 220, 54) : Ui.Push(Safe, Loc.Tr("Новая игра"), () => { Sound.Sfx("click"); ShowHeroes(); }, false, 28, 270, 62);
+            ((RectTransform)play.transform).At(new Vector2(0.5f, 0f), new Vector2(0, save != null ? 340 : 348), save != null ? new Vector2(220, 54) : new Vector2(270, 62));
 
             // достижения, база знаний и статистика: значок, название и счёт под ним (.achbtn)
             var ach = Progress.List;
-            MenuRow("medal", Loc.Tr("Достижения"), Loc.Tr("{a} из {b}", ("a", ach.Count(Progress.Done)), ("b", ach.Count)), 260, () => Progress.ShowAchievements(ShowTitle), Progress.HasNew);
-            MenuRow("magnifier", Loc.Tr("База знаний"), Loc.Tr("{a} из {b}", ("a", Progress.CodexCount), ("b", Progress.CodexTotal)), 208, () => Progress.ShowCodex(ShowTitle));
-            MenuRow("candybox", Loc.Tr("Магазин"), Loc.Tr("Герои и режим без рекламы"), 104, () => StoreScreen.Show(ShowTitle));
+            MenuRow("medal", Loc.Tr("Достижения"), Loc.Tr("{a} из {b}", ("a", ach.Count(Progress.Done)), ("b", ach.Count)), 280, () => Progress.ShowAchievements(ShowTitle), Progress.HasNew);
+            MenuRow("magnifier", Loc.Tr("База знаний"), Loc.Tr("{a} из {b}", ("a", Progress.CodexCount), ("b", Progress.CodexTotal)), 218, () => Progress.ShowCodex(ShowTitle));
+            MenuRow("candybox", Loc.Tr("Магазин"), Loc.Tr("Герои и режим без рекламы"), 95, () => StoreScreen.Show(ShowTitle));
             MenuRow("hourglass", Loc.Tr("Статистика"), Progress.Stat("runs") > 0 ? Loc.Tr("Забегов: {a} · доставлено писем: {b}", ("a", Progress.Stat("runs")), ("b", Progress.Stat("wins"))) : Loc.Tr("Итоги твоих забегов"), 156, () => Progress.ShowStats(ShowTitle));
             var gloss = Ui.Push(Safe, Loc.Tr("Справочник"), () => Menus.ShowGlossary(ShowTitle), true, 17, 128, 42);
-            ((RectTransform)gloss.transform).At(new Vector2(0.5f, 0f), new Vector2(-67, 52), new Vector2(128, 42));
+            ((RectTransform)gloss.transform).At(new Vector2(0.5f, 0f), new Vector2(-70, 36), new Vector2(130, 44));
             var sets = Ui.Push(Safe, Loc.Tr("Настройки"), () => Menus.ShowSettings(ShowTitle), true, 17, 128, 42);
-            ((RectTransform)sets.transform).At(new Vector2(0.5f, 0f), new Vector2(67, 52), new Vector2(128, 42));
+            ((RectTransform)sets.transform).At(new Vector2(0.5f, 0f), new Vector2(70, 36), new Vector2(130, 44));
             if (save != null)
             {
                 var hint = Ui.Label("savehint", Safe, Loc.Tr("Прогресс сохраняется после каждого уровня"), 12, new Color(1, 1, 1, 0.55f));
-                hint.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 456), new Vector2(380, 18));
+                hint.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 474), new Vector2(380, 18));
             }
 
             var ver = Ui.Label("version", Safe, "Unity " + Application.unityVersion + " · " + Loc.Lang, 11, new Color(1, 1, 1, 0.45f));
-            ver.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 12), new Vector2(380, 16));
+            ver.fontSize = 9;
+            ver.rectTransform.At(new Vector2(0.5f, 0f), new Vector2(0, 6), new Vector2(380, 12));
         }
 
         // ================= кнопка «Назад» на Android =================
@@ -351,7 +354,7 @@ namespace Fitil.Game
         {
             var art = Ui.Art("h/" + cls) ?? Ui.Art("h/lamp");
             if (!art) return null;
-            float w = small ? 170 : 230, h = small ? 200 : 270, top = small ? 190 : 204;
+            float w = small ? 170 : 230, h = small ? 200 : 272, top = small ? 176 : 196;
             var box = Ui.Node("title hero", Safe);
             box.anchorMin = box.anchorMax = new Vector2(0.5f, 1);
             box.pivot = new Vector2(0.5f, 0);
@@ -391,17 +394,19 @@ namespace Fitil.Game
             screen = new GameObject("Intro");
             screen.transform.SetParent(transform, false);
             Background(Back, BgFor(Defs, 0));
-            var col = Ui.Node("intro", Safe).Box(0, 34, 400, 800);
-            col.Column(14, TextAnchor.UpperCenter);
+            var col = Ui.Node("intro", Safe).Box(0, 84, 400, 760);
+            col.Column(26, TextAnchor.UpperCenter);
             var page = Ui.Node("page", col);
-            page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 30);
+            page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 20);
+            // название стоит над картинкой (#app.skin .page h1 { order: -1 })
+            Ui.Label("title", page, Defs.StoryStr("title") ?? "", 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250);
             page.Pref(372);
             Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
             var brown = new Color32(0x5A, 0x2A, 0x26, 0xFF);
             // на картинке вступления нарисована Ива: другим героям вместо неё — сам герой
             var pic = cls == "lamp" ? Ui.Art("pic/story_intro") : null;
             var art = Ui.Node("art", page);
-            art.Pref(318, pic ? 180 : 200);
+            art.Pref(318, 220);
             art.gameObject.AddComponent<RectMask2D>();
             var img = Ui.Img("pic", art, pic ? pic : Ui.Art("h/" + cls), Color.white);
             img.rectTransform.Fill();
@@ -412,8 +417,9 @@ namespace Fitil.Game
                 fit.aspectRatio = (float)pic.texture.width / pic.texture.height;
             }
             else img.preserveAspect = true;
-            Ui.Label("title", page, Defs.StoryStr("title") ?? "", 28, brown, TextAnchor.MiddleCenter, true).Pref(318);
-            Ui.Label("story", page, Defs.StoryHero("intro", cls) ?? "", 16, Ui.Ink).Pref(318);
+            var story = Ui.Label("story", page, Defs.StoryHero("intro", cls) ?? "", 17, Ui.Ink, TextAnchor.UpperLeft);
+            story.lineSpacing = 1.05f;
+            story.Pref(318);
             var rules = new List<string>
             {
                 Loc.Tr("<b>Огонёк.</b> Каждый даёт атакам +{b} урона. На {m} Огоньках лампа бьёт врага на {d}.", ("b", Balance.FlameBonus), ("m", Balance.FlameMax), ("d", Balance.BurstDmg)),
@@ -421,21 +427,21 @@ namespace Fitil.Game
             };
             var path = Json.Str(Json.Get(Json.Obj(Json.Get(Json.Obj(Json.Get(Data.Raw, "storyText")), Defs.StoryId)), "pathRule"));
             if (path != null) rules.Add(path.Replace("{total}", Defs.MaxSteps.ToString()));
-            foreach (var r in rules) Ui.Label("rule", page, "•  " + r, 14, brown, TextAnchor.UpperLeft).Pref(318);
-            Ui.Push(col, Loc.Tr("В путь"), () => { Sound.Sfx("click"); start(); }, false, 24, 230, 60);
+            foreach (var r in rules) Ui.Label("rule", page, "•  " + r, 15, Ui.Ink, TextAnchor.UpperLeft).Pref(318);
+            Ui.Push(col, Loc.Tr("В путь"), () => { Sound.Sfx("click"); start(); }, false, 30, 178, 68);
         }
 
         /// <summary>Строка меню на титуле: значок, название и мелкая строка под ним; точка — есть новое.</summary>
         void MenuRow(string icon, string title, string sub, float y, System.Action onClick, bool dot = false)
         {
-            var b = Ui.Push(Safe, "", () => { Sound.Sfx("click"); onClick(); }, true, 18, 270, 46);
+            var b = Ui.Push(Safe, "", () => { Sound.Sfx("click"); onClick(); }, true, 20, 270, 50);
             var rt = (RectTransform)b.transform;
-            rt.At(new Vector2(0.5f, 0f), new Vector2(0, y), new Vector2(270, 46));
+            rt.At(new Vector2(0.5f, 0f), new Vector2(0, y), new Vector2(270, 50));
             var label = b.GetComponentInChildren<Text>();
-            Ui.TwoLines(label, title, sub, 58, 12);
+            Ui.TwoLines(label, title, sub, 85, 14);
             var ic = Ui.Img("icon", rt, "r2/" + icon);
             ic.preserveAspect = true;
-            ic.rectTransform.At(new Vector2(0, 0.5f), new Vector2(32, 0), new Vector2(34, 34));
+            ic.rectTransform.At(new Vector2(0, 0.5f), new Vector2(56, 0), new Vector2(38, 38));
             if (dot)
             {
                 var d = Ui.Img("newdot", rt, Ui.Circle, Ui.Red);
