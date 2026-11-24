@@ -12,7 +12,7 @@ namespace Fitil.Core
 {
     public enum Ev
     {
-        Fx,        // A — вид эффекта (js/fx.js), B — цель: enemy, hero, c:<карта>, r:<талисман> или null
+        Fx,        // A — вид эффекта (js/fx.js), B — цель: enemy, hero, c:<карта>, r:<талисман> или null; N = 1 — бой ждёт удара
         Float,     // A — цель: hero | enemy, B — текст, C — класс (dmgf, blockf, burnf, healf, weakf…)
         Sfx,       // A — звук (js/audio.js), N — сила в сотых (0 — обычная)
         Toast,     // B — текст короткого сообщения
@@ -106,7 +106,8 @@ namespace Fitil.Core
             Hp = Run.Hp, MaxHp = Run.MaxHp, Block = BlockNow, Energy = EnergyNow, Flame = FlameNow, Gold = Run.Gold,
             EHp = Enemy?.Hp ?? 0, EMax = Enemy?.Max ?? 0, EBlock = Enemy?.Block ?? 0,
         };
-        void Fx(string kind, string target = null) => E(Ev.Fx, kind, target);
+        /// <summary>Эффект боя. hit — бой ждёт его удара (снаряд долетел), как await FX.play в веб-версии: N = 1.</summary>
+        void Fx(string kind, string target = null, bool hit = false) => E(Ev.Fx, kind, target, null, hit ? 1 : 0);
         void FloatHero(string text, string cls) => E(Ev.Float, "hero", text, cls);
         void FloatEnemy(string text, string cls) => E(Ev.Float, "enemy", text, cls);
         void Sfx(string id, int power = 0) => E(Ev.Sfx, id, null, null, power);
@@ -429,7 +430,7 @@ namespace Fitil.Core
         /// <summary>Удар по врагу своей анимацией: сначала эффект, потом урон.</summary>
         void Strike(int dmg, string kind = "bonk")
         {
-            Fx(kind, "enemy");
+            Fx(kind, "enemy", true);
             HitEnemy(dmg, true);
         }
 

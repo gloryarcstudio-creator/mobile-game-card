@@ -185,12 +185,38 @@ namespace Fitil.Game
         public static void Gain(RectTransform bar, int dHp, int dGold)
         {
             if (!bar) return;
-            if (dHp > 0) Sound.Sfx("heal");
+            var fx = dHp > 0 || dGold > 0 ? FxOn((RectTransform)bar.parent) : null;
+            if (dHp > 0) { Sound.Sfx("heal"); fx.Play("heal", "hero"); }
             if (dHp < 0) Sound.Sfx("hurt");
-            if (dGold > 0) Sound.Sfx("coin");
             var y = 0f;
             if (dHp != 0) { Float(bar, dHp > 0 ? "+" + dHp : "−" + (-dHp), dHp > 0 ? Ui.Green : Ui.Red, y); y += 26; }
-            if (dGold != 0) Float(bar, dGold > 0 ? RunGame.Coins(dGold) : "−" + (-dGold), Coin, y);
+            if (dGold == 0) return;
+            // монеты — следом за здоровьем, чтобы числа не легли одно на другое
+            var gy = y;
+            Boot.Instance.StartCoroutine(Later(dHp != 0 ? 0.64f : 0, () =>
+            {
+                if (!bar) return;
+                if (dGold > 0) fx.Play("gold", "hero");   // звон монет звучит в самом эффекте
+                Float(bar, dGold > 0 ? RunGame.Coins(dGold) : "−" + (-dGold), Coin, gy);
+            }));
+        }
+
+        static IEnumerator Later(float s, Action a)
+        {
+            if (s > 0) yield return new WaitForSeconds(s);
+            a();
+        }
+
+        /// <summary>Слой эффектов поверх экрана вне боя (лечение, монеты, находки): цель hero — портрет на панели героя.</summary>
+        public static FxPlayer FxOn(RectTransform root)
+        {
+            var have = root.GetComponentInChildren<FxPlayer>();
+            if (have) { have.transform.SetAsLastSibling(); return have; }
+            var layer = Ui.Node("fx", root);
+            layer.Fill();
+            var fx = FxPlayer.On(layer);
+            if (root.Find("herobar/face") is RectTransform face) fx.Targets["hero"] = face;
+            return fx;
         }
 
         static void Float(RectTransform bar, string text, Color color, float dy)

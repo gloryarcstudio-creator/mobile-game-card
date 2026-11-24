@@ -247,7 +247,7 @@ namespace Fitil.Core
         {
             if (DogNow <= 0 || Enemy.Hp <= 0) return;
             E(Ev.HeroMove, "bite");
-            Fx("bite", "enemy");
+            Fx("bite", "enemy", true);
             FloatEnemy(Loc.Tr("Гав!"), "weakf");
             HitEnemy(DogDmg, true);
             if (Proc("collar")) Block(2);
