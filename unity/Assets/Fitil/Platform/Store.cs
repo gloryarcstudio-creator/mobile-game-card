@@ -12,7 +12,7 @@ namespace Fitil.Platform
 {
     public sealed class Product
     {
-        public string Id, Kind, HeroId;
+        public string Id, Kind, HeroId, Name;
         public List<string> Gives = new List<string>();
         /// <summary>Подпись цены до ответа магазина. Настоящую цену в валюте игрока даёт магазин.</summary>
         public string FallbackPrice;
@@ -42,10 +42,10 @@ namespace Fitil.Platform
             {
                 if (!h.Paid) continue;
                 paid.Add("hero_" + h.Id);
-                Products["hero_" + h.Id] = new Product { Id = "hero_" + h.Id, Kind = "hero", HeroId = h.Id, FallbackPrice = Price };
+                Products["hero_" + h.Id] = new Product { Id = "hero_" + h.Id, Kind = "hero", HeroId = h.Id, FallbackPrice = Price, Name = h.Name + ", " + (h.Role ?? "").ToLowerInvariant() };
             }
-            Products["heroes"] = new Product { Id = "heroes", Kind = "pack", Gives = paid, FallbackPrice = Price };
-            Products["noads"] = new Product { Id = "noads", Kind = "noads", FallbackPrice = Price };
+            Products["heroes"] = new Product { Id = "heroes", Kind = "pack", Gives = paid, FallbackPrice = Price, Name = Loc.Tr("Все платные герои") };
+            Products["noads"] = new Product { Id = "noads", Kind = "noads", FallbackPrice = Price, Name = Loc.Tr("Без рекламы") };
             Load();
         }
 
@@ -75,9 +75,21 @@ namespace Fitil.Platform
         public static bool HeroOwned(GameData data, string cls) => !data.Classes.TryGetValue(cls, out var h) || !h.Paid || Owns("hero_" + cls);
         public static bool NoAds => Owns("noads");
 
+        /// <summary>Платные герои по порядку (магазин, набор «Все три героя»).</summary>
+        public static List<string> PaidHeroes
+        {
+            get
+            {
+                var l = new List<string>();
+                foreach (var p in Products.Values) if (p.Kind == "hero") l.Add(p.HeroId);
+                return l;
+            }
+        }
+
         /// <summary>Купить. done(true) — покупка прошла.</summary>
         public static void Buy(string id, Action<bool> done)
         {
+            if (Owns(id)) { done?.Invoke(true); return; }
             RealBuy(id, ok =>
             {
                 if (ok) Grant(id);
@@ -85,18 +97,43 @@ namespace Fitil.Platform
             });
         }
 
-        /// <summary>Показать рекламу за награду. done(true) — досмотрена, награду давать. С «Без рекламы» — сразу true.</summary>
-        public static void Ad(MonoBehaviour host, Action<bool> done)
+        /// <summary>Показать рекламу за награду. done(true) — досмотрена, награду давать. С «Без рекламы» — сразу true.
+        /// reason — за что награда (строка в окне тестовой рекламы).</summary>
+        public static void Ad(MonoBehaviour host, Action<bool> done, string reason = null)
         {
             if (NoAds) { done?.Invoke(true); return; }
-            RealAd(host, done);
+            RealAd(host, reason, done);
         }
 
+        /// <summary>Восстановить покупки: спросить у площадки, что куплено. done(n) — сколько товаров открыто.</summary>
+        public static void Restore(Action<int> done) => done?.Invoke(owned.Count);
+
+        /// <summary>Только для тестовой версии: снова закрыть всё купленное.</summary>
+        public static void ResetTest()
+        {
+            owned.Clear();
+            Persist();
+        }
+
+        /// <summary>Тестовая версия: покупки и реклама не настоящие (как в веб-версии).</summary>
+        public static bool Test => true;
+
         // ---------- заглушки: заменятся SDK ----------
+        // Окна тестовой покупки и тестового ролика рисует игра (Fitil.Game.StoreScreen): платформе интерфейс не виден.
+        public static Action<Product, Action<bool>> TestBuyWindow;
+        public static Action<string, float, Action<bool>> TestAdWindow;
 
-        static void RealBuy(string id, Action<bool> done) => done?.Invoke(true);
+        static void RealBuy(string id, Action<bool> done)
+        {
+            if (TestBuyWindow != null && Products.TryGetValue(id, out var p)) TestBuyWindow(p, done);
+            else done?.Invoke(true);
+        }
 
-        static void RealAd(MonoBehaviour host, Action<bool> done) => host.StartCoroutine(FakeAd(done));
+        static void RealAd(MonoBehaviour host, string reason, Action<bool> done)
+        {
+            if (TestAdWindow != null) TestAdWindow(reason, AdSeconds, done);
+            else host.StartCoroutine(FakeAd(done));
+        }
 
         static IEnumerator FakeAd(Action<bool> done)
         {
