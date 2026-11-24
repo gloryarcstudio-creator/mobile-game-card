@@ -8302,5 +8302,123 @@
    "countdownBoss": "Level {level} · stage boss",
    "countdownFinal": "The sun has set. The final boss is here"
   }
- }
+ },
+ "gloss": [
+  [
+   "Flame",
+   "Each Flame gives your attacks +2 damage. At 3 Flames the lamp flares and hits the enemy for 8."
+  ],
+  [
+   "Resolve",
+   "Each point adds +1 damage to every attack. It lasts until the end of combat or until the end of the turn."
+  ],
+  [
+   "Vulnerable",
+   "The enemy takes 50% more damage from attacks, Lamp Flares and Buddy’s bites. The number shows how many turns it lasts."
+  ],
+  [
+   "Weak",
+   "The enemy deals 25% less damage. The number shows how many turns it lasts."
+  ],
+  [
+   "Burn",
+   "At the end of your turn the enemy loses that much HP, and Burn goes down by 1."
+  ],
+  [
+   "Thorns",
+   "When an enemy hits you, it takes that much damage itself. Spiky enemies hurt you the same way for every hit you land on them."
+  ],
+  [
+   "Frail",
+   "Cards and talismans give you 25% less Block. The number shows how many turns it lasts."
+  ],
+  [
+   "Weakness",
+   "Your attacks deal 25% less damage. The number shows how many turns it lasts."
+  ],
+  [
+   "Enemy Strength",
+   "Each point adds +1 damage to the enemy’s attacks. Frost can take it away."
+  ],
+  [
+   "Boss Fury",
+   "When a boss is down to half HP, it flies into a Fury: it gains Strength and Block. Save a strong turn for that moment."
+  ],
+  [
+   "Asleep",
+   "The enemy skips its next turn."
+  ],
+  [
+   "Delivery",
+   "The card’s effect happens at the start of your next turn."
+  ],
+  [
+   "Combo",
+   "The card gets stronger for each card played before it this turn."
+  ],
+  [
+   "Retain",
+   "The card isn’t discarded at the end of your turn and stays in your hand."
+  ],
+  [
+   "Exhaust",
+   "Once played, the card is gone until the end of combat."
+  ],
+  [
+   "Charm",
+   "Played once, they last until the end of combat. Active charms are shown above your hand."
+  ],
+  [
+   "Gingerbread",
+   "The Baker bakes them right in combat. A Gingerbread costs 0, hits and gives Block, and is Exhausted once played. Gingerbread disappears after combat."
+  ],
+  [
+   "Sharpen",
+   "The card is upgraded until the end of combat, as if at a campfire. After combat it goes back to normal. Sharpening an upgraded card gives 2 Block."
+  ],
+  [
+   "Buddy",
+   "The shepherdess’s dog. At the end of your turn he bites the enemy for his Rage. Commands make him angrier or make him bite right away."
+  ],
+  [
+   "Price",
+   "To play the card, you must give up that much HP. Block doesn’t help. You can’t give up your last HP."
+  ],
+  [
+   "Clutter",
+   "Enemies slip Blots, Ice Chips, Sealing Wax and Undelivered Letters into your deck. They disappear after combat."
+  ],
+  [
+   "Theft",
+   "Some enemies steal coins. Defeat the thief and you get them back."
+  ],
+  [
+   "Upgrade",
+   "You can upgrade a card at a campfire, at the smith and in the shop. An upgraded card is marked with a plus."
+  ],
+  [
+   "Boss talismans",
+   "After a stage boss you can choose one of three powerful talismans. Many of them come at a cost."
+  ],
+  [
+   "Rarity",
+   "Cards and talismans come in five rarities: common (grey gem), uncommon (green), rare (blue), epic (purple) and legendary (gold). The stronger the enemy, the more often rare ones drop. Each legendary card can be in your deck only once."
+  ],
+  [
+   "Enemy tricks",
+   "Many enemies have tricks of their own: nesting dolls open up, the samovar boils, fog muffles blows, the firecracker explodes. Tricks appear as icons under the enemy’s name; tap an icon to read about it."
+  ],
+  [
+   "Breather",
+   "After a rest, a shop, a chest, an event or a meeting the road leads only through a fight: the next fork offers nothing but enemies."
+  ],
+  [
+   "Conversations",
+   "Some enemies speak to the hero before a fight: you can talk some of them round, chase them off or make them angry, and defeated enemies sometimes beg for mercy. You’ll meet other heroes on the road. Friends will help you in the finale, and a hero you wrong may go over to the Shadow and become the final boss."
+  ],
+  [
+   "Heroes",
+   "Each hero has their own deck, trait, and cards and talismans that only they can find. Common cards that suit their build show up more often in rewards and the shop."
+  ]
+ ]
 }

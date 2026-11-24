@@ -49,6 +49,21 @@ function plain(v, where, fnFields) {
   return v;
 }
 
+// GLOSS_RU живёт в game.js вместе с числами, на которые ссылается: берём список и эти числа как есть
+function glossRu() {
+  const game = fs.readFileSync(path.join(ROOT, 'js', 'game.js'), 'utf8');
+  const a = game.indexOf('const GLOSS_RU = [');
+  const b = game.indexOf('\n  ];', a) + 5;
+  const body = game.slice(a, b);
+  const names = [...new Set([...body.matchAll(/\b([A-Z][A-Z_]{2,})\b/g)].map((m) => m[1]))].filter((n) => n !== 'GLOSS_RU');
+  const consts = names.map((n) => {
+    const m = game.match(new RegExp(`const ${n} = ([^;]+);`));
+    if (!m) throw new Error(`справочник: нет числа ${n} в game.js`);
+    return `const ${n} = ${m[1]};`;
+  }).join('\n');
+  return vm.runInNewContext(`${consts}\n${body}\nGLOSS_RU`, {});
+}
+
 fs.mkdirSync(OUT, { recursive: true });
 const report = { functionFields: {}, functionStrings: {}, counts: {} };
 
@@ -88,6 +103,8 @@ for (const lang of ['ru', 'en', 'uk']) {
       countdownFinal: fill(st.countdown({ left: 0, level: 9002, total: 9003, stage: 2, final: true })),
     };
   }
+  // справочник (GLOSS_RU в game.js): термин и пояснение на языке игры
+  data.gloss = glossRu().map(([k, v, vars]) => [w.tr(k), w.tr(v, vars)]);
   // ключи записей одинаковые во всех языках: '*' вместо id
   const norm = (s) => s;
   report.functionFields[lang] = [...fnFields].map(norm).sort();
