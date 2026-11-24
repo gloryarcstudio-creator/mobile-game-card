@@ -20,3 +20,5 @@
 # в git они заняли бы сотни мегабайт PNG поверх тех же WebP
 /Assets/Fitil/Resources/Art/
 /Assets/Fitil/Resources/Art.meta
+/Assets/Fitil/Resources/Audio/Music/
+/Assets/Fitil/Resources/Audio/Music.meta

@@ -1,7 +1,7 @@
 {
     "name": "Fitil.Editor",
     "rootNamespace": "Fitil.EditorTools",
-    "references": ["Fitil.Core"],
+    "references": [],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -6,10 +6,12 @@ python3 -I tools/unity/export_assets.py [OUT]   (по умолчанию unity/A
 Unity не читает WebP, поэтому каждая картинка из assets/ переводится в PNG той же
 величины: assets/bg/bg_title.webp -> Art/bg/bg_title.png. Результат в git не кладётся
 (см. unity/.gitignore): его делают CI перед сборкой и вы перед открытием проекта.
-Пока переводятся плоские папки (фоны, карты, талисманы, интерфейс, герои, иконки).
-Атласы анимаций (ea6), эффекты (fx4) и музыка добавятся на этапе «Конвертеры».
+Переводятся плоские папки (фоны, карты, талисманы, интерфейс, герои, иконки).
+Музыка (последняя папка assets/m<N>/ с loops.json) копируется как есть в Resources/Audio/Music:
+Unity читает MP3, границы петель — loops.json. Звуки делает tools/unity/render_sfx.js (они в git).
 Нужен Pillow с поддержкой WebP: pip install pillow."""
 import os
+import shutil
 import sys
 
 from PIL import Image
@@ -40,6 +42,30 @@ def main():
                 im.save(o, compress_level=6)
             done += 1
     print(f'PNG: {done} новых, {skipped} без изменений -> {OUT}')
+    music()
+
+
+def music():
+    """Дорожки из самой новой папки assets/m<N>/ (номер растёт, когда файлы меняются)."""
+    dirs = sorted((d for d in os.listdir(os.path.join(ROOT, 'assets')) if d[:1] == 'm' and d[1:].isdigit()
+                   and os.path.exists(os.path.join(ROOT, 'assets', d, 'loops.json'))), key=lambda d: int(d[1:]))
+    if not dirs:
+        print('музыки нет')
+        return
+    src = os.path.join(ROOT, 'assets', dirs[-1])
+    dst = os.path.join(os.path.dirname(OUT), 'Audio', 'Music')
+    os.makedirs(dst, exist_ok=True)
+    n = 0
+    for name in sorted(os.listdir(src)):
+        if not (name.endswith('.mp3') or name == 'loops.json'):
+            continue
+        s = os.path.join(src, name)
+        o = os.path.join(dst, name)
+        if os.path.exists(o) and os.path.getmtime(o) >= os.path.getmtime(s) and os.path.getsize(o) == os.path.getsize(s):
+            continue
+        shutil.copyfile(s, o)
+        n += 1
+    print(f'музыка: {n} файлов скопировано из {src} -> {dst}')
 
 
 if __name__ == '__main__':
