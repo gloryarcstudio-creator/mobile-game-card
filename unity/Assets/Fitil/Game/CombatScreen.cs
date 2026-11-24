@@ -69,8 +69,6 @@ namespace Fitil.Game
         {
             var boot = Boot.Instance;
             back = Ui.Node("combat back", boot.Back).Fill();
-            Boot.Background(back, Boot.BgFor(defs, C.Run.Step));
-
             root = Ui.Node("combat", boot.Safe).Fill();
             // нажатие мимо карт снимает выбор
             Ui.Hit("tap", root, () => { if (!busy) Select(-1); }).GetComponent<RectTransform>().Fill();
@@ -140,6 +138,11 @@ namespace Fitil.Game
             var boss = tier == "boss";
             enemyBox = boss ? Ui.Node("enemy", root).Box(40, 106, 320, 300) : Ui.Node("enemy", root).Box(75, 120, 250, 260);
             enemyHome = enemyBox.anchoredPosition;
+            // фон опускается врагу под ноги: снег с картинки встаёт под ним (groundCam в веб-версии).
+            // Метка неподвижная: сам враг трясётся и делает выпады, фон за ним ходить не должен
+            var feet = boss ? Ui.Node("feet", root).Box(40, 405, 320, 1) : Ui.Node("feet", root).Box(75, 379, 250, 1);
+            var bgArt = Boot.BgFor(defs, C.Run.Step);
+            GroundBg.Make(back, bgArt, Boot.FeetOf(bgArt), feet);
             enemyImg = Ui.Img("art", enemyBox, "e/" + enemyId);
             EnemyAnim.Stand(enemyImg, enemyId, boss ? 300 : 250);
             enemyImg.raycastTarget = true;

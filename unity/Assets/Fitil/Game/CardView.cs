@@ -82,6 +82,7 @@ namespace Fitil.Game
             var frameSprite = Ui.Art("ui2/f_" + type);
             var frame = Ui.Img("frame", transform, frameSprite, frameSprite ? Color.white : new Color(0.17f, 0.14f, 0.2f));
             frame.rectTransform.Frac(L.F[0], L.F[1], L.F[2], L.F[3]);
+            art.transform.SetAsLastSibling();   // окошко рамки закрашено: картинка карты лежит поверх рамки, как в веб-версии
 
             var name = cd.Name + (card.Up ? "+" : "");
             var title = Ui.Label("title", transform, name, Mathf.RoundToInt(em * 0.98f), card.Up ? new Color32(0xE4, 0xFF, 0xD8, 0xFF) : new Color32(0xFB, 0xEF, 0xD2, 0xFF), TextAnchor.MiddleCenter, true).Shadow(1f).Fit(5);
