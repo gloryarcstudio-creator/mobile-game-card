@@ -41,6 +41,16 @@ namespace Fitil.Game
             ["legendary"] = new Color(1f, 0.63f, 0.2f, 0.9f),
         };
 
+        // камешек редкости перед подписью типа (.gem.g-*)
+        static readonly Dictionary<string, Color> Gems = new Dictionary<string, Color>
+        {
+            ["common"] = new Color32(0xD0, 0xCB, 0xC0, 0xFF),
+            ["uncommon"] = new Color32(0x6E, 0xD8, 0x82, 0xFF),
+            ["rare"] = new Color32(0x6E, 0xB4, 0xF0, 0xFF),
+            ["epic"] = new Color32(0xC0, 0x82, 0xF0, 0xFF),
+            ["legendary"] = new Color32(0xFF, 0xB8, 0x50, 0xFF),
+        };
+
         public CardInst Card { get; private set; }
         public RectTransform Rect => (RectTransform)transform;
         Text cost, desc;
@@ -100,17 +110,33 @@ namespace Fitil.Game
             desc.lineSpacing = 0.95f;
             desc.rectTransform.Frac(L.D[0], L.D[1], L.D[2], L.D[3]);
 
+            // подпись типа (.ctype): у атаки — прямо на нарисованной ленте, у остальных — тёмная плашка с золотой каймой.
+            // Перед словом камешек редкости (.gem): ромб своего цвета.
             var label = Loc.Tr(TypeLabel.TryGetValue(cd.Type, out var tl) ? tl : "Навык");
-            var ty = Ui.Label("type", transform, label, Mathf.RoundToInt(em * 0.78f), type == "atk" ? new Color32(0x3A, 0x24, 0x18, 0xFF) : new Color32(0xF1, 0xE4, 0xC4, 0xFF));
+            var hasGem = Gems.TryGetValue(cd.Rarity ?? "", out var gemColor);
+            var fs = Mathf.Max(1, Mathf.RoundToInt(em * 0.78f));
+            var gemW = hasGem ? em * 0.95f : 0;
+            var ty = Ui.Label("type", transform, label, fs, type == "atk" ? new Color32(0x3A, 0x24, 0x18, 0xFF) : new Color32(0xF1, 0xE4, 0xC4, 0xFF));
+            ty.horizontalOverflow = HorizontalWrapMode.Overflow;
+            var textW = ty.preferredWidth;
+            var plateW = textW + gemW + em * 1.3f;
             ty.rectTransform.anchorMin = ty.rectTransform.anchorMax = new Vector2(L.YL, 1 - L.YT);
-            ty.rectTransform.sizeDelta = new Vector2(width * 0.6f, em * 1.2f);
-            ty.rectTransform.anchoredPosition = Vector2.zero;
+            ty.rectTransform.sizeDelta = new Vector2(textW + 2, em * 1.2f);
+            ty.rectTransform.anchoredPosition = new Vector2(gemW / 2, 0);
             if (type != "atk")
             {
-                var plate = Ui.Round("plate", transform, new Color32(18, 14, 26, 230));
+                var plate = Ui.Round("plate", transform, new Color32(18, 14, 26, 230)).Radius(em * 0.6f).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), Mathf.Max(0.6f, em * 0.1f));
                 plate.rectTransform.anchorMin = plate.rectTransform.anchorMax = ty.rectTransform.anchorMin;
-                plate.rectTransform.sizeDelta = new Vector2(Mathf.Min(width * 0.5f, label.Length * em * 0.5f + em * 1.2f), em * 1.25f);
+                plate.rectTransform.sizeDelta = new Vector2(plateW, em * 1.2f);
                 plate.transform.SetSiblingIndex(ty.transform.GetSiblingIndex());
+            }
+            if (hasGem)
+            {
+                var gem = Ui.Img("gem", transform, null, gemColor).Outline(Ui.Ink, Mathf.Max(0.5f, em * 0.08f));
+                gem.rectTransform.anchorMin = gem.rectTransform.anchorMax = ty.rectTransform.anchorMin;
+                gem.rectTransform.sizeDelta = new Vector2(em * 0.56f, em * 0.56f);
+                gem.rectTransform.anchoredPosition = new Vector2(-(textW + gemW) / 2 + em * 0.4f, 0);
+                gem.rectTransform.localEulerAngles = new Vector3(0, 0, 45);
             }
 
             Refresh(defs, combat);
@@ -150,7 +176,7 @@ namespace Fitil.Game
         {
             foreach (var g in GetComponentsInChildren<Graphic>(true))
             {
-                if (g == glow || g.name == "plate") continue;   // плашка типа карты тёмная: её цвет не трогаем
+                if (g == glow || g.name == "plate" || g.name == "gem") continue;   // плашка типа карты тёмная: её цвет не трогаем
                 var keep = g.color.a;
                 if (g is Text) continue;
                 g.color = can ? new Color(1, 1, 1, keep) : new Color(0.62f, 0.6f, 0.64f, keep);

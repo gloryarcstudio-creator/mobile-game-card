@@ -12,6 +12,8 @@ namespace Fitil.Game
     public static class Tour
     {
         static bool running;
+        /// <summary>Идёт обход экранов: плашки достижений не показываются сами, чтобы не закрывать снимки.</summary>
+        public static bool Running => running;
 
         // Ключи командной строки пробной сборки: -tour запускает обход сам, -tourDir <папка> задаёт, куда класть снимки
         public static bool Wanted => wanted ?? (wanted = (Debug.isDebugBuild || Application.platform == RuntimePlatform.LinuxPlayer)
@@ -62,7 +64,7 @@ namespace Fitil.Game
                 for (var i = boot.Top.childCount - 1; i >= 0; i--)
                 {
                     var c = boot.Top.GetChild(i);
-                    if (c.name == "overlay" || c.name == "moment") UnityEngine.Object.Destroy(c.gameObject);
+                    if (c.name == "overlay" || c.name == "moment" || c.name == "achtoast") UnityEngine.Object.Destroy(c.gameObject);
                 }
                 yield return null;
                 Mark(name);
@@ -81,6 +83,7 @@ namespace Fitil.Game
             yield return Shot("05_codex", () => Progress.ShowCodex());
             yield return Shot("06_stats", () => Progress.ShowStats());
             yield return Shot("07_store", () => StoreScreen.Show(() => Menus.Close()));
+            yield return Shot("08_intro", () => { Menus.Close(); boot.ShowIntro("lamp", () => { }); });
 
             // пробный забег первым героем на обычной сложности
             RunFlow flow = null;

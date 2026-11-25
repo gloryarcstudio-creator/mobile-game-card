@@ -162,15 +162,16 @@ namespace Fitil.Game
             if (live) enemyImg.color = new Color(1, 1, 1, 0);
 
             // реплика врага: светлая плашка слева над ним (.saybub)
-            var bubble = Ui.Round("say", root, new Color32(250, 240, 214, 242));
-            bubble.gameObject.AddComponent<UnityEngine.UI.Outline>().effectColor = new Color32(0xB8, 0x89, 0x3A, 0xFF);
-            sayBubble = bubble.gameObject;
-            var sb = bubble.rectTransform;
-            sb.Box(8, 104, 196, 58);
-            sayText = Ui.Label("text", sb, "", 14, Ui.Ink).Fit(8);
-            sayText.rectTransform.Fill();
-            sayText.rectTransform.offsetMin = new Vector2(10, 5);
-            sayText.rectTransform.offsetMax = new Vector2(-10, -5);
+            // пузырь с фонарём, как у ежа в лавке, но отражён: хвостик смотрит на врага (.saybub 172 в ширину)
+            var sb = Ui.Node("say", root).Box(10, 108, 172, 52);
+            sayBubble = sb.gameObject;
+            sb.Column(0, TextAnchor.MiddleCenter, 13, 13, 9, 8);
+            sb.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var sf = Ui.Frame(sb, "ui2/bubble", 0.33f, 0, 18.2f, 0, 20.8f);
+            if (sf.sprite) sf.rectTransform.localScale = new Vector3(-1, 1, 1);
+            else { sf.sprite = Ui.RoundSprite; sf.type = Image.Type.Sliced; sf.color = new Color32(250, 240, 214, 242); }
+            sayText = Ui.Label("text", sb, "", 15, Ui.Ink);
+            sayText.Pref(146);
             sayBubble.SetActive(false);
 
             var plate = Ui.Round("nameplate", root, new Color32(20, 24, 38, 150)).Radius(12);

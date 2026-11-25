@@ -26,6 +26,11 @@ namespace Fitil.Game
         static Sheet MakeSheet(string title, string icon, Action close, int got = -1, int total = 0)
         {
             Menus.Window(out var layer);
+            // фон окна (.achp): фиолетовое свечение сверху, книзу темнее. Картинка выше экрана, чтобы центр перехода был у верхнего края.
+            var glow = Ui.Img("bg", layer, Ui.HeroBg("sheet"), Color.white);
+            glow.rectTransform.Fill();
+            glow.rectTransform.offsetMin = new Vector2(-200, 0);
+            glow.rectTransform.offsetMax = new Vector2(200, 460);
             var col = Ui.Node("sheet", layer);
             col.anchorMin = Vector2.zero;
             col.anchorMax = Vector2.one;
@@ -417,7 +422,7 @@ namespace Fitil.Game
             var defs = Boot.Instance.Defs;
             void Render()
             {
-                var s = MakeSheet(Loc.Tr("База знаний"), "magnifier", () => Close(back), CodexCount, CodexTotal);
+                var s = MakeSheet(Loc.Tr("База знаний"), "bookmark", () => Close(back), CodexCount, CodexTotal);
                 if (open != null) Detail(s.List, tab, open, defs, () => { open = null; Render(); });
                 else Grid(s.List, tab, defs, id => { open = id; Render(); });
                 foreach (var (k, name) in CxTabs)

@@ -163,7 +163,7 @@ namespace Fitil.Game
             var b = rt.gameObject.AddComponent<Button>();
             b.targetGraphic = face;
             b.onClick.AddListener(() => onClick?.Invoke());
-            var label = Label("label", rt, text, size, GoldHi, TextAnchor.MiddleCenter, true).Shadow();
+            var label = Label("label", rt, text, size, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleCenter, true).Shadow();   // цвет текста всех кнопок (.btn)
             label.rectTransform.Fill();
             label.rectTransform.offsetMin = new Vector2(8, 2);
             label.rectTransform.offsetMax = new Vector2(-8, -2);
@@ -280,16 +280,17 @@ namespace Fitil.Game
         {
             var rt = Node("scroll", parent);
             var hasHint = !string.IsNullOrEmpty(hint);
-            rt.Column(1, TextAnchor.MiddleCenter, 40, 40, hasHint ? 7 : 8, hasHint ? 12 : 7);
+            // высота свитка с пояснением — 55, как в веб-версии: строки Unity выше, поэтому они сдвинуты друг к другу
+            rt.Column(hasHint ? -3 : 1, TextAnchor.MiddleCenter, 40, 40, hasHint ? 6 : 8, hasHint ? 10 : 7);
             rt.Pref(width, -1, hasHint ? -1 : 43);
             var frame = Frame(rt, "ui2/scroll", 0.5f, 20, 7.5f, 20, 6);
             frame.raycastTarget = true;
             if (glow) frame.Outline(new Color(1f, 0.82f, 0.43f, 0.75f), 2.5f);
-            var t = Label("text", rt, text, 19, Ui.Ink, TextAnchor.MiddleCenter, true);
-            t.lineSpacing = 0.95f;
+            var t = Label("text", rt, text, 18, Ui.Ink, TextAnchor.MiddleCenter, true);
+            t.lineSpacing = 0.9f;
             if (hasHint)
             {
-                var h = Label("hint", rt, hint, 14, new Color32(0x4A, 0x38, 0x2A, 0xFF));
+                var h = Label("hint", rt, hint, 13, new Color32(0x4A, 0x38, 0x2A, 0xFF));
                 h.lineSpacing = 0.95f;
             }
             var b = rt.gameObject.AddComponent<Button>();
@@ -430,6 +431,7 @@ namespace Fitil.Game
             ["collect"] = new[] { new Color32(0x6F, 0xB8, 0xA8, 255), new Color32(0x2F, 0x5D, 0x62, 255), new Color32(0x15, 0x2A, 0x2E, 255) },
             ["cx"] = new[] { new Color32(0x4A, 0x3F, 0x6A, 255), new Color32(0x2A, 0x23, 0x40, 255), new Color32(0x1A, 0x15, 0x28, 255) },
             ["cxhero"] = new[] { new Color32(0xF7, 0xC9, 0x8A, 255), new Color32(0xC8, 0x70, 0x5A, 255), new Color32(0x3A, 0x2F, 0x55, 255) },
+            ["sheet"] = new[] { new Color32(0x2D, 0x25, 0x44, 255), new Color32(0x14, 0x11, 0x20, 255), new Color32(0x0F, 0x0D, 0x18, 255) },
             ["herbalist"] = new[] { new Color32(0xD0, 0xF4, 0xE4, 255), new Color32(0x4A, 0x9A, 0x84, 255), new Color32(0x1A, 0x34, 0x30, 255) },
         };
         static Sprite soft;

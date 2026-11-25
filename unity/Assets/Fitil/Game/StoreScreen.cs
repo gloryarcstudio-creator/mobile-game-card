@@ -36,6 +36,21 @@ namespace Fitil.Game
         {
             var win = Menus.Window(out var layer);
             shown = Tuple.Create(win, back);
+            // магазин в веб-версии — отдельный экран на фоне зимней улицы титула, а не тёмное окно:
+            // картинка закрывает экран под магазином целиком (cover), сверху лёгкая синева для читаемости
+            var art = Ui.Art("bg/bg_title");
+            if (art)
+            {
+                var pic = Ui.Img("bg", layer, art, Color.white);
+                pic.rectTransform.Fill();
+                pic.transform.SetAsFirstSibling();
+                var fit = pic.gameObject.AddComponent<AspectRatioFitter>();
+                fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+                fit.aspectRatio = (float)art.texture.width / art.texture.height;
+                var veil = Ui.Img("veil", layer, null, new Color32(0x14, 0x12, 0x2C, 0x73));
+                veil.rectTransform.Fill();
+                veil.transform.SetSiblingIndex(1);
+            }
             var col = Ui.Node("store", layer);
             col.anchorMin = Vector2.zero;
             col.anchorMax = Vector2.one;

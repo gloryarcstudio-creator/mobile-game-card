@@ -32,11 +32,13 @@ namespace Fitil.Game
                 keeper.enabled = false;
                 if (happy) keeperLive.Play("happy");   // ёж радуется покупке
             }
-            var bubble = Ui.Node("bubble", root).Box(166, 84, 208, 66);
-            bubble.Column(0, TextAnchor.MiddleCenter, 18, 18, 9, 8);
-            Ui.Frame(bubble, "ui2/bubble", 0.3f);
+            // пузырь .bubble: ширина 168, высота по тексту; рамка с фонарём и хвостиком выступает сверху и снизу
+            var bubble = Ui.Node("bubble", root).Box(166, 90, 168, 53);
+            bubble.Column(0, TextAnchor.MiddleCenter, 13, 13, 9, 8);
+            bubble.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            Ui.Frame(bubble, "ui2/bubble", 0.323f, 0, 17.8f, 0, 20.3f);
             var say = Ui.Label("say", bubble, Loc.Tr(shop.Rerolls > 0 ? "Свежий товар! Только что с саней." : last ? "Последняя лавка перед дверью! Бери, не стесняйся." : "Всё по-честному! Почти."), 16, Ui.Ink);
-            say.Pref(174);
+            say.Pref(142);
 
             // три карты на прилавке
             const float cw = 108;

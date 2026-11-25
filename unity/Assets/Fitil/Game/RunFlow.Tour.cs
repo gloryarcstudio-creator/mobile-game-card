@@ -20,6 +20,7 @@ namespace Fitil.Game
             return new List<(string, Action)>
             {
                 ("10_map", Map),
+                ("09_map_toast", () => { Map(); Progress.TourToast(); }),
                 ("11_fight", () => Fight(foe, "fight")),
                 ("12_talk", () => Talk(foe, "fight")),
                 ("13_plea", () => Plea(foe, "fight")),
@@ -34,9 +35,11 @@ namespace Fitil.Game
                 ("22_boss_relic", () => BossRelic()),
                 ("23_pause", Menus.ShowPause),
                 ("24_deck", () => ShowDeck(Run.Deck, Loc.Tr("Колода") + " · " + Run.Deck.Count, null)),
+                ("25_relics", () => { Map(); Hud.ShowRelics(G); }),
+                ("26_fight_toast", () => { Fight(foe, "fight"); Progress.TourToast(); }),
                 ("30_defeat", () => { Fight(foe, "fight"); Defeat(foe, "fight"); }),
                 ("31_victory", Victory),
-                ("32_summary_win", () => { if (tourRec != null) Summary(tourRec); }),
+                ("32_summary_win", () => { if (tourRec != null) { Summary(tourRec); Progress.TourToast(); } }),
                 ("33_lose", EndRun),
                 ("34_summary_lose", () => { if (tourRec != null) Summary(tourRec); }),
             };

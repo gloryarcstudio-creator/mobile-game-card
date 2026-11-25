@@ -297,17 +297,24 @@ namespace Fitil.Game
             var sorted = list.OrderBy(c => c.Id, StringComparer.Ordinal).ThenBy(c => c.Up ? 1 : 0).ToList();
             var layer = Overlay.Open(out var root);
             var head = Ui.Label("title", root, title, 24, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f);
-            head.rectTransform.Box(10, 24, 380, 34);
+            head.rectTransform.Box(10, 40, 380, 35);
             var hint = previewUp ? Loc.Tr("Так карты будут выглядеть после улучшения") : note;
-            var top = 62f;
+            var top = 91f;
             if (!string.IsNullOrEmpty(hint))
             {
                 var h = Ui.Label("hint", root, hint, 15, new Color(0.9f, 0.88f, 0.8f, 0.85f)).Shadow();
-                h.rectTransform.Box(20, 60, 360, 22);
-                top = 86;
+                h.rectTransform.Box(20, 76, 360, 22);
+                top = 104;
             }
-            // прокручиваемая сетка: по четыре карты в ряд
-            var view = Ui.Node("view", root).Box(8, top, 384, 860 - top - 90);
+            // прокручиваемая сетка: по три карты в ряд шириной 90, как .grid в веб-версии (между рядами 16, между картами 8).
+            // Кнопка закрытия стоит сразу под сеткой, а у длинной колоды держится у нижнего края (position: sticky).
+            const int cols = 3;
+            const float w = 90, gap = 8, rowGap = 16;
+            var hgt = w * CardView.Ratio;
+            var rows = Mathf.Max(1, (sorted.Count + cols - 1) / cols);
+            var gridH = rows * (hgt + rowGap) - rowGap;
+            var closeY = Mathf.Min(top + gridH + 38, 860 - 14 - 50);
+            var view = Ui.Node("view", root).Box(8, top - 8, 384, closeY - 6 - (top - 8));
             view.gameObject.AddComponent<RectMask2D>();
             var hitImg = view.gameObject.AddComponent<Image>();
             hitImg.color = new Color(0, 0, 0, 0);
@@ -315,10 +322,8 @@ namespace Fitil.Game
             content.anchorMin = new Vector2(0, 1);
             content.anchorMax = new Vector2(1, 1);
             content.pivot = new Vector2(0.5f, 1);
-            const float w = 88, gap = 8;
-            var hgt = w * CardView.Ratio;
-            var rows = (sorted.Count + 3) / 4;
-            content.sizeDelta = new Vector2(0, Mathf.Max(1, rows) * (hgt + gap) + 8);
+            content.sizeDelta = new Vector2(0, gridH + 16);
+            var x0 = (384 - (cols * w + (cols - 1) * gap)) / 2;
             content.anchoredPosition = Vector2.zero;
             var scroll = view.gameObject.AddComponent<ScrollRect>();
             scroll.content = content;
@@ -333,7 +338,7 @@ namespace Fitil.Game
                 var rt = v.Rect;
                 rt.anchorMin = rt.anchorMax = new Vector2(0, 1);
                 rt.pivot = new Vector2(0.5f, 0.5f);
-                rt.anchoredPosition = new Vector2(6 + w / 2 + (i % 4) * (w + gap), -(8 + hgt / 2 + (i / 4) * (hgt + gap)));
+                rt.anchoredPosition = new Vector2(x0 + w / 2 + (i % cols) * (w + gap), -(8 + hgt / 2 + (i / cols) * (hgt + rowGap)));
                 if (onPick != null)
                 {
                     var catcher = v.gameObject.AddComponent<Image>();
@@ -348,8 +353,8 @@ namespace Fitil.Game
                 var empty = Ui.Label("empty", content, Loc.Tr("Пусто"), 18, Ui.Paper);
                 empty.rectTransform.Box(0, 20, 384, 30);
             }
-            var close = Ui.Push(root, onPick != null ? Loc.Tr("Отмена") : Loc.Tr("Закрыть"), () => { Object.Destroy(layer); onPick?.Invoke(null); }, true, 18, 170, 48);
-            ((RectTransform)close.transform).Box(115, 790, 170, 48);
+            var close = Ui.Push(root, onPick != null ? Loc.Tr("Отмена") : Loc.Tr("Закрыть"), () => { Object.Destroy(layer); onPick?.Invoke(null); }, false, 20, 130, 50);
+            ((RectTransform)close.transform).Box(135, closeY, 130, 50);
         }
 
         /// <summary>Выбор карты для улучшения, удаления, копии или обмена (подсказки Prompt у событий и встреч).</summary>

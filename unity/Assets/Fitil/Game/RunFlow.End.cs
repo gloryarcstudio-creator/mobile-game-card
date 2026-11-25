@@ -33,14 +33,14 @@ namespace Fitil.Game
             Ui.Ribbon(col, rw.Boss ? Loc.Tr("Босс повержен!") : Loc.Tr("Победа!"));
             var loot = Ui.Node("loot", col);
             loot.Line(6, TextAnchor.MiddleCenter, 10, 16, 3, 3);
-            var lootBg = Ui.Round("bg", loot, new Color(0.06f, 0.07f, 0.12f, 0.72f));
+            var lootBg = Ui.Round("bg", loot, new Color(0.06f, 0.07f, 0.12f, 0.72f)).Radius(18);
             lootBg.rectTransform.Fill();
-            lootBg.Outline(new Color(0.85f, 0.66f, 0.29f, 0.55f), 1.2f);
+            lootBg.Outline(new Color(0.85f, 0.66f, 0.29f, 0.4f), 0.8f);
             lootBg.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
             var coin = Ui.Img("coin", loot, "i/coin");
             coin.preserveAspect = true;
             coin.Pref(30, 30);
-            Ui.Label("n", loot, RunGame.Coins(rw.Gold) + (rw.Healed > 0 ? " · +" + rw.Healed + " HP" : ""), 22, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1.5f).Pref(-1, 32);
+            Ui.Label("n", loot, RunGame.Coins(rw.Gold) + (rw.Healed > 0 ? " · +" + rw.Healed + " HP" : ""), 22, Ui.GoldHi, TextAnchor.MiddleLeft).Shadow(1.5f).Pref(-1, 32);
 
             var hint = Ui.Label("hint", col, Loc.Tr("Возьми одну карту в колоду"), 18, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
             hint.Pref(380, 30);
@@ -81,23 +81,32 @@ namespace Fitil.Game
             var p = Open();
             Bars(p);
             var col = Ui.Node("trophy", p.Root).Box(0, 96, 400, 660);
-            col.Column(10, TextAnchor.UpperCenter);
+            col.Column(12, TextAnchor.UpperCenter);
             Ui.Ribbon(col, Loc.Tr("Трофей босса"));
             Ui.Label("hint", col, Loc.Tr("Выбери один талисман"), 18, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow(2f, 1f).Pref(380, 36);
             foreach (var id in opts)
             {
                 var r = defs.Relics[id];
                 var rowBtn = Ui.Node("relic", col);
-                rowBtn.Line(12, TextAnchor.MiddleLeft, 14, 14, 10, 10);
-                rowBtn.Pref(356, -1, 86);
-                var frame = Ui.Frame(rowBtn, "ui2/row2", 0.36f);
+                // плитка с окошком для значка (.brelic): та же картинка и масштаб, что у услуг лавки
+                rowBtn.Line(10, TextAnchor.MiddleLeft, 20, 14, 6, 6);
+                rowBtn.Pref(356, -1, 68);
+                var frame = Ui.Frame(rowBtn, "ui2/row2", 0.41f, 7.4f, 12.3f, 4.9f, 7f);
                 frame.raycastTarget = true;
-                frame.Outline(new Color(0.85f, 0.66f, 0.29f, 0.8f), 1.5f);
-                var ic = Ui.Img("icon", rowBtn, "r2/" + id);
+                var slot = Ui.Node("slot", rowBtn);
+                slot.Pref(54, 42);
+                var ic = Ui.Img("icon", slot, "r2/" + id);
                 ic.preserveAspect = true;
-                ic.Pref(56, 56);
-                var t = Ui.Label("text", rowBtn, "<color=#" + Ui.Hex(Ui.GoldHi) + ">" + r.Name + "</color>\n<size=15>" + r.Desc + "</size>", 19, Ui.Paper, TextAnchor.MiddleLeft, true).Shadow(1f);
-                t.Pref(262);
+                ic.rectTransform.Fill();
+                ic.rectTransform.offsetMin = new Vector2(5, 0);
+                ic.rectTransform.offsetMax = new Vector2(-5, 0);
+                var text = Ui.Node("text", rowBtn);
+                text.Column(1, TextAnchor.MiddleLeft);
+                text.Pref(248);
+                Ui.Label("name", text, r.Name, 19, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f).Pref(248);
+                var d = Ui.Label("desc", text, r.Desc, 15, new Color(0.95f, 0.92f, 0.85f, 0.9f), TextAnchor.UpperLeft).Shadow(1f);
+                d.lineSpacing = 0.95f;
+                d.Pref(248);
                 var b = rowBtn.gameObject.AddComponent<Button>();
                 b.transition = Selectable.Transition.None;
                 b.targetGraphic = frame;

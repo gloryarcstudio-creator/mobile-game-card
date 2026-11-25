@@ -245,9 +245,18 @@ namespace Fitil.Game
 
         void Arrow(RectTransform box, string text, float x, bool on, Action act)
         {
-            var b = Ui.Btn("arrow", box, text, () => { if (on) { Sound.Sfx("click"); act(); } }, 26);
-            ((RectTransform)b.transform).Box(x, 15, 40, 40);
-            b.interactable = on;
+            // .darrow 40×40: синеватая плашка с золотой каймой, выключенная — прозрачнее
+            var plate = Ui.Round("arrow", box, new Color32(0x30, 0x39, 0x54, 0xFF)).Radius(8).Outline(Ui.Gold, 1.2f);
+            plate.rectTransform.Box(x, 13, 40, 40);
+            plate.raycastTarget = true;
+            var b = plate.gameObject.AddComponent<Button>();
+            b.targetGraphic = plate;
+            b.transition = Selectable.Transition.None;
+            b.onClick.AddListener(() => { if (on) { Sound.Sfx("click"); act(); } });
+            var t = Ui.Label("t", plate.transform, text, 34, Ui.GoldHi, TextAnchor.MiddleCenter, true);
+            t.rectTransform.Fill();
+            t.rectTransform.offsetMin = new Vector2(0, 4);
+            if (!on) plate.gameObject.AddComponent<CanvasGroup>().alpha = 0.3f;
         }
 
         void SetDiff(int d)

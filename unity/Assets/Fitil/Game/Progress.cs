@@ -253,7 +253,7 @@ namespace Fitil.Game
             {
                 if (Done(a) || ProgressOf(a) < Goal(a)) continue;
                 Got[Id(a)] = (double)Now;
-                if (!silent) queue.Add(a);
+                if (!silent && !Tour.Running) queue.Add(a);   // во время обхода экранов плашки не закрывают снимки
             }
             SaveAch();
             if (queue.Count > 0 && !showing && Boot.Instance) Boot.Instance.StartCoroutine(Toasts());
@@ -315,6 +315,13 @@ namespace Fitil.Game
                 if (run.Find("reward") || run.Find("trophy")) return 1;
             }
             return UnityEngine.Object.FindFirstObjectByType<CombatScreen>() ? 1 : 0;
+        }
+
+        /// <summary>Показать плашку первого достижения для снимка (обход экранов).</summary>
+        internal static void TourToast()
+        {
+            var a = List.FirstOrDefault();
+            if (a != null) Plate(a).alpha = 1;
         }
 
         static CanvasGroup Plate(Dictionary<string, object> a)

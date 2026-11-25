@@ -299,8 +299,8 @@ namespace Fitil.Game
             // достижения, база знаний и статистика: значок, название и счёт под ним (.achbtn)
             var ach = Progress.List;
             MenuRow("medal", Loc.Tr("Достижения"), Loc.Tr("{a} из {b}", ("a", ach.Count(Progress.Done)), ("b", ach.Count)), 280, () => Progress.ShowAchievements(ShowTitle), Progress.HasNew);
-            MenuRow("magnifier", Loc.Tr("База знаний"), Loc.Tr("{a} из {b}", ("a", Progress.CodexCount), ("b", Progress.CodexTotal)), 218, () => Progress.ShowCodex(ShowTitle));
-            MenuRow("candybox", Loc.Tr("Магазин"), Loc.Tr("Герои и режим без рекламы"), 95, () => StoreScreen.Show(ShowTitle));
+            MenuRow("bookmark", Loc.Tr("База знаний"), Loc.Tr("{a} из {b}", ("a", Progress.CodexCount), ("b", Progress.CodexTotal)), 218, () => Progress.ShowCodex(ShowTitle));
+            MenuRow("ribbon", Loc.Tr("Магазин"), Loc.Tr("Герои и режим без рекламы"), 95, () => StoreScreen.Show(ShowTitle));
             MenuRow("hourglass", Loc.Tr("Статистика"), Progress.Stat("runs") > 0 ? Loc.Tr("Забегов: {a} · доставлено писем: {b}", ("a", Progress.Stat("runs")), ("b", Progress.Stat("wins"))) : Loc.Tr("Итоги твоих забегов"), 156, () => Progress.ShowStats(ShowTitle));
             var gloss = Ui.Push(Safe, Loc.Tr("Справочник"), () => Menus.ShowGlossary(ShowTitle), true, 17, 128, 42);
             ((RectTransform)gloss.transform).At(new Vector2(0.5f, 0f), new Vector2(-70, 36), new Vector2(130, 44));
@@ -409,7 +409,7 @@ namespace Fitil.Game
         }
 
         /// <summary>Страница вступления перед новым забегом (goIntro): картинка, название, рассказ и три правила.</summary>
-        void ShowIntro(string cls, System.Action start)
+        internal void ShowIntro(string cls, System.Action start)
         {
             Clear();
             Corner("heroes");

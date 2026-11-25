@@ -404,7 +404,8 @@ namespace Fitil.Game
     {
         public static GameObject Open(out RectTransform root)
         {
-            var shade = Ui.Img("overlay", Boot.Instance.Top, null, new Color(0.03f, 0.04f, 0.08f, 0.9f));
+            // окно поверх экрана сплошное (#overlay #080a12, v141): надписи экрана под ним не проступают
+            var shade = Ui.Img("overlay", Boot.Instance.Top, null, new Color32(0x08, 0x0A, 0x12, 0xFF));
             shade.raycastTarget = true;
             // подложка шире безопасной зоны: закрывает и вырез камеры
             shade.rectTransform.Fill();
