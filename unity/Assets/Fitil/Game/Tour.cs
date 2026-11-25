@@ -13,6 +13,16 @@ namespace Fitil.Game
     {
         static bool running;
 
+        // Ключи командной строки пробной сборки: -tour запускает обход сам, -tourDir <папка> задаёт, куда класть снимки
+        public static bool Wanted => Debug.isDebugBuild && !Application.isEditor && Array.IndexOf(Environment.GetCommandLineArgs(), "-tour") >= 0;
+
+        static string ArgDir()
+        {
+            var a = Environment.GetCommandLineArgs();
+            var i = Array.IndexOf(a, "-tourDir");
+            return i >= 0 && i + 1 < a.Length ? a[i + 1] : null;
+        }
+
         public static void Start()
         {
             if (running || !Boot.Instance) return;
@@ -22,7 +32,7 @@ namespace Fitil.Game
         static IEnumerator Run()
         {
             running = true;
-            var dir = Application.isEditor ? Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Screens")) : Path.Combine(Application.persistentDataPath, "Screens");
+            var dir = ArgDir() != null ? Path.GetFullPath(ArgDir()) : Application.isEditor ? Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Screens")) : Path.Combine(Application.persistentDataPath, "Screens");
             Directory.CreateDirectory(dir);
             foreach (var f in Directory.GetFiles(dir, "*.png")) File.Delete(f);
             var boot = Boot.Instance;
@@ -73,8 +83,9 @@ namespace Fitil.Game
             try { boot.ShowTitle(); } catch (Exception e) { log.Add("title: " + e); }
             File.WriteAllLines(Path.Combine(dir, "log.txt"), log.Count > 0 ? log.ToArray() : new[] { "ok" });
             Hud.Toast("Снимки готовы: папка Screens");
-            Application.OpenURL("file://" + dir.Replace('\\', '/'));
             running = false;
+            if (Wanted) { Application.Quit(); yield break; }
+            Application.OpenURL("file://" + dir.Replace('\\', '/'));
         }
     }
 }

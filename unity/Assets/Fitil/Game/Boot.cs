@@ -310,11 +310,15 @@ namespace Fitil.Game
         }
 
         // ================= кнопка «Назад» на Android =================
+        bool tourAsked;
+
         void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape)) GoBack();
             // F9 в редакторе и в пробной сборке: снимки всех экранов в папку Screens (Tour.cs)
             if (Input.GetKeyDown(KeyCode.F9) && (Application.isEditor || Debug.isDebugBuild)) Tour.Start();
+            // запуск с ключом -tour (снимки в GitHub): обход начинается сам, по окончании игра закрывается
+            if (!tourAsked && Tour.Wanted && Time.realtimeSinceStartup > 4f) { tourAsked = true; Tour.Start(); }
         }
 
         /// <summary>Системная «Назад» (и Esc в редакторе) делает то же, что кнопка закрытия на экране: закрывает подсказку,

@@ -38,7 +38,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        targetPlatform: [Android, iOS]
+        # StandaloneLinux64 собирается только ради снимков экранов (шаг ниже)
+        targetPlatform: [Android, iOS, StandaloneLinux64]
     env:
       HAS_LICENSE: ${{ secrets.UNITY_LICENSE != '' }}
     steps:
@@ -73,7 +74,9 @@ jobs:
         run: |
           VERSION=$(sed -n 's/^m_EditorVersion: //p' unity/ProjectSettings/ProjectVersion.txt)
           MODULE=$(echo "$TARGET" | tr '[:upper:]' '[:lower:]')
-          if [ "$TARGET" = Android ]; then OUT=build/Android/LastRay.apk; else OUT=build/$TARGET; fi
+          OUT=build/$TARGET
+          if [ "$TARGET" = Android ]; then OUT=build/Android/LastRay.apk; fi
+          if [ "$TARGET" = StandaloneLinux64 ]; then MODULE=base; OUT=build/$TARGET/LastRay.x86_64; fi
           mkdir -p build
           docker run --rm \
             -v "$PWD:/github/workspace" -w /github/workspace \
@@ -83,6 +86,25 @@ jobs:
               -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
               -projectPath unity -buildTarget "$TARGET" \
               -executeMethod Fitil.EditorTools.CiBuild.Build'
+      # Игра сама проходит по всем экранам (Tour.cs) и сохраняет снимки: их сверяют с веб-версией
+      - name: Снимки всех экранов
+        if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libegl1 > /dev/null
+          sudo chown -R "$USER" build
+          mkdir -p screens
+          timeout 600 xvfb-run -a -s "-screen 0 400x860x24" \
+            build/StandaloneLinux64/LastRay.x86_64 -force-glcore -screen-fullscreen 0 \
+            -screen-width 400 -screen-height 860 -tour -tourDir "$PWD/screens" -logFile screens/player.log || true
+          ls -l screens
+          test -f screens/log.txt
+      - uses: actions/upload-artifact@v4
+        if: always() && env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'
+        with:
+          name: Screens
+          path: screens
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         if: env.HAS_LICENSE == 'true'
         with:
