@@ -104,7 +104,7 @@ jobs:
           export LIBGL_ALWAYS_SOFTWARE=1
           xvfb-run -a -s "-screen 0 400x860x24 +extension GLX +render -noreset" \
             build/StandaloneLinux64/LastRay.x86_64 -force-glcore -screen-fullscreen 0 \
-            -screen-width 400 -screen-height 860 -tour -tourDir "$PWD/screens" -logFile - > player.log 2>&1 &
+            -screen-width 400 -screen-height 860 -tour -tourLang ru -tourDir "$PWD/screens" -logFile - > player.log 2>&1 &
           # обход занимает около двух минут; игра закрывается сама, когда готов log.txt
           for i in $(seq 1 60); do
             sleep 5

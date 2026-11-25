@@ -18,7 +18,7 @@ namespace Fitil.EditorTools
             var path = Environment.GetEnvironmentVariable("CI_BUILD_PATH");
             if (string.IsNullOrEmpty(path))
                 path = target == BuildTarget.Android ? "build/Android/LastRay.apk" : "build/" + target;
-            // Сборка для Linux нужна только для снимков экранов в GitHub: пробная, с клавишей F9 и ключом -tour
+            // Сборка для Linux нужна только для снимков экранов в GitHub (ключ -tour)
             var linux = target == BuildTarget.StandaloneLinux64;
             if (linux) PlayerSettings.runInBackground = true; // на сервере у окна нет фокуса
 
@@ -32,7 +32,7 @@ namespace Fitil.EditorTools
                 scenes = new[] { scenePath },
                 locationPathName = path,
                 target = target,
-                options = linux ? BuildOptions.Development : BuildOptions.None,
+                options = BuildOptions.None,
             };
             var report = BuildPipeline.BuildPlayer(options);
             var s = report.summary;

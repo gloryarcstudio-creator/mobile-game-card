@@ -72,6 +72,7 @@ namespace Fitil.Game
                 try { saved = Json.Str(Json.Get(Json.Obj(Json.Parse(settings)), "lang")); }
                 catch { /* испорченные настройки: язык телефона */ }
             }
+            if (Tour.Wanted && Tour.Lang != null) saved = Tour.Lang; // снимки для сверки делаются на заданном языке
             var lang = Loc.Detect(saved, SystemTwoLetter());
             Dictionary<string, string> strings = null;
             if (lang != "ru") strings = Loc.ParseStrings(Resources.Load<TextAsset>("Data/strings." + lang).text);
@@ -238,7 +239,7 @@ namespace Fitil.Game
             return t < 0.34f ? "bg/bg_stage1_town_day" : t < 0.67f ? "bg/bg_stage1_town_mid" : "bg/bg_stage1_town_sunset";
         }
 
-        void Clear()
+        internal void Clear()
         {
             if (screen) Destroy(screen);
             screen = null;

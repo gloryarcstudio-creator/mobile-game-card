@@ -14,7 +14,19 @@ namespace Fitil.Game
         static bool running;
 
         // Ключи командной строки пробной сборки: -tour запускает обход сам, -tourDir <папка> задаёт, куда класть снимки
-        public static bool Wanted => Debug.isDebugBuild && !Application.isEditor && Array.IndexOf(Environment.GetCommandLineArgs(), "-tour") >= 0;
+        public static bool Wanted => wanted ?? (wanted = (Debug.isDebugBuild || Application.platform == RuntimePlatform.LinuxPlayer)
+            && !Application.isEditor && Array.IndexOf(Environment.GetCommandLineArgs(), "-tour") >= 0).Value;
+        static bool? wanted;
+
+        /// <summary>Язык снимков: ключ -tourLang ru|en|uk.</summary>
+        public static string Lang => Arg("-tourLang");
+
+        static string Arg(string key)
+        {
+            var a = Environment.GetCommandLineArgs();
+            var i = Array.IndexOf(a, key);
+            return i >= 0 && i + 1 < a.Length ? a[i + 1] : null;
+        }
 
         // Отметки в журнале при съёмке в GitHub: по ним видно, на каком шаге игра остановилась
         public static void Mark(string what)
@@ -25,12 +37,7 @@ namespace Fitil.Game
             Debug.Log("TOUR " + what + " t=" + Time.realtimeSinceStartup.ToString("0.0"));
         }
 
-        static string ArgDir()
-        {
-            var a = Environment.GetCommandLineArgs();
-            var i = Array.IndexOf(a, "-tourDir");
-            return i >= 0 && i + 1 < a.Length ? a[i + 1] : null;
-        }
+        static string ArgDir() => Arg("-tourDir");
 
         public static void Start()
         {
@@ -80,7 +87,7 @@ namespace Fitil.Game
             try
             {
                 Menus.Close();
-                boot.ShowTitle();
+                boot.Clear(); // как при старте забега с экрана героев
                 flow = new RunFlow(boot.Defs, "lamp", 1);
                 flow.Start();
             }
