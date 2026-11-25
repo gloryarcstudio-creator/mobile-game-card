@@ -4,6 +4,7 @@
 using System;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace Fitil.EditorTools
@@ -20,10 +21,14 @@ namespace Fitil.EditorTools
             // Сборка для Linux нужна только для снимков экранов в GitHub: пробная, с клавишей F9 и ключом -tour
             var linux = target == BuildTarget.StandaloneLinux64;
 
-            // Сцен в проекте нет: игра строится кодом из пустой сцены
+            // Сцен в проекте нет: игра строится кодом. Несохранённую сцену собрать нельзя,
+            // поэтому на время сборки создаётся сцена с камерой по умолчанию
+            const string scenePath = "Assets/Fitil/CiBoot.unity";
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            EditorSceneManager.SaveScene(scene, scenePath);
             var options = new BuildPlayerOptions
             {
-                scenes = new string[0],
+                scenes = new[] { scenePath },
                 locationPathName = path,
                 target = target,
                 options = linux ? BuildOptions.Development : BuildOptions.None,

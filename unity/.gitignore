@@ -23,3 +23,6 @@
 /Assets/Fitil/Resources/Audio/Music/
 /Assets/Fitil/Resources/Audio/Music.meta
 /Screens/
+# Сцена, которую сборка в GitHub создаёт сама (CiBuild.cs)
+/Assets/Fitil/CiBoot.unity
+/Assets/Fitil/CiBoot.unity.meta
