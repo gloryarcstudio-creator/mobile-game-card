@@ -123,10 +123,10 @@ namespace Fitil.Game
             var name = Ui.Label("name", bar, g.Hero.Name, 17, Ui.GoldHi, TextAnchor.LowerLeft, true).Shadow(2f, 1f);
             name.rectTransform.Box(86, 8, 200, 24);
 
-            var bed = Ui.Round("hp", bar, new Color32(0x2A, 0x1A, 0x20, 0xFF));
+            var bed = Ui.Round("hp", bar, new Color32(0x2A, 0x1A, 0x20, 0xFF)).Radius(9);
             bed.rectTransform.Box(108, 50, 110, 19);
             var pct = run.MaxHp > 0 ? Mathf.Clamp01((float)run.Hp / run.MaxHp) : 0;
-            var fill = Ui.Round("fill", bed.transform, new Color32(0xD8, 0x3C, 0x34, 0xFF));
+            var fill = Ui.Round("fill", bed.transform, new Color32(0xD8, 0x3C, 0x34, 0xFF)).Radius(9);
             fill.rectTransform.anchorMin = Vector2.zero;
             fill.rectTransform.anchorMax = new Vector2(pct, 1);
             fill.rectTransform.offsetMin = fill.rectTransform.offsetMax = Vector2.zero;

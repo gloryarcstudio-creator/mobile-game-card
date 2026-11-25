@@ -93,7 +93,7 @@ namespace Fitil.Game
 
         void Price(RectTransform root, ShopItem item, float cx, float y)
         {
-            var plate = Ui.Round("price", root, new Color(0.08f, 0.09f, 0.15f, 0.62f));
+            var plate = Ui.Round("price", root, new Color(0.08f, 0.09f, 0.15f, 0.62f)).Radius(12);
             plate.rectTransform.At(new Vector2(0, 1), new Vector2(cx, -(y + 13)), new Vector2(66, 26));
             var coin = Ui.Img("coin", plate.transform, "i/coin");
             coin.preserveAspect = true;

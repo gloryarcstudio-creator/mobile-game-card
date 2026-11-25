@@ -23,7 +23,7 @@ namespace Fitil.Game
             Bars(p);
 
             var hint = Ui.Label("hint", p.Root, MapHint(), 22, new Color32(0xE6, 0xED, 0xF8, 0xFF), TextAnchor.UpperCenter, true).Shadow(2f, 1f).Outline(new Color(0.03f, 0.05f, 0.12f, 0.6f), 1.5f);
-            hint.rectTransform.Box(10, 92, 380, 56);
+            hint.rectTransform.Box(10, 102, 380, 56);
 
             var widths = new float[choices.Count];
             var total = 0f;
@@ -34,7 +34,7 @@ namespace Fitil.Game
             {
                 var card = EncCard(p.Root, choices[i], i);
                 var h = choices[i].T == "boss" ? 360 : 300;
-                card.Box(x, 150, widths[i], h);
+                card.Box(x, 158, widths[i], h);
                 // опора в середине: выбранная табличка растёт от центра
                 card.pivot = new Vector2(0.5f, 0.5f);
                 card.anchoredPosition += new Vector2(widths[i] / 2, -h / 2f);

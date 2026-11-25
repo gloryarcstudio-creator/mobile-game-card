@@ -107,23 +107,29 @@ namespace Fitil.Game
 
         void BuildTop()
         {
-            var bar = Ui.Img("topbar", root, "ui2/topbar");
+            // узкая полоса боя (.topbar.slim): тёмная рамка с золотой каймой, а не резная панель карты пути
+            var bar = Ui.Img("topbar", root, null, new Color(0, 0, 0, 0));
             bar.rectTransform.Box(3, 3, 394, 46);
-            if (!bar.sprite) bar.color = new Color32(20, 24, 38, 220);
-            else { bar.type = Image.Type.Sliced; bar.pixelsPerUnitMultiplier = 3.4f; }
+            var frame = Ui.Frame(bar.rectTransform, "ui2/btn_dark", 13f / 24f);
+            if (!frame.sprite) frame.color = new Color32(20, 24, 38, 220);
             var relics = Ui.Node("relics", bar.transform);
-            relics.Box(14, 8, 260, 30);
+            relics.Box(14, 8.5f, 260, 29);
             var x = 0f;
             foreach (var id in C.Run.Relics)
             {
-                var r = Ui.Img("r " + id, relics, "r2/" + id);
+                // талисман в кружке с каймой (.topbar.slim .relic 29×29)
+                var chip = Ui.Img("r " + id, relics, Ui.Circle, new Color32(0x26, 0x2D, 0x45, 0xFF)).Outline(Ui.Gold, 1f);
+                chip.rectTransform.Box(x, 0, 29, 29);
+                var r = Ui.Img("ic", chip.transform, "r2/" + id);
                 r.preserveAspect = true;
-                r.rectTransform.Box(x, 0, 30, 30);
-                x += 32;
+                r.rectTransform.Fill();
+                r.rectTransform.offsetMin = new Vector2(3, 3);
+                r.rectTransform.offsetMax = new Vector2(-3, -3);
+                x += 33;
             }
             var max = defs.MaxSteps;
-            stepText = Ui.Label("step", bar.transform, StepLabel(max), 16, Ui.Paper, TextAnchor.MiddleRight, true).Shadow();
-            stepText.rectTransform.Box(200, 8, 180, 30);
+            stepText = Ui.Label("step", bar.transform, StepLabel(max), 15, Ui.GoldHi, TextAnchor.MiddleRight, true).Shadow();
+            stepText.rectTransform.Box(198, 8, 180, 30);
         }
 
         string tier;
@@ -167,9 +173,9 @@ namespace Fitil.Game
             sayText.rectTransform.offsetMax = new Vector2(-10, -5);
             sayBubble.SetActive(false);
 
-            var plate = Ui.Round("nameplate", root, new Color32(18, 20, 32, 170));
+            var plate = Ui.Round("nameplate", root, new Color32(20, 24, 38, 150)).Radius(12);
             plate.rectTransform.Box(107, 402, 186, 31);
-            eName = Ui.Label("name", plate.transform, defs.Enemies[enemyId].Name, 18, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow().Fit(10);
+            eName = Ui.Label("name", plate.transform, defs.Enemies[enemyId].Name, 20, new Color32(0xF6, 0xEC, 0xD2, 0xFF), TextAnchor.MiddleCenter, true).Shadow(2f).Fit(10);
             eName.rectTransform.Fill();
 
             Bar(root, 50, 437, 300, 16, out eFill, out eTrail, out eHpText, 0, 1);
@@ -197,7 +203,7 @@ namespace Fitil.Game
             lampRt = lamp;
             pips = new Image[C.FlameMaxNow];
             // тёмная плашка с золотой каймой под Огоньками (.herobar .lamp)
-            var lampBg = Ui.Round("plate", lamp, new Color32(20, 16, 28, 217)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f);
+            var lampBg = Ui.Round("plate", lamp, new Color32(20, 16, 28, 217)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f).Radius(11);
             lampBg.rectTransform.Box(0, 0, pips.Length * 21 + 10, 23);
             for (var i = 0; i < pips.Length; i++)
             {
@@ -221,11 +227,11 @@ namespace Fitil.Game
             energyText = Ui.Label("n", orb.transform, "", 24, Color.white, TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
             energyText.rectTransform.Fill();
 
-            var drawB = Ui.Round("draw", heroBar, new Color32(20, 16, 28, 224)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f);
+            var drawB = Ui.Round("draw", heroBar, new Color32(20, 16, 28, 224)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f).Radius(9);
             drawB.rectTransform.Box(279, 4, 56, 18);
             drawText = Ui.Label("t", drawB.transform, "", 11, Ui.Paper).Shadow(1f);
             drawText.rectTransform.Fill();
-            var discB = Ui.Round("disc", heroBar, new Color32(20, 16, 28, 224)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f);
+            var discB = Ui.Round("disc", heroBar, new Color32(20, 16, 28, 224)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f).Radius(9);
             discB.rectTransform.Box(339, 4, 54, 18);
             discText = Ui.Label("t", discB.transform, "", 11, Ui.Paper).Shadow(1f);
             discText.rectTransform.Fill();
@@ -243,12 +249,12 @@ namespace Fitil.Game
         /// <summary>Полоска здоровья: тёмное ложе, светлый «след» убывающего здоровья, красная заливка и число.</summary>
         static void Bar(Transform parent, float x, float y, float w, float h, out Image fill, out Image trail, out Text text, float anchorY, int _)
         {
-            var bed = Ui.Round("hp", parent, new Color32(0x2A, 0x1A, 0x20, 0xFF));
+            var bed = Ui.Round("hp", parent, new Color32(0x2A, 0x1A, 0x20, 0xFF)).Radius(h / 2);
             bed.rectTransform.Box(x, y, w, h);
             bed.gameObject.AddComponent<UnityEngine.UI.Outline>().effectColor = Ui.Ink;
-            trail = Ui.Round("trail", bed.transform, new Color32(0xFF, 0xD9, 0xA0, 0xFF));
+            trail = Ui.Round("trail", bed.transform, new Color32(0xFF, 0xD9, 0xA0, 0xFF)).Radius(h / 2);
             trail.rectTransform.Fill();
-            fill = Ui.Round("fill", bed.transform, new Color32(0xD8, 0x3C, 0x34, 0xFF));
+            fill = Ui.Round("fill", bed.transform, new Color32(0xD8, 0x3C, 0x34, 0xFF)).Radius(h / 2);
             fill.rectTransform.Fill();
             text = Ui.Label("n", bed.transform, "", Mathf.RoundToInt(h * 0.72f), Color.white).Shadow(1f, 1f);
             text.rectTransform.Fill();
@@ -282,7 +288,7 @@ namespace Fitil.Game
         /// tip — пояснение по нажатию (showTip); withTitle — подпись значка идёт заголовком (у статусов со словом).
         static void Chip(Transform row, string icon, string text, Color color, int size = 13, float h = 22, string tip = null, bool withTitle = false)
         {
-            var plate = Ui.Round("chip", row, new Color32(20, 24, 38, 215));
+            var plate = Ui.Round("chip", row, new Color32(20, 24, 38, 215)).Radius(Mathf.Min(14, h * 0.4f));
             if (!string.IsNullOrEmpty(tip))
             {
                 plate.raycastTarget = true;

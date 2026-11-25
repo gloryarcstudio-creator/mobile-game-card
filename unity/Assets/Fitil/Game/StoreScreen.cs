@@ -44,7 +44,7 @@ namespace Fitil.Game
             col.Column(8, TextAnchor.UpperCenter, 14, 14, 0, 0);
             Ui.Label("h2", col, Loc.Tr("Магазин"), 28, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f).Pref(372, 40);
             Ui.Label("sub", col, Loc.Tr("Поддержите почту Медовой Горки"), 15, Soft).Pref(372, 22);
-            var list = Menus.ScrollList(col, 372);
+            var list = Menus.ScrollList(col, 378);
             var data = Boot.Instance.Data;
             void Again() => Show(back);
             var paid = Store.PaidHeroes;
@@ -52,30 +52,40 @@ namespace Fitil.Game
             {
                 var h = data.Classes[id];
                 var relic = Boot.Instance.Defs.Relics.TryGetValue(h.Relic ?? "", out var r) ? r.Desc : "";
-                var row = Item(list, Head(h.Name) + "  <size=14><color=#FFF4D6>" + h.Role + "</color></size>\n<color=#FFD9A0>" + h.Build + "</color>\n" + relic);
-                var face = Ui.CircleArt("face", row, Ui.Art("h/" + id + "_face"));
-                face.Pref(64, 64);
-                face.transform.SetAsFirstSibling();
+                var row = Item(list, out var text);
+                // портрет на цветном фоне героя (.sitem .cp 64×76)
+                Ui.Portrait("face", row, id, 64, 76).Pref(64, 76);
+                text.SetAsLastSibling();
+                var head = Ui.Node("head", text);
+                head.Line(6, TextAnchor.LowerLeft);
+                Ui.Label("name", head, h.Name, 20, Ui.GoldHi, TextAnchor.LowerLeft, true).Shadow(1f);
+                Ui.Label("role", head, h.Role, 14, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.LowerLeft);
+                // чем силён герой: красная плашка (.stext em)
+                var tag = Ui.Round("build", text, new Color32(0x8A, 0x2A, 0x24, 0xFF)).Outline(Ui.Ink, 1f);
+                tag.rectTransform.Line(0, TextAnchor.MiddleCenter, 7, 7, 1, 2);
+                Ui.Label("t", tag.transform, h.Build, 13, new Color32(0xFF, 0xF4, 0xD6, 0xFF));
+                Desc(text, relic);
                 PriceOrOwned(row, "hero_" + id, Store.HeroOwned(data, id), Again);
             }
             var allHeroes = paid.TrueForAll(id => Store.HeroOwned(data, id));
-            var pack = Item(list, Head(Loc.Tr("Все три героя")) + "\n" + Loc.Tr("Выгоднее, чем по одному"));
+            var pack = Item(list, out var packText);
             var faces = Ui.Node("faces", pack);
-            faces.Pref(64, 54);
-            faces.SetAsFirstSibling();
+            faces.Pref(64, 38);
             for (var i = 0; i < paid.Count && i < 3; i++)
-            {
-                var f = Ui.CircleArt("f", faces, Ui.Art("h/" + paid[i] + "_face"));
-                f.rectTransform.Box(i * 16, 6 + (i % 2) * 8, 32, 32);
-            }
+                Ui.Portrait("f", faces, paid[i], 30, 38).rectTransform.Box(i * 22 - (Math.Min(paid.Count, 3) * 22 + 8 - 64) / 2f, 0, 30, 38);
+            packText.SetAsLastSibling();
+            Ui.Label("name", packText, Loc.Tr("Все три героя"), 19, Ui.GoldHi, TextAnchor.LowerLeft, true).Shadow(1f);
+            Desc(packText, Loc.Tr("Выгоднее, чем по одному"));
             PriceOrOwned(pack, "heroes", allHeroes, Again);
-            var noads = Item(list, Head(Loc.Tr("Без рекламы")) + "\n" + Loc.Tr("Бонусы событий и возрождение после поражения сразу, без роликов"));
+            var noads = Item(list, out var adText);
             var ad = Ui.Img("ad", noads, "i/ad");
             ad.preserveAspect = true;
             ad.Pref(64, 54);
-            ad.transform.SetAsFirstSibling();
+            adText.SetAsLastSibling();
+            Ui.Label("name", adText, Loc.Tr("Без рекламы"), 20, Ui.GoldHi, TextAnchor.LowerLeft, true).Shadow(1f);
+            Desc(adText, Loc.Tr("Бонусы событий и возрождение после поражения сразу, без роликов"));
             PriceOrOwned(noads, "noads", Store.NoAds, Again);
-            if (Store.Test) Ui.Label("note", list, Loc.Tr("Тестовая версия: покупки не настоящие, деньги не списываются."), 13, Soft).Pref(356, 40);
+            if (Store.Test) Ui.Label("note", list, Loc.Tr("Тестовая версия: покупки не настоящие, деньги не списываются."), 13, Soft).Pref(366, 40);
 
             var btns = Ui.Node("btns", col);
             btns.Line(10, TextAnchor.MiddleCenter);
@@ -103,32 +113,50 @@ namespace Fitil.Game
 
         static bool restoring, buyBusy;
 
-        // название товара шрифтом заголовков (.stext b: 20, золотое)
-        static string Head(string name) => "<size=20><color=#" + Ui.Hex(Ui.GoldHi) + "><b>" + name + "</b></color></size>";
+        const float TextW = 174;
 
-        static RectTransform Item(RectTransform list, string text)
+        /// <summary>Плитка товара (.sitem): слева картинка, столбик текста, справа цена. Возвращает плитку и столбик.</summary>
+        static RectTransform Item(RectTransform list, out RectTransform text)
         {
             var bg = Ui.Round("sitem", list, ItemBg);
             bg.Dark();
             var rt = bg.rectTransform;
             rt.Line(10, TextAnchor.MiddleLeft, 12, 12, 12, 13);
-            rt.Pref(360, -1, 79);
-            var t = Ui.Label("text", rt, text, 13, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.MiddleLeft);
-            t.lineSpacing = 1.05f;
-            t.Pref(168);
+            rt.Pref(366, -1, 79);
+            text = Ui.Node("text", rt);
+            text.Column(4, TextAnchor.MiddleLeft);
+            text.Pref(TextW);
             return rt;
+        }
+
+        static void Desc(RectTransform text, string words)
+        {
+            var t = Ui.Label("desc", text, words, 13, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.UpperLeft);
+            t.lineSpacing = 1.05f;
+            t.Pref(TextW);
         }
 
         static void PriceOrOwned(RectTransform row, string id, bool owned, Action after)
         {
             if (owned)
             {
-                Ui.Label("owned", row, Loc.Tr("Куплено") + " ✓", 15, new Color32(0x9F, 0xE0, 0x8A, 0xFF), TextAnchor.MiddleCenter, true).Pref(84);
+                Ui.Label("owned", row, Loc.Tr("Куплено") + " ✓", 16, new Color32(0x8D, 0xE0, 0x8F, 0xFF), TextAnchor.MiddleCenter, true).Pref(84);
                 return;
             }
-            // цена площадки бывает длинной («4 990,00 ₸»): шрифт меньше, чтобы влезла в кнопку
+            // зелёная кнопка цены (.btn.price). Цена площадки бывает длинной («4 990,00 ₸»): шрифт меньше, чтобы влезла
             var price = Store.PriceOf(id);
-            Ui.Push(row, price, () => Buy(id, after), false, price.Length > 9 ? 12 : price.Length > 6 ? 14 : 19, 84, 50);
+            var bg = Ui.Round("price", row, new Color32(0x3F, 0x82, 0x45, 0xFF)).Outline(Ui.Ink, 1.5f);
+            bg.Pref(84, 44);
+            bg.raycastTarget = true;
+            var shine = Ui.Round("shine", bg.transform, new Color(1, 1, 1, 0.12f));
+            shine.rectTransform.Fill();
+            shine.rectTransform.offsetMin = new Vector2(2, 22);
+            shine.rectTransform.offsetMax = new Vector2(-2, -2);
+            var b = bg.gameObject.AddComponent<Button>();
+            b.targetGraphic = bg;
+            b.onClick.AddListener(() => Buy(id, after));
+            var t = Ui.Label("label", bg.transform, price, price.Length > 9 ? 12 : price.Length > 6 ? 14 : 19, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow();
+            t.rectTransform.Fill();
         }
 
         /// <summary>Купить товар (storeBuy): после покупки звук, сообщение и экран заново.</summary>

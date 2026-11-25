@@ -119,6 +119,7 @@ namespace Fitil.Game
             tourRec = rec;
             var p = Open();
             Boot.Instance.Corner("end");
+            if (dim) Night(p);
             var col = Ui.Node("end", p.Root).Box(0, ribbon != null ? 40 : 78, 400, 800);   // книга на 144 с лентой и на 128 без неё, как в веб-версии
             col.Column(10, TextAnchor.UpperCenter);
             if (ribbon != null) Ui.Ribbon(col, ribbon);
@@ -127,15 +128,18 @@ namespace Fitil.Game
             page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
             page.Pref(372);
             Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
-            Ui.Label("title", page, title, 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250);
+            Ui.Label("title", page, title, 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250).GetComponent<Text>().fontStyle = FontStyle.Bold;
             BookPic(page, pic, 220, dim);
-            Ui.Label("story", page, story, 17, Ui.Ink).Pref(318);
+            Ui.Label("story", page, story, 17, Ui.Ink, TextAnchor.UpperLeft).Pref(318);
             Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF)).Pref(318);
             Spacer(col, 14);
             if (rec != null) Ui.Push(col, Loc.Tr("Итоги забега"), () => Summary(rec), false, 30, 268, 68);
             Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, rec != null, rec != null ? 17 : 24, rec != null ? 152 : 240, rec != null ? 40 : 60);
             return p;
         }
+
+        /// <summary>Синие сумерки за книгой на экранах поражения (#bg::after в веб-версии).</summary>
+        static void Night(Page p) => Ui.Img("night", p.Back, null, new Color32(8, 10, 30, 175)).rectTransform.Fill();
 
         public string DiffName => G.Diff.Name;
 
@@ -174,15 +178,16 @@ namespace Fitil.Game
             Sound.Sfx("defeat");
             var p = Open();
             Boot.Instance.Corner("end");
+            Night(p);
             var col = Ui.Node("end", p.Root).Box(0, 104, 400, 750);
             col.Column(10, TextAnchor.UpperCenter);
             var page = Ui.Node("page", col);
             page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
             page.Pref(372);
             Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
-            Ui.Label("title", page, Loc.Tr("Тени настигли"), 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250);
+            Ui.Label("title", page, Loc.Tr("Тени настигли"), 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250).GetComponent<Text>().fontStyle = FontStyle.Bold;
             BookPic(page, "story_lose", 170, true);
-            Ui.Label("story", page, Loc.Tr("Но письмо ещё можно спасти. Попробуй этот бой снова или вернись на развилку перед ним и выбери другой путь."), 17, Ui.Ink).Pref(318);
+            Ui.Label("story", page, Loc.Tr("Но письмо ещё можно спасти. Попробуй этот бой снова или вернись на развилку перед ним и выбери другой путь."), 17, Ui.Ink, TextAnchor.UpperLeft).Pref(318);
             Spacer(col, 16);
             var ad = Store.NoAds ? "" : "▶ ";
             var fightSnap = snapFight;

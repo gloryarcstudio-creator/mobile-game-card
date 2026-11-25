@@ -44,8 +44,8 @@ namespace Fitil.Game
             tag.transform.SetAsFirstSibling();
             t.rectTransform.Box(48, 4, 250, 34);
             t.Fit(13);
-            var x = Ui.Btn("close", head, "✕", () => { Sound.Sfx("click"); close(); }, 22);
-            ((RectTransform)x.transform).Box(330, 0, 42, 42);
+            var x = Ui.CloseBtn(head, () => { Sound.Sfx("click"); close(); }, 44);
+            ((RectTransform)x.transform).Box(328, -1, 44, 44);
             if (got >= 0) Bar(col, got, total, 372, 24, true);
             var list = Menus.ScrollList(col, 372);
             var tabs = Ui.Node("tabs", col);
@@ -60,7 +60,7 @@ namespace Fitil.Game
 
         static void Bar(Transform parent, int got, int total, float w, float h, bool number)
         {
-            var bar = Ui.Round("bar", parent, new Color32(0x0E, 0x10, 0x1C, 0xE6));
+            var bar = Ui.Round("bar", parent, number ? (Color)new Color32(0x24, 0x1D, 0x2E, 0xFF) : new Color32(0x12, 0x0F, 0x19, 0xFF));
             bar.Pref(w, h);
             var k = total > 0 ? Mathf.Clamp01((float)got / total) : 0;
             if (k > 0)
@@ -71,20 +71,29 @@ namespace Fitil.Game
                 r.anchorMax = new Vector2(k, 1);
                 r.offsetMin = r.offsetMax = Vector2.zero;
             }
-            if (number) Ui.Label("n", bar.transform, got + "/" + total, 14, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow(1f).rectTransform.Fill();
+            if (number) Ui.Label("n", bar.transform, got + "/" + total, 17, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleCenter, true).Shadow(1f).rectTransform.Fill();
         }
 
         static void Tab(RectTransform tabs, string name, string sub, bool on, float w, Action pick)
         {
             // выбранная вкладка светится тёплым пятном, остальные без подложки
-            var bg = Ui.Round("tab", tabs, on ? new Color(1f, 0.78f, 0.42f, 0.16f) : new Color(0, 0, 0, 0));
+            var bg = Ui.Round("tab", tabs, new Color(0, 0, 0, 0));
             bg.Pref(w, 54);
-            var t = Ui.Label("name", bg.transform, name + "\n<size=13>" + sub + "</size>", 14, on ? Ui.GoldHi : (Color)new Color32(0xC9, 0xC0, 0xD8, 0xFF), TextAnchor.MiddleCenter, true);
-            t.lineSpacing = 0.9f;
-            t.rectTransform.Fill();
-            t.rectTransform.offsetMin = new Vector2(3, 2);
-            t.rectTransform.offsetMax = new Vector2(-3, -2);
+            if (on)
+            {
+                // выбранная вкладка: тёплое свечение снизу, а не плашка
+                var glow = Ui.Img("glow", bg.transform, Ui.Soft, new Color(1f, 0.78f, 0.42f, 0.28f));
+                glow.type = Image.Type.Sliced;
+                glow.rectTransform.Fill();
+                glow.rectTransform.offsetMin = new Vector2(2, -6);
+                glow.rectTransform.offsetMax = new Vector2(-2, -26);
+            }
+            var t = Ui.Label("name", bg.transform, name, 14, on ? Ui.GoldHi : (Color)new Color32(0xC9, 0xC0, 0xD8, 0xFF), TextAnchor.LowerCenter, true);
+            t.rectTransform.Box(3, 6, w - 6, 22);
             t.Fit(10);
+            var st = Ui.Label("sub", bg.transform, sub, 13, on ? Ui.GoldHi : (Color)new Color32(0x9A, 0x90, 0xAC, 0xFF), TextAnchor.UpperCenter);
+            st.rectTransform.Box(3, 28, w - 6, 20);
+            st.Fit(9);
             bg.raycastTarget = true;
             var b = bg.gameObject.AddComponent<Button>();
             b.targetGraphic = bg;
@@ -148,9 +157,10 @@ namespace Fitil.Game
 
             var port = Ui.Node("port", rt);
             port.Pref(71, 71);
-            var plate = Ui.Round("bg", port, done ? (Color)new Color32(0xE8, 0x83, 0x6A, 0xFF) : new Color32(0x8A, 0x5A, 0x52, 0xFF));
+            // подложка по разделу достижения; неполученное — потемневшая картинка (grayscale + brightness .55)
+            var plate = Ui.Img("bg", port, Ui.HeroBg(Json.Str(Json.Get(a, "cat")) ?? "path"), done ? Color.white : new Color(0.86f, 0.84f, 0.88f, 1));
             plate.rectTransform.Fill();
-            var pic = Ui.Img("art", port, ArtOf(a), done ? Color.white : new Color(0.12f, 0.12f, 0.14f, 0.92f));
+            var pic = Ui.Img("art", port, ArtOf(a), done ? Color.white : new Color(0.3f, 0.3f, 0.33f, 1));
             pic.preserveAspect = true;
             pic.rectTransform.Fill();
             pic.rectTransform.offsetMin = new Vector2(4, 4);
@@ -299,24 +309,35 @@ namespace Fitil.Game
             if (cls == null || !data.Classes.ContainsKey(cls)) cls = "lamp";
             var win = Json.Bool(Json.Get(rec, "win"));
             var diff = data.Difficulties[Mathf.Clamp(Json.Int(Json.Get(rec, "diff"), 1), 0, data.Difficulties.Count - 1)];
-            var card = Ui.Node("sumcard", parent);
-            card.Column(8, TextAnchor.UpperCenter, 14, 14, 14, 14);
-            card.Pref(364);
-            var bg = Ui.Round("bg", card, new Color32(0x1C, 0x19, 0x2B, 0xF2));
-            bg.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-            bg.rectTransform.Fill();
-            bg.Outline(win ? new Color(0.85f, 0.66f, 0.29f, 0.8f) : new Color(0.6f, 0.4f, 0.5f, 0.6f), 1.5f);
+            // .sumcard 360: тёмная рамка с золотой каймой (ui2/btn_dark), поля 17, внутри 326
+            var cardBg = Ui.Round("sumcard", parent, new Color32(0x1C, 0x19, 0x2B, 0xF2)).Dark();
+            var card = cardBg.rectTransform;
+            card.Column(8, TextAnchor.UpperLeft, 17, 17, 17, 15);
+            card.Pref(360);
 
             var head = Ui.Node("head", card);
             head.Line(10, TextAnchor.MiddleLeft);
-            head.Pref(336, 60);
-            Ui.CircleArt("face", head, Ui.Art("h/" + cls + "_face")).Pref(56, 56);
-            Ui.Label("who", head, "<b>" + data.Classes[cls].Name + "</b>\n<size=12>" + diff.Name + "\n" + FmtDate(Num(rec, "at")) + "</size>", 16, Ui.Paper, TextAnchor.MiddleLeft).Pref(150);
-            Ui.Label("res", head, win ? Loc.Tr("Письмо доставлено") : Loc.Tr("Тени настигли"), 16, win ? Ui.GoldHi : new Color32(0xE0, 0x8A, 0x7E, 0xFF), TextAnchor.MiddleRight, true).Pref(116);
+            head.Pref(326, 64);
+            Ui.Portrait("face", head, cls, 64, 64).Pref(64, 64);
+            var who = Ui.Node("who", head);
+            who.Column(0, TextAnchor.MiddleLeft);
+            who.Pref(130);
+            Ui.Label("name", who, data.Classes[cls].Name, 22, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleLeft, true).Shadow(1f).Pref(130, 26);
+            Ui.Label("diff", who, diff.Name, 14, new Color32(0xC9, 0xC0, 0xD8, 0xFF), TextAnchor.MiddleLeft).Pref(130, 16);
+            Ui.Label("date", who, FmtDate(Num(rec, "at")), 14, new Color32(0xC9, 0xC0, 0xD8, 0xFF), TextAnchor.MiddleLeft).Pref(130, 16);
+            // исход забега: наклонённая плашка (.sumres), золотая у победы и тёмно-красная у поражения
+            var res = Ui.Round("res", head, win ? (Color)new Color32(0xDE, 0xB6, 0x5B, 0xFF) : new Color32(0x46, 0x2E, 0x37, 0xFF)).Outline(win ? Ui.Ink : (Color)new Color32(0xA0, 0x5A, 0x5A, 0xFF), 1.2f);
+            res.Pref(112, 48);
+            var rl = Ui.Label("t", res.transform, win ? Loc.Tr("Письмо доставлено") : Loc.Tr("Тени настигли"), 15, win ? (Color)new Color32(0x2A, 0x1C, 0x0C, 0xFF) : new Color32(0xF1, 0xD8, 0xD4, 0xFF), TextAnchor.MiddleCenter, true);
+            rl.rectTransform.Fill();
+            rl.rectTransform.offsetMin = new Vector2(8, 4);
+            rl.rectTransform.offsetMax = new Vector2(-8, -4);
+            rl.lineSpacing = 0.9f;
+            res.gameObject.AddComponent<Tilt>().Angle = 4;
 
             string Foe(string k) { var id = Json.Str(Json.Get(rec, k)); return id != null && defs.Enemies.TryGetValue(id, out var e) ? e.Name : null; }
             var last = win ? (Foe("fin") is string f ? Loc.Tr("Финальный бой: {name}", ("name", f)) : null) : (Foe("by") is string b ? Loc.Tr("Последний бой: {name}", ("name", b)) : null);
-            if (last != null) Ui.Label("last", card, last, 14, Soft).Pref(336);
+            if (last != null) Ui.Label("last", card, last, 14, Soft, TextAnchor.MiddleLeft).Pref(326);
 
             var maxSteps = defs.MaxSteps;
             int N(string k) => Json.Int(Json.Get(rec, k));
@@ -331,39 +352,48 @@ namespace Fitil.Game
                 (Loc.Tr("Монет собрано"), Fmt(N("gold")), Loc.Tr("потрачено: {n}", ("n", Fmt(N("spent"))))),
                 (Loc.Tr("Колода"), Loc.Tr("{n} {n|карта|карты|карт}", ("n", N("deck"))), Loc.Tr("улучшено: {n}", ("n", N("ups")))),
             };
+            var gold34 = new Color(0.85f, 0.66f, 0.29f, 0.34f);
             for (var i = 0; i < tiles.Length; i += 2)
             {
                 var line = Ui.Node("tiles", card);
-                line.Line(8, TextAnchor.UpperCenter);
-                line.Pref(336);
+                line.Line(6, TextAnchor.UpperLeft);
+                line.Pref(326);
+                var tall = tiles[i].Item3 != null || tiles[i + 1].Item3 != null;
                 for (var j = i; j < i + 2; j++)
                 {
                     var (label, value, sub) = tiles[j];
-                    var t = Ui.Round("tile", line, new Color32(0x10, 0x10, 0x1C, 0xC8));
+                    // плитка .sumtile: всё прижато влево, число крупное шрифтом заголовков
+                    var t = Ui.Round("tile", line, new Color32(8, 7, 14, 128)).Outline(gold34, 1f);
                     var tr = t.rectTransform;
-                    tr.Column(1, TextAnchor.MiddleCenter, 4, 4, 6, 6);
-                    tr.Pref(164, -1, 64);
-                    Ui.Label("k", tr, label, 12, Soft).Pref(156);
-                    Ui.Label("v", tr, value, 19, Ui.GoldHi, TextAnchor.MiddleCenter, true).Pref(156);
-                    if (sub != null) Ui.Label("s", tr, sub, 11, Soft).Pref(156);
+                    tr.Column(0, TextAnchor.UpperLeft, 8, 8, 5, 6);
+                    tr.Pref(160, -1, tall ? 70 : 55);
+                    Ui.Label("k", tr, label, 14, new Color32(0xB8, 0xAE, 0xCB, 0xFF), TextAnchor.MiddleLeft).Pref(142, 15);
+                    Ui.Label("v", tr, value, 23, Ui.GoldHi, TextAnchor.MiddleLeft, true).Pref(142, 26);
+                    if (sub != null) Ui.Label("s", tr, sub, 13, new Color32(0xC9, 0xC0, 0xD8, 0xFF), TextAnchor.MiddleLeft).Fit(9).Pref(142, 15);
                 }
             }
 
             var relics = (Json.Arr(Json.Get(rec, "relics")) ?? new List<object>()).Select(x => Json.Str(x)).Where(r => r != null && defs.Relics.ContainsKey(r)).ToList();
-            Ui.Label("rt", card, Loc.Tr("Талисманы") + " · " + relics.Count, 14, Soft, TextAnchor.MiddleLeft).Pref(336);
+            Ui.Label("rt", card, Loc.Tr("Талисманы") + " · " + relics.Count, 14, new Color32(0xB8, 0xAE, 0xCB, 0xFF), TextAnchor.MiddleLeft).Pref(326);
             // значки мельче, когда их больше трёх рядов (v170)
             var size = relics.Count <= 24 ? 34f : relics.Count <= 40 ? 28 : relics.Count <= 60 ? 22 : 18;
-            var perRow = Mathf.Max(1, (int)(336 / (size + 4)));
+            var perRow = Mathf.Max(1, (int)((326 + 4) / (size + 4)));
+            var pad = size >= 34 ? 4 : 2;
             for (var i = 0; i < relics.Count; i += perRow)
             {
                 var line = Ui.Node("relics", card);
                 line.Line(4, TextAnchor.MiddleLeft);
-                line.Pref(336, size);
+                line.Pref(326, size);
                 foreach (var r in relics.Skip(i).Take(perRow))
                 {
-                    var ic = Ui.Img("r", line, "r2/" + r);
+                    // кружок .sumr: тёмная подложка с золотой каймой, внутри значок
+                    var chip = Ui.Img("r", line, Ui.Circle, new Color32(0x2E, 0x27, 0x44, 0xFF)).Outline(new Color(0.85f, 0.66f, 0.29f, 0.6f), 1f);
+                    chip.Pref(size, size);
+                    var ic = Ui.Img("ic", chip.transform, "r2/" + r);
                     ic.preserveAspect = true;
-                    ic.Pref(size, size);
+                    ic.rectTransform.Fill();
+                    ic.rectTransform.offsetMin = new Vector2(pad, pad);
+                    ic.rectTransform.offsetMax = new Vector2(-pad, -pad);
                 }
             }
             var notes = new[]
@@ -372,7 +402,7 @@ namespace Fitil.Game
                 N("fallen") > 0 ? Loc.Tr("Ушли в Тень: {n}", ("n", N("fallen"))) : null,
                 N("revives") > 0 ? Loc.Tr("Повторных боёв: {n}", ("n", N("revives"))) : null,
             }.Where(x => x != null).ToList();
-            if (notes.Count > 0) Ui.Label("note", card, string.Join(" · ", notes), 13, Soft).Pref(336);
+            if (notes.Count > 0) Ui.Label("note", card, string.Join(" · ", notes), 14, new Color32(0xB8, 0xAE, 0xCB, 0xFF), TextAnchor.MiddleLeft).Pref(326);
             return card;
         }
 
@@ -474,16 +504,32 @@ namespace Fitil.Game
             else
             {
                 var art = kind == "c" ? null : CxArt(kind, id);
-                var pic = kind == "h" ? (Image)Ui.CircleArt("pic", rt, art) : Ui.Img("pic", rt, art, Color.white);
-                if (kind != "h") pic.preserveAspect = true;
-                pic.rectTransform.Box(10, 6, 64, kind == "c" ? 90 : 64);
+                Image pic;
+                if (kind == "c")
+                {
+                    pic = Ui.Img("pic", rt, art, Color.white);
+                    pic.rectTransform.Box(10, 6, 64, 90);
+                }
+                else
+                {
+                    // окошко .cxpic 68×68: подложка с переходом цвета, кайма (у закрытого — серая), картинка внутри
+                    var slot = Ui.Img("slot", rt, Ui.HeroBg(kind == "h" ? "cxhero" : "cx"), Color.white).Outline(on ? Ui.Gold : (Color)new Color32(0x5A, 0x50, 0x70, 0xFF), 1.2f);
+                    slot.rectTransform.Box(8, 9, 68, 68);
+                    slot.gameObject.AddComponent<RectMask2D>();
+                    pic = Ui.Img("pic", slot.transform, art, Color.white);
+                    pic.preserveAspect = true;
+                    pic.rectTransform.Fill();
+                    var pad = kind == "r" ? 8 : 3;
+                    pic.rectTransform.offsetMin = new Vector2(pad, kind == "h" ? 0 : pad);
+                    pic.rectTransform.offsetMax = new Vector2(-pad, -pad);
+                }
                 if (!art) pic.color = new Color(0, 0, 0, 0);
-                if (!on && art) (kind == "h" ? pic.transform.GetChild(0).GetComponent<Image>() : pic).color = new Color(0.05f, 0.05f, 0.08f, 0.95f);   // силуэт
+                if (!on && art) pic.color = new Color(0, 0, 0, 0.55f);   // силуэт: brightness(0) opacity(.55)
                 if (kind == "c" && !on) Ui.Label("q", rt, "?", 34, new Color(1, 1, 1, 0.3f), TextAnchor.MiddleCenter, true).rectTransform.Fill();
                 if (kind != "c")
                 {
                     var n = Ui.Label("name", rt, on ? CxName(kind, id, defs) : "???", 12, on ? Ui.Paper : Soft);
-                    n.rectTransform.Box(2, 72, 80, 32);
+                    n.rectTransform.Box(2, 79, 80, 26);
                     n.Fit(9);
                 }
             }

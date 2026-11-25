@@ -32,14 +32,14 @@ namespace Fitil.Game
         }
 
         /// <summary>Панель .settings: тёмная рамка ui2/panel, заголовок, крестик. Высота — по содержимому.</summary>
-        static RectTransform Panel(string title, float top, Action onClose, out RectTransform layer, int padBottom = 30)
+        static RectTransform Panel(string title, float top, Action onClose, out RectTransform layer, int padBottom = 30, float height = 0)
         {
             Close();
             open = Overlay.Open(out layer);
-            var col = Ui.Node("panel", layer).Box(24, top, 352, 100);
+            var col = Ui.Node("panel", layer).Box(24, top, 352, height > 0 ? height : 100);
             col.Column(0, TextAnchor.UpperCenter, 24, 24, 16, padBottom);
-            var fit = col.gameObject.AddComponent<ContentSizeFitter>();
-            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            // высота по содержимому; заданная высота — для окна с прокруткой (справочник)
+            if (height <= 0) col.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             var frame = Ui.Frame(col, "ui2/panel", 0.494f, 2, 49, 2, 10);
             if (!frame.sprite) frame.color = new Color32(0x22, 0x1C, 0x30, 0xF5);
             var t = Ui.Label("title", col, title, 26, Title, TextAnchor.MiddleCenter, true).Shadow(2f);
@@ -285,28 +285,20 @@ namespace Fitil.Game
         /// <summary>Справочник: ключевые слова игры и их пояснения.</summary>
         public static void ShowGlossary(Action back = null)
         {
-            Close();
-            open = Overlay.Open(out var layer);
-            var col = Ui.Node("gloss", layer).Box(0, 20, 400, 0);
-            col.anchorMin = new Vector2(0, 0);
-            col.anchorMax = new Vector2(1, 1);
-            col.offsetMin = new Vector2(0, 16);
-            col.offsetMax = new Vector2(0, -20);
-            col.Column(10, TextAnchor.UpperCenter, 18, 18, 0, 0);
-            Ui.Label("h2", col, Loc.Tr("Справочник"), 28, Ui.Gold, TextAnchor.MiddleCenter, true).Shadow(2f).Pref(360, 40);
-            var list = ScrollList(col, 364);
+            // то же окно в рамке, что и настройки, во всю высоту экрана; закрывается крестиком
+            var col = Panel(Loc.Tr("Справочник"), 62, () => { if (back != null) back(); else Close(); }, out _, 58, 778);
+            var list = ScrollList(col, 304);
             var gl = Json.Arr(Json.Get(Boot.Instance.Data.Raw, "gloss"));
             if (gl != null)
                 foreach (var item in gl)
                 {
                     var pair = Json.Arr(item);
                     if (pair == null || pair.Count < 2) continue;
-                    Ui.Label("dt", list, Json.Str(pair[0]), 18, Ui.GoldHi, TextAnchor.LowerLeft, true).Pref(348);
+                    Ui.Label("dt", list, Json.Str(pair[0]), 18, Ui.GoldHi, TextAnchor.LowerLeft, true).Pref(292, 30);
                     var dd = Ui.Label("dd", list, Json.Str(pair[1]), 15, Ui.Paper, TextAnchor.UpperLeft);
                     dd.lineSpacing = 1.05f;
-                    dd.Pref(348);
+                    dd.Pref(292);
                 }
-            Ui.Push(col, back != null ? Loc.Tr("Назад") : Loc.Tr("Закрыть"), () => { if (back != null) back(); else Close(); }, false, 20, 200, 52);
         }
 
         /// <summary>Прокручиваемый столбик во всю оставшуюся высоту: возвращает узел для строк.</summary>

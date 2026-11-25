@@ -137,6 +137,13 @@ namespace Fitil.Game
             return img;
         }
 
+        /// <summary>Радиус скругления плашки в точках макета (по умолчанию у Round — 5).</summary>
+        public static Image Radius(this Image img, float r)
+        {
+            img.pixelsPerUnitMultiplier = 10f / Mathf.Max(1f, r);
+            return img;
+        }
+
         public static Button Btn(string name, Transform parent, string text, Action onClick, int size = 22, bool bare = false)
         {
             var rt = Node(name, parent);
@@ -317,7 +324,7 @@ namespace Fitil.Game
                 if (red)
                 {
                     // красная кнопка: масштаб .44, у большой (.btn.big) .58; выступы рамки 45, 25, 50, 16 точек картинки
-                    var k = size >= 26 ? 0.58f : 0.44f;
+                    var k = size >= 24 ? 0.58f : 0.44f;
                     img.sprite = red;
                     img.pixelsPerUnitMultiplier = 1f / k;
                     img.rectTransform.offsetMin = new Vector2(-45 * k, -16 * k);
@@ -417,6 +424,12 @@ namespace Fitil.Game
             ["baker"] = new[] { new Color32(0xFF, 0xE4, 0xB0, 255), new Color32(0xD8, 0x92, 0x4A, 255), new Color32(0x4A, 0x2A, 0x20, 255) },
             ["grinder"] = new[] { new Color32(0xE4, 0xE8, 0xF0, 255), new Color32(0x8A, 0x94, 0xAC, 255), new Color32(0x2A, 0x2E, 0x3A, 255) },
             ["shepherd"] = new[] { new Color32(0xF8, 0xD8, 0xE4, 255), new Color32(0xB0, 0x7A, 0xA8, 255), new Color32(0x3A, 0x24, 0x40, 255) },
+            // подложки картинок: достижения по разделам (.aport.path/.fight/.collect) и плитки базы знаний (.cxpic)
+            ["path"] = new[] { new Color32(0xF7, 0xC9, 0x8A, 255), new Color32(0xE8, 0x83, 0x6A, 255), new Color32(0x4A, 0x3F, 0x7A, 255) },
+            ["fight"] = new[] { new Color32(0x7A, 0x5A, 0xA0, 255), new Color32(0x3A, 0x2F, 0x55, 255), new Color32(0x14, 0x12, 0x26, 255) },
+            ["collect"] = new[] { new Color32(0x6F, 0xB8, 0xA8, 255), new Color32(0x2F, 0x5D, 0x62, 255), new Color32(0x15, 0x2A, 0x2E, 255) },
+            ["cx"] = new[] { new Color32(0x4A, 0x3F, 0x6A, 255), new Color32(0x2A, 0x23, 0x40, 255), new Color32(0x1A, 0x15, 0x28, 255) },
+            ["cxhero"] = new[] { new Color32(0xF7, 0xC9, 0x8A, 255), new Color32(0xC8, 0x70, 0x5A, 255), new Color32(0x3A, 0x2F, 0x55, 255) },
             ["herbalist"] = new[] { new Color32(0xD0, 0xF4, 0xE4, 255), new Color32(0x4A, 0x9A, 0x84, 255), new Color32(0x1A, 0x34, 0x30, 255) },
         };
         static Sprite soft;
@@ -505,6 +518,24 @@ namespace Fitil.Game
             return box;
         }
 
+        /// <summary>Круглый крестик закрытия на кнопке-шаре (.sclose: ui2/round).</summary>
+        public static Button CloseBtn(Transform parent, Action onClick, float size = 42)
+        {
+            var rt = Node("close", parent);
+            rt.sizeDelta = new Vector2(size, size);
+            var bg = rt.gameObject.AddComponent<Image>();
+            bg.sprite = Art("ui2/round");
+            bg.preserveAspect = true;
+            if (!bg.sprite) { bg.sprite = Circle; bg.color = new Color32(0x2A, 0x2F, 0x4A, 0xF0); }
+            var b = rt.gameObject.AddComponent<Button>();
+            b.targetGraphic = bg;
+            b.onClick.AddListener(() => onClick?.Invoke());
+            var x = Label("label", rt, "✕", Mathf.RoundToInt(size * 0.48f), Paper).Shadow();
+            x.rectTransform.Fill();
+            x.rectTransform.offsetMin = new Vector2(0, 2);
+            return b;
+        }
+
         public static void Clear(Transform t)
         {
             for (var i = t.childCount - 1; i >= 0; i--) UnityEngine.Object.Destroy(t.GetChild(i).gameObject);
@@ -512,5 +543,12 @@ namespace Fitil.Game
 
         public static string Hex(Color c) => ColorUtility.ToHtmlStringRGB(c);
         public static string Paint(string text, Color c) => $"<color=#{Hex(c)}>{text}</color>";
+    }
+
+    /// <summary>Наклон плашки внутри строки вёрстки: раскладка сбрасывает поворот, поэтому он ставится каждый кадр после неё.</summary>
+    public sealed class Tilt : MonoBehaviour
+    {
+        public float Angle;
+        void LateUpdate() => transform.localEulerAngles = new Vector3(0, 0, Angle);
     }
 }

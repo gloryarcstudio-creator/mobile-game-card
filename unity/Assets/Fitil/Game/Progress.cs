@@ -304,27 +304,50 @@ namespace Fitil.Game
             showing = false;
         }
 
+        /// <summary>Где показывать плашку: 0 — вверху, 1 — вверху низкая (бой, награда, трофей), 2 — внизу (конец забега), 3 — внизу низкая (итоги).</summary>
+        static int ToastPlace()
+        {
+            var run = Boot.Instance.Safe.Find("run");
+            if (run)
+            {
+                if (run.Find("summary")) return 3;
+                if (run.Find("end")) return 2;
+                if (run.Find("reward") || run.Find("trophy")) return 1;
+            }
+            return UnityEngine.Object.FindFirstObjectByType<CombatScreen>() ? 1 : 0;
+        }
+
         static CanvasGroup Plate(Dictionary<string, object> a)
         {
-            var box = Ui.Node("achtoast", Boot.Instance.Top).Box(22, 64, 356, 68);
+            // .achtoast: плитка ui2/tile с окошком для картинки (масштаб .452, рамка выступает за края).
+            // Обычно у верхнего края; в бою, на награде и трофее босса — ниже ростом; на экранах конца забега — внизу,
+            // чтобы не закрывать ленту и книгу.
+            var place = ToastPlace();
+            var low = place == 1 || place == 3;
+            float th = low ? 52 : 76;
+            var box = Ui.Node("achtoast", Boot.Instance.Top);
+            if (place >= 2) box.Box(35, 860 - (place == 3 ? 5 : 16) - th, 330, th, 0);
+            else box.Box(35, low ? 6 : 10, 330, th);
             box.SetAsLastSibling();
             var cg = box.gameObject.AddComponent<CanvasGroup>();
             cg.blocksRaycasts = false;
             cg.alpha = 0;
-            var bg = Ui.Round("bg", box, new Color32(0x1B, 0x16, 0x2A, 0xF2));
-            bg.rectTransform.Fill();
-            bg.Outline(new Color(0.85f, 0.66f, 0.29f, 0.9f), 1.5f);
+            var bg = Ui.Frame(box, "ui2/tile", 0.452f, 8.1f, 13.6f, 5.4f, 7.7f);
+            if (!bg.sprite) { bg.sprite = Ui.RoundSprite; bg.type = Image.Type.Sliced; bg.color = new Color32(0x1B, 0x16, 0x2A, 0xF2); }
             var summary = Json.Get(a, "summary") != null;
-            var pic = Ui.CircleArt("art", box, summary ? Ui.Art("r2/medal") : ArtOf(a));
-            pic.rectTransform.Box(10, 8, 52, 52);
-            var ring = Ui.Img("ring", pic.transform.parent, Ui.Circle, new Color(0, 0, 0, 0));
-            ring.rectTransform.Box(10, 8, 52, 52);
-            ring.Outline(Ui.Gold, 1.5f);
+            var port = Ui.Img("port", box, Ui.HeroBg(summary ? "collect" : Json.Str(Json.Get(a, "cat")) ?? "path"), Color.white);
+            if (low) port.rectTransform.Box(30, 5, 46, 42); else port.rectTransform.Box(30, 10, 61, 56);
+            var pic = Ui.Img("art", port.transform, summary ? Ui.Art("r2/medal") : ArtOf(a), Color.white);
+            pic.preserveAspect = true;
+            pic.rectTransform.Fill();
+            pic.rectTransform.offsetMin = new Vector2(3, 3);
+            pic.rectTransform.offsetMax = new Vector2(-3, -3);
             var small = summary ? Loc.Tr("Достижения получены") : Loc.Tr("Достижение получено");
             var name = summary ? Loc.Tr("И ещё {n}", ("n", Json.Int(Json.Get(a, "summary")))) : Json.Str(Json.Get(a, "name")) + Stars(a);
-            Ui.Label("small", box, small, 13, new Color(1, 1, 1, 0.7f), TextAnchor.LowerLeft).rectTransform.Box(74, 8, 270, 20);
-            var t = Ui.Label("name", box, name, 19, Ui.GoldHi, TextAnchor.UpperLeft, true).Shadow(1f);
-            t.rectTransform.Box(74, 28, 274, 36);
+            float tx = low ? 86 : 101;
+            Ui.Label("small", box, small, low ? 11 : 13, Ui.GoldHi, TextAnchor.LowerLeft).rectTransform.Box(tx, low ? 6 : 14, 317 - tx, low ? 16 : 20);
+            var t = Ui.Label("name", box, name, low ? 16 : 18, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.UpperLeft, true).Shadow(1f);
+            t.rectTransform.Box(tx, low ? 22 : 35, 317 - tx, low ? 26 : 34);
             t.Fit(13);
             return cg;
         }
@@ -343,7 +366,11 @@ namespace Fitil.Game
             if (art.StartsWith("c:")) return Ui.Art("h/" + art.Substring(2) + "_face");
             if (art.StartsWith("e:")) return Ui.Art("e/" + art.Substring(2));
             var id = art.Length > 2 ? art.Substring(2) : art;
-            return Ui.Art("c/" + id) ?? Ui.Art("r2/" + id) ?? Ui.Art("i/" + id);
+            // значки без своей картинки берут талисман или карту с тем же смыслом (ICON_ALIAS в js/paint.js)
+            if (id == "lantern") return Ui.Art("r2/ivalamp");
+            if (id == "chest") id = "chest2";
+            if (id == "dogfriend") id = "buddy";
+            return Ui.Art("i/" + id) ?? Ui.Art("r2/" + id) ?? Ui.Art("c/" + id);
         }
 
         static string HeroNow => RunFlow.Current != null ? RunFlow.Current.Hero.Id : Settings.Cls;

@@ -357,6 +357,9 @@ namespace Fitil.Game
         {
             var words = new[] { "✕", Loc.Tr("Назад"), Loc.Tr("Закрыть"), Loc.Tr("Отмена"), Loc.Tr("Пропустить") };
             var buttons = root.GetComponentsInChildren<Button>(false);
+            // крестик, нарисованный на рамке окна, — кнопка без текста с именем close
+            foreach (var b in buttons)
+                if (b.interactable && b.name == "close") { b.onClick.Invoke(); return true; }
             foreach (var w in words)
                 foreach (var b in buttons)
                 {
