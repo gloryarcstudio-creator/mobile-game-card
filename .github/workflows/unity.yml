@@ -95,11 +95,12 @@ jobs:
                   # файл лицензии из Unity Hub: с ним редактор подключает модули Android и iOS
                   mkdir -p /root/.local/share/unity3d/Unity
                   printf "%s" "$UNITY_LICENSE" > /root/.local/share/unity3d/Unity/Unity_lic.ulf
-                  echo "Лицензия: файл .ulf из секрета UNITY_LICENSE";;
+                  LOGIN=no
+                  echo "Лицензия: файл .ulf из секрета UNITY_LICENSE, без входа по почте";;
                 *) echo "Лицензия: в UNITY_LICENSE нет файла .ulf, остаётся вход по почте";;
               esac
-              unity-editor -batchmode -nographics -quit -logFile /dev/stdout \
-              -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
+              if [ "$LOGIN" = no ]; then set --; else set -- -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD"; fi
+              unity-editor -batchmode -nographics -quit -logFile /dev/stdout "$@" \
               -projectPath unity -buildTarget "$TARGET" \
               -executeMethod Fitil.EditorTools.CiBuild.Build'
       # Редактор в контейнере пишет от имени root: права возвращаются, а в журнал идёт состав и вес сборки
