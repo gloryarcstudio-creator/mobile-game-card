@@ -110,22 +110,33 @@ namespace Fitil.Game
             Toggle(col, Loc.Tr("Розыгрыш карты"), Loc.Tr("В 2 касания"), Loc.Tr("В 1 касание"), !Settings.OneTap, v => Settings.OneTap = !v, back);
             Toggle(col, Loc.Tr("Реплики врагов"), Loc.Tr("Показывать"), Loc.Tr("Скрывать"), Settings.Lines, v => Settings.Lines = v, back);
             Sep(col);
-            var foot = Ui.Label("sfoot", col, Loc.Tr("Версия {v}", ("v", Application.version)), 12, new Color(1, 1, 1, 0.6f), TextAnchor.MiddleLeft);
-            foot.Pref(304, 18);
             // заставку можно пересмотреть, пока не идёт забег
             if (RunFlow.Current == null && Cinema.Has(Boot.Instance.Defs))
             {
                 var link = Ui.Hit("cinema", col, () => { Sound.Sfx("click"); Close(); Boot.Instance.PlayCinema(); });
                 link.Pref(304, 30);
-                Ui.Label("t", link.transform, "<i>" + Loc.Tr("Посмотреть заставку") + "</i>", 14, Ui.GoldHi).rectTransform.Fill();
+                Link(link, Loc.Tr("Посмотреть заставку"));
             }
             // Европа: игрок вправе передумать насчёт рекламы по интересам — окно Google открывается отсюда
             if (Store.Ads != null && Store.Ads.PrivacyOptions)
             {
                 var link = Ui.Hit("privacy", col, () => { Sound.Sfx("click"); Store.Ads.ShowPrivacyOptions(null); });
                 link.Pref(304, 30);
-                Ui.Label("t", link.transform, "<i>" + Loc.Tr("Согласие на рекламу") + "</i>", 14, Ui.GoldHi).rectTransform.Fill();
+                Link(link, Loc.Tr("Согласие на рекламу"));
             }
+            var foot = Ui.Label("sfoot", col, Loc.Tr("Версия {v}", ("v", Application.version)), 12, new Color(1, 1, 1, 0.6f), TextAnchor.MiddleLeft);
+            foot.Pref(304, 18);
+        }
+
+        // подчёркнутая ссылка шрифтом заголовков (.slink)
+        static void Link(Component link, string text)
+        {
+            var t = Ui.Label("t", link.transform, text, 14, Ui.GoldHi, TextAnchor.MiddleCenter, true);
+            t.rectTransform.Fill();
+            var u = Ui.Img("u", link.transform, (Sprite)null, Ui.GoldHi);
+            u.rectTransform.anchorMin = u.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            u.rectTransform.sizeDelta = new Vector2(t.preferredWidth, 1);
+            u.rectTransform.anchoredPosition = new Vector2(0, -9);
         }
 
         static void Icon(RectTransform parent, string art, string label, Action onClick)
@@ -218,8 +229,12 @@ namespace Fitil.Game
         {
             var row = Ui.Node("trow", col);
             row.Line(6, TextAnchor.MiddleLeft);
-            row.Pref(304, 34);
-            Ui.Label("label", row, label, 15, Ui.Paper, TextAnchor.MiddleLeft, true).Fit(10).Pref(96, 30);
+            // длинная подпись («Розыгрыш карты») встаёт в две строки, как в веб-версии, а не мельчает
+            var l = Ui.Label("label", row, label, 15, Ui.Paper, TextAnchor.MiddleLeft, true);
+            var two = l.preferredWidth > 96 && label.Contains(" ");
+            l.lineSpacing = 0.9f;
+            l.Fit(11).Pref(96, two ? 44 : 30);
+            row.Pref(304, two ? 46 : 34);
             return row;
         }
 

@@ -149,7 +149,7 @@ namespace Fitil.Game
             var en = Ui.Label("n", orb.transform, MaxEnergy(run).ToString(), 23, new Color(1, 1, 1, 0.9f), TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
             en.rectTransform.Fill();
 
-            var deck = Ui.Btn("deck", bar, Loc.Tr("Колода") + "\n<size=16><color=#FFE08A>" + run.Deck.Count + "</color></size>", () => onDeck?.Invoke(), 13, bg.sprite);
+            var deck = Ui.Btn("deck", bar, Loc.Tr("Колода") + "\n<size=17><b><color=#FFE08A>" + run.Deck.Count + "</color></b></size>", () => onDeck?.Invoke(), 13, bg.sprite);
             ((RectTransform)deck.transform).Box(297, 40, 76, 40);
             deck.GetComponentInChildren<Text>().color = new Color32(0xE8, 0xDC, 0xC0, 0xFF);
             return bar;

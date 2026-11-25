@@ -136,8 +136,10 @@ namespace Fitil.Game
             tagT.rectTransform.Box(0, 91 * s - 11, w, 22);
 
             var cw = w - 2 * padS;
-            var t = Ui.Label("title", rt, title, boss ? 18 : 14, new Color32(0xFF, 0xE2, 0xA0, 0xFF), TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
-            t.rectTransform.Box(padS, padT + 2, cw, 32);
+            // длинное имя через дефис переносится после дефиса, как в веб-версии (uGUI сам так не умеет)
+            if (!boss && title.Length > 12 && !title.Contains(" ") && title.Contains("-")) title = title.Replace("-", "-\n");
+            var t = Ui.Label("title", rt, title, boss ? 18 : 15, new Color32(0xFF, 0xE2, 0xA0, 0xFF), TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
+            t.rectTransform.Box(padS, padT, cw, 36);
             t.lineSpacing = 0.9f;
             t.Fit(10);
 

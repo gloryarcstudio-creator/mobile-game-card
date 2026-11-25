@@ -102,6 +102,41 @@ namespace Fitil.Game
         }
 
         /// <summary>Текст сам уменьшается, чтобы влезть в рамку (как ступени long/xlong в веб-версии).</summary>
+        static readonly Dictionary<Sprite, Sprite> grays = new Dictionary<Sprite, Sprite>();
+
+        /// <summary>Серая копия картинки (CSS filter: grayscale(1)); считается один раз и хранится.</summary>
+        public static Sprite Gray(Sprite src)
+        {
+            if (!src) return src;
+            if (grays.TryGetValue(src, out var g) && g) return g;
+            try { g = MakeGray(src); } catch (System.Exception) { g = src; }
+            grays[src] = g;
+            return g;
+        }
+
+        static Sprite MakeGray(Sprite src)
+        {
+            var r = src.textureRect;
+            int w = Mathf.RoundToInt(r.width), h = Mathf.RoundToInt(r.height);
+            var rtex = RenderTexture.GetTemporary(src.texture.width, src.texture.height, 0, RenderTextureFormat.ARGB32);
+            Graphics.Blit(src.texture, rtex);
+            var prev = RenderTexture.active;
+            RenderTexture.active = rtex;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            tex.ReadPixels(new Rect(r.x, r.y, w, h), 0, 0);
+            RenderTexture.active = prev;
+            RenderTexture.ReleaseTemporary(rtex);
+            var px = tex.GetPixels32();
+            for (var i = 0; i < px.Length; i++)
+            {
+                var y = (byte)((px[i].r * 54 + px[i].g * 183 + px[i].b * 19) >> 8);
+                px[i] = new Color32(y, y, y, px[i].a);
+            }
+            tex.SetPixels32(px);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), src.pixelsPerUnit);
+        }
+
         public static Text Fit(this Text t, int min)
         {
             t.resizeTextForBestFit = true;

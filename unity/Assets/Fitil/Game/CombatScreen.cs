@@ -31,6 +31,7 @@ namespace Fitil.Game
         GameObject eBlock, hBlock, toast, sayBubble;
         Text eBlockText, hBlockText;
         Image[] pips;
+        Sprite pipOn;
         Button endBtn;
         readonly List<CardView> cards = new List<CardView>();
         Vector2 enemyHome;
@@ -203,6 +204,7 @@ namespace Fitil.Game
             var lamp = Ui.Node("flame", heroBar).Box(86, 8, 90, 23);
             lampRt = lamp;
             pips = new Image[C.FlameMaxNow];
+            pipOn = Ui.Art("i/flame_pip");
             // тёмная плашка с золотой каймой под Огоньками (.herobar .lamp)
             var lampBg = Ui.Bordered("plate", lamp, new Color32(20, 16, 28, 255), new Color32(0xB8, 0x89, 0x3A, 0xFF), 11.5f);
             lampBg.rectTransform.Box(0, 0, pips.Length * 21 + 10, 23);
@@ -422,7 +424,13 @@ namespace Fitil.Game
             hBlockText.text = s.Block.ToString();
 
             energyText.text = $"{s.Energy}<size=13>/{C.MaxEnergy}</size>";
-            for (var i = 0; i < pips.Length; i++) pips[i].color = i < s.Flame ? Color.white : new Color(0.62f, 0.62f, 0.7f, 0.25f);
+            for (var i = 0; i < pips.Length; i++)
+            {
+                // погасший Огонёк серый и едва виден (.pip: grayscale, opacity .22)
+                var on = i < s.Flame;
+                pips[i].sprite = on ? pipOn : Ui.Gray(pipOn);
+                pips[i].color = on ? Color.white : new Color(1f, 1f, 1f, 0.3f);
+            }
         }
 
         static void SetFill(Image img, float f)
@@ -456,8 +464,8 @@ namespace Fitil.Game
             RenderEnemyStatus();
             RenderHeroStatus();
             RenderHand();
-            drawText.text = Loc.Tr("Колода") + " " + Ui.Paint(C.Draw.Count.ToString(), Ui.GoldHi);
-            discText.text = Loc.Tr("Сброс") + " " + Ui.Paint(C.Disc.Count.ToString(), Ui.GoldHi);
+            drawText.text = Loc.Tr("Колода") + " <b>" + Ui.Paint(C.Draw.Count.ToString(), Ui.GoldHi) + "</b>";
+            discText.text = Loc.Tr("Сброс") + " <b>" + Ui.Paint(C.Disc.Count.ToString(), Ui.GoldHi) + "</b>";
             if (!C.SaidHurt && C.Enemy.Hp > 0 && C.Enemy.Hp <= C.Enemy.Max / 2.0) { C.SaidHurt = true; Say("hurt"); }
         }
 
