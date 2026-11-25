@@ -15,6 +15,33 @@ namespace Fitil.EditorTools
         {
             ProjectSetup.Apply();
             var target = EditorUserBuildSettings.activeBuildTarget;
+            // Платформу задаёт переменная TARGET: ключ -buildTarget редактор может молча не принять,
+            // и тогда вместо Android или iOS собралась бы игра для Linux
+            var want = Environment.GetEnvironmentVariable("TARGET");
+            if (!string.IsNullOrEmpty(want))
+            {
+                if (!Enum.TryParse(want, out BuildTarget asked))
+                {
+                    Debug.LogError("CiBuild: неизвестная платформа " + want);
+                    EditorApplication.Exit(1);
+                    return;
+                }
+                var group = BuildPipeline.GetBuildTargetGroup(asked);
+                if (!BuildPipeline.IsBuildTargetSupported(group, asked))
+                {
+                    Debug.LogError("CiBuild: в редакторе нет модуля для " + asked);
+                    EditorApplication.Exit(1);
+                    return;
+                }
+                if (target != asked && !EditorUserBuildSettings.SwitchActiveBuildTarget(group, asked))
+                {
+                    Debug.LogError("CiBuild: не удалось переключиться на " + asked + ", стоит " + target);
+                    EditorApplication.Exit(1);
+                    return;
+                }
+                Debug.Log("CiBuild: платформа " + asked + ", была " + target);
+                target = asked;
+            }
             var path = Environment.GetEnvironmentVariable("CI_BUILD_PATH");
             if (string.IsNullOrEmpty(path))
                 path = target == BuildTarget.Android ? "build/Android/LastRay.apk" : "build/" + target;
