@@ -62,16 +62,27 @@ jobs:
           path: unity/Library
           key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-${{ matrix.targetPlatform }}-
-      - uses: game-ci/unity-builder@v4
+      # Лицензия Personal выдаётся по входу в аккаунт Unity (почта и пароль из секретов),
+      # поэтому редактор запускается напрямую из образа unityci/editor, без серийного номера
+      - name: Сборка в Unity
         if: env.HAS_LICENSE == 'true'
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: unity
-          targetPlatform: ${{ matrix.targetPlatform }}
-          buildName: LastRay
+          TARGET: ${{ matrix.targetPlatform }}
+        run: |
+          VERSION=$(sed -n 's/^m_EditorVersion: //p' unity/ProjectSettings/ProjectVersion.txt)
+          MODULE=$(echo "$TARGET" | tr '[:upper:]' '[:lower:]')
+          if [ "$TARGET" = Android ]; then OUT=build/Android/LastRay.apk; else OUT=build/$TARGET; fi
+          mkdir -p build
+          docker run --rm \
+            -v "$PWD:/github/workspace" -w /github/workspace \
+            -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" \
+            "unityci/editor:ubuntu-$VERSION-$MODULE-3" \
+            bash -c 'unity-editor -batchmode -nographics -quit -logFile /dev/stdout \
+              -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
+              -projectPath unity -buildTarget "$TARGET" \
+              -executeMethod Fitil.EditorTools.CiBuild.Build'
       - uses: actions/upload-artifact@v4
         if: env.HAS_LICENSE == 'true'
         with:
