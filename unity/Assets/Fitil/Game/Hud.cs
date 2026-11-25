@@ -111,6 +111,8 @@ namespace Fitil.Game
         {
             var run = g.Run;
             var bar = Ui.Node("herobar", parent).Box(0, 768, 400, 92, 0);
+            var dim = Ui.Img("dim", bar, Ui.Fade, new Color32(14, 16, 28, 204));
+            dim.rectTransform.Fill();
             var bg = Ui.Img("bg", bar, "ui2/herobar");
             bg.rectTransform.Fill();
             if (!bg.sprite) bg.color = new Color32(20, 24, 38, 235);
@@ -118,7 +120,7 @@ namespace Fitil.Game
             var face = Ui.CircleArt("face", bar, Ui.Art("h/" + run.Cls + "_face"));
             face.rectTransform.Box(9, 20, 65, 65);
 
-            var name = Ui.Label("name", bar, g.Hero.Name, 17, Ui.Paper, TextAnchor.LowerLeft).Shadow(2f, 1f);
+            var name = Ui.Label("name", bar, g.Hero.Name, 17, Ui.GoldHi, TextAnchor.LowerLeft, true).Shadow(2f, 1f);
             name.rectTransform.Box(86, 8, 200, 24);
 
             var bed = Ui.Round("hp", bar, new Color32(0x2A, 0x1A, 0x20, 0xFF));
@@ -128,18 +130,17 @@ namespace Fitil.Game
             fill.rectTransform.anchorMin = Vector2.zero;
             fill.rectTransform.anchorMax = new Vector2(pct, 1);
             fill.rectTransform.offsetMin = fill.rectTransform.offsetMax = Vector2.zero;
-            var hp = Ui.Label("n", bed.transform, run.Hp + "/" + run.MaxHp, 14, Color.white, TextAnchor.MiddleCenter, true).Shadow(1f, 1f);
+            var hp = Ui.Label("n", bed.transform, run.Hp + "/" + run.MaxHp, 14, Color.white).Shadow(1f, 1f);
             hp.rectTransform.Fill();
 
-            var orb = Ui.Img("energy", bar, "ui2/round");
-            orb.preserveAspect = true;
-            orb.rectTransform.Box(235, 34, 50, 54);
-            if (!orb.sprite) { orb.sprite = Ui.Circle; orb.color = new Color32(0x1F, 0x8D, 0x88, 0xFF); }
+            // шар энергии нарисован на самой панели: поверх только число
+            var orb = Ui.Img("energy", bar, bg.sprite ? null : Ui.Circle, bg.sprite ? new Color(0, 0, 0, 0) : (Color)new Color32(0x1F, 0x8D, 0x88, 0xFF));
+            orb.rectTransform.Box(238, 38, 44, 44);
             var en = Ui.Label("n", orb.transform, MaxEnergy(run).ToString(), 23, new Color(1, 1, 1, 0.9f), TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
             en.rectTransform.Fill();
 
-            var deck = Ui.Btn("deck", bar, Loc.Tr("Колода") + "\n<size=16>" + run.Deck.Count + "</size>", () => onDeck?.Invoke(), 13);
-            ((RectTransform)deck.transform).Box(296, 38, 80, 44);
+            var deck = Ui.Btn("deck", bar, Loc.Tr("Колода") + "\n<size=16><color=#FFE08A>" + run.Deck.Count + "</color></size>", () => onDeck?.Invoke(), 13, bg.sprite);
+            ((RectTransform)deck.transform).Box(297, 40, 76, 40);
             deck.GetComponentInChildren<Text>().color = new Color32(0xE8, 0xDC, 0xC0, 0xFF);
             return bar;
         }

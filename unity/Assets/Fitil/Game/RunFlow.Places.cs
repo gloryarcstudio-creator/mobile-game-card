@@ -61,7 +61,7 @@ namespace Fitil.Game
             }
 
             // талисман и услуги
-            var list = Ui.Node("services", root).Box(18, 393, 364, 300);
+            var list = Ui.Node("services", root).Box(21, 404, 358, 300);
             list.Column(8, TextAnchor.UpperCenter);
             if (shop.Relic != null)
             {
@@ -87,6 +87,8 @@ namespace Fitil.Game
             ((RectTransform)leave.transform).Box(262, 712, 104, 44);
         }
 
+        static readonly Color Poor = new Color32(0xFF, 0x7A, 0x6A, 0xFF);   // .poor в веб-версии
+
         static string Coin(int n) => "<color=#FFE08A>" + n + "</color>";
 
         void Price(RectTransform root, ShopItem item, float cx, float y)
@@ -96,25 +98,37 @@ namespace Fitil.Game
             var coin = Ui.Img("coin", plate.transform, "i/coin");
             coin.preserveAspect = true;
             coin.rectTransform.Box(6, 2, 22, 22);
-            var t = Ui.Label("n", plate.transform, item.Price.ToString(), 18, Run.Gold < item.Price ? Ui.Red : Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f);
+            var t = Ui.Label("n", plate.transform, item.Price.ToString(), 18, Run.Gold < item.Price ? Poor : Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f);
             t.rectTransform.Box(30, 0, 36, 26);
             if (item.Sold) plate.gameObject.SetActive(false);
         }
 
         void Service(RectTransform list, string icon, string title, string desc, ShopItem item, Action buy)
         {
+            // Плитка с окошком для значка (.svc в веб-версии): масштаб картинки .41, рамка выступает за края плитки.
             var row = Ui.Node("svc", list);
-            row.Line(10, TextAnchor.MiddleLeft, 12, 12, 5, 5);
-            row.Pref(364, -1, 60);
-            Ui.Frame(row, "ui2/row2", 0.3f);
-            var ic = Ui.Img("icon", row, icon);
+            row.Line(10, TextAnchor.MiddleLeft, 20, 18, 4, 4);
+            row.Pref(358, -1, 60);
+            Ui.Frame(row, "ui2/row2", 0.41f, 7.4f, 12.3f, 4.9f, 7f);
+            var slot = Ui.Node("slot", row);
+            slot.Pref(54, 42);
+            var ic = Ui.Img("icon", slot, icon);
             ic.preserveAspect = true;
-            ic.Pref(38, 38);
+            ic.rectTransform.Fill();
+            ic.rectTransform.offsetMin = new Vector2(5, 0);
+            ic.rectTransform.offsetMax = new Vector2(-5, 0);
             var t = Ui.Label("text", row, "<color=#" + Ui.Hex(Ui.GoldHi) + ">" + title + "</color>\n<size=13>" + desc + "</size>", 15, Ui.Paper, TextAnchor.MiddleLeft).Shadow(1f);
             t.lineSpacing = 0.95f;
-            t.Pref(234);
-            var price = Ui.Label("price", row, item.Price.ToString(), 18, Run.Gold < item.Price ? Ui.Red : Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(1f);
-            price.Pref(40);
+            t.Pref(208);
+            // цена: монета над числом
+            var cost = Ui.Node("price", row);
+            cost.Column(1, TextAnchor.MiddleCenter);
+            cost.Pref(34);
+            var coin = Ui.Img("coin", cost, "i/coin");
+            coin.preserveAspect = true;
+            coin.Pref(18, 18);
+            var price = Ui.Label("n", cost, item.Price.ToString(), 18, Run.Gold < item.Price ? Poor : Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(1f);
+            price.Pref(34, 20);
             var hit = row.gameObject.AddComponent<Image>();
             hit.color = new Color(0, 0, 0, 0);
             var b = row.gameObject.AddComponent<Button>();

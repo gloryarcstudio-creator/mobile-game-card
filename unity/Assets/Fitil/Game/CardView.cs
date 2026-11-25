@@ -70,10 +70,13 @@ namespace Fitil.Game
             // свечение редкости под картой
             if (Glow.TryGetValue(cd.Rarity ?? "", out var gc))
             {
-                glow = Ui.Round("glow", transform, gc);
+                // размытое свечение вокруг карты (box-shadow 0 0 1em), а не плашка с резким краем
+                glow = Ui.Img("glow", transform, Ui.Soft, gc);
+                glow.type = Image.Type.Sliced;
+                glow.pixelsPerUnitMultiplier = 16f / em;
                 glow.rectTransform.Fill();
-                glow.rectTransform.offsetMin = new Vector2(-em * 0.6f, -em * 0.6f);
-                glow.rectTransform.offsetMax = new Vector2(em * 0.6f, em * 0.6f);
+                glow.rectTransform.offsetMin = new Vector2(-em * 0.9f, -em * 0.9f);
+                glow.rectTransform.offsetMax = new Vector2(em * 0.9f, em * 0.9f);
             }
 
             var art = Ui.CircleArt("art", transform, Ui.Art("c/" + card.Id));
@@ -147,7 +150,7 @@ namespace Fitil.Game
         {
             foreach (var g in GetComponentsInChildren<Graphic>(true))
             {
-                if (g == glow) continue;
+                if (g == glow || g.name == "plate") continue;   // плашка типа карты тёмная: её цвет не трогаем
                 var keep = g.color.a;
                 if (g is Text) continue;
                 g.color = can ? new Color(1, 1, 1, keep) : new Color(0.62f, 0.6f, 0.64f, keep);

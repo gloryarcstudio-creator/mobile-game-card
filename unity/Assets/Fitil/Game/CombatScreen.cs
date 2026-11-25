@@ -183,6 +183,7 @@ namespace Fitil.Game
         void BuildHeroBar()
         {
             heroBar = Ui.Node("herobar", root).Box(0, 768, 400, 92, 0);
+            Ui.Img("dim", heroBar, Ui.Fade, new Color32(14, 16, 28, 204)).rectTransform.Fill();
             var bg = Ui.Img("bg", heroBar, "ui2/herobar");
             bg.rectTransform.Fill();
             if (!bg.sprite) bg.color = new Color32(20, 24, 38, 235);
@@ -195,11 +196,14 @@ namespace Fitil.Game
             var lamp = Ui.Node("flame", heroBar).Box(86, 8, 90, 23);
             lampRt = lamp;
             pips = new Image[C.FlameMaxNow];
+            // тёмная плашка с золотой каймой под Огоньками (.herobar .lamp)
+            var lampBg = Ui.Round("plate", lamp, new Color32(20, 16, 28, 217)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f);
+            lampBg.rectTransform.Box(0, 0, pips.Length * 21 + 10, 23);
             for (var i = 0; i < pips.Length; i++)
             {
                 var p = Ui.Img("pip", lamp, "i/flame_pip");
                 p.preserveAspect = true;
-                p.rectTransform.Box(i * 24, 0, 22, 22);
+                p.rectTransform.Box(6 + i * 21, 2, 19, 19);
                 pips[i] = p;
             }
             // нажатие на лампу объясняет Огоньки с учётом талисманов
@@ -209,19 +213,19 @@ namespace Fitil.Game
             Bar(heroBar, 108, 50, 110, 19, out hFill, out hTrail, out hHpText, 0, 1);
             hBlock = Badge(heroBar, "hblk", 80, 42, out hBlockText, 1);
 
-            var orb = Ui.Img("energy", heroBar, "ui2/round");
-            orb.preserveAspect = true;
-            orb.rectTransform.Box(232, 32, 50, 54);
+            // шар энергии нарисован на самой панели героя: поверх только число
+            var barArt = Ui.Art("ui2/herobar");
+            var orb = Ui.Img("energy", heroBar, barArt ? null : Ui.Circle, barArt ? new Color(0, 0, 0, 0) : (Color)new Color32(0x1F, 0x8D, 0x88, 0xFF));
+            orb.rectTransform.Box(238, 38, 44, 44);
             orbRt = orb.rectTransform;
-            if (!orb.sprite) { orb.sprite = Ui.Circle; orb.color = new Color32(0x1F, 0x8D, 0x88, 0xFF); }
             energyText = Ui.Label("n", orb.transform, "", 24, Color.white, TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
             energyText.rectTransform.Fill();
 
-            var drawB = Ui.Round("draw", heroBar, new Color32(0x26, 0x2D, 0x45, 0xF0));
+            var drawB = Ui.Round("draw", heroBar, new Color32(20, 16, 28, 224)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f);
             drawB.rectTransform.Box(279, 4, 56, 18);
             drawText = Ui.Label("t", drawB.transform, "", 11, Ui.Paper).Shadow(1f);
             drawText.rectTransform.Fill();
-            var discB = Ui.Round("disc", heroBar, new Color32(0x26, 0x2D, 0x45, 0xF0));
+            var discB = Ui.Round("disc", heroBar, new Color32(20, 16, 28, 224)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f);
             discB.rectTransform.Box(339, 4, 54, 18);
             discText = Ui.Label("t", discB.transform, "", 11, Ui.Paper).Shadow(1f);
             discText.rectTransform.Fill();
@@ -231,8 +235,9 @@ namespace Fitil.Game
             var discHit = Ui.Hit("disc hit", heroBar, () => { if (!busy) RunFlow.Current?.ShowPile(C.Disc, Loc.Tr("Сброс")); });
             ((RectTransform)discHit.transform).Box(337, 0, 58, 30);
 
-            endBtn = Ui.Btn("end", heroBar, Loc.Tr("Конец<br>хода").Replace("<br>", "\n"), EndTurn, 15);
-            ((RectTransform)endBtn.transform).Box(294, 32, 96, 50);
+            endBtn = Ui.Btn("end", heroBar, Loc.Tr("Конец<br>хода").Replace("<br>", "\n"), EndTurn, 14, barArt);
+            ((RectTransform)endBtn.transform).Box(297, 40, 76, 40);
+            endBtn.GetComponentInChildren<Text>().color = new Color32(0xA8, 0xF5, 0xE6, 0xFF);
         }
 
         /// <summary>Полоска здоровья: тёмное ложе, светлый «след» убывающего здоровья, красная заливка и число.</summary>
@@ -245,7 +250,7 @@ namespace Fitil.Game
             trail.rectTransform.Fill();
             fill = Ui.Round("fill", bed.transform, new Color32(0xD8, 0x3C, 0x34, 0xFF));
             fill.rectTransform.Fill();
-            text = Ui.Label("n", bed.transform, "", Mathf.RoundToInt(h * 0.78f), Color.white, TextAnchor.MiddleCenter, true).Shadow(1f, 1f);
+            text = Ui.Label("n", bed.transform, "", Mathf.RoundToInt(h * 0.72f), Color.white).Shadow(1f, 1f);
             text.rectTransform.Fill();
         }
 
@@ -410,7 +415,7 @@ namespace Fitil.Game
             hBlockText.text = s.Block.ToString();
 
             energyText.text = $"{s.Energy}<size=13>/{C.MaxEnergy}</size>";
-            for (var i = 0; i < pips.Length; i++) pips[i].color = i < s.Flame ? Color.white : new Color(0.35f, 0.33f, 0.4f, 0.8f);
+            for (var i = 0; i < pips.Length; i++) pips[i].color = i < s.Flame ? Color.white : new Color(0.62f, 0.62f, 0.7f, 0.25f);
         }
 
         static void SetFill(Image img, float f)

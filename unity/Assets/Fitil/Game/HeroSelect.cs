@@ -152,23 +152,59 @@ namespace Fitil.Game
                 var row = Ui.Round("relic", info, new Color32(0x14, 0x11, 0x1E, 0xEB));
                 row.rectTransform.Box(0, 186, 372, 92);
                 row.Dark();
-                var ic = Ui.Img("ic", row.transform, "r2/" + h.Relic);
+                // значок в круге с золотой каймой (.clsrelic > svg)
+                var ring = Ui.Img("ring", row.transform, Ui.Circle, new Color32(0x44, 0x38, 0x54, 0xFF)).Outline(Ui.Gold, 1.2f);
+                ring.rectTransform.Box(13, 23, 46, 46);
+                var ic = Ui.Img("ic", ring.transform, "r2/" + h.Relic);
                 ic.preserveAspect = true;
-                ic.rectTransform.Box(13, 23, 46, 46);
-                var t = Ui.Label("t", row.transform, "<size=12><color=#C9C0D8>" + Loc.Tr("Особенность").ToUpperInvariant() + "</color></size>\n<b><size=17>" + r.Name + "</size></b>\n" + r.Desc, 15, Ui.Paper, TextAnchor.MiddleLeft);
-                t.rectTransform.Box(69, 6, 292, 80);
+                ic.rectTransform.Fill();
+                ic.rectTransform.offsetMin = new Vector2(6, 6);
+                ic.rectTransform.offsetMax = new Vector2(-6, -6);
+                var cap = Ui.Label("cap", row.transform, Loc.Tr("Особенность").ToUpperInvariant(), 12, Ui.GoldHi, TextAnchor.MiddleLeft);
+                cap.rectTransform.Box(69, 9, 292, 15);
+                var rn = Ui.Label("name", row.transform, r.Name, 17, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleLeft, true).Shadow(1f);
+                rn.rectTransform.Box(69, 24, 292, 22);
+                var t = Ui.Label("t", row.transform, r.Desc, 15, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.UpperLeft);
+                t.rectTransform.Box(69, 46, 292, 40);
                 t.Fit(10);
             }
             // карты героя
             var own = defs.Cards.Values.Where(c => c.Cls == id).ToList();
-            var cardsBtn = Ui.Push(info, "", () => { Sound.Sfx("click"); ShowCards(id); }, true, 17, 372, 74);
-            ((RectTransform)cardsBtn.transform).Box(0, 284, 372, 74);
-            var cl = cardsBtn.GetComponentInChildren<Text>();
-            Ui.TwoLines(cl, Loc.Tr("Карты героя") + "  ›", string.Join(", ", own.Select(c => c.Name)), 20, 13);
+            // плитка «Карты героя»: кружки первых карт, название, список и стрелка (.clscards)
+            var cardsRow = Ui.Round("cards", info, new Color32(0x14, 0x11, 0x1E, 0xEB));
+            cardsRow.rectTransform.Box(0, 283, 372, 60);
+            cardsRow.Dark();
+            var shown = Math.Min(4, own.Count);
+            for (var i = 0; i < shown; i++)
+            {
+                var disc = Ui.Img("mini", cardsRow.transform, Ui.Circle, new Color32(0x4A, 0x58, 0x7A, 0xFF)).Outline(Ui.Gold, 1.2f);
+                disc.rectTransform.Box(13 + i * 26, 12, 36, 36);
+                var pic = Ui.CircleArt("pic", disc.transform, Ui.Art("c/" + own[i].Id));
+                pic.rectTransform.Fill();
+                pic.rectTransform.offsetMin = new Vector2(3, 3);
+                pic.rectTransform.offsetMax = new Vector2(-3, -3);
+            }
+            var tx = shown > 0 ? 13 + (shown - 1) * 26 + 36 + 18 : 13;
+            var ct = Ui.Label("title", cardsRow.transform, Loc.Tr("Карты героя"), 17, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f);
+            ct.rectTransform.Box(tx, 7, 330 - tx, 20);
+            var cs = Ui.Label("list", cardsRow.transform, string.Join(", ", own.Select(c => c.Name)), 13, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.UpperLeft);
+            cs.rectTransform.Box(tx, 27, 330 - tx, 30);
+            cs.lineSpacing = 0.95f;
+            cs.verticalOverflow = VerticalWrapMode.Truncate;
+            var go2 = Ui.Label("go", cardsRow.transform, "›", 28, Ui.GoldHi, TextAnchor.MiddleCenter, true);
+            go2.rectTransform.Box(336, 12, 26, 34);
+            var cardsHit = Ui.Hit("hit", cardsRow.transform, () => { Sound.Sfx("click"); ShowCards(id); });
+            ((RectTransform)cardsHit.transform).Fill();
 
             Difficulty();
             Buttons(owned);
         }
+
+        static readonly Color32[] PipTints =
+        {
+            new Color32(0x7A, 0xD0, 0x7A, 0xFF), new Color32(0xE6, 0xC4, 0x5A, 0xFF), new Color32(0xE8, 0x90, 0x2A, 0xFF),
+            new Color32(0xD8, 0x50, 0x3A, 0xFF), new Color32(0x9A, 0x3A, 0xD8, 0xFF),
+        };
 
         static void Stat(RectTransform parent, string icon, string text, float x, float y)
         {
@@ -187,7 +223,7 @@ namespace Fitil.Game
             box.rectTransform.Box(14, 0, 372, 119);
             box.Dark();
             var won = Progress.Has("winsDiff", (double)diff);
-            var head = Ui.Label("head", box.transform, "<size=12><color=#C9C0D8>" + Loc.Tr("Сложность {a} из {b}", ("a", diff + 1), ("b", n)) + "</color></size>\n" + d.Name + (won ? " <color=#9FE08A>✓</color>" : ""), 21, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(1f);
+            var head = Ui.Label("head", box.transform, "<size=12><color=#FFE08A>" + Loc.Tr("Сложность {a} из {b}", ("a", diff + 1), ("b", n)).ToUpperInvariant() + "</color></size>\n" + d.Name + (won ? " <color=#9FE08A>✓</color>" : ""), 21, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleCenter, true).Shadow(1f);
             head.rectTransform.Box(56, 8, 260, 50);
             Arrow(box.rectTransform, "‹", 13, diff > 0, () => SetDiff(diff - 1));
             Arrow(box.rectTransform, "›", 319, diff < n - 1, () => SetDiff(diff + 1));
@@ -198,7 +234,7 @@ namespace Fitil.Game
                 var k = i;
                 var pip = Ui.Hit("pip", box.transform, () => SetDiff(k));
                 ((RectTransform)pip.transform).Box(x0 + i * (pipW + 8), 57, pipW, 16);
-                var bar = Ui.Round("bar", pip.transform, i <= diff ? (Color)new Color32(0xD9, 0xA8, 0x4A, 0xFF) : new Color32(0x3A, 0x36, 0x4C, 0xFF));
+                var bar = Ui.Round("bar", pip.transform, i <= diff ? (Color)PipTints[Mathf.Min(i, PipTints.Length - 1)] : new Color32(0x2A, 0x23, 0x33, 0xFF));
                 bar.rectTransform.Box(0, 4, pipW, 8);
                 if (Progress.Has("winsDiff", (double)i)) bar.Outline(new Color32(0x9F, 0xE0, 0x8A, 0xFF), 1.2f);
             }

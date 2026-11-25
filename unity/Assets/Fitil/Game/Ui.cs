@@ -137,13 +137,14 @@ namespace Fitil.Game
             return img;
         }
 
-        public static Button Btn(string name, Transform parent, string text, Action onClick, int size = 22)
+        public static Button Btn(string name, Transform parent, string text, Action onClick, int size = 22, bool bare = false)
         {
             var rt = Node(name, parent);
             var bg = rt.gameObject.AddComponent<Image>();
             var dark = Art("ui2/btn_dark");
             Graphic face = bg;
-            if (dark)
+            if (bare) bg.color = new Color(0, 0, 0, 0);   // рамка уже нарисована на подложке (панель героя)
+            else if (dark)
             {
                 // Сама кнопка — прозрачная область нажатия, а рамка-картинка выступает за её края, как border-image
                 // с outset в веб-версии (у картинки прозрачные поля: без выступа кнопка выходила ниже и уже, чем надо).
@@ -418,6 +419,53 @@ namespace Fitil.Game
             ["shepherd"] = new[] { new Color32(0xF8, 0xD8, 0xE4, 255), new Color32(0xB0, 0x7A, 0xA8, 255), new Color32(0x3A, 0x24, 0x40, 255) },
             ["herbalist"] = new[] { new Color32(0xD0, 0xF4, 0xE4, 255), new Color32(0x4A, 0x9A, 0x84, 255), new Color32(0x1A, 0x34, 0x30, 255) },
         };
+        static Sprite soft;
+        /// <summary>Мягкое свечение (box-shadow с размытием): скруглённая плашка, гаснущая к краям за 16 точек картинки.</summary>
+        public static Sprite Soft
+        {
+            get
+            {
+                if (soft) return soft;
+                const int n = 64, m = 16, rad = 6;
+                var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                var px = new Color32[n * n];
+                for (var y = 0; y < n; y++)
+                    for (var x = 0; x < n; x++)
+                    {
+                        // расстояние до скруглённого прямоугольника, отступившего на m от краёв
+                        var qx = Mathf.Abs(x + 0.5f - n / 2f) - (n / 2f - m - rad);
+                        var qy = Mathf.Abs(y + 0.5f - n / 2f) - (n / 2f - m - rad);
+                        var d = new Vector2(Mathf.Max(qx, 0), Mathf.Max(qy, 0)).magnitude + Mathf.Min(Mathf.Max(qx, qy), 0) - rad;
+                        var a = Mathf.Clamp01(1 - d / m);
+                        px[y * n + x] = new Color(1, 1, 1, a * a);
+                    }
+                tex.SetPixels32(px);
+                tex.Apply();
+                return soft = Sprite.Create(tex, new UnityEngine.Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(24, 24, 24, 24));
+            }
+        }
+
+        static Sprite fade;
+        /// <summary>Затемнение книзу: сверху прозрачно, с середины и до низа ровно (linear-gradient(0, a 50%) в веб-версии).</summary>
+        public static Sprite Fade
+        {
+            get
+            {
+                if (fade) return fade;
+                const int n = 32;
+                var tex = new Texture2D(1, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+                var px = new Color32[n];
+                for (var y = 0; y < n; y++)
+                {
+                    var t = 1 - (y + 0.5f) / n;   // 0 сверху
+                    px[y] = new Color(1, 1, 1, Mathf.Clamp01(t / 0.5f));
+                }
+                tex.SetPixels32(px);
+                tex.Apply();
+                return fade = Sprite.Create(tex, new UnityEngine.Rect(0, 0, 1, n), new Vector2(0.5f, 0.5f), 100f);
+            }
+        }
+
         static readonly Dictionary<string, Sprite> heroBgs = new Dictionary<string, Sprite>();
 
         public static Sprite HeroBg(string cls)
