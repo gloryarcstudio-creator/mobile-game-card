@@ -142,16 +142,18 @@ namespace Fitil.Game
             var rt = Node(name, parent);
             var bg = rt.gameObject.AddComponent<Image>();
             var dark = Art("ui2/btn_dark");
+            Graphic face = bg;
             if (dark)
             {
-                bg.sprite = dark;
-                bg.type = Image.Type.Sliced;
-                bg.pixelsPerUnitMultiplier = 24f / 13f;   // срез 24 пикселя картинки — на кнопке 13 точек, как в веб-версии
-                bg.color = Color.white;
+                // Сама кнопка — прозрачная область нажатия, а рамка-картинка выступает за её края, как border-image
+                // с outset в веб-версии (у картинки прозрачные поля: без выступа кнопка выходила ниже и уже, чем надо).
+                // Срез 24 пикселя картинки — на кнопке 13 точек; выступ 7 сверху и снизу, 2 по бокам.
+                bg.color = new Color(0, 0, 0, 0);
+                face = Frame(rt, "ui2/btn_dark", 13f / 24f, 2, 7, 2, 7);
             }
             else { bg.sprite = RoundSprite; bg.type = Image.Type.Sliced; bg.color = new Color32(0x2A, 0x2F, 0x4A, 0xF0); }
             var b = rt.gameObject.AddComponent<Button>();
-            b.targetGraphic = bg;
+            b.targetGraphic = face;
             b.onClick.AddListener(() => onClick?.Invoke());
             var label = Label("label", rt, text, size, GoldHi, TextAnchor.MiddleCenter, true).Shadow();
             label.rectTransform.Fill();
@@ -311,7 +313,15 @@ namespace Fitil.Game
             if (!ghost)
             {
                 var red = Art("ui2/btn_red");
-                if (red) { img.sprite = red; img.pixelsPerUnitMultiplier = 1f / 0.44f; }
+                if (red)
+                {
+                    // красная кнопка: масштаб .44, у большой (.btn.big) .58; выступы рамки 45, 25, 50, 16 точек картинки
+                    var k = size >= 26 ? 0.58f : 0.44f;
+                    img.sprite = red;
+                    img.pixelsPerUnitMultiplier = 1f / k;
+                    img.rectTransform.offsetMin = new Vector2(-45 * k, -16 * k);
+                    img.rectTransform.offsetMax = new Vector2(50 * k, 25 * k);
+                }
                 var label = b.GetComponentInChildren<Text>();
                 label.color = new Color32(0xFF, 0xF4, 0xD6, 0xFF);
             }
@@ -325,10 +335,10 @@ namespace Fitil.Game
         {
             var dark = Art("ui2/btn_dark");
             if (!dark) return img;
-            img.sprite = dark;
-            img.type = Image.Type.Sliced;
-            img.pixelsPerUnitMultiplier = 24f / 13f;
-            img.color = Color.white;
+            // рамка выступает на 3 точки за плашку (border-image … / 3px), сама плашка прозрачна
+            img.sprite = null;
+            img.color = new Color(0, 0, 0, 0);
+            Frame(img.rectTransform, "ui2/btn_dark", 13f / 24f, 3, 3, 3, 3);
             return img;
         }
 
@@ -394,6 +404,57 @@ namespace Fitil.Game
             art.rectTransform.Fill();
             art.preserveAspect = true;
             return maskImg;
+        }
+
+        // Фон портрета героя: круговой переход, как .cp.<герой> в веб-версии (центр на 35% высоты)
+        static readonly Dictionary<string, Color32[]> HeroTints = new Dictionary<string, Color32[]>
+        {
+            ["lamp"] = new[] { new Color32(0xF7, 0xC9, 0x8A, 255), new Color32(0xE8, 0x83, 0x6A, 255), new Color32(0x4A, 0x3F, 0x7A, 255) },
+            ["courier"] = new[] { new Color32(0xBC, 0xD8, 0xEC, 255), new Color32(0x6F, 0x8F, 0xC8, 255), new Color32(0x26, 0x30, 0x4E, 255) },
+            ["guard"] = new[] { new Color32(0xD8, 0xE4, 0xC0, 255), new Color32(0x7A, 0x9A, 0x6A, 255), new Color32(0x2A, 0x3A, 0x26, 255) },
+            ["stoker"] = new[] { new Color32(0xFF, 0xC8, 0x9A, 255), new Color32(0xC8, 0x60, 0x3A, 255), new Color32(0x3A, 0x24, 0x30, 255) },
+            ["baker"] = new[] { new Color32(0xFF, 0xE4, 0xB0, 255), new Color32(0xD8, 0x92, 0x4A, 255), new Color32(0x4A, 0x2A, 0x20, 255) },
+            ["grinder"] = new[] { new Color32(0xE4, 0xE8, 0xF0, 255), new Color32(0x8A, 0x94, 0xAC, 255), new Color32(0x2A, 0x2E, 0x3A, 255) },
+            ["shepherd"] = new[] { new Color32(0xF8, 0xD8, 0xE4, 255), new Color32(0xB0, 0x7A, 0xA8, 255), new Color32(0x3A, 0x24, 0x40, 255) },
+            ["herbalist"] = new[] { new Color32(0xD0, 0xF4, 0xE4, 255), new Color32(0x4A, 0x9A, 0x84, 255), new Color32(0x1A, 0x34, 0x30, 255) },
+        };
+        static readonly Dictionary<string, Sprite> heroBgs = new Dictionary<string, Sprite>();
+
+        public static Sprite HeroBg(string cls)
+        {
+            if (cls == null || !HeroTints.TryGetValue(cls, out var c)) cls = "lamp";
+            if (heroBgs.TryGetValue(cls, out var sp) && sp) return sp;
+            c = HeroTints[cls];
+            const int n = 64;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            var px = new Color32[n * n];
+            var far = Mathf.Sqrt(0.5f * 0.5f + 0.65f * 0.65f); // до дальнего угла
+            for (var y = 0; y < n; y++)
+                for (var x = 0; x < n; x++)
+                {
+                    var dx = (x + 0.5f) / n - 0.5f;
+                    var dy = (1 - (y + 0.5f) / n) - 0.35f; // y в текстуре идёт снизу
+                    var t = Mathf.Sqrt(dx * dx + dy * dy) / far;
+                    px[y * n + x] = t < 0.5f ? Color32.Lerp(c[0], c[1], t / 0.5f) : Color32.Lerp(c[1], c[2], (t - 0.5f) / 0.5f);
+                }
+            tex.SetPixels32(px);
+            tex.Apply();
+            sp = Sprite.Create(tex, new UnityEngine.Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
+            heroBgs[cls] = sp;
+            return sp;
+        }
+
+        /// <summary>Портрет героя в рамке со скруглением: цветной фон героя и лицо, прижатое к верху (как .cp в веб-версии).</summary>
+        public static Image Portrait(string name, Transform parent, string cls, float w, float h)
+        {
+            var box = Round(name, parent, Color.white);
+            box.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+            box.rectTransform.sizeDelta = new Vector2(w, h);
+            Img("bg", box.transform, HeroBg(cls), Color.white).rectTransform.Fill();
+            var side = Mathf.Max(w, h);
+            var face = Img("face", box.transform, Art("h/" + cls + "_face"), Color.white);
+            face.rectTransform.At(new Vector2(0.5f, 1), new Vector2(0, -side / 2), new Vector2(side, side));
+            return box;
         }
 
         public static void Clear(Transform t)

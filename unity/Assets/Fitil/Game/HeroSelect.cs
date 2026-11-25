@@ -85,14 +85,15 @@ namespace Fitil.Game
                 var plate = Ui.Round("plate", rt, on ? (Color)new Color32(0x5A, 0x40, 0x22, 0xEE) : new Color32(20, 24, 38, 200));
                 plate.rectTransform.Fill();
                 if (on) plate.Outline(Ui.Gold, 1.5f);
-                var face = Ui.CircleArt("face", rt, Ui.Art("h/" + h.Id + "_face"));
-                face.rectTransform.Box(15, 4, 60, 60);
+                // портрет на цветном фоне героя (.clscard .cp: во всю ширину плитки, высота 60)
+                var face = Ui.Portrait("face", rt, h.Id, 78, 58);
+                face.rectTransform.Box(6, 5, 78, 58);
                 if (!owned)
                 {
-                    face.transform.GetChild(0).GetComponent<Image>().color = new Color(0.45f, 0.45f, 0.5f);
+                    foreach (var g in face.GetComponentsInChildren<Image>()) if (g != face) g.color = new Color(0.45f, 0.45f, 0.5f);
                     var lockIc = Ui.Img("lock", rt, "i/lock");
                     lockIc.preserveAspect = true;
-                    lockIc.rectTransform.Box(58, 40, 26, 26);
+                    lockIc.rectTransform.Box(58, 36, 26, 26);
                 }
                 var name = Ui.Label("name", rt, h.Name, 16, on ? Ui.GoldHi : owned ? (Color)new Color32(0xD8, 0xD0, 0xE4, 0xFF) : new Color(0.75f, 0.75f, 0.8f), TextAnchor.MiddleCenter, true).Shadow().Fit(9);
                 name.rectTransform.Box(2, 68, 86, 24);
@@ -117,6 +118,10 @@ namespace Fitil.Game
             var big = Ui.Round("big", info, new Color32(0x4A, 0x3F, 0x7A, 0xFF));
             big.rectTransform.Box(12, 10, 128, 160);
             big.Outline(Ui.Gold, 1.5f);
+            var grad = Ui.Img("grad", big.transform, Ui.HeroBg(id), Color.white);
+            grad.rectTransform.Fill();
+            grad.rectTransform.offsetMin = new Vector2(2, 2);
+            grad.rectTransform.offsetMax = new Vector2(-2, -2);
             var body = Ui.Img("body", big.transform, "h/" + id);
             body.preserveAspect = true;
             body.rectTransform.Fill();
