@@ -113,7 +113,7 @@ namespace Fitil.Game
                 var why = a.why;
                 // первый знак \u0001 или \u0002 — метка ответа за рекламу (.adtag): плашка слева в строке названия
                 var tag = a.text.Length > 0 && a.text[0] <= '\u0002' ? a.text[0] : '\0';
-                var b = Ui.Scroll(sc.Scrolls, tag != '\0' ? a.text.Substring(1) : a.text, a.hint, a.pick, a.off, why != null ? () => { Sound.Sfx("deny"); Hud.Toast(Loc.Tr(why)); } : (Action)null, a.glow);
+                var b = Ui.Scroll(sc.Scrolls, tag != '\0' ? new string('\u00A0', 16) + a.text.Substring(1) : a.text, a.hint, a.pick, a.off, why != null ? () => { Sound.Sfx("deny"); Hud.Toast(Loc.Tr(why)); } : (Action)null, a.glow);
                 if (tag == '\0') continue;
                 var free = tag == '\u0002';
                 var pill = Ui.Bordered("adtag", b.transform, free ? new Color32(0x4F, 0x9A, 0x54, 0xFF) : new Color32(0xF3, 0xD2, 0x7C, 0xFF), Ui.Ink, 7, 1.5f);

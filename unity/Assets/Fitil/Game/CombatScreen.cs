@@ -965,11 +965,17 @@ namespace Fitil.Game
 
         static readonly Dictionary<string, Color> FloatColor = new Dictionary<string, Color>
         {
-            ["dmgf"] = new Color32(0xFF, 0x5A, 0x4A, 0xFF),
-            ["blockf"] = new Color32(0x9F, 0xC3, 0xFF, 0xFF),
-            ["burnf"] = new Color32(0xFF, 0xB0, 0x60, 0xFF),
+            ["dmgf"] = new Color32(0xFF, 0x62, 0x50, 0xFF),
+            ["blockf"] = new Color32(0xA9, 0xCB, 0xFF, 0xFF),
+            ["burnf"] = new Color32(0xFF, 0xB8, 0x45, 0xFF),
             ["healf"] = new Color32(0x8D, 0xFF, 0x9A, 0xFF),
-            ["weakf"] = new Color32(0xE8, 0xD8, 0xFF, 0xFF),
+            ["weakf"] = new Color32(0xDC, 0xBC, 0xFF, 0xFF),
+        };
+
+        // размеры всплывающих надписей из style.css (.float 34, .dmgf 46, .small 24, .blockf 26, .burnf 24, .weakf 22)
+        static readonly Dictionary<string, int> FloatSize = new Dictionary<string, int>
+        {
+            ["dmgf"] = 46, ["blockf"] = 26, ["burnf"] = 24, ["weakf"] = 22,
         };
 
         /// <summary>Всплывающая надпись над врагом или героем (floatText в game.js).</summary>
@@ -982,13 +988,14 @@ namespace Fitil.Game
             var baseCls = (cls ?? "").Split(' ')[0];
             var small = (cls ?? "").Contains("small");
             var col = FloatColor.TryGetValue(baseCls, out var c) ? c : Ui.Paper;
-            var big = baseCls == "dmgf" && !small;
-            var t = Ui.Label("float", fxLayer, text, big ? 34 : 19, col, TextAnchor.MiddleCenter, true).Outline(new Color(0, 0, 0, 0.9f), 1.6f);
+            var size = small ? 24 : FloatSize.TryGetValue(baseCls, out var fs) ? fs : 34;
+            var t = Ui.Label("float", fxLayer, text, size, col, TextAnchor.MiddleCenter, true).Outline(new Color(0.1f, 0.07f, 0.13f, 1f), 2f);
+            t.fontStyle = FontStyle.Bold;
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
             var pos = key == "enemy" ? new Vector2(200, -250) : new Vector2(150, -(Boot.Instance.Safe.rect.height - 130));
-            pos += new Vector2((float)(uiRnd.NextDouble() * 40 - 20), stack ? -26 : 0);
+            pos += new Vector2((float)(uiRnd.NextDouble() * 40 - 20), stack ? -34 : 0);
             t.rectTransform.anchorMin = t.rectTransform.anchorMax = new Vector2(0, 1);
-            t.rectTransform.sizeDelta = new Vector2(300, 40);
+            t.rectTransform.sizeDelta = new Vector2(300, 56);
             t.rectTransform.anchoredPosition = pos;
             StartCoroutine(Rise(t, 0.95f));
         }
