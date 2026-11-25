@@ -319,6 +319,19 @@ namespace Fitil.Game
             return b;
         }
 
+        /// <summary>Тёмная рамка с золотой каймой, как у кнопок (ui2/btn_dark): в веб-версии ею обведены плашки выбора героя,
+        /// товары магазина, заголовок и вкладки окон (#app.skin .clsinfo, .sitem, .achtag, .achtabs). Без картинки остаётся плашка.</summary>
+        public static Image Dark(this Image img)
+        {
+            var dark = Art("ui2/btn_dark");
+            if (!dark) return img;
+            img.sprite = dark;
+            img.type = Image.Type.Sliced;
+            img.pixelsPerUnitMultiplier = 24f / 13f;
+            img.color = Color.white;
+            return img;
+        }
+
         /// <summary>Кнопка в две строки: название шрифтом заголовков сверху и пояснение мелким обычным шрифтом снизу.
         /// Каждая строка в своей половине кнопки: одна надпись с переносом вылезала за рамку (у шрифтов разная высота строки).</summary>
         public static void TwoLines(Text label, string title, string sub, float left, int subSize)

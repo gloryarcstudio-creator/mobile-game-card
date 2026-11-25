@@ -33,20 +33,28 @@ namespace Fitil.Game
             col.offsetMax = new Vector2(0, -14);
             col.Column(8, TextAnchor.UpperCenter, 14, 14, 0, 0);
             var head = Ui.Node("head", col);
-            head.Pref(372, 46);
+            head.Pref(372, 42);
             var ic = Ui.Img("icon", head, "r2/" + icon);
             ic.preserveAspect = true;
-            ic.rectTransform.Box(0, 3, 40, 40);
-            var t = Ui.Label("title", head, title, 26, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(2f);
-            t.rectTransform.Box(46, 0, 270, 46);
-            t.Fit(16);
+            ic.rectTransform.Box(10, 5, 32, 32);
+            var t = Ui.Label("title", head, title, 19, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(2f);
+            // заголовок на тёмной плашке по ширине названия (.achtag)
+            var tag = Ui.Round("tag", head, new Color32(0x1C, 0x19, 0x2B, 0xF2)).Dark();
+            tag.rectTransform.Box(0, 4, Mathf.Min(300, t.preferredWidth + 68), 34);
+            tag.transform.SetAsFirstSibling();
+            t.rectTransform.Box(48, 4, 250, 34);
+            t.Fit(13);
             var x = Ui.Btn("close", head, "✕", () => { Sound.Sfx("click"); close(); }, 22);
-            ((RectTransform)x.transform).Box(326, 3, 44, 40);
-            if (got >= 0) Bar(col, got, total, 372, 22, true);
+            ((RectTransform)x.transform).Box(330, 0, 42, 42);
+            if (got >= 0) Bar(col, got, total, 372, 24, true);
             var list = Menus.ScrollList(col, 372);
             var tabs = Ui.Node("tabs", col);
-            tabs.Line(6, TextAnchor.MiddleCenter);
-            tabs.Pref(372, 54);
+            tabs.Line(0, TextAnchor.MiddleCenter, 14, 14, 0, 0);
+            tabs.Pref(382, 66);
+            // вкладки стоят на общей тёмной плашке (.achtabs 382×66)
+            var tabsBg = Ui.Round("bg", tabs, new Color32(0x1C, 0x19, 0x2B, 0xF2)).Dark();
+            tabsBg.rectTransform.Fill();
+            tabsBg.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
             return new Sheet { List = list, Tabs = tabs, Scroll = list.parent.GetComponent<ScrollRect>() };
         }
 
@@ -68,10 +76,10 @@ namespace Fitil.Game
 
         static void Tab(RectTransform tabs, string name, string sub, bool on, float w, Action pick)
         {
-            var bg = Ui.Round("tab", tabs, on ? (Color)new Color32(0x6A, 0x4A, 0x22, 0xF5) : new Color32(0x22, 0x24, 0x38, 0xF0));
-            bg.Pref(w, 52);
-            if (on) bg.Outline(Ui.Gold, 1.2f);
-            var t = Ui.Label("name", bg.transform, name + "\n<size=12>" + sub + "</size>", 15, on ? Ui.GoldHi : Ui.Paper, TextAnchor.MiddleCenter, true);
+            // выбранная вкладка светится тёплым пятном, остальные без подложки
+            var bg = Ui.Round("tab", tabs, on ? new Color(1f, 0.78f, 0.42f, 0.16f) : new Color(0, 0, 0, 0));
+            bg.Pref(w, 54);
+            var t = Ui.Label("name", bg.transform, name + "\n<size=13>" + sub + "</size>", 14, on ? Ui.GoldHi : (Color)new Color32(0xC9, 0xC0, 0xD8, 0xFF), TextAnchor.MiddleCenter, true);
             t.lineSpacing = 0.9f;
             t.rectTransform.Fill();
             t.rectTransform.offsetMin = new Vector2(3, 2);
@@ -114,7 +122,7 @@ namespace Fitil.Game
                 lg.spacing = 16;                       // рамки плиток выступают за строку: без зазора они ложились бы друг на друга
                 lg.padding = new RectOffset(6, 6, 16, 16);
                 foreach (var a in all.Where(a => Json.Str(Json.Get(a, "cat")) == tab)) AchRow(s.List, a, since);
-                var w = (372f - 6 * (cats.Count - 1)) / Math.Max(1, cats.Count);
+                var w = 354f / Math.Max(1, cats.Count);
                 foreach (var (id, name) in cats)
                 {
                     var n = all.Count(a => Json.Str(Json.Get(a, "cat")) == id);
@@ -224,8 +232,8 @@ namespace Fitil.Game
                 else
                     for (var i = 0; i < list.Count; i++) { var k = i; RunRow(s.List, list[i], maxSteps, () => { open = k; Render(); }); }
                 var sub = list.Count > 1 ? Loc.Tr("последние {n}", ("n", list.Count)) : list.Count == 1 ? Loc.Tr("последний") : Loc.Tr("пока нет");
-                Tab(s.Tabs, Loc.Tr("Итоги"), Loc.Tr("всё время"), tab == "sum", 183, () => { tab = "sum"; open = -1; Render(); });
-                Tab(s.Tabs, Loc.Tr("Забеги"), sub, tab == "runs", 183, () => { tab = "runs"; open = -1; Render(); });
+                Tab(s.Tabs, Loc.Tr("Итоги"), Loc.Tr("всё время"), tab == "sum", 177, () => { tab = "sum"; open = -1; Render(); });
+                Tab(s.Tabs, Loc.Tr("Забеги"), sub, tab == "runs", 177, () => { tab = "runs"; open = -1; Render(); });
                 Top(s);
             }
             Render();
@@ -238,13 +246,23 @@ namespace Fitil.Game
 
         static void Dl(RectTransform list, IEnumerable<(string k, string v)> rows)
         {
+            // строки в общей тёмной рамке, между ними тонкие черты (.statlist: строка 36, название 16, число 17)
+            var box = Ui.Node("statlist", list);
+            box.Column(0, TextAnchor.UpperCenter, 16, 16, 10, 10);
+            box.Pref(360);
+            var bg = Ui.Round("bg", box, new Color32(0x1C, 0x19, 0x2B, 0xF2)).Dark();
+            bg.rectTransform.Fill();
+            bg.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            var first = true;
             foreach (var (k, v) in rows)
             {
-                var row = Ui.Node("dl", list);
-                row.Line(8, TextAnchor.MiddleLeft, 4, 4, 2, 2);
-                row.Pref(356, -1, 26);
-                Ui.Label("dt", row, Loc.Tr(k), 15, Ui.Paper, TextAnchor.MiddleLeft).Pref(236);
-                Ui.Label("dd", row, v, 16, Ui.GoldHi, TextAnchor.MiddleRight, true).Pref(104);
+                if (!first) Ui.Img("rule", box, null, new Color(1, 1, 1, 0.1f)).Pref(328, 1);
+                first = false;
+                var row = Ui.Node("dl", box);
+                row.Line(8, TextAnchor.MiddleLeft, 0, 0, 2, 2);
+                row.Pref(328, -1, 35);
+                Ui.Label("dt", row, Loc.Tr(k), 16, Ui.Paper, TextAnchor.MiddleLeft).Pref(216);
+                Ui.Label("dd", row, v, 17, Ui.GoldHi, TextAnchor.MiddleRight, true).Pref(104);
             }
         }
 
@@ -256,7 +274,7 @@ namespace Fitil.Game
             var win = Json.Bool(Json.Get(r, "win"));
             var diff = data.Difficulties[Mathf.Clamp(Json.Int(Json.Get(r, "diff"), 1), 0, data.Difficulties.Count - 1)];
             var row = Ui.Round("runrow", list, win ? RowDone : RowBg);
-            row.Outline(win ? new Color(0.85f, 0.66f, 0.29f, 0.6f) : new Color(0.5f, 0.4f, 0.6f, 0.4f), 1.2f);
+            row.Dark();
             var rt = row.rectTransform;
             rt.Line(10, TextAnchor.MiddleLeft, 8, 10, 6, 6);
             rt.Pref(360, -1, 64);
@@ -442,7 +460,7 @@ namespace Fitil.Game
         static void Tile(RectTransform line, string kind, string id, Defs defs, Action<string> open)
         {
             var on = CxHas(kind, id);
-            var box = Ui.Round("cxtile", line, on ? RowBg : new Color32(0x16, 0x16, 0x22, 0xE6));
+            var box = Ui.Round("cxtile", line, on ? RowBg : new Color32(0x16, 0x16, 0x22, 0xE6)).Dark();
             var rt = box.rectTransform;
             rt.Pref(84, kind == "c" ? 120 : 108);
             if (kind == "c" && on && defs.Cards.ContainsKey(id))
