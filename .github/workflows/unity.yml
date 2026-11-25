@@ -40,6 +40,8 @@ jobs:
   build:
     needs: core-tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # снимки экранов кладутся в отдельную ветку ci-screens
     strategy:
       fail-fast: false
       matrix:
@@ -120,6 +122,27 @@ jobs:
           cp player.log screens/player.log
           ls -l screens
           test -f screens/log.txt
+      # Последние снимки лежат одной записью в ветке ci-screens (уменьшенные JPEG): их видно прямо в репозитории
+      - name: Снимки в ветку ci-screens
+        if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir pub
+          python3 -I - <<'PY'
+          import glob, os
+          from PIL import Image
+          for f in sorted(glob.glob('screens/*.png')):
+              Image.open(f).convert('RGB').save('pub/' + os.path.basename(f)[:-4] + '.jpg', quality=88)
+          PY
+          cp screens/log.txt pub/
+          echo "$GITHUB_SHA" > pub/commit.txt
+          cd pub
+          git init -q
+          git checkout -q --orphan ci-screens
+          git add .
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Снимки экранов Unity для $GITHUB_SHA"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:ci-screens
       - uses: actions/upload-artifact@v4
         if: always() && env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'
         with:
