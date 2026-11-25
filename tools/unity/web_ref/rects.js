@@ -54,6 +54,15 @@ const { chromium } = require('playwright');
     await p.screenshot({ path: 'reward.png' });
     await dump('reward', 5);
   }
+  if (want === 'victory') { await G(() => Game.goVictory()); await p.screenshot({ path: 'victory.png' }); await dump('victory', 5); }
+  if (want === 'defeat') {
+    await G(() => Game.startCombat('scarfsnake')); await p.waitForTimeout(2500);
+    await G(() => { Game.run.hp = 1; });
+    for (let i = 0; i < 6 && !(await p.$('.scr-end, .scr-summary')); i++) { await G(() => Game.endTurn()); await p.waitForTimeout(3500); }
+    await p.waitForTimeout(2500); await p.screenshot({ path: 'defeat.png' }); await dump('defeat', 5);
+    const btn = p.getByText('Итоги', { exact: false }).first();
+    if (await btn.count()) { await btn.click({ force: true }).catch(() => {}); await p.waitForTimeout(1500); await p.screenshot({ path: 'summary.png' }); await dump('summary', 5); }
+  }
   if (want === 'boss') { await G(() => Game.startCombat(Object.keys(Game.combat ? {} : {}).length ? '' : 'x')).catch(()=>{}); }
   await b.close();
 })();

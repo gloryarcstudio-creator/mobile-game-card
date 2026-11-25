@@ -118,7 +118,7 @@ namespace Fitil.Game
         {
             var p = Open();
             Boot.Instance.Corner("end");
-            var col = Ui.Node("end", p.Root).Box(0, ribbon != null ? 40 : 84, 400, 780);
+            var col = Ui.Node("end", p.Root).Box(0, ribbon != null ? 40 : 78, 400, 800);   // книга на 144 с лентой и на 128 без неё, как в веб-версии
             col.Column(10, TextAnchor.UpperCenter);
             if (ribbon != null) Ui.Ribbon(col, ribbon);
             Spacer(col, 30);
@@ -127,12 +127,12 @@ namespace Fitil.Game
             page.Pref(372);
             Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
             Ui.Label("title", page, title, 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250);
-            BookPic(page, pic, dim ? 170 : 200, dim);
+            BookPic(page, pic, 220, dim);
             Ui.Label("story", page, story, 17, Ui.Ink).Pref(318);
             Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF)).Pref(318);
             Spacer(col, 14);
-            if (rec != null) Ui.Push(col, Loc.Tr("Итоги забега"), () => Summary(rec), false, 22, 240, 56);
-            Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, rec != null, rec != null ? 18 : 22, rec != null ? 200 : 220, rec != null ? 48 : 56);
+            if (rec != null) Ui.Push(col, Loc.Tr("Итоги забега"), () => Summary(rec), false, 30, 268, 68);
+            Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, rec != null, rec != null ? 17 : 24, rec != null ? 152 : 240, rec != null ? 40 : 60);
             return p;
         }
 
@@ -173,7 +173,7 @@ namespace Fitil.Game
             Sound.Sfx("defeat");
             var p = Open();
             Boot.Instance.Corner("end");
-            var col = Ui.Node("end", p.Root).Box(0, 70, 400, 780);
+            var col = Ui.Node("end", p.Root).Box(0, 104, 400, 750);
             col.Column(10, TextAnchor.UpperCenter);
             var page = Ui.Node("page", col);
             page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
@@ -206,10 +206,10 @@ namespace Fitil.Game
                     Hud.Toast(Loc.Tr("Ещё одна попытка!"));
                 }, Loc.Tr(fight ? "Бой начнётся заново" : "Вернуться на развилку перед боем"));
             }
-            var again = Ui.Push(col, ad + Loc.Tr("Начать бой заново") + "\n<size=13>" + Loc.Tr("с теми же HP и колодой, что перед боем") + "</size>", () => Revive(fightSnap, true), false, 20, 300, 62);
+            var again = Ui.Push(col, ad + Loc.Tr("Начать бой заново") + "\n<size=13>" + Loc.Tr("с теми же HP и колодой, что перед боем") + "</size>", () => Revive(fightSnap, true), false, 24, 300, 82);
             if (stepSnap != null)
-                Ui.Push(col, ad + Loc.Tr("Вернуться до боя") + "\n<size=13>" + Loc.Tr("снова на развилке перед этим боем") + "</size>", () => Revive(stepSnap, false), false, 18, 280, 56);
-            Ui.Push(col, Loc.Tr("Закончить забег"), EndRun, true, 17, 200, 46);
+                Ui.Push(col, ad + Loc.Tr("Вернуться до боя") + "\n<size=13>" + Loc.Tr("снова на развилке перед этим боем") + "</size>", () => Revive(stepSnap, false), false, 20, 300, 81);
+            Ui.Push(col, Loc.Tr("Закончить забег"), EndRun, true, 17, 169, 40);
         }
 
         /// <summary>Конец забега без второй попытки: книга поражения.</summary>
@@ -232,15 +232,14 @@ namespace Fitil.Game
         {
             var p = Open();
             Boot.Instance.Corner("end");
-            var col = Ui.Node("summary", p.Root).Box(0, 30, 400, 810);
+            var col = Ui.Node("summary", p.Root).Box(0, 44, 400, 800);
             col.Column(12, TextAnchor.UpperCenter);
             Ui.Ribbon(col, Loc.Tr("Итоги забега"));
             Progress.SummaryCard(col, rec, defs);
-            var btns = Ui.Node("btns", col);
-            btns.Line(12, TextAnchor.MiddleCenter);
-            btns.Pref(380, 56);
-            Ui.Push(btns, Loc.Tr("Новый забег"), () => { Close(); Boot.Instance.ShowHeroes(); }, false, 20, 190, 54);
-            Ui.Push(btns, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, true, 18, 170, 50);
+            // кнопки одна под другой: большая «Новый забег» и малая «Главное меню» (.endbtns)
+            Spacer(col, 4);
+            Ui.Push(col, Loc.Tr("Новый забег"), () => { Close(); Boot.Instance.ShowHeroes(); }, false, 30, 265, 68);
+            Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, true, 17, 152, 40);
         }
 
         static void BookPic(RectTransform page, string pic, float h, bool dim)
