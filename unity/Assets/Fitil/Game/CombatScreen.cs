@@ -647,14 +647,14 @@ namespace Fitil.Game
         /// <summary>Шаги боя для снимков (Tour): выбрать карту, сыграть первую карту-атаку, закончить ход.</summary>
         public IEnumerator TourMoves(bool select, bool endTurn)
         {
-            yield return new WaitForSecondsRealtime(1.5f);
+            yield return new WaitForSecondsRealtime(endTurn ? 0.5f : 1.5f);
             var i = 0;
             for (var k = 0; k < C.Hand.Count; k++)
-                if (defs.Cards.TryGetValue(C.Hand[k].Id, out var cd) && cd.Type == "attack") { i = k; break; }
+                if (defs.Cards.TryGetValue(C.Hand[k].Id, out var cd) && cd.Type == "atk") { i = k; break; }
             if (select) { Select(i); yield break; }
             Play(i);
             if (!endTurn) yield break;
-            yield return new WaitForSecondsRealtime(1.2f);
+            yield return new WaitForSecondsRealtime(0.6f);
             while (busy) yield return null;
             EndTurn();
         }
@@ -663,6 +663,9 @@ namespace Fitil.Game
         {
             if (busy || C.End != CombatEnd.None) return;
             selected = -1;
+            // рука уходит в сброс сразу, а не висит весь ход врага (как в веб-версии)
+            foreach (var c in cards)
+                if (c) { var rt = (RectTransform)c.transform; StartCoroutine(Slide(rt, rt.anchoredPosition + new Vector2(140, -320), 0.22f, 0)); }
             C.EndTurn();
             StartCoroutine(Replay(true));
         }
