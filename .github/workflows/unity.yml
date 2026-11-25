@@ -44,7 +44,8 @@ jobs:
     steps:
       - name: Нет лицензии Unity
         if: env.HAS_LICENSE != 'true'
-        run: echo "::notice::Сборка пропущена: добавьте секреты UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD"
+        run: |
+          echo "::notice::Сборка пропущена, нет секретов UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD"
       - uses: actions/checkout@v4
         if: env.HAS_LICENSE == 'true'
       - uses: actions/setup-python@v5
