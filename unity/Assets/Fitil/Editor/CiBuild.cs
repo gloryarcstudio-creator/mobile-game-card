@@ -29,7 +29,10 @@ namespace Fitil.EditorTools
                 var group = BuildPipeline.GetBuildTargetGroup(asked);
                 if (!BuildPipeline.IsBuildTargetSupported(group, asked))
                 {
-                    Debug.LogError("CiBuild: в редакторе нет модуля для " + asked);
+                    var engines = System.IO.Path.Combine(EditorApplication.applicationContentsPath, "PlaybackEngines");
+                    var have = System.IO.Directory.Exists(engines) ? string.Join(", ", System.IO.Directory.GetDirectories(engines)) : "папки нет";
+                    Debug.LogError("CiBuild: в редакторе нет модуля для " + asked + ". Стоит " + target + ". Модули в " + engines + ": " + have
+                        + ". Ключи: " + string.Join(" ", Environment.GetCommandLineArgs()).Replace(Environment.GetEnvironmentVariable("UNITY_PASSWORD") ?? "\n", "***").Replace(Environment.GetEnvironmentVariable("UNITY_EMAIL") ?? "\n", "***"));
                     EditorApplication.Exit(1);
                     return;
                 }
