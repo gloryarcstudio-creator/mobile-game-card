@@ -37,6 +37,10 @@ namespace Fitil.Game
                 ("24_deck", () => ShowDeck(Run.Deck, Loc.Tr("Колода") + " · " + Run.Deck.Count, null)),
                 ("25_relics", () => { Map(); Hud.ShowRelics(G); }),
                 ("26_fight_toast", () => { Fight(foe, "fight"); Progress.TourToast(); }),
+                // бой в движении: выбранная карта, удар по врагу, ответный ход врага
+                ("27_fight_select", () => { Fight(foe, "fight"); combat.StartCoroutine(combat.TourMoves(true, false)); }),
+                ("28_fight_hit", () => { Fight(foe, "fight"); combat.StartCoroutine(combat.TourMoves(false, false)); }),
+                ("29_fight_enemy_turn", () => { Fight(foe, "fight"); combat.StartCoroutine(combat.TourMoves(false, true)); }),
                 ("30_defeat", () => { Fight(foe, "fight"); Defeat(foe, "fight"); }),
                 ("31_victory", Victory),
                 ("32_summary_win", () => { if (tourRec != null) { Summary(tourRec); Progress.TourToast(); } }),

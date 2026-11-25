@@ -644,6 +644,21 @@ namespace Fitil.Game
             StartCoroutine(Replay(false));
         }
 
+        /// <summary>Шаги боя для снимков (Tour): выбрать карту, сыграть первую карту-атаку, закончить ход.</summary>
+        public IEnumerator TourMoves(bool select, bool endTurn)
+        {
+            yield return new WaitForSecondsRealtime(1.5f);
+            var i = 0;
+            for (var k = 0; k < C.Hand.Count; k++)
+                if (defs.Cards.TryGetValue(C.Hand[k].Id, out var cd) && cd.Type == "attack") { i = k; break; }
+            if (select) { Select(i); yield break; }
+            Play(i);
+            if (!endTurn) yield break;
+            yield return new WaitForSecondsRealtime(1.2f);
+            while (busy) yield return null;
+            EndTurn();
+        }
+
         void EndTurn()
         {
             if (busy || C.End != CombatEnd.None) return;
