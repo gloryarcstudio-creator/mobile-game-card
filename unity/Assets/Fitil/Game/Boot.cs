@@ -47,6 +47,8 @@ namespace Fitil.Game
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             Input.multiTouchEnabled = false; // одна карта за раз, как в веб-версии (щипок отключён)
 
+            // на сервере у окна нет фокуса, а без фокуса игра на компьютере стоит на паузе
+            if (Tour.Wanted) Application.runInBackground = true;
             Tour.Mark("awake");
             LoadLanguage();
             Tour.Mark("language");

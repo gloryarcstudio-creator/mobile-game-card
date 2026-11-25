@@ -20,6 +20,7 @@ namespace Fitil.EditorTools
                 path = target == BuildTarget.Android ? "build/Android/LastRay.apk" : "build/" + target;
             // Сборка для Linux нужна только для снимков экранов в GitHub: пробная, с клавишей F9 и ключом -tour
             var linux = target == BuildTarget.StandaloneLinux64;
+            if (linux) PlayerSettings.runInBackground = true; // на сервере у окна нет фокуса
 
             // Сцен в проекте нет: игра строится кодом. Несохранённую сцену собрать нельзя,
             // поэтому на время сборки создаётся сцена с камерой по умолчанию
