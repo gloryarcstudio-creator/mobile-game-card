@@ -22,6 +22,13 @@ namespace Fitil.EditorTools
             var linux = target == BuildTarget.StandaloneLinux64;
             if (linux) PlayerSettings.runInBackground = true; // на сервере у окна нет фокуса
 
+            // В журнал: в каком виде картинки попадут в сборку (от этого зависит вес приложения)
+            foreach (var art in new[] { "ea/bat_idle", "bg/bg_stage1_town_day", "ui2/row2" })
+            {
+                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Fitil/Resources/Art/" + art + ".png");
+                Debug.Log("CiBuild: " + art + " " + (tex ? tex.width + "x" + tex.height + " " + tex.format : "нет файла"));
+            }
+
             // Сцен в проекте нет: игра строится кодом. Несохранённую сцену собрать нельзя,
             // поэтому на время сборки создаётся сцена с камерой по умолчанию
             const string scenePath = "Assets/Fitil/CiBoot.unity";

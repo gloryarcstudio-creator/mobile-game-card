@@ -68,8 +68,8 @@ jobs:
         if: env.HAS_LICENSE == 'true'
         with:
           path: unity/Library
-          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
-          restore-keys: Library-${{ matrix.targetPlatform }}-
+          key: Library2-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library2-${{ matrix.targetPlatform }}-
       # Лицензия Personal выдаётся по входу в аккаунт Unity (почта и пароль из секретов),
       # поэтому редактор запускается напрямую из образа unityci/editor, без серийного номера
       - name: Сборка в Unity
@@ -93,6 +93,14 @@ jobs:
               -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
               -projectPath unity -buildTarget "$TARGET" \
               -executeMethod Fitil.EditorTools.CiBuild.Build'
+      # Редактор в контейнере пишет от имени root: права возвращаются, а в журнал идёт состав и вес сборки
+      - name: Что получилось
+        if: env.HAS_LICENSE == 'true'
+        run: |
+          sudo chown -R "$USER" build
+          sudo chmod -R u+rwX build
+          du -sh build/*
+          find build -maxdepth 3 | head -n 40
       # Игра сама проходит по всем экранам (Tour.cs) и сохраняет снимки: их сверяют с веб-версией
       - name: Снимки всех экранов
         if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'

@@ -14,6 +14,9 @@ namespace Fitil.EditorTools
     {
         const string Art = "Assets/Fitil/Resources/Art/";
 
+        // Номер правил: при его смене Unity заново сжимает все картинки, даже взятые из сохранённой папки Library
+        public override uint GetVersion() => 2;
+
         void OnPreprocessTexture()
         {
             if (!assetPath.StartsWith(Art)) return;
