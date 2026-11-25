@@ -368,8 +368,14 @@ namespace Fitil.Game
                 {
                     var (label, value, sub) = tiles[j];
                     // плитка .sumtile: всё прижато влево, число крупное шрифтом заголовков
-                    var t = Ui.Round("tile", line, new Color32(8, 7, 14, 128)).Outline(gold34, 1f);
+                    // кайма — отдельная плашка под тёмной серединой: Outline на полупрозрачной плашке красил бы её целиком
+                    var t = Ui.Round("tile", line, gold34).Radius(4);
                     var tr = t.rectTransform;
+                    var mid = Ui.Round("mid", tr, new Color32(0x12, 0x10, 0x1C, 0xF4)).Radius(3);
+                    mid.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+                    mid.rectTransform.Fill();
+                    mid.rectTransform.offsetMin = new Vector2(1.2f, 1.2f);
+                    mid.rectTransform.offsetMax = new Vector2(-1.2f, -1.2f);
                     tr.Column(0, TextAnchor.UpperLeft, 8, 8, 5, 6);
                     tr.Pref(160, -1, tall ? 70 : 55);
                     Ui.Label("k", tr, label, 14, new Color32(0xB8, 0xAE, 0xCB, 0xFF), TextAnchor.MiddleLeft).Pref(142, 15);

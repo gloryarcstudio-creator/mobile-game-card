@@ -33,9 +33,8 @@ namespace Fitil.Game
             Ui.Ribbon(col, rw.Boss ? Loc.Tr("Босс повержен!") : Loc.Tr("Победа!"));
             var loot = Ui.Node("loot", col);
             loot.Line(6, TextAnchor.MiddleCenter, 10, 16, 3, 3);
-            var lootBg = Ui.Round("bg", loot, new Color(0.06f, 0.07f, 0.12f, 0.72f)).Radius(18);
+            var lootBg = Ui.Bordered("bg", loot, new Color32(0x1A, 0x1E, 0x30, 0xFF), new Color32(0x8A, 0x70, 0x40, 0xFF), 18);
             lootBg.rectTransform.Fill();
-            lootBg.Outline(new Color(0.85f, 0.66f, 0.29f, 0.4f), 0.8f);
             lootBg.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
             var coin = Ui.Img("coin", loot, "i/coin");
             coin.preserveAspect = true;

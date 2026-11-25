@@ -137,6 +137,19 @@ namespace Fitil.Game
             return img;
         }
 
+        /// <summary>Плашка с каймой: кайма — нижняя плашка, середина лежит на ней с отступом. Компонент Outline для этого
+        /// не годится: на полупрозрачной плашке он рисует её четыре раза цветом каймы и красит всю середину.</summary>
+        public static Image Bordered(string name, Transform parent, Color fill, Color border, float radius, float width = 1.2f)
+        {
+            var edge = Round(name, parent, border).Radius(radius);
+            var mid = Round("mid", edge.transform, new Color(fill.r, fill.g, fill.b, 1)).Radius(Mathf.Max(1, radius - width));
+            mid.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            mid.rectTransform.Fill();
+            mid.rectTransform.offsetMin = new Vector2(width, width);
+            mid.rectTransform.offsetMax = new Vector2(-width, -width);
+            return edge;
+        }
+
         /// <summary>Радиус скругления плашки в точках макета (по умолчанию у Round — 5).</summary>
         public static Image Radius(this Image img, float r)
         {

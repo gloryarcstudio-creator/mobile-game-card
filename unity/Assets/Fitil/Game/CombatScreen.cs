@@ -204,7 +204,7 @@ namespace Fitil.Game
             lampRt = lamp;
             pips = new Image[C.FlameMaxNow];
             // тёмная плашка с золотой каймой под Огоньками (.herobar .lamp)
-            var lampBg = Ui.Round("plate", lamp, new Color32(20, 16, 28, 217)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f).Radius(11);
+            var lampBg = Ui.Bordered("plate", lamp, new Color32(20, 16, 28, 255), new Color32(0xB8, 0x89, 0x3A, 0xFF), 11.5f);
             lampBg.rectTransform.Box(0, 0, pips.Length * 21 + 10, 23);
             for (var i = 0; i < pips.Length; i++)
             {
@@ -228,11 +228,11 @@ namespace Fitil.Game
             energyText = Ui.Label("n", orb.transform, "", 24, Color.white, TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
             energyText.rectTransform.Fill();
 
-            var drawB = Ui.Round("draw", heroBar, new Color32(20, 16, 28, 224)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f).Radius(9);
+            var drawB = Ui.Bordered("draw", heroBar, new Color32(20, 16, 28, 255), new Color32(0xB8, 0x89, 0x3A, 0xFF), 9);
             drawB.rectTransform.Box(279, 4, 56, 18);
             drawText = Ui.Label("t", drawB.transform, "", 11, Ui.Paper).Shadow(1f);
             drawText.rectTransform.Fill();
-            var discB = Ui.Round("disc", heroBar, new Color32(20, 16, 28, 224)).Outline(new Color32(0xB8, 0x89, 0x3A, 0xFF), 1f).Radius(9);
+            var discB = Ui.Bordered("disc", heroBar, new Color32(20, 16, 28, 255), new Color32(0xB8, 0x89, 0x3A, 0xFF), 9);
             discB.rectTransform.Box(339, 4, 54, 18);
             discText = Ui.Label("t", discB.transform, "", 11, Ui.Paper).Shadow(1f);
             discText.rectTransform.Fill();
