@@ -666,7 +666,10 @@ namespace Fitil.Game
             // рука уходит в сброс сразу, а не висит весь ход врага (как в веб-версии)
             foreach (var c in cards)
                 if (c) { var rt = (RectTransform)c.transform; StartCoroutine(Slide(rt, rt.anchoredPosition + new Vector2(140, -320), 0.22f, 0)); }
+            // счётчик сброса растёт сразу, пока враг ходит; точные числа встанут после хода (RenderAll)
+            var gone = C.Disc.Count + C.Hand.Count;
             C.EndTurn();
+            discText.text = Loc.Tr("Сброс") + " <b>" + Ui.Paint(gone.ToString(), Ui.GoldHi) + "</b>";
             StartCoroutine(Replay(true));
         }
 

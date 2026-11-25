@@ -41,6 +41,8 @@ namespace Fitil.Game
                 ("27_fight_select", () => { Fight(foe, "fight"); combat.StartCoroutine(combat.TourMoves(true, false)); }),
                 ("28_fight_hit", () => { Fight(foe, "fight"); combat.StartCoroutine(combat.TourMoves(false, false)); }),
                 ("29_fight_enemy_turn", () => { Fight(foe, "fight"); combat.StartCoroutine(combat.TourMoves(false, true)); }),
+                ("35_pick_upgrade", () => { Rest(false); Prompt(DeckPrompt.Upgrade, 0, _ => { }); }),
+                ("36_pick_remove", () => { Rest(false); Prompt(DeckPrompt.Remove, 0, _ => { }); }),
                 ("30_defeat", () => { Fight(foe, "fight"); Defeat(foe, "fight"); }),
                 ("31_victory", Victory),
                 ("32_summary_win", () => { if (tourRec != null) { Summary(tourRec); Progress.TourToast(); } }),
