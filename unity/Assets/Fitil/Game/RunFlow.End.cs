@@ -116,6 +116,7 @@ namespace Fitil.Game
         /// <summary>Книга финала: картинка, заголовок, рассказ и строка итогов; под ней кнопка в главное меню.</summary>
         Page Book(string pic, string ribbon, string title, string story, string stats, bool dim, Dictionary<string, object> rec)
         {
+            tourRec = rec;
             var p = Open();
             Boot.Instance.Corner("end");
             var col = Ui.Node("end", p.Root).Box(0, ribbon != null ? 40 : 78, 400, 800);   // книга на 144 с лентой и на 128 без неё, как в веб-версии

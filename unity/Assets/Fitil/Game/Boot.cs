@@ -313,6 +313,8 @@ namespace Fitil.Game
         void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape)) GoBack();
+            // F9 в редакторе и в пробной сборке: снимки всех экранов в папку Screens (Tour.cs)
+            if (Input.GetKeyDown(KeyCode.F9) && (Application.isEditor || Debug.isDebugBuild)) Tour.Start();
         }
 
         /// <summary>Системная «Назад» (и Esc в редакторе) делает то же, что кнопка закрытия на экране: закрывает подсказку,
