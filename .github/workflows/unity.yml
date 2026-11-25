@@ -70,6 +70,8 @@ jobs:
           path: unity/Library
           key: Library2-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library2-${{ matrix.targetPlatform }}-
+      # Сборки Android и iOS пока падают: с бесплатной лицензией редактор в контейнере не подключает
+      # модули этих платформ (в журнале: com.unity.editor.headless was not found). Linux собирается и даёт снимки.
       # Лицензия Personal выдаётся по входу в аккаунт Unity (почта и пароль из секретов),
       # поэтому редактор запускается напрямую из образа unityci/editor, без серийного номера
       - name: Сборка в Unity
@@ -77,7 +79,6 @@ jobs:
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           TARGET: ${{ matrix.targetPlatform }}
         run: |
           VERSION=$(sed -n 's/^m_EditorVersion: //p' unity/ProjectSettings/ProjectVersion.txt)
@@ -88,23 +89,14 @@ jobs:
           mkdir -p build
           docker run --rm \
             -v "$PWD:/github/workspace" -w /github/workspace \
-            -e UNITY_EMAIL -e UNITY_PASSWORD -e UNITY_LICENSE -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" \
+            -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" \
             "unityci/editor:ubuntu-$VERSION-$MODULE-3" \
-            bash -c 'case "$UNITY_LICENSE" in
-                *"<License"*|*"<root>"*)
-                  # файл лицензии из Unity Hub: с ним редактор подключает модули Android и iOS
-                  mkdir -p /root/.local/share/unity3d/Unity
-                  printf "%s" "$UNITY_LICENSE" > /root/.local/share/unity3d/Unity/Unity_lic.ulf
-                  # лицензия нового вида (со списком прав) лежит в другом месте и под другим именем
-                  mkdir -p /root/.config/unity3d/Unity/licenses
-                  printf "%s" "$UNITY_LICENSE" > /root/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
-                  LOGIN=no
-                  echo "Лицензия: файл .ulf из секрета UNITY_LICENSE, без входа по почте";;
-                *) echo "Лицензия: в UNITY_LICENSE нет файла .ulf, остаётся вход по почте";;
-              esac
-              echo "Модули редактора:"; ls /opt/unity/Editor/Data/PlaybackEngines/*/ | head -n 60
-              if [ "$LOGIN" = no ]; then set --; else set -- -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD"; fi
-              unity-editor -batchmode -nographics -quit -logFile /dev/stdout "$@" \
+            bash -c 'LC=/opt/unity/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client
+              # Лицензия Personal выдаётся на эту машину: с ней редактор получает права на Android и iOS
+              "$LC" --activate-ulf --username "$UNITY_EMAIL" --password "$UNITY_PASSWORD" --include-personal 2>&1 | tail -n 5 || true
+              echo "Права лицензии:"; "$LC" --showEntitlements 2>&1 | grep -o "com\.unity\.editor[a-z.-]*" | sort -u | tr "\n" " "; echo
+              unity-editor -batchmode -nographics -quit -logFile /dev/stdout \
+              -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
               -projectPath unity -buildTarget "$TARGET" \
               -executeMethod Fitil.EditorTools.CiBuild.Build'
       # Редактор в контейнере пишет от имени root: права возвращаются, а в журнал идёт состав и вес сборки
