@@ -99,9 +99,14 @@ jobs:
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libegl1 > /dev/null
           sudo chown -R "$USER" build
           mkdir -p screens
-          timeout 600 xvfb-run -a -s "-screen 0 400x860x24" \
+          export LIBGL_ALWAYS_SOFTWARE=1
+          timeout 420 xvfb-run -a -s "-screen 0 400x860x24 +extension GLX +render -noreset" \
             build/StandaloneLinux64/LastRay.x86_64 -force-glcore -screen-fullscreen 0 \
-            -screen-width 400 -screen-height 860 -tour -tourDir "$PWD/screens" -logFile screens/player.log || true
+            -screen-width 400 -screen-height 860 -tour -tourDir "$PWD/screens" -logFile - > player.log 2>&1 || true
+          grep -v "memorysetup" player.log | head -n 120
+          echo "..."
+          tail -n 80 player.log
+          cp player.log screens/player.log
           ls -l screens
           test -f screens/log.txt
       - uses: actions/upload-artifact@v4
