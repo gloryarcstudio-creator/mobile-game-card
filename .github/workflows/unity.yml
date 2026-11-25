@@ -96,13 +96,26 @@ jobs:
         if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libegl1 > /dev/null
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libegl1 gdb > /dev/null
           sudo chown -R "$USER" build
           mkdir -p screens
           export LIBGL_ALWAYS_SOFTWARE=1
-          timeout 420 xvfb-run -a -s "-screen 0 400x860x24 +extension GLX +render -noreset" \
+          xvfb-run -a -s "-screen 0 400x860x24 +extension GLX +render -noreset" \
             build/StandaloneLinux64/LastRay.x86_64 -force-glcore -screen-fullscreen 0 \
-            -screen-width 400 -screen-height 860 -tour -tourDir "$PWD/screens" -logFile - > player.log 2>&1 || true
+            -screen-width 400 -screen-height 860 -tour -tourDir "$PWD/screens" -logFile - > player.log 2>&1 &
+          # обход занимает около двух минут; игра закрывается сама, когда готов log.txt
+          for i in $(seq 1 60); do
+            sleep 5
+            if [ -f screens/log.txt ] || ! pgrep -x LastRay.x86_64 > /dev/null; then break; fi
+            if [ "$i" = 12 ] && ! ls screens/*.png > /dev/null 2>&1; then
+              echo "::group::Игра не дошла до первого снимка за минуту: где она стоит"
+              sudo gdb -p "$(pgrep -x LastRay.x86_64)" -batch -ex "bt 45" 2>&1 | grep -vE "^\[New|^warning|^Reading|^Loaded" | head -n 90
+              echo "::endgroup::"
+              break
+            fi
+          done
+          sleep 2
+          pkill -x LastRay.x86_64 || true
           grep -vE "memorysetup|ALSA|SDL_GL|GL_[A-Z]|FMOD" player.log | tail -n 150
           cp player.log screens/player.log
           ls -l screens
