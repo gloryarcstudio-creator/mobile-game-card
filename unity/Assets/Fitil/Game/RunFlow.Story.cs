@@ -48,6 +48,15 @@ namespace Fitil.Game
                     fit.aspectRatio = (float)img.sprite.texture.width / img.sprite.texture.height;
                 }
                 else img.color = new Color32(0x1C, 0x27, 0x40, 0xFF);
+                // тёмная кайма поверх рисунка: внешнюю рамку срезает маска
+                for (var e = 0; e < 4; e++)
+                {
+                    var edge = Ui.Img("edge", sc.Art, (Sprite)null, new Color32(0x1A, 0x16, 0x26, 0xFF)).rectTransform;
+                    edge.anchorMin = new Vector2(e == 1 ? 1 : 0, e == 2 ? 1 : 0);
+                    edge.anchorMax = new Vector2(e == 0 ? 0 : 1, e == 3 ? 0 : 1);
+                    edge.offsetMin = new Vector2(e == 1 ? -3 : 0, e == 2 ? -3 : 0);
+                    edge.offsetMax = new Vector2(e == 0 ? 3 : 0, e == 3 ? 3 : 0);
+                }
             }
             else
             {
@@ -102,7 +111,19 @@ namespace Fitil.Game
             foreach (var a in list)
             {
                 var why = a.why;
-                Ui.Scroll(sc.Scrolls, a.text, a.hint, a.pick, a.off, why != null ? () => { Sound.Sfx("deny"); Hud.Toast(Loc.Tr(why)); } : (Action)null, a.glow);
+                // первый знак \u0001 или \u0002 — метка ответа за рекламу (.adtag): плашка слева в строке названия
+                var tag = a.text.Length > 0 && a.text[0] <= '\u0002' ? a.text[0] : '\0';
+                var b = Ui.Scroll(sc.Scrolls, tag != '\0' ? a.text.Substring(1) : a.text, a.hint, a.pick, a.off, why != null ? () => { Sound.Sfx("deny"); Hud.Toast(Loc.Tr(why)); } : (Action)null, a.glow);
+                if (tag == '\0') continue;
+                var free = tag == '\u0002';
+                var pill = Ui.Bordered("adtag", b.transform, free ? new Color32(0x4F, 0x9A, 0x54, 0xFF) : new Color32(0xF3, 0xD2, 0x7C, 0xFF), Ui.Ink, 7, 1.5f);
+                pill.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+                var pl = Ui.Label("t", pill.transform, free ? Loc.Tr("Бонус") : "▶ " + Loc.Tr("Реклама"), 12, free ? new Color32(0xFF, 0xF4, 0xD6, 0xFF) : Ui.Ink);
+                pl.rectTransform.Fill();
+                var prt = pill.rectTransform;
+                prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0, 1);
+                prt.sizeDelta = new Vector2(pl.preferredWidth + 12, 19);
+                prt.anchoredPosition = new Vector2(46, -9);
             }
             Boot.Instance.StartCoroutine(FitScene(sc));
         }
@@ -140,7 +161,7 @@ namespace Fitil.Game
                 var k = i;
                 var o = opts[i];
                 // ответ за рекламу помечен: «▶ Реклама», а с «Без рекламы» — «Бонус» (adTag)
-                var text = o.Ad ? "<size=12><color=#" + Ui.Hex(Store.NoAds ? Ui.Green : Ui.Orange) + ">" + (Store.NoAds ? Loc.Tr("Бонус") : "▶ " + Loc.Tr("Реклама")) + "</color></size>\n" + o.Text : o.Text;
+                var text = o.Ad ? (Store.NoAds ? "\u0002" : "\u0001") + o.Text : o.Text;
                 list.Add((text, o.Hint, !o.Can, o.Why, o.Ad, () => EventPick(p, sc, id, k, o.Ad ? o.Hint : null)));
             }
             Answers(sc, list);
