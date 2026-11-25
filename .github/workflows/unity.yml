@@ -54,7 +54,7 @@ jobs:
       - name: Картинки для Unity из assets/
         if: env.HAS_LICENSE == 'true'
         run: |
-          pip install pillow
+          pip install pillow numpy
           python3 -I tools/unity/export_assets.py
       - uses: actions/cache@v4
         if: env.HAS_LICENSE == 'true'
