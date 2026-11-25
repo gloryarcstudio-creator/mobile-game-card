@@ -100,7 +100,7 @@ jobs:
                 *) echo "Лицензия: в UNITY_LICENSE нет файла .ulf, остаётся вход по почте";;
               esac
               echo "Модули редактора:"; ls /opt/unity/Editor/Data/PlaybackEngines/*/ | head -n 60
-              echo "Возможности лицензии: $(printf "%s" "$UNITY_LICENSE" | grep -o "Feature Value=\"[0-9]*\"" | grep -o "[0-9]*" | tr "\n" " ")"
+              echo "Лицензия, строение файла: $(printf "%s" "$UNITY_LICENSE" | wc -c) байт, теги: $(printf "%s" "$UNITY_LICENSE" | grep -o "<[A-Za-z][A-Za-z0-9]*" | sort | uniq -c | tr "\n" " ")"
               if [ "$LOGIN" = no ]; then set --; else set -- -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD"; fi
               unity-editor -batchmode -nographics -quit -logFile /dev/stdout "$@" \
               -projectPath unity -buildTarget "$TARGET" \
