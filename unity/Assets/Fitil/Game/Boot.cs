@@ -47,13 +47,18 @@ namespace Fitil.Game
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             Input.multiTouchEnabled = false; // одна карта за раз, как в веб-версии (щипок отключён)
 
+            Tour.Mark("awake");
             LoadLanguage();
+            Tour.Mark("language");
             Sound.Init(gameObject);
+            Tour.Mark("sound");
             StoreScreen.Install();
             BuildCanvas();
-            // при первом запуске — заставка, потом титул
-            if (Cinema.Has(Defs) && !Cinema.Seen) PlayCinema();
+            Tour.Mark("canvas");
+            // при первом запуске — заставка, потом титул (при съёмке экранов заставка не нужна)
+            if (Cinema.Has(Defs) && !Cinema.Seen && !Tour.Wanted) PlayCinema();
             else ShowTitle();
+            Tour.Mark("title");
         }
 
         void LoadLanguage()
@@ -311,6 +316,7 @@ namespace Fitil.Game
 
         // ================= кнопка «Назад» на Android =================
         bool tourAsked;
+        int frames;
 
         void Update()
         {
@@ -318,7 +324,11 @@ namespace Fitil.Game
             // F9 в редакторе и в пробной сборке: снимки всех экранов в папку Screens (Tour.cs)
             if (Input.GetKeyDown(KeyCode.F9) && (Application.isEditor || Debug.isDebugBuild)) Tour.Start();
             // запуск с ключом -tour (снимки в GitHub): обход начинается сам, по окончании игра закрывается
-            if (!tourAsked && Tour.Wanted && Time.realtimeSinceStartup > 4f) { tourAsked = true; Tour.Start(); }
+            if (!tourAsked && Tour.Wanted)
+            {
+                if (frames++ == 0) Tour.Mark("first update");
+                if (Time.realtimeSinceStartup > 4f || frames > 240) { tourAsked = true; Tour.Mark("start, frame " + frames); Tour.Start(); }
+            }
         }
 
         /// <summary>Системная «Назад» (и Esc в редакторе) делает то же, что кнопка закрытия на экране: закрывает подсказку,

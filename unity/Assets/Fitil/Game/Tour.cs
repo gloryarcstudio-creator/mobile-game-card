@@ -16,6 +16,15 @@ namespace Fitil.Game
         // Ключи командной строки пробной сборки: -tour запускает обход сам, -tourDir <папка> задаёт, куда класть снимки
         public static bool Wanted => Debug.isDebugBuild && !Application.isEditor && Array.IndexOf(Environment.GetCommandLineArgs(), "-tour") >= 0;
 
+        // Отметки в журнале при съёмке в GitHub: по ним видно, на каком шаге игра остановилась
+        public static void Mark(string what)
+        {
+            if (!Wanted) return;
+            Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
+            Application.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
+            Debug.Log("TOUR " + what + " t=" + Time.realtimeSinceStartup.ToString("0.0"));
+        }
+
         static string ArgDir()
         {
             var a = Environment.GetCommandLineArgs();
@@ -49,6 +58,7 @@ namespace Fitil.Game
                     if (c.name == "overlay" || c.name == "moment") UnityEngine.Object.Destroy(c.gameObject);
                 }
                 yield return null;
+                Mark(name);
                 try { show(); }
                 catch (Exception e) { log.Add(name + ": " + e); Debug.LogError("Tour " + name + ": " + e); }
                 yield return new WaitForSecondsRealtime(wait);

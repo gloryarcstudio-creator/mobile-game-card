@@ -103,9 +103,7 @@ jobs:
           timeout 420 xvfb-run -a -s "-screen 0 400x860x24 +extension GLX +render -noreset" \
             build/StandaloneLinux64/LastRay.x86_64 -force-glcore -screen-fullscreen 0 \
             -screen-width 400 -screen-height 860 -tour -tourDir "$PWD/screens" -logFile - > player.log 2>&1 || true
-          grep -v "memorysetup" player.log | head -n 120
-          echo "..."
-          tail -n 80 player.log
+          grep -vE "memorysetup|ALSA|SDL_GL|GL_[A-Z]|FMOD" player.log | tail -n 150
           cp player.log screens/player.log
           ls -l screens
           test -f screens/log.txt
