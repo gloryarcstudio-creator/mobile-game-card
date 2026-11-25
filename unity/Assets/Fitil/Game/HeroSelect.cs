@@ -113,7 +113,7 @@ namespace Fitil.Game
             // рамка с героем слева и рассказом о нём справа (.clsinfo 372×180)
             var card = Ui.Round("card", info, new Color32(0x24, 0x1E, 0x36, 0xF5));
             card.rectTransform.Box(0, 0, 372, 180);
-            card.Outline(Ui.Gold, 1.5f);
+            card.Dark();
             var big = Ui.Round("big", info, new Color32(0x4A, 0x3F, 0x7A, 0xFF));
             big.rectTransform.Box(12, 10, 128, 160);
             big.Outline(Ui.Gold, 1.5f);
@@ -146,7 +146,7 @@ namespace Fitil.Game
             {
                 var row = Ui.Round("relic", info, new Color32(0x14, 0x11, 0x1E, 0xEB));
                 row.rectTransform.Box(0, 186, 372, 92);
-                row.Outline(new Color(0.85f, 0.66f, 0.29f, 0.5f), 1.2f);
+                row.Dark();
                 var ic = Ui.Img("ic", row.transform, "r2/" + h.Relic);
                 ic.preserveAspect = true;
                 ic.rectTransform.Box(13, 23, 46, 46);
@@ -180,7 +180,7 @@ namespace Fitil.Game
             var d = data.Difficulties[diff];
             var box = Ui.Round("diffbox", bottom, new Color32(0x14, 0x14, 0x22, 0xDC));
             box.rectTransform.Box(14, 0, 372, 119);
-            box.Outline(new Color(0.85f, 0.66f, 0.29f, 0.45f), 1.2f);
+            box.Dark();
             var won = Progress.Has("winsDiff", (double)diff);
             var head = Ui.Label("head", box.transform, "<size=12><color=#C9C0D8>" + Loc.Tr("Сложность {a} из {b}", ("a", diff + 1), ("b", n)) + "</color></size>\n" + d.Name + (won ? " <color=#9FE08A>✓</color>" : ""), 21, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(1f);
             head.rectTransform.Box(56, 8, 260, 50);

@@ -42,7 +42,7 @@ namespace Fitil.Game
             col.offsetMin = new Vector2(0, 12);
             col.offsetMax = new Vector2(0, -16);
             col.Column(8, TextAnchor.UpperCenter, 14, 14, 0, 0);
-            Ui.Label("h2", col, Loc.Tr("Магазин"), 30, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f).Pref(372, 40);
+            Ui.Label("h2", col, Loc.Tr("Магазин"), 28, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f).Pref(372, 40);
             Ui.Label("sub", col, Loc.Tr("Поддержите почту Медовой Горки"), 15, Soft).Pref(372, 22);
             var list = Menus.ScrollList(col, 372);
             var data = Boot.Instance.Data;
@@ -52,27 +52,27 @@ namespace Fitil.Game
             {
                 var h = data.Classes[id];
                 var relic = Boot.Instance.Defs.Relics.TryGetValue(h.Relic ?? "", out var r) ? r.Desc : "";
-                var row = Item(list, "<b>" + h.Name + "</b>  <size=12>" + h.Role + "</size>\n<size=13><color=#" + Ui.Hex(Ui.Gold) + ">" + h.Build + "</color>\n" + relic + "</size>");
+                var row = Item(list, Head(h.Name) + "  <size=14><color=#FFF4D6>" + h.Role + "</color></size>\n<color=#FFD9A0>" + h.Build + "</color>\n" + relic);
                 var face = Ui.CircleArt("face", row, Ui.Art("h/" + id + "_face"));
-                face.Pref(54, 54);
+                face.Pref(64, 64);
                 face.transform.SetAsFirstSibling();
                 PriceOrOwned(row, "hero_" + id, Store.HeroOwned(data, id), Again);
             }
             var allHeroes = paid.TrueForAll(id => Store.HeroOwned(data, id));
-            var pack = Item(list, "<b>" + Loc.Tr("Все три героя") + "</b>\n<size=13>" + Loc.Tr("Выгоднее, чем по одному") + "</size>");
+            var pack = Item(list, Head(Loc.Tr("Все три героя")) + "\n" + Loc.Tr("Выгоднее, чем по одному"));
             var faces = Ui.Node("faces", pack);
-            faces.Pref(54, 54);
+            faces.Pref(64, 54);
             faces.SetAsFirstSibling();
             for (var i = 0; i < paid.Count && i < 3; i++)
             {
                 var f = Ui.CircleArt("f", faces, Ui.Art("h/" + paid[i] + "_face"));
-                f.rectTransform.Box(i * 14, 6 + (i % 2) * 8, 32, 32);
+                f.rectTransform.Box(i * 16, 6 + (i % 2) * 8, 32, 32);
             }
             PriceOrOwned(pack, "heroes", allHeroes, Again);
-            var noads = Item(list, "<b>" + Loc.Tr("Без рекламы") + "</b>\n<size=13>" + Loc.Tr("Бонусы событий и возрождение после поражения сразу, без роликов") + "</size>");
+            var noads = Item(list, Head(Loc.Tr("Без рекламы")) + "\n" + Loc.Tr("Бонусы событий и возрождение после поражения сразу, без роликов"));
             var ad = Ui.Img("ad", noads, "i/ad");
             ad.preserveAspect = true;
-            ad.Pref(54, 54);
+            ad.Pref(64, 54);
             ad.transform.SetAsFirstSibling();
             PriceOrOwned(noads, "noads", Store.NoAds, Again);
             if (Store.Test) Ui.Label("note", list, Loc.Tr("Тестовая версия: покупки не настоящие, деньги не списываются."), 13, Soft).Pref(356, 40);
@@ -103,16 +103,19 @@ namespace Fitil.Game
 
         static bool restoring, buyBusy;
 
+        // название товара шрифтом заголовков (.stext b: 20, золотое)
+        static string Head(string name) => "<size=20><color=#" + Ui.Hex(Ui.GoldHi) + "><b>" + name + "</b></color></size>";
+
         static RectTransform Item(RectTransform list, string text)
         {
             var bg = Ui.Round("sitem", list, ItemBg);
-            bg.Outline(new Color(0.85f, 0.66f, 0.29f, 0.45f), 1.2f);
+            bg.Dark();
             var rt = bg.rectTransform;
-            rt.Line(10, TextAnchor.MiddleLeft, 10, 10, 8, 8);
-            rt.Pref(360, -1, 74);
-            var t = Ui.Label("text", rt, text, 16, Ui.Paper, TextAnchor.MiddleLeft);
-            t.lineSpacing = 0.95f;
-            t.Pref(186);
+            rt.Line(10, TextAnchor.MiddleLeft, 12, 12, 12, 13);
+            rt.Pref(360, -1, 79);
+            var t = Ui.Label("text", rt, text, 13, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.MiddleLeft);
+            t.lineSpacing = 1.05f;
+            t.Pref(168);
             return rt;
         }
 
@@ -125,7 +128,7 @@ namespace Fitil.Game
             }
             // цена площадки бывает длинной («4 990,00 ₸»): шрифт меньше, чтобы влезла в кнопку
             var price = Store.PriceOf(id);
-            Ui.Push(row, price, () => Buy(id, after), false, price.Length > 9 ? 12 : price.Length > 6 ? 14 : 18, 84, 44);
+            Ui.Push(row, price, () => Buy(id, after), false, price.Length > 9 ? 12 : price.Length > 6 ? 14 : 19, 84, 50);
         }
 
         /// <summary>Купить товар (storeBuy): после покупки звук, сообщение и экран заново.</summary>
