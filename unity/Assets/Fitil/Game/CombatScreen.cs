@@ -79,7 +79,7 @@ namespace Fitil.Game
             BuildHeroBar();
 
             hStatus = Ui.Node("hstatus", root).Box(8, 530, 384, 24, 0);
-            Row(hStatus, TextAnchor.MiddleLeft);
+            Row(hStatus, TextAnchor.MiddleCenter);   // .hstatus: justify-content center
 
             hand = Ui.Node("hand", root).Box(0, 560, 400, 200, 0);
 
