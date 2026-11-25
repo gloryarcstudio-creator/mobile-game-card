@@ -70,8 +70,8 @@ jobs:
           path: unity/Library
           key: Library2-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library2-${{ matrix.targetPlatform }}-
-      # Сборки Android и iOS пока падают: с бесплатной лицензией редактор в контейнере не подключает
-      # модули этих платформ (в журнале: com.unity.editor.headless was not found). Linux собирается и даёт снимки.
+      # Без шага с клиентом лицензий редактор молча не подключал модули Android и iOS
+      # (в журнале: com.unity.editor.headless was not found) и собирал игру для Linux.
       # Лицензия Personal выдаётся по входу в аккаунт Unity (почта и пароль из секретов),
       # поэтому редактор запускается напрямую из образа unityci/editor, без серийного номера
       - name: Сборка в Unity
