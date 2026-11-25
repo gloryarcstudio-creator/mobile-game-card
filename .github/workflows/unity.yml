@@ -77,6 +77,7 @@ jobs:
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           TARGET: ${{ matrix.targetPlatform }}
         run: |
           VERSION=$(sed -n 's/^m_EditorVersion: //p' unity/ProjectSettings/ProjectVersion.txt)
@@ -87,9 +88,17 @@ jobs:
           mkdir -p build
           docker run --rm \
             -v "$PWD:/github/workspace" -w /github/workspace \
-            -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" \
+            -e UNITY_EMAIL -e UNITY_PASSWORD -e UNITY_LICENSE -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" \
             "unityci/editor:ubuntu-$VERSION-$MODULE-3" \
-            bash -c 'unity-editor -batchmode -nographics -quit -logFile /dev/stdout \
+            bash -c 'case "$UNITY_LICENSE" in
+                *"<License"*|*"<root>"*)
+                  # файл лицензии из Unity Hub: с ним редактор подключает модули Android и iOS
+                  mkdir -p /root/.local/share/unity3d/Unity
+                  printf "%s" "$UNITY_LICENSE" > /root/.local/share/unity3d/Unity/Unity_lic.ulf
+                  echo "Лицензия: файл .ulf из секрета UNITY_LICENSE";;
+                *) echo "Лицензия: в UNITY_LICENSE нет файла .ulf, остаётся вход по почте";;
+              esac
+              unity-editor -batchmode -nographics -quit -logFile /dev/stdout \
               -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
               -projectPath unity -buildTarget "$TARGET" \
               -executeMethod Fitil.EditorTools.CiBuild.Build'
