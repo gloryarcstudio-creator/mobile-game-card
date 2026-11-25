@@ -83,8 +83,21 @@ namespace Fitil.Game
                 Prompt(DeckPrompt.Remove, 0, ok => { if (ok) G.PayService(shop.Remove); ShopScreen(shop, last, ok); });
             });
 
-            var reroll = Ui.Push(root, Loc.Tr("Обновить товар") + "  " + Coin(G.RerollPrice(shop)), () => ShopAct(shop, last, () => G.Reroll(shop)), true, 16, 190, 46);
+            var price = G.RerollPrice(shop).ToString();
+            var reroll = Ui.Push(root, Loc.Tr("Обновить товар") + "       " + Coin(G.RerollPrice(shop)), () => ShopAct(shop, last, () => G.Reroll(shop)), true, 16, 190, 46);
             ((RectTransform)reroll.transform).Box(20, 714, 196, 42);
+            // монета перед ценой, как в веб-версии: место под неё оставлено пробелами
+            var rl = reroll.GetComponentInChildren<Text>();
+            if (rl)
+            {
+                var set = rl.GetGenerationSettings(Vector2.zero);
+                float W(string x) => rl.cachedTextGeneratorForLayout.GetPreferredWidth(x, set) / rl.pixelsPerUnit;
+                var coinR = Ui.Img("coin", rl.transform, "i/coin");
+                coinR.preserveAspect = true;
+                coinR.rectTransform.anchorMin = coinR.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                coinR.rectTransform.sizeDelta = new Vector2(16, 16);
+                coinR.rectTransform.anchoredPosition = new Vector2(W(rl.text) / 2 - W(price) - 12, 0);
+            }
             var leave = Ui.Push(root, Loc.Tr("Уйти"), Next, false, 17, 130, 46);
             ((RectTransform)leave.transform).Box(262, 712, 104, 44);
         }
