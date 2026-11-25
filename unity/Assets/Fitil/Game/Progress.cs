@@ -352,9 +352,9 @@ namespace Fitil.Game
             var small = summary ? Loc.Tr("Достижения получены") : Loc.Tr("Достижение получено");
             var name = summary ? Loc.Tr("И ещё {n}", ("n", Json.Int(Json.Get(a, "summary")))) : Json.Str(Json.Get(a, "name")) + Stars(a);
             float tx = low ? 86 : 101;
-            Ui.Label("small", box, small, low ? 11 : 13, Ui.GoldHi, TextAnchor.LowerLeft).rectTransform.Box(tx, low ? 6 : 14, 317 - tx, low ? 16 : 20);
+            Ui.Label("small", box, small, low ? 11 : 13, Ui.GoldHi, TextAnchor.LowerLeft).rectTransform.Box(tx, low ? 9 : 14, 317 - tx, low ? 14 : 20);
             var t = Ui.Label("name", box, name, low ? 16 : 18, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.UpperLeft, true).Shadow(1f);
-            t.rectTransform.Box(tx, low ? 22 : 35, 317 - tx, low ? 26 : 34);
+            t.rectTransform.Box(tx, low ? 23 : 35, 317 - tx, low ? 24 : 34);
             t.Fit(13);
             return cg;
         }

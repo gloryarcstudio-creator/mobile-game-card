@@ -85,24 +85,34 @@ namespace Fitil.Game
         public static void ShowRelics(RunGame g)
         {
             var layer = Overlay.Open(out var root);
-            var col = Ui.Node("list", root).Box(16, 40, 368, 760);
-            col.Column(8, TextAnchor.UpperCenter);
-            var head = Ui.Label("title", col, Loc.Tr("Талисманы") + " · " + g.Run.Relics.Count, 26, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f);
-            head.Pref(368, 40);
+            var col = Ui.Node("list", root).Box(16, 40, 368, 780);
+            col.Column(9, TextAnchor.UpperCenter);
+            var head = Ui.Label("title", col, Loc.Tr("Талисманы") + " · " + g.Run.Relics.Count, 24, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f);
+            head.Pref(368, 44);
             foreach (var id in g.Run.Relics)
             {
                 var r = g.Defs.Relics[id];
-                var row = Ui.Round("row", col, new Color32(0x26, 0x2D, 0x45, 0xEE));
-                var rt = row.rectTransform;
-                rt.Line(10, TextAnchor.MiddleLeft, 8, 10, 6, 6);
-                rt.Pref(368, -1, 54);
-                var ic = Ui.Img("icon", rt, "r2/" + id);
+                // плитка с окошком для значка (.rrow): та же картинка и масштаб, что у услуг лавки, строка не ниже 68
+                var rt = Ui.Node("row", col);
+                rt.Line(10, TextAnchor.MiddleLeft, 20, 14, 5, 5);
+                rt.Pref(356, -1, 68);
+                Ui.Frame(rt, "ui2/row2", 0.41f, 7.4f, 12.3f, 4.9f, 7f);
+                var slot = Ui.Node("slot", rt);
+                slot.Pref(54, 42);
+                var ic = Ui.Img("icon", slot, "r2/" + id);
                 ic.preserveAspect = true;
-                ic.Pref(42, 42);
-                var txt = Ui.Label("text", rt, $"<b>{r.Name}</b>\n<size=13>{r.Desc}</size>", 16, Ui.Paper, TextAnchor.MiddleLeft);
-                txt.Pref(296);
+                ic.rectTransform.Fill();
+                ic.rectTransform.offsetMin = new Vector2(5, 0);
+                ic.rectTransform.offsetMax = new Vector2(-5, 0);
+                var text = Ui.Node("text", rt);
+                text.Column(1, TextAnchor.MiddleLeft);
+                text.Pref(248);
+                Ui.Label("name", text, r.Name, 16, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f).Pref(248);
+                var d = Ui.Label("desc", text, r.Desc, 13, new Color(0.95f, 0.92f, 0.85f, 0.9f), TextAnchor.UpperLeft);
+                d.lineSpacing = 0.95f;
+                d.Pref(248);
             }
-            var close = Ui.Push(col, Loc.Tr("Закрыть"), () => UnityEngine.Object.Destroy(layer), true, 18, 160, 46);
+            Ui.Push(col, Loc.Tr("Закрыть"), () => UnityEngine.Object.Destroy(layer), false, 20, 130, 50);
         }
 
         // ================= панель героя =================

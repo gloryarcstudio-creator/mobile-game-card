@@ -67,6 +67,7 @@ namespace Fitil.Game
             Ui.Frame(sc.Box, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
             sc.Title = Ui.Label("title", sc.Box, title, 24, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true);
             sc.Title.lineSpacing = 0.95f;
+            sc.Title.fontStyle = FontStyle.Bold;   // h2 в веб-версии жирный
             sc.Title.Pref(224);
             sc.Text = Ui.Label("text", sc.Box, text, 17, Ui.Ink);
             sc.Text.lineSpacing = 1.05f;

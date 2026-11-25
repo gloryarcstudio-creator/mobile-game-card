@@ -172,6 +172,7 @@ namespace Fitil.Game
                 // из сундука вылетает то, что в нём лежало: горка монет или звёзды находки
                 Hud.FxOn(p.Root).PlayAt(found != null ? "find" : "loot", 200, 507, 170, 170, 513 + 170 * 0.3f);
                 msg.text = text;
+                msg.GetComponent<LayoutElement>().preferredWidth = Mathf.Min(320, msg.preferredWidth + 2);
                 Ui.Clear(row);
                 if (found != null)
                 {
@@ -193,11 +194,12 @@ namespace Fitil.Game
             box.Column(0, TextAnchor.UpperCenter);
             var plate = Ui.Node("plate", box);
             plate.Column(0, TextAnchor.MiddleCenter, 14, 14, 3, 4);
-            var bg = Ui.Round("bg", plate, new Color(0.08f, 0.09f, 0.15f, 0.6f));
+            var bg = Ui.Round("bg", plate, new Color(0.08f, 0.09f, 0.15f, 0.6f)).Radius(12);
             bg.rectTransform.Fill();
             bg.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            // плашка по ширине текста, как в веб-версии; длинный текст переносится в пределах 320
             var t = Ui.Label("text", plate, text, 19, Ui.Paper).Shadow(2f);
-            t.Pref(320);
+            t.Pref(Mathf.Min(320, t.preferredWidth + 2));
             return t;
         }
 
