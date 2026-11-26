@@ -346,6 +346,14 @@ namespace Fitil.Game
             var t = Label("text", rt, text, 18, Ui.Ink, TextAnchor.MiddleCenter, true);
             t.lineSpacing = 0.9f;
             t.LineHeight(1.08f);   // .scroll: line-height 1.05
+            // длинный ответ делится на две ровные строки (text-wrap: balance), а не оставляет одно слово на второй
+            if (text != null && !text.Contains("\n") && !text.Contains("<") && t.preferredWidth > width - 80)
+            {
+                var best = -1;
+                for (var i = text.IndexOf(' '); i >= 0; i = text.IndexOf(' ', i + 1))
+                    if (best < 0 || Mathf.Abs(i - text.Length / 2f) < Mathf.Abs(best - text.Length / 2f)) best = i;
+                if (best > 0) t.text = text.Substring(0, best) + "\n" + text.Substring(best + 1);
+            }
             if (hasHint)
             {
                 var h = Label("hint", rt, hint, 13, new Color32(0x4A, 0x38, 0x2A, 0xFF));
