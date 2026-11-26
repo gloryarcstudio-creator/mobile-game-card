@@ -75,6 +75,13 @@ jobs:
           path: unity/Library
           key: Library2-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library2-${{ matrix.targetPlatform }}-
+      # Библиотеки Android, которые Gradle качает с Maven: с кэшем сборка не упирается в лимит запросов Maven Central (ответ 429)
+      - uses: actions/cache@v4
+        if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'Android'
+        with:
+          path: gradle-home/caches/modules-2
+          key: Gradle-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}-${{ github.run_id }}
+          restore-keys: Gradle-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}-
       # Tenjin и Firebase пакетом из реестра не ставятся: скрипт скачивает их перед сборкой, в git они не попадают.
       # Firebase входит в сборку, только когда в секретах есть файлы настроек его проекта (оба в base64)
       - name: SDK аналитики
@@ -109,9 +116,9 @@ jobs:
           AAB=
           if [ "$TARGET" = Android ]; then OUT=build/Android/LastRay.apk; AAB=/github/workspace/build/AndroidBundle/LastRay.aab; fi
           if [ "$TARGET" = StandaloneLinux64 ]; then MODULE=base; OUT=build/$TARGET/LastRay.x86_64; fi
-          mkdir -p build
+          mkdir -p build gradle-home
           docker run --rm \
-            -v "$PWD:/github/workspace" -w /github/workspace \
+            -v "$PWD:/github/workspace" -w /github/workspace -v "$PWD/gradle-home:/root/.gradle" \
             -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" -e CI_AAB_PATH="$AAB" \
             -e ADMOB_APP_ID_ANDROID -e ADMOB_APP_ID_IOS -e ADMOB_REWARDED_ANDROID -e ADMOB_REWARDED_IOS -e TENJIN_SDK_KEY \
             "unityci/editor:ubuntu-$VERSION-$MODULE-3" \
@@ -127,8 +134,9 @@ jobs:
       - name: Что получилось
         if: env.HAS_LICENSE == 'true'
         run: |
-          sudo chown -R "$USER" build
-          sudo chmod -R u+rwX build
+          sudo chown -R "$USER" build gradle-home
+          sudo chmod -R u+rwX build gradle-home
+          rm -f gradle-home/caches/modules-2/modules-2.lock gradle-home/caches/modules-2/gc.properties
           du -sh build/*
           # состав пакета для Google Play: основная часть должна быть меньше 200 МБ
           if [ -f build/AndroidBundle/LastRay.aab ]; then unzip -l build/AndroidBundle/LastRay.aab | awk '{split($4,a,"/"); n[a[1]]+=$1} END {for (k in n) if (n[k] > 1000000) printf "AAB %s: %d МБ\n", k, n[k]/1048576}'; fi
