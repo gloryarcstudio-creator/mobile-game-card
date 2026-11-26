@@ -118,6 +118,23 @@ namespace Fitil.Game
             var hgt = width * Ratio;
             var title = SuperLabel("title", L.T, width, hgt, em * 0.25f, name, em * (name.Length > 12 ? 0.84f : 0.98f), card.Up ? new Color32(0xE4, 0xFF, 0xD8, 0xFF) : new Color32(0xFB, 0xEF, 0xD2, 0xFF), true);
 
+            // Название как .ctitle в веб-версии: кегль .98em (длинное .84em), строки вплотную (line-height 1), длинное название
+            // переносится на вторую строку. Мельче (.84, .75, .66) оно становится, только если в ширину не входит одно слово.
+            title.resizeTextForBestFit = false;
+            title.verticalOverflow = VerticalWrapMode.Overflow;
+            var tf = title.font;
+            if (tf && tf.lineHeight > 0) title.lineSpacing = Mathf.Clamp(tf.fontSize * 1.04f / tf.lineHeight, 0.6f, 1f);
+            var titleW = title.rectTransform.sizeDelta.x;
+            var steps = name.Length > 12 ? new[] { 0.84f, 0.75f, 0.66f } : new[] { 0.98f, 0.84f, 0.75f, 0.66f };
+            foreach (var st in steps)
+            {
+                title.fontSize = Mathf.RoundToInt(em * st * Super);
+                var gs = title.GetGenerationSettings(Vector2.zero);
+                var widest = 0f;
+                foreach (var word in name.Split(' ')) widest = Mathf.Max(widest, title.cachedTextGeneratorForLayout.GetPreferredWidth(word, gs) / title.pixelsPerUnit);
+                if (widest <= titleW) break;
+            }
+
             cost = Ui.Label("cost", transform, "", Mathf.RoundToInt(em * 1.55f), Color.white, TextAnchor.MiddleCenter, true).Shadow(1.5f, 1f);
             cost.rectTransform.Frac(L.G[0], L.G[1], L.G[2], L.G[3]);
 
