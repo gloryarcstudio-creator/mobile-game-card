@@ -245,7 +245,7 @@ namespace Fitil.Game
             var text = Ui.Node("text", rt);
             text.Column(3, TextAnchor.MiddleLeft);
             text.Pref(done ? 179 : 233);
-            Ui.Label("name", text, Json.Str(Json.Get(a, "name")), 17, done ? Ui.GoldHi : Ui.Paper, TextAnchor.MiddleLeft, true).Pref(done ? 179 : 233);
+            Ui.Label("name", text, Json.Str(Json.Get(a, "name")), 17, done ? Ui.GoldHi : Ui.Paper, TextAnchor.MiddleLeft, true).LineHeight(1.08f).Pref(done ? 179 : 233);
             var desc = (Json.Str(Json.Get(a, "desc")) ?? "").Replace("{p}", "<color=#F3D27C>" + Fmt(p) + "/" + Fmt(goal) + "</color>");
             var d = Ui.Label("desc", text, desc, 14, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.MiddleLeft);
             d.lineSpacing = 0.95f;

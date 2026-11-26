@@ -118,21 +118,32 @@ namespace Fitil.Game
             var hgt = width * Ratio;
             var title = SuperLabel("title", L.T, width, hgt, em * 0.25f, name, em * (name.Length > 12 ? 0.84f : 0.98f), card.Up ? new Color32(0xE4, 0xFF, 0xD8, 0xFF) : new Color32(0xFB, 0xEF, 0xD2, 0xFF), true);
 
-            // Название как .ctitle в веб-версии: кегль .98em (длинное .84em), строки вплотную (line-height 1), длинное название
-            // переносится на вторую строку. Мельче (.84, .75, .66) оно становится, только если в ширину не входит одно слово.
+            // Название как .ctitle в веб-версии: кегль .98em (длинное .84em), строки вплотную (line-height 1). На вторую строку
+            // оно уходит, только когда две строки помещаются в плашку названия (атаки и помехи); на низкой плашке навыков
+            // и чар название остаётся в одну строку и мельчает, пока не войдёт в ширину. Иначе текст вылезал за рамку.
             title.resizeTextForBestFit = false;
             title.verticalOverflow = VerticalWrapMode.Overflow;
-            var tf = title.font;
-            if (tf && tf.lineHeight > 0) title.lineSpacing = Mathf.Clamp(tf.fontSize * 1.04f / tf.lineHeight, 0.6f, 1f);
+            title.LineHeight(1.04f);
             var titleW = title.rectTransform.sizeDelta.x;
-            var steps = name.Length > 12 ? new[] { 0.84f, 0.75f, 0.66f } : new[] { 0.98f, 0.84f, 0.75f, 0.66f };
+            var titleH = title.rectTransform.sizeDelta.y;
+            var steps = name.Length > 12 ? new[] { 0.84f, 0.75f, 0.66f, 0.58f, 0.5f } : new[] { 0.98f, 0.84f, 0.75f, 0.66f, 0.58f, 0.5f };
+            var words = name.Split(' ');
+            title.horizontalOverflow = HorizontalWrapMode.Overflow;
             foreach (var st in steps)
             {
                 title.fontSize = Mathf.RoundToInt(em * st * Super);
                 var gs = title.GetGenerationSettings(Vector2.zero);
-                var widest = 0f;
-                foreach (var word in name.Split(' ')) widest = Mathf.Max(widest, title.cachedTextGeneratorForLayout.GetPreferredWidth(word, gs) / title.pixelsPerUnit);
-                if (widest <= titleW) break;
+                float W(string x) => title.cachedTextGeneratorForLayout.GetPreferredWidth(x, gs) / title.pixelsPerUnit;
+                if (W(name) <= titleW) break;                                  // вся строка входит
+                if (words.Length < 2 || title.fontSize * 2 * 1.04f > titleH * 1.06f) continue;   // две строки в плашку не входят
+                // делим на две строки там, где они ровнее всего, и проверяем обе
+                var best = 0; var bestW = float.MaxValue;
+                for (var i = 1; i < words.Length; i++)
+                {
+                    var w2 = Mathf.Max(W(string.Join(" ", words, 0, i)), W(string.Join(" ", words, i, words.Length - i)));
+                    if (w2 < bestW) { bestW = w2; best = i; }
+                }
+                if (bestW <= titleW) { title.text = string.Join(" ", words, 0, best) + "\n" + string.Join(" ", words, best, words.Length - best); break; }
             }
 
             cost = Ui.Label("cost", transform, "", Mathf.RoundToInt(em * 1.55f), Color.white, TextAnchor.MiddleCenter, true).Shadow(1.5f, 1f);
