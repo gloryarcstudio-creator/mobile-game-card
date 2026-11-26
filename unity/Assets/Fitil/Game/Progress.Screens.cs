@@ -148,6 +148,50 @@ namespace Fitil.Game
             Render();
         }
 
+        /// <summary>Почтовый штемпель (achStamp в game.js): два кольца, слово по дуге, число и месяц, волнистые линии гашения.</summary>
+        static void Stamp(RectTransform host, double ts, Vector2 at)
+        {
+            var ink = new Color(216 / 255f, 169 / 255f, 74 / 255f, 0.85f);
+            var body = Ui.Node("ink", host);
+            body.anchorMin = body.anchorMax = body.pivot = new Vector2(0.5f, 0.5f);
+            body.sizeDelta = new Vector2(52, 52);
+            body.anchoredPosition = at;
+            body.localEulerAngles = new Vector3(0, 0, 14);
+            var outer = Ui.Img("ring", body, Ui.Ring(0.09f), ink);
+            outer.rectTransform.Fill();
+            var inner = Ui.Img("ring2", body, Ui.Ring(0.07f), ink);
+            inner.rectTransform.anchorMin = inner.rectTransform.anchorMax = inner.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            inner.rectTransform.sizeDelta = new Vector2(35, 35);
+            inner.rectTransform.anchoredPosition = Vector2.zero;
+            // слово по верхней дуге между кольцами
+            var word = Loc.Tr("ПОЛУЧЕНО");
+            const float r = 21.2f;
+            var step = Mathf.Min(17f, 150f / Mathf.Max(1, word.Length));
+            for (var i = 0; i < word.Length; i++)
+            {
+                var ang = (i - (word.Length - 1) / 2f) * step;   // градусы от вершины, по часовой
+                var l = Ui.Label("c", body, word[i].ToString(), 8, ink, TextAnchor.MiddleCenter, true);
+                l.horizontalOverflow = HorizontalWrapMode.Overflow;
+                var lr = l.rectTransform;
+                lr.anchorMin = lr.anchorMax = lr.pivot = new Vector2(0.5f, 0.5f);
+                lr.sizeDelta = new Vector2(12, 12);
+                var rad = ang * Mathf.Deg2Rad;
+                lr.anchoredPosition = new Vector2(Mathf.Sin(rad) * r, Mathf.Cos(rad) * r);
+                lr.localEulerAngles = new Vector3(0, 0, -ang);
+            }
+            var d = DateTimeOffset.FromUnixTimeMilliseconds((long)ts).ToLocalTime().DateTime;
+            var date = Ui.Label("date", body, d.ToString(Loc.Lang == "en" ? "MM'/'dd" : "dd'.'MM", System.Globalization.CultureInfo.InvariantCulture), 10, ink, TextAnchor.MiddleCenter, true);
+            date.horizontalOverflow = HorizontalWrapMode.Overflow;
+            date.rectTransform.Fill();
+            var waves = Ui.Label("waves", body, "~~~\n~~~\n~~~", 11, ink, TextAnchor.MiddleCenter);
+            waves.lineSpacing = 0.55f;
+            waves.horizontalOverflow = HorizontalWrapMode.Overflow;
+            var wr = waves.rectTransform;
+            wr.anchorMin = wr.anchorMax = wr.pivot = new Vector2(0.5f, 0.5f);
+            wr.sizeDelta = new Vector2(24, 30);
+            wr.anchoredPosition = new Vector2(-34, 0);
+        }
+
         static void AchRow(RectTransform list, Dictionary<string, object> a, double since)
         {
             var done = Done(a);
@@ -165,7 +209,9 @@ namespace Fitil.Game
             // подложка по разделу достижения; неполученное — потемневшая картинка (grayscale + brightness .55)
             var plate = Ui.Img("bg", port, Ui.HeroBg(Json.Str(Json.Get(a, "cat")) ?? "path"), done ? Color.white : new Color(0.86f, 0.84f, 0.88f, 1));
             plate.rectTransform.Fill();
-            var pic = Ui.Img("art", port, ArtOf(a), done ? Color.white : new Color(0.3f, 0.3f, 0.33f, 1));
+            var art = ArtOf(a);
+            // неполученное: серая потемневшая картинка (filter: grayscale(1) brightness(.55))
+            var pic = Ui.Img("art", port, done ? art : Ui.Gray(art), done ? Color.white : new Color(0.55f, 0.55f, 0.55f, 1));
             pic.preserveAspect = true;
             pic.rectTransform.Fill();
             pic.rectTransform.offsetMin = new Vector2(4, 4);
@@ -187,8 +233,8 @@ namespace Fitil.Game
             text.Column(3, TextAnchor.MiddleLeft);
             text.Pref(done ? 157 : 233);
             Ui.Label("name", text, Json.Str(Json.Get(a, "name")), 17, done ? Ui.GoldHi : Ui.Paper, TextAnchor.MiddleLeft, true).Pref(done ? 157 : 233);
-            var desc = (Json.Str(Json.Get(a, "desc")) ?? "").Replace("{p}", "<b>" + Fmt(p) + "/" + Fmt(goal) + "</b>");
-            var d = Ui.Label("desc", text, desc, 14, Soft, TextAnchor.MiddleLeft);
+            var desc = (Json.Str(Json.Get(a, "desc")) ?? "").Replace("{p}", "<color=#F3D27C>" + Fmt(p) + "/" + Fmt(goal) + "</color>");
+            var d = Ui.Label("desc", text, desc, 14, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.MiddleLeft);
             d.lineSpacing = 0.95f;
             d.Pref(done ? 157 : 233);
             if (!done && goal > 1) Bar(text, p, goal, 233, 6, false);
@@ -198,10 +244,7 @@ namespace Fitil.Game
                 // штемпель «Получено» с датой, как в списке веб-версии
                 var stamp = Ui.Node("stamp", rt);
                 stamp.Pref(64, 50);
-                var sl = Ui.Label("t", stamp, Loc.Tr("Получено") + "\n<size=10>" + FmtDate(Num(Got, Id(a))) + "</size>", 12, new Color32(0xE0, 0x6A, 0x4E, 0xFF), TextAnchor.MiddleCenter, true);
-                sl.rectTransform.Fill();
-                sl.Outline(new Color(0.88f, 0.42f, 0.31f, 0.55f), 0.8f);
-                sl.rectTransform.localEulerAngles = new Vector3(0, 0, 12);
+                Stamp(stamp, Num(Got, Id(a)), new Vector2(-8, 0));
             }
         }
 

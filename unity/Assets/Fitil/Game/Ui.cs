@@ -433,6 +433,29 @@ namespace Fitil.Game
         /// <summary>Белый круг: маска для круглых картинок карт и портретов.</summary>
         public static Sprite Circle => circle ? circle : (circle = MakeRound(128, 64, false));
 
+        static readonly Dictionary<int, Sprite> rings = new Dictionary<int, Sprite>();
+
+        /// <summary>Белое кольцо: thick — толщина линии в долях радиуса (штемпель достижения).</summary>
+        public static Sprite Ring(float thick)
+        {
+            var key = Mathf.RoundToInt(thick * 1000);
+            if (rings.TryGetValue(key, out var have) && have) return have;
+            const int size = 128;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color32[size * size];
+            float R = size / 2f, inner = R * (1 - thick);
+            for (var y = 0; y < size; y++)
+            for (var x = 0; x < size; x++)
+            {
+                var d = Mathf.Sqrt((x + 0.5f - R) * (x + 0.5f - R) + (y + 0.5f - R) * (y + 0.5f - R));
+                var al = Mathf.Clamp01(R - d + 0.5f) * Mathf.Clamp01(d - inner + 0.5f);
+                px[y * size + x] = new Color32(255, 255, 255, (byte)(al * 255));
+            }
+            tex.SetPixels32(px);
+            tex.Apply();
+            return rings[key] = Sprite.Create(tex, new UnityEngine.Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+        }
+
         static Sprite MakeRound(int size, int r, bool sliced)
         {
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
