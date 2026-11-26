@@ -69,6 +69,21 @@ namespace Fitil.Game
             return v;
         }
 
+        const int Super = 3;
+        float descEm;
+
+        Text SuperLabel(string name, float[] box, float width, float height, float padX, string text, float size, Color color, bool titleFont)
+        {
+            var holder = Ui.Node(name, transform);
+            holder.Frac(box[0], box[1], box[2], box[3]);
+            var t = Ui.Label("t", holder, text, Mathf.RoundToInt(size * Super), color, TextAnchor.MiddleCenter, titleFont).Shadow(Super).Fit(5 * Super);
+            var rt = t.rectTransform;
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2((box[2] * width - padX * 2) * Super, box[3] * height * Super);
+            rt.localScale = Vector3.one / Super;
+            return t;
+        }
+
         void Build(CardInst card, Defs defs, Combat combat, float width)
         {
             Card = card;
@@ -98,17 +113,17 @@ namespace Fitil.Game
             art.transform.SetAsLastSibling();   // окошко рамки закрашено: картинка карты лежит поверх рамки, как в веб-версии
 
             var name = cd.Name + (card.Up ? "+" : "");
-            var title = Ui.Label("title", transform, name, Mathf.RoundToInt(em * 0.98f), card.Up ? new Color32(0xE4, 0xFF, 0xD8, 0xFF) : new Color32(0xFB, 0xEF, 0xD2, 0xFF), TextAnchor.MiddleCenter, true).Shadow(1f).Fit(5);
-            title.rectTransform.Frac(L.T[0], L.T[1], L.T[2], L.T[3]);
-            title.rectTransform.offsetMin = new Vector2(em * 0.25f, 0);
-            title.rectTransform.offsetMax = new Vector2(-em * 0.25f, 0);
+            // Надписи карты набраны втрое крупнее и уменьшены: кегль получается дробным, как в веб-версии (8.6 точки
+            // на маленькой карте), а не округлённым до целого. Иначе на картах в окне колоды строки переносились раньше.
+            var hgt = width * Ratio;
+            var title = SuperLabel("title", L.T, width, hgt, em * 0.25f, name, em * (name.Length > 12 ? 0.84f : 0.98f), card.Up ? new Color32(0xE4, 0xFF, 0xD8, 0xFF) : new Color32(0xFB, 0xEF, 0xD2, 0xFF), true);
 
             cost = Ui.Label("cost", transform, "", Mathf.RoundToInt(em * 1.55f), Color.white, TextAnchor.MiddleCenter, true).Shadow(1.5f, 1f);
             cost.rectTransform.Frac(L.G[0], L.G[1], L.G[2], L.G[3]);
 
-            desc = Ui.Label("desc", transform, "", Mathf.RoundToInt(em * 1.0f), Ui.Paper).Shadow(1f).Fit(5);
+            descEm = em;
+            desc = SuperLabel("desc", L.D, width, hgt, 0, "", em, Ui.Paper, false);
             desc.lineSpacing = 0.95f;
-            desc.rectTransform.Frac(L.D[0], L.D[1], L.D[2], L.D[3]);
 
             // подпись типа (.ctype): у атаки — прямо на нарисованной ленте, у остальных — тёмная плашка с золотой каймой.
             // Перед словом камешек редкости (.gem): ромб своего цвета.
@@ -149,6 +164,9 @@ namespace Fitil.Game
             var c = combat != null ? combat.PlayCost(Card) : cd.CostOf(Card.Up);
             cost.text = c == null ? "✕" : c.Value.ToString();
             desc.text = Describe(Card, defs, combat);
+            // длинное описание сразу мельче (.cdesc.long и .xlong), дальше текст сам ужимается до рамки
+            var plain = System.Text.RegularExpressions.Regex.Replace(desc.text, "<[^>]+>", "").Length;
+            desc.resizeTextMaxSize = desc.fontSize = Mathf.RoundToInt(descEm * Super * (plain > 64 ? 0.84f : plain > 48 ? 0.92f : 1f));
         }
 
         public static string Describe(CardInst card, Defs defs, Combat combat)
