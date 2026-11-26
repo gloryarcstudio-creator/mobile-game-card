@@ -70,7 +70,17 @@ namespace Fitil.Game
             var k = total > 0 ? Mathf.Clamp01((float)got / total) : 0;
             if (k > 0)
             {
-                var fill = Ui.Round("fill", bar.transform, new Color32(0xD9, 0xA8, 0x4A, 0xFF));
+                // большая полоса с числом — красная со светлой кромкой (.achbar i), малая под достижением — золотая (.abar i)
+                var fill = Ui.Round("fill", bar.transform, number ? (Color)new Color32(0xBC, 0x44, 0x3A, 0xFF) : new Color32(0xD9, 0xA8, 0x4A, 0xFF));
+                if (number)
+                {
+                    var cap = Ui.Img("cap", fill.transform, (Sprite)null, new Color32(0xFF, 0xF4, 0xD6, 0xFF));
+                    cap.rectTransform.anchorMin = new Vector2(1, 0);
+                    cap.rectTransform.anchorMax = new Vector2(1, 1);
+                    cap.rectTransform.pivot = new Vector2(1, 0.5f);
+                    cap.rectTransform.sizeDelta = new Vector2(2.5f, 0);
+                    cap.rectTransform.anchoredPosition = Vector2.zero;
+                }
                 var r = fill.rectTransform;
                 r.anchorMin = Vector2.zero;
                 r.anchorMax = new Vector2(k, 1);
@@ -515,8 +525,8 @@ namespace Fitil.Game
                 for (var i = 0; i < part.Count; i += per)
                 {
                     var line = Ui.Node("cxrow", list);
-                    line.Line(6, TextAnchor.UpperLeft);
-                    line.Pref(356);
+                    line.Line(kind == "c" ? 5 : 7, TextAnchor.UpperLeft, kind == "c" ? 4 : 0);
+                    line.Pref(372);
                     foreach (var id in part.Skip(i).Take(per)) Tile(line, kind, id, defs, open);
                 }
             }
@@ -553,51 +563,82 @@ namespace Fitil.Game
             foreach (var h in CodexList("h")) Tiles(CxName("h", h, defs), ids.Where(id => Owner(id) == h).ToList());
         }
 
-        static void Tile(RectTransform line, string kind, string id, Defs defs, Action<string> open)
+        static readonly Color32 RingElite = new Color32(0xC5, 0x8C, 0xFF, 0xFF), RingBoss = new Color32(0xE0, 0x5A, 0x4A, 0xFF), RingOff = new Color32(0x5A, 0x50, 0x70, 0xFF);
+
+        static Color RelicRing(string tier) =>
+            tier == "uncommon" ? new Color32(0x7A, 0xD0, 0x8A, 0xFF) : tier == "rare" ? new Color32(0x6F, 0xB8, 0xFF, 0xFF) : tier == "epic" ? RingElite
+            : tier == "legendary" ? new Color32(0xFF, 0x9A, 0x3A, 0xFF) : tier == "boss" ? RingBoss : (Color32)Ui.Gold;
+
+        /// <summary>Картинка записи в окошке (.cxpic, .cxport, .cxmini): у героя и врага квадрат с каймой, у талисмана круг с кольцом редкости.</summary>
+        static void CxPic(RectTransform slotRt, string kind, string id, Defs defs, bool on, float pad)
         {
-            var on = CxHas(kind, id);
-            var box = Ui.Round("cxtile", line, on ? RowBg : new Color32(0x16, 0x16, 0x22, 0xE6)).Dark();
-            var rt = box.rectTransform;
-            rt.Pref(84, kind == "c" ? 120 : 108);
-            if (kind == "c" && on && defs.Cards.ContainsKey(id))
+            var art = CxArt(kind, id);
+            Image pic;
+            if (kind == "r")
             {
-                var v = CardView.Make(rt, new CardInst { Id = id }, defs, null, 76);
-                var vr = v.Rect;
-                vr.anchorMin = vr.anchorMax = new Vector2(0.5f, 0.5f);
-                vr.pivot = new Vector2(0.5f, 0.5f);
-                vr.anchoredPosition = Vector2.zero;
+                var disc = Ui.Img("bg", slotRt, Ui.Circle, new Color32(0x2B, 0x25, 0x3D, 0xFF));
+                disc.rectTransform.Fill();
+                var ring = Ui.Img("ring", slotRt, Ui.Ring(0.085f), on ? RelicRing(defs.Relics.TryGetValue(id, out var rr) ? rr.Tier : null) : (Color)RingOff);
+                ring.rectTransform.Fill();
+                pic = Ui.Img("pic", slotRt, art, Color.white);
             }
             else
             {
-                var art = kind == "c" ? null : CxArt(kind, id);
-                Image pic;
-                if (kind == "c")
+                var tier = kind == "e" && defs.Enemies.TryGetValue(id, out var en) ? en.Tier : null;
+                var edge = !on ? RingOff : tier == "elite" ? RingElite : tier == "boss" ? RingBoss : (Color32)Ui.Gold;
+                var slot = Ui.Img("bg", slotRt, Ui.HeroBg(kind == "h" ? "cxhero" : "cx"), Color.white).Outline(edge, 1.2f);
+                slot.rectTransform.Fill();
+                slot.gameObject.AddComponent<RectMask2D>();
+                pic = Ui.Img("pic", slot.transform, art, Color.white);
+            }
+            pic.preserveAspect = true;
+            pic.rectTransform.Fill();
+            pic.rectTransform.offsetMin = new Vector2(pad, kind == "h" ? 0 : pad);
+            pic.rectTransform.offsetMax = new Vector2(-pad, -pad);
+            if (!art) pic.color = new Color(0, 0, 0, 0);
+            else if (!on) pic.color = new Color(0, 0, 0, 0.55f);   // силуэт: brightness(0) opacity(.55)
+        }
+
+        static void Tile(RectTransform line, string kind, string id, Defs defs, Action<string> open)
+        {
+            var on = CxHas(kind, id);
+            Image box;
+            if (kind == "c")
+            {
+                // карты стоят без плитки, четыре в ряд (.cxtile.t-c: карта 84, отступы 10 и 12)
+                box = Ui.Img("cxtile", line, (Sprite)null, new Color(0, 0, 0, 0));
+                var rt = box.rectTransform;
+                rt.Pref(88, 140);
+                if (on && defs.Cards.ContainsKey(id))
                 {
-                    pic = Ui.Img("pic", rt, art, Color.white);
-                    pic.rectTransform.Box(10, 6, 64, 90);
+                    var v = CardView.Make(rt, new CardInst { Id = id }, defs, null, 84);
+                    var vr = v.Rect;
+                    vr.anchorMin = vr.anchorMax = vr.pivot = new Vector2(0.5f, 0.5f);
+                    vr.anchoredPosition = new Vector2(0, 1);
                 }
                 else
                 {
-                    // окошко .cxpic 68×68: подложка с переходом цвета, кайма (у закрытого — серая), картинка внутри
-                    var slot = Ui.Img("slot", rt, Ui.HeroBg(kind == "h" ? "cxhero" : "cx"), Color.white).Outline(on ? Ui.Gold : (Color)new Color32(0x5A, 0x50, 0x70, 0xFF), 1.2f);
-                    slot.rectTransform.Box(8, 9, 68, 68);
-                    slot.gameObject.AddComponent<RectMask2D>();
-                    pic = Ui.Img("pic", slot.transform, art, Color.white);
-                    pic.preserveAspect = true;
-                    pic.rectTransform.Fill();
-                    var pad = kind == "r" ? 8 : 3;
-                    pic.rectTransform.offsetMin = new Vector2(pad, kind == "h" ? 0 : pad);
-                    pic.rectTransform.offsetMax = new Vector2(-pad, -pad);
+                    // неоткрытая карта лежит рубашкой вверх (.cxcardback)
+                    var back = Ui.Img("back", rt, Ui.Art("ui2/back"), Color.white);
+                    back.rectTransform.anchorMin = back.rectTransform.anchorMax = back.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                    back.rectTransform.sizeDelta = new Vector2(84, 84 * CardView.Ratio);
+                    back.rectTransform.anchoredPosition = new Vector2(0, 1);
+                    if (!back.sprite) { back.color = new Color32(0x24, 0x1D, 0x30, 0xFF); Ui.Label("q", rt, "?", 34, new Color(1, 1, 1, 0.3f), TextAnchor.MiddleCenter, true).rectTransform.Fill(); }
                 }
-                if (!art) pic.color = new Color(0, 0, 0, 0);
-                if (!on && art) pic.color = new Color(0, 0, 0, 0.55f);   // силуэт: brightness(0) opacity(.55)
-                if (kind == "c" && !on) Ui.Label("q", rt, "?", 34, new Color(1, 1, 1, 0.3f), TextAnchor.MiddleCenter, true).rectTransform.Fill();
-                if (kind != "c")
-                {
-                    var n = Ui.Label("name", rt, on ? CxName(kind, id, defs) : "???", 12, on ? Ui.Paper : Soft);
-                    n.rectTransform.Box(2, 79, 80, 26);
-                    n.Fit(9);
-                }
+            }
+            else
+            {
+                // плитка .cxtile: окошко 68 (у талисмана круг 58), под ним название до двух строк
+                box = Ui.Round("cxtile", line, on ? RowBg : new Color32(0x16, 0x16, 0x22, 0xE6)).Dark();
+                var rt = box.rectTransform;
+                rt.Pref(87.75f, kind == "h" ? 104 : 118);
+                var slot = Ui.Node("slot", rt);
+                if (kind == "r") slot.Box(14.9f, 16, 58, 58); else slot.Box(9.9f, 11, 68, 68);
+                CxPic(slot, kind, id, defs, on, kind == "r" ? 8 : 3);
+                var n = Ui.Label("name", rt, on ? CxName(kind, id, defs) : "???", 12, on ? (Color)new Color32(0xF1, 0xEA, 0xD8, 0xFF) : new Color32(0x8A, 0x80, 0x98, 0xFF), TextAnchor.UpperCenter);
+                n.lineSpacing = 0.9f;
+                n.rectTransform.Box(3, 82, 81.75f, kind == "h" ? 16 : 30);
+                n.Fit(9);
             }
             box.raycastTarget = true;
             var b = box.gameObject.AddComponent<Button>();
@@ -611,81 +652,165 @@ namespace Fitil.Game
             });
         }
 
-        static void H4(RectTransform list, string title) => Ui.Label("h4", list, title, 17, Ui.Gold, TextAnchor.LowerLeft, true).Shadow(1f).Pref(352, 28);
-        static void P(RectTransform list, string text, Color? c = null, int size = 15)
+        static readonly Color32 CxText = new Color32(0xE4, 0xDC, 0xEE, 0xFF), CxName2 = new Color32(0xFF, 0xF4, 0xD6, 0xFF), ChipBg = new Color32(0x24, 0x1D, 0x2E, 0xFF);
+
+        static void H4(RectTransform list, string title) => Ui.Label("h4", list, title, 18, Ui.GoldHi, TextAnchor.LowerLeft, true).Shadow(1f).Pref(364, 36);
+        static Text P(RectTransform list, string text, Color? c = null, int size = 15, TextAnchor align = TextAnchor.UpperLeft)
         {
-            var t = Ui.Label("p", list, text, size, c ?? Ui.Paper, TextAnchor.UpperLeft);
-            t.lineSpacing = 1.05f;
-            t.Pref(352);
+            var t = Ui.Label("p", list, text, size, c ?? CxText, align);
+            t.lineSpacing = 1.08f;
+            t.Pref(364);
+            return t;
+        }
+
+        /// <summary>Тёмные плашки в ряд с переносом (.cxstats, .cxmoves): надпись и, если есть, значок слева.</summary>
+        static void Chips(RectTransform list, IEnumerable<(string icon, string text)> items, float size = 14)
+        {
+            RectTransform row = null;
+            var used = 0f;
+            foreach (var (icon, text) in items)
+            {
+                var probe = Ui.Label("t", list, text, Mathf.RoundToInt(size), CxName2);
+                probe.horizontalOverflow = HorizontalWrapMode.Overflow;
+                var w = probe.preferredWidth + (icon != null ? 38 : 22);
+                if (row == null || used + w > 364)
+                {
+                    row = Ui.Node("chips", list);
+                    row.Line(7, TextAnchor.MiddleLeft);
+                    row.Pref(364, 28);
+                    used = 0;
+                }
+                used += w + 7;
+                var chip = Ui.Round("chip", row, ChipBg).Radius(11).Outline(new Color32(0x0C, 0x0A, 0x12, 0xFF), 1f);
+                chip.Pref(w, 25);
+                if (icon != null)
+                {
+                    var ic = Ui.Img("ic", chip.transform, icon);
+                    ic.preserveAspect = true;
+                    ic.rectTransform.Box(4, 1.5f, 22, 22);
+                }
+                probe.transform.SetParent(chip.transform, false);
+                probe.alignment = TextAnchor.MiddleLeft;
+                probe.rectTransform.Fill();
+                probe.rectTransform.offsetMin = new Vector2(icon != null ? 29 : 11, 0);
+            }
+        }
+
+        /// <summary>Строка-связь (.cxrow): плитка с окошком, имя, необязательная метка и текст; незнакомый — силуэт и подсказка.</summary>
+        static void CxRow(RectTransform list, string kind, string id, Defs defs, string text, string label = null)
+        {
+            var on = CxHas(kind, id);
+            var row = Ui.Node("cxrow", list);
+            row.Line(12, TextAnchor.MiddleLeft, 20, 22, 6, 6);
+            row.Pref(364, -1, 68);
+            Ui.Frame(row, "ui2/row2", 0.41f, 7.4f, 12.3f, 4.9f, 7f);
+            var slot = Ui.Node("slot", row);
+            slot.Pref(54, 50);
+            CxPic(slot, kind, id, defs, on, 2);
+            var col = Ui.Node("text", row);
+            col.Column(1, TextAnchor.MiddleLeft);
+            col.Pref(256);
+            var nm = Ui.Label("name", col, on ? CxName(kind, id, defs) : "???", 16, CxName2, TextAnchor.MiddleLeft, true).Shadow(1f);
+            nm.horizontalOverflow = HorizontalWrapMode.Overflow;
+            nm.Pref(256, 20);
+            if (!string.IsNullOrEmpty(label))
+            {
+                // метка «Свои» / «Соперники»: золотая надпись в тонкой рамке сразу за именем
+                var tag = Ui.Round("tag", nm.transform, new Color(0, 0, 0, 0)).Radius(8).Outline(new Color(216 / 255f, 169 / 255f, 74 / 255f, 0.6f), 0.8f);
+                var tl = Ui.Label("t", tag.transform, label, 12, Ui.GoldHi);
+                tl.horizontalOverflow = HorizontalWrapMode.Overflow;
+                tl.rectTransform.Fill();
+                var tr = tag.rectTransform;
+                tr.anchorMin = tr.anchorMax = tr.pivot = new Vector2(0, 0.5f);
+                tr.sizeDelta = new Vector2(tl.preferredWidth + 14, 16);
+                tr.anchoredPosition = new Vector2(nm.preferredWidth + 7, 0);
+            }
+            var p = Ui.Label("p", col, on ? text : Loc.Tr(kind == "h" ? "Встреть этого героя, чтобы узнать больше" : "Встреть этого врага, чтобы узнать больше"), 14, on ? (Color)CxText : new Color32(0x9A, 0x90, 0xB0, 0xFF), TextAnchor.UpperLeft);
+            p.lineSpacing = 1.02f;
+            p.Pref(256);
         }
 
         static void Detail(RectTransform list, string kind, string id, Defs defs, Action back)
         {
-            Ui.Push(list, "‹ " + Loc.Tr("Назад"), back, true, 16, 140, 40);
+            // «‹ Назад» — небольшая кнопка слева (.cxback)
+            var backRow = Ui.Node("backrow", list);
+            backRow.Line(0, TextAnchor.MiddleLeft, 2);
+            backRow.Pref(364, 44);
+            Ui.Push(backRow, "‹ " + Loc.Tr("Назад"), back, true, 16, 96, 34);
             var data = defs.Data;
             var lore = data.Lore;
             if (kind == "c")
             {
                 var cards = Ui.Node("cards", list);
-                cards.Line(14, TextAnchor.MiddleCenter);
-                cards.Pref(352, 170);
+                cards.Line(18, TextAnchor.MiddleCenter);
+                cards.Pref(364, 206);
                 var up = defs.Cards[id].Rarity != "status";
                 foreach (var u in up ? new[] { false, true } : new[] { false })
                 {
                     var slot = Ui.Node("slot", cards);
-                    slot.Pref(118, 166);
-                    var v = CardView.Make(slot, new CardInst { Id = id, Up = u }, defs, null, 118);
+                    slot.Pref(130, 182);
+                    var v = CardView.Make(slot, new CardInst { Id = id, Up = u }, defs, null, 130);
                     var vr = v.Rect;
                     vr.anchorMin = vr.anchorMax = new Vector2(0.5f, 0.5f);
                     vr.anchoredPosition = Vector2.zero;
                 }
-                if (up) P(list, Loc.Tr("Слева обычная, справа улучшенная"), Soft, 13);
+                if (up) P(list, Loc.Tr("Слева обычная, справа улучшенная"), Ui.GoldHi, 14, TextAnchor.UpperCenter);
                 var cd = defs.Cards[id];
                 var info = Loc.Tr(Rarity(cd.Rarity));
                 if (cd.Cls != null && data.Classes.TryGetValue(cd.Cls, out var ch)) info += " · " + Loc.Tr("Карта героя: {name}", ("name", ch.Name));
-                P(list, info);
+                P(list, info, null, 15, TextAnchor.UpperCenter);
                 var from = CodexList("e").Where(eid => defs.Enemies.TryGetValue(eid, out var e) && e.Pattern.Any(it => (it.K == "curse" && it.Card == id) || (it.Then != null && it.Then.K == "curse" && it.Then.Card == id))).ToList();
-                if (from.Count > 0) P(list, Loc.Tr("Подкидывают: {list}", ("list", string.Join(", ", from.Select(x => CxHas("e", x) ? defs.Enemies[x].Name : "???")))));
+                if (from.Count > 0) P(list, Loc.Tr("Подкидывают: {list}", ("list", string.Join(", ", from.Select(x => CxHas("e", x) ? defs.Enemies[x].Name : "???")))), null, 15, TextAnchor.UpperCenter);
                 return;
             }
             var head = Ui.Node("cxhead", list);
             head.Line(12, TextAnchor.UpperLeft);
-            head.Pref(352);
+            head.Pref(364);
+            // портрет записи: окошко 112 в тёмной рамке, у талисмана круг 92 с кольцом редкости (.cxport)
             var portBox = Ui.Node("port", head);
-            portBox.Pref(96, 96);
-            if (kind == "h") Ui.CircleArt("art", portBox, CxArt(kind, id)).rectTransform.Fill();
-            else { var im = Ui.Img("art", portBox, CxArt(kind, id), Color.white); im.preserveAspect = true; im.rectTransform.Fill(); }
+            var side = kind == "r" ? 92f : 112f;
+            portBox.Pref(side, side);
+            if (kind != "r")
+            {
+                var inner = Ui.Node("in", portBox);
+                inner.Fill();
+                inner.offsetMin = new Vector2(7, 7);
+                inner.offsetMax = new Vector2(-7, -7);
+                CxPic(inner, kind, id, defs, true, 2);
+                Ui.Frame(portBox, "ui2/btn_dark", 13f / 24f, 0, 0, 0, 0).transform.SetAsLastSibling();
+            }
+            else CxPic(portBox, kind, id, defs, true, 14);
+            var tw = 364 - 12 - side;
             var txt = Ui.Node("txt", head);
-            txt.Column(4, TextAnchor.UpperLeft);
-            txt.Pref(244);
-            Ui.Label("name", txt, CxName(kind, id, defs), 21, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f).Pref(244);
+            txt.Column(3, TextAnchor.UpperLeft);
+            txt.Pref(tw);
+            Ui.Label("name", txt, CxName(kind, id, defs), 24, CxName2, TextAnchor.MiddleLeft, true).Shadow(1f).Pref(tw);
 
             if (kind == "h")
             {
                 var c = data.Classes[id];
-                Ui.Label("sub", txt, c.Role + " · " + c.Build, 13, Soft, TextAnchor.UpperLeft).Pref(244);
-                Ui.Label("about", txt, c.About, 14, Ui.Paper, TextAnchor.UpperLeft).Pref(244);
+                Ui.Label("sub", txt, c.Role + " · " + c.Build, 14, Ui.GoldHi, TextAnchor.UpperLeft).Pref(tw);
+                Ui.Label("about", txt, c.About, 15, CxText, TextAnchor.UpperLeft).Pref(tw);
                 var bio = Json.Obj(Json.Get(Json.Obj(Json.Get(lore, "BIO")), id));
                 H4(list, Loc.Tr("О герое")); P(list, Loc.Tr(Json.Str(Json.Get(bio, "who")) ?? ""));
                 H4(list, Loc.Tr("Зачем в пути")); P(list, Loc.Tr(Json.Str(Json.Get(bio, "why")) ?? ""));
                 H4(list, Loc.Tr("Тайна"));
                 if (Has("secrets", id)) P(list, Loc.Tr(Json.Str(Json.Get(bio, "secret")) ?? ""));
-                else P(list, Loc.Tr("Откроется после тайного разговора за этого героя"), Soft);
+                else P(list, "<i>" + Loc.Tr("Откроется после тайного разговора за этого героя") + "</i>", new Color32(0x9A, 0x90, 0xB0, 0xFF));
                 var pairs = Json.Obj(Json.Get(lore, "PAIRS"));
                 H4(list, Loc.Tr("Связи с героями"));
                 foreach (var o in CodexList("h").Where(o => o != id))
                 {
                     var key = string.CompareOrdinal(id, o) < 0 ? id + "+" + o : o + "+" + id;
-                    var known = CxHas("h", o);
-                    P(list, "<b>" + (known ? CxName("h", o, defs) : "???") + "</b>  " + (known ? Loc.Tr(Json.Str(Json.Get(pairs, key)) ?? "") : Loc.Tr("Встреть этого героя, чтобы узнать больше")), null, 14);
+                    CxRow(list, "h", o, defs, Loc.Tr(Json.Str(Json.Get(pairs, key)) ?? ""));
                 }
                 var att = new List<string>();
                 foreach (var (k, label) in new[] { ("like", "Любят"), ("fear", "Боятся"), ("hate", "Не терпят") })
                 {
                     var foes = CodexList("e").Where(eid => Json.Str(Json.Get(Json.Obj(Json.Get(Json.Obj(Json.Get(lore, "ATT")), eid)), k)) == id).ToList();
-                    if (foes.Count > 0) att.Add("<b>" + Loc.Tr(label) + ":</b> " + string.Join(", ", foes.Select(x => CxHas("e", x) ? defs.Enemies[x].Name : "???")));
+                    if (foes.Count > 0) att.Add("<color=#" + (k == "like" ? "8DE0A0" : k == "fear" ? "9AD4FF" : "FF9A8A") + ">" + Loc.Tr(label) + ":</color> " + string.Join(", ", foes.Select(x => CxHas("e", x) ? defs.Enemies[x].Name : "???")));
                 }
-                if (att.Count > 0) { H4(list, Loc.Tr("Отношение врагов")); foreach (var a in att) P(list, a, null, 14); }
+                if (att.Count > 0) { H4(list, Loc.Tr("Отношение врагов")); foreach (var a in att) P(list, a); }
                 var friend = Json.Obj(Json.Get(Json.Obj(Json.Get(lore, "FRIEND")), id));
                 if (friend != null) { H4(list, Loc.Tr("Друг в финале")); P(list, Loc.Tr(Json.Str(Json.Get(friend, "bonus")) ?? "")); }
                 var dk = "dk_" + id;
@@ -703,8 +828,8 @@ namespace Fitil.Game
                 var stage = defs.Stages.FirstOrDefault(g => g.Normals.Contains(id) || g.Early.Contains(id) || g.Elites.Contains(id) || g.Boss.Contains(id));
                 var final = e.Dark != null || (defs.Stages.Count > 0 && defs.Stages[defs.Stages.Count - 1].Boss.Contains(id));
                 var tierName = Loc.Tr(final ? "Финал" : e.Tier == "boss" ? "Босс" : e.Tier == "elite" ? "Элита" : "Противник");
-                Ui.Label("sub", txt, tierName + (stage != null && e.Dark == null ? " · " + stage.Name : ""), 13, Soft, TextAnchor.UpperLeft).Pref(244);
-                Ui.Label("about", txt, e.Line, 14, Ui.Paper, TextAnchor.UpperLeft).Pref(244);
+                Ui.Label("sub", txt, tierName + (stage != null && e.Dark == null ? " · " + stage.Name : ""), 14, Ui.GoldHi, TextAnchor.UpperLeft).Pref(tw);
+                Ui.Label("about", txt, e.Line, 15, CxText, TextAnchor.UpperLeft).Pref(tw);
                 // в длинном сюжете босс крепче своей записи, начинает с Силой и впадает в Ярость (Balance)
                 var bsi = defs.Long && e.Tier == "boss" ? (final ? 2 : Math.Max(0, defs.Stages.IndexOf(stage))) : -1;
                 // обычные враги и элиты крепнут с каждым уровнем: показываем, сколько HP у врага бывает там, где он встречается
@@ -730,11 +855,12 @@ namespace Fitil.Game
                     }
                 var hpShown = bsi >= 0 ? ((int)Math.Floor(e.Hp * Balance.BossHp[bsi] + 0.5)).ToString()
                     : hpHi > hpLo ? hpLo + "–" + hpHi : (hpHi > 0 ? hpHi : e.Hp).ToString();
-                P(list, hpShown + " HP  ·  " + Loc.Tr("Побед над этим врагом: {n}", ("n", Kills(id))), Ui.GoldHi);
+                Ui.Node("gap", list).Pref(364, 4);
+                Chips(list, new[] { ((string)null, hpShown + " HP"), ((string)null, Loc.Tr("Побед над этим врагом: {n}", ("n", Kills(id)))) });
                 var say = Json.Obj(Json.Get(Json.Obj(Json.Get(lore, "SAY")), id));
                 var start = Json.Get(say, "start");
                 var said = start is List<object> l && l.Count > 0 ? Json.Str(l[0]) : Json.Str(start);
-                if (!string.IsNullOrEmpty(said)) P(list, "<i>«" + Loc.Tr(said) + "»</i>", Soft);
+                if (!string.IsNullOrEmpty(said)) P(list, "<i>«" + Loc.Tr(said) + "»</i>", new Color32(0xF3, 0xD9, 0xA8, 0xFF));
                 var moves = new List<string>();
                 foreach (var p in e.Pattern)
                     foreach (var it in new[] { p, p.Then })
@@ -746,16 +872,7 @@ namespace Fitil.Game
                 if (moves.Count > 0)
                 {
                     H4(list, Loc.Tr("Приёмы"));
-                    foreach (var k in moves)
-                    {
-                        var row = Ui.Node("move", list);
-                        row.Line(8, TextAnchor.MiddleLeft);
-                        row.Pref(352, 28);
-                        var ic = Ui.Img("ic", row, "it/" + (k == "hits" ? "attack" : k));
-                        ic.preserveAspect = true;
-                        ic.Pref(24, 24);
-                        Ui.Label("t", row, Loc.Tr(MoveLabel[k]), 15, Ui.Paper, TextAnchor.MiddleLeft).Pref(310);
-                    }
+                    Chips(list, moves.Select(k => ("it/" + (k == "hits" ? "attack" : k), Loc.Tr(MoveLabel[k]))), 13.5f);
                 }
                 var traits = new[]
                 {
@@ -774,9 +891,9 @@ namespace Fitil.Game
                 foreach (var (k, label) in new[] { ("like", "Любит"), ("fear", "Боится"), ("hate", "Не терпит") })
                 {
                     var h = Json.Str(Json.Get(attE, k));
-                    if (h != null) rows.Add("<b>" + Loc.Tr(label) + ":</b> " + (CxHas("h", h) ? CxName("h", h, defs) : "???"));
+                    if (h != null) rows.Add("<color=#" + (k == "like" ? "8DE0A0" : k == "fear" ? "9AD4FF" : "FF9A8A") + ">" + Loc.Tr(label) + ":</color> " + (CxHas("h", h) ? CxName("h", h, defs) : "???"));
                 }
-                if (rows.Count > 0) { H4(list, Loc.Tr("Отношение к героям")); foreach (var r in rows) P(list, r, null, 14); }
+                if (rows.Count > 0) { H4(list, Loc.Tr("Отношение к героям")); foreach (var r in rows) P(list, r); }
                 var ties = new Fitil.Core.Lore(data).Ties.Where(t => t.a == id || t.b == id).ToList();
                 if (ties.Count > 0)
                 {
@@ -784,9 +901,7 @@ namespace Fitil.Game
                     foreach (var t in ties)
                     {
                         var other = t.a == id ? t.b : t.a;
-                        var known = CxHas("e", other);
-                        var label = Loc.Tr(t.k == "kin" ? "Свои" : "Соперники");
-                        P(list, "<b>" + (known ? CxName("e", other, defs) : "???") + "</b> <i>" + label + "</i>  " + (known ? Loc.Tr(t.text) : Loc.Tr("Встреть этого врага, чтобы узнать больше")), null, 14);
+                        CxRow(list, "e", other, defs, Loc.Tr(t.text), Loc.Tr(t.k == "kin" ? "Свои" : "Соперники"));
                     }
                 }
                 return;
@@ -794,8 +909,8 @@ namespace Fitil.Game
             // талисман
             var rd = defs.Relics[id];
             var heroOf = rd.Cls ?? data.Classes.Values.FirstOrDefault(h => h.Relic == id)?.Id;
-            Ui.Label("sub", txt, Loc.Tr(TierLabel(rd.Tier)) + (heroOf != null && data.Classes.TryGetValue(heroOf, out var oh) ? " · " + oh.Name : ""), 13, Soft, TextAnchor.UpperLeft).Pref(244);
-            Ui.Label("about", txt, rd.Desc, 14, Ui.Paper, TextAnchor.UpperLeft).Pref(244);
+            Ui.Label("sub", txt, Loc.Tr(TierLabel(rd.Tier)) + (heroOf != null && data.Classes.TryGetValue(heroOf, out var oh) ? " · " + oh.Name : ""), 14, Ui.GoldHi, TextAnchor.UpperLeft).Pref(tw);
+            Ui.Label("about", txt, rd.Desc, 15, CxText, TextAnchor.UpperLeft).Pref(tw);
         }
 
         static readonly Dictionary<string, string> MoveLabel = new Dictionary<string, string>
