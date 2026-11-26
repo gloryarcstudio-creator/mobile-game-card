@@ -97,7 +97,7 @@ namespace Fitil.Game
             catch (Exception e) { log.Add("run: " + e); Debug.LogError("Tour run: " + e); }
             if (flow != null)
                 foreach (var (name, show) in flow.TourSteps())
-                    yield return Shot(name, show, name.Contains("fight") || name.Contains("defeat") ? 3.2f : 1.8f);
+                    yield return Shot(name, show, name.Contains("quick") ? 0.45f : name.Contains("fight") || name.Contains("defeat") ? 3.2f : 1.8f);
 
             Menus.Close();
             try { boot.ShowTitle(); } catch (Exception e) { log.Add("title: " + e); }

@@ -43,6 +43,10 @@ namespace Fitil.Game
                 ("29_fight_enemy_turn", () => { Fight(foe, "fight"); combat.StartCoroutine(combat.TourMoves(false, true)); }),
                 ("35_pick_upgrade", () => { Rest(false); Prompt(DeckPrompt.Upgrade, 0, _ => { }); }),
                 ("36_pick_remove", () => { Rest(false); Prompt(DeckPrompt.Remove, 0, _ => { }); }),
+                // короткие сообщения и числа героя: снимок через полсекунды, пока они на экране
+                ("37_quick_reward_gain", () => Reward("fight")),
+                ("38_quick_combat_toast", () => { Fight(foe, "fight"); Hud.Toast(Loc.Tr("Не хватает энергии")); Hud.Toast(Loc.Tr("Не хватает энергии")); }),
+                ("39_quick_talk_toast", () => { Talk(foe, "fight"); Hud.Toast("Снеговик-талисман. После победы восстановить 4 HP."); }),
                 ("30_defeat", () => { Fight(foe, "fight"); Defeat(foe, "fight"); }),
                 ("31_victory", Victory),
                 ("32_summary_win", () => { if (tourRec != null) { Summary(tourRec); Progress.TourToast(); } }),
