@@ -194,7 +194,7 @@ namespace Fitil.Game
             var ct = Ui.Label("title", cardsRow.transform, Loc.Tr("Карты героя"), 17, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f);
             ct.rectTransform.Box(tx, 7, 330 - tx, 20);
             var cs = Ui.Label("list", cardsRow.transform, string.Join(", ", own.Select(c => c.Name)), 13, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.UpperLeft);
-            cs.rectTransform.Box(tx, 27, 330 - tx, 30);
+            cs.rectTransform.Box(tx, 27, 336 - tx, 30);
             cs.lineSpacing = 0.95f;
             cs.verticalOverflow = VerticalWrapMode.Truncate;
             var go2 = Ui.Label("go", cardsRow.transform, "›", 28, Ui.GoldHi, TextAnchor.MiddleCenter, true);

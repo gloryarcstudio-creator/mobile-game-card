@@ -349,10 +349,23 @@ namespace Fitil.Game
             // длинный ответ делится на две ровные строки (text-wrap: balance), а не оставляет одно слово на второй
             if (text != null && !text.Contains("\n") && !text.Contains("<") && t.preferredWidth > width - 80)
             {
-                var best = -1;
+                // Обычный перенос, как в веб-версии: первая строка берёт столько слов, сколько влезает.
+                // Ровные строки нужны только тогда, когда на второй осталось бы одно короткое слово
+                var greedy = -1;
                 for (var i = text.IndexOf(' '); i >= 0; i = text.IndexOf(' ', i + 1))
-                    if (best < 0 || Mathf.Abs(i - text.Length / 2f) < Mathf.Abs(best - text.Length / 2f)) best = i;
-                if (best > 0) t.text = text.Substring(0, best) + "\n" + text.Substring(best + 1);
+                {
+                    t.text = text.Substring(0, i);
+                    if (t.preferredWidth <= width - 80) greedy = i; else break;
+                }
+                t.text = text;
+                var rest = greedy > 0 ? text.Substring(greedy + 1) : "";
+                if (greedy > 0 && rest.IndexOf(' ') < 0 && rest.Length <= 8)
+                {
+                    var best = -1;
+                    for (var i = text.IndexOf(' '); i >= 0; i = text.IndexOf(' ', i + 1))
+                        if (best < 0 || Mathf.Abs(i - text.Length / 2f) < Mathf.Abs(best - text.Length / 2f)) best = i;
+                    if (best > 0) t.text = text.Substring(0, best) + "\n" + text.Substring(best + 1);
+                }
             }
             if (hasHint)
             {

@@ -163,9 +163,19 @@ jobs:
             sleep 1
             grep -vE "memorysetup|ALSA|SDL_GL|GL_[A-Z]|FMOD" "player_$1.log" | tail -n 150
           }
-          tour ru screens
-          tour en screens_en
-          tour uk screens_uk
+          # Изредка игра под xvfb встаёт до первого кадра (в журнале нет «TOUR first update»): это запуск окна
+          # на сервере, а не код игры. Такой обход повторяется один раз; второй сбой роняет шаг
+          tour2() {
+            tour "$1" "$2"
+            if [ ! -f "$2/log.txt" ] && ! ls "$2"/*.png > /dev/null 2>&1; then
+              echo "::warning::Обход $1 не дошёл до первого снимка, повтор"
+              rm -rf "$2"
+              tour "$1" "$2"
+            fi
+          }
+          tour2 ru screens
+          tour2 en screens_en
+          tour2 uk screens_uk
           cp player_ru.log screens/player.log
           for f in screens_en/*.png; do cp "$f" "screens/en_$(basename "$f")"; done
           for f in screens_uk/*.png; do cp "$f" "screens/uk_$(basename "$f")"; done
