@@ -299,7 +299,18 @@ namespace Fitil.Game
 
         static void Group(RectTransform list, string title)
         {
-            Ui.Label("group", list, title, 19, Ui.Gold, TextAnchor.LowerLeft, true).Shadow(1f).Pref(356, 32);
+            // название раздела с тонкой золотой чертой под ним (.cxgroup: отступ сверху 12, черта 1.5)
+            var g = Ui.Node("group", list);
+            g.Pref(364, 40);
+            var t = Ui.Label("t", g, title, 17, Ui.GoldHi, TextAnchor.LowerLeft, true).Shadow(1f);
+            t.rectTransform.Fill();
+            t.rectTransform.offsetMin = new Vector2(0, 6);
+            var rule = Ui.Img("rule", g, (Sprite)null, new Color(216 / 255f, 169 / 255f, 74 / 255f, 0.3f));
+            rule.rectTransform.anchorMin = new Vector2(0, 0);
+            rule.rectTransform.anchorMax = new Vector2(1, 0);
+            rule.rectTransform.pivot = new Vector2(0.5f, 0);
+            rule.rectTransform.sizeDelta = new Vector2(0, 1.5f);
+            rule.rectTransform.anchoredPosition = new Vector2(0, 2);
         }
 
         static void Dl(RectTransform list, IEnumerable<(string k, string v)> rows)
@@ -509,7 +520,8 @@ namespace Fitil.Game
                     foreach (var id in part.Skip(i).Take(per)) Tile(line, kind, id, defs, open);
                 }
             }
-            if (kind == "h") { Tiles(null, ids); return; }
+            // у героев нет названия раздела: сетка начинается с отступа списка (.achlist padding-top 14)
+            if (kind == "h") { Ui.Node("gap", list).Pref(356, 6); Tiles(null, ids); return; }
             if (kind == "e")
             {
                 // враг, который встречается в двух стадиях, стоит один раз: там, где встречается впервые

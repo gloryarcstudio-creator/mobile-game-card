@@ -88,9 +88,15 @@ namespace Fitil.Game
                 // портрет на цветном фоне героя (.clscard .cp: во всю ширину плитки, высота 60)
                 var face = Ui.Portrait("face", rt, h.Id, 78, 58);
                 face.rectTransform.Box(6, 5, 78, 58);
+                // невыбранный герой приглушён, закрытый почти серый; цветной фон остаётся (.clscard .cp svg: grayscale и brightness)
+                if (!on && face.transform.Find("face") is Transform ft && ft.GetComponent<Image>() is Image fi)
+                {
+                    fi.sprite = Ui.Gray(fi.sprite, owned ? 0.55f : 0.9f);
+                    var br = owned ? 0.8f : 0.55f;
+                    fi.color = new Color(br, br, br, 1);
+                }
                 if (!owned)
                 {
-                    foreach (var g in face.GetComponentsInChildren<Image>()) if (g != face) g.color = new Color(0.45f, 0.45f, 0.5f);
                     var lockIc = Ui.Img("lock", rt, "i/lock");
                     lockIc.preserveAspect = true;
                     lockIc.rectTransform.Box(58, 36, 26, 26);

@@ -102,19 +102,20 @@ namespace Fitil.Game
         }
 
         /// <summary>Текст сам уменьшается, чтобы влезть в рамку (как ступени long/xlong в веб-версии).</summary>
-        static readonly Dictionary<Sprite, Sprite> grays = new Dictionary<Sprite, Sprite>();
+        static readonly Dictionary<(Sprite, int), Sprite> grays = new Dictionary<(Sprite, int), Sprite>();
 
-        /// <summary>Серая копия картинки (CSS filter: grayscale(1)); считается один раз и хранится.</summary>
-        public static Sprite Gray(Sprite src)
+        /// <summary>Серая копия картинки (CSS filter: grayscale(amount)); считается один раз и хранится.</summary>
+        public static Sprite Gray(Sprite src, float amount = 1)
         {
-            if (!src) return src;
-            if (grays.TryGetValue(src, out var g) && g) return g;
-            try { g = MakeGray(src); } catch (System.Exception) { g = src; }
-            grays[src] = g;
+            if (!src || amount <= 0) return src;
+            var key = (src, Mathf.RoundToInt(amount * 100));
+            if (grays.TryGetValue(key, out var g) && g) return g;
+            try { g = MakeGray(src, amount); } catch (System.Exception) { g = src; }
+            grays[key] = g;
             return g;
         }
 
-        static Sprite MakeGray(Sprite src)
+        static Sprite MakeGray(Sprite src, float amount)
         {
             var r = src.textureRect;
             int w = Mathf.RoundToInt(r.width), h = Mathf.RoundToInt(r.height);
@@ -130,7 +131,7 @@ namespace Fitil.Game
             for (var i = 0; i < px.Length; i++)
             {
                 var y = (byte)((px[i].r * 54 + px[i].g * 183 + px[i].b * 19) >> 8);
-                px[i] = new Color32(y, y, y, px[i].a);
+                px[i] = new Color32((byte)(px[i].r + (y - px[i].r) * amount), (byte)(px[i].g + (y - px[i].g) * amount), (byte)(px[i].b + (y - px[i].b) * amount), px[i].a);
             }
             tex.SetPixels32(px);
             tex.Apply();

@@ -128,7 +128,7 @@ namespace Fitil.Game
 
         static bool restoring, buyBusy;
 
-        const float TextW = 174;
+        const float TextW = 186;
 
         /// <summary>Плитка товара (.sitem): слева картинка, столбик текста, справа цена. Возвращает плитку и столбик.</summary>
         static RectTransform Item(RectTransform list, out RectTransform text)
@@ -137,7 +137,7 @@ namespace Fitil.Game
             bg.Dark();
             var rt = bg.rectTransform;
             rt.Line(10, TextAnchor.MiddleLeft, 12, 12, 12, 13);
-            rt.Pref(366, -1, 79);
+            rt.Pref(372, -1, 79);
             text = Ui.Node("text", rt);
             text.Column(4, TextAnchor.MiddleLeft);
             text.Pref(TextW);
@@ -155,13 +155,13 @@ namespace Fitil.Game
         {
             if (owned)
             {
-                Ui.Label("owned", row, Loc.Tr("Куплено") + " ✓", 16, new Color32(0x8D, 0xE0, 0x8F, 0xFF), TextAnchor.MiddleCenter, true).Pref(84);
+                Ui.Label("owned", row, Loc.Tr("Куплено") + " ✓", 16, new Color32(0x8D, 0xE0, 0x8F, 0xFF), TextAnchor.MiddleCenter, true).Pref(78);
                 return;
             }
             // зелёная кнопка цены (.btn.price). Цена площадки бывает длинной («4 990,00 ₸»): шрифт меньше, чтобы влезла
             var price = Store.PriceOf(id);
             var bg = Ui.Round("price", row, new Color32(0x3F, 0x82, 0x45, 0xFF)).Outline(Ui.Ink, 1.5f);
-            bg.Pref(84, 44);
+            bg.Pref(78, 44);
             bg.raycastTarget = true;
             var shine = Ui.Round("shine", bg.transform, new Color(1, 1, 1, 0.12f));
             shine.rectTransform.Fill();
