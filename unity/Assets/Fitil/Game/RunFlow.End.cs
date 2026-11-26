@@ -143,7 +143,22 @@ namespace Fitil.Game
             Ui.Label("title", page, title, 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Outline(new Color32(0x5A, 0x2A, 0x26, 0xB0), 0.45f).Pref(250);
             BookPic(page, pic, 220, dim);
             Ui.Label("story", page, story, 17, Ui.Ink, TextAnchor.UpperLeft).Pref(318);
-            Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF)).Pref(318);
+            var st = Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF));
+            st.Pref(318);
+            // строка итогов переносится между частями, а точка-разделитель в конце строки не висит (tidyStats в веб-версии)
+            var parts = stats.Split(new[] { " · " }, StringSplitOptions.None);
+            if (parts.Length > 1 && st.preferredWidth > 318)
+            {
+                var best = stats; var bestDiff = float.MaxValue;
+                for (var i = 1; i < parts.Length; i++)
+                {
+                    var a = string.Join(" · ", parts, 0, i); var b = string.Join(" · ", parts, i, parts.Length - i);
+                    st.text = a; var wa = st.preferredWidth;
+                    st.text = b; var wb = st.preferredWidth;
+                    if (wa <= 318 && wb <= 318 && Mathf.Abs(wa - wb) < bestDiff) { bestDiff = Mathf.Abs(wa - wb); best = a + "\n" + b; }
+                }
+                st.text = best;
+            }
             Spacer(col, 14);
             if (rec != null) Ui.Push(col, Loc.Tr("Итоги забега"), () => Summary(rec), false, 30, 268, 68);
             Ui.Push(col, Loc.Tr("Главное меню"), () => { Close(); Boot.Instance.ShowTitle(); }, rec != null, rec != null ? 17 : 24, rec != null ? 152 : 240, rec != null ? 40 : 60);

@@ -191,6 +191,7 @@ namespace Fitil.Game
             chest.preserveAspect = true;
             chest.rectTransform.Box(115, 428, 170, 170);   // .chest-wrap { padding-top: 428px }: сундук стоит на снегу перед домами
             p.Bg.StandOn(chest.rectTransform);
+            var snore = chest.gameObject.AddComponent<ChestSnore>();
             var msg = Plate(p.Root, Loc.Tr("Сундук-соня сладко храпит."), 612);
             var row = Ui.Node("row", p.Root).Box(0, 650, 400, 56);
             row.Line(14, TextAnchor.MiddleCenter);
@@ -210,6 +211,7 @@ namespace Fitil.Game
                     r.preserveAspect = true;
                     r.rectTransform.Box(154, 248, 92, 92);
                 }
+                snore.Stop();
                 chest.color = new Color(1, 0.95f, 0.8f);
                 After(p, Run.Hp, gold0);
                 Ui.Push(row, Loc.Tr("Дальше"), Next, false, 20, 160, 50);
@@ -269,3 +271,57 @@ namespace Fitil.Game
         }
     }
 }
+
+namespace Fitil.Game
+{
+    /// <summary>Спящий сундук: дышит (snore, 2 с) и на каждый вдох пускает букву «z» (zrise в css/style.css).</summary>
+    public sealed class ChestSnore : MonoBehaviour
+    {
+        RectTransform rt, z;
+        Text label;
+        float age;
+
+        void Start()
+        {
+            rt = (RectTransform)transform;
+            label = Ui.Label("z", rt, "z", 32, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleCenter, true).Shadow(2f);
+            label.raycastTarget = false;
+            z = label.rectTransform;
+            z.anchorMin = z.anchorMax = new Vector2(0, 1);
+            z.pivot = new Vector2(0.5f, 0.5f);
+            z.sizeDelta = new Vector2(40, 40);
+            Apply(0);
+        }
+
+        void Update()
+        {
+            age += Time.unscaledDeltaTime;
+            Apply(age % 2f / 2f);
+        }
+
+        void Apply(float t)
+        {
+            // snore: к середине вдоха сундук чуть шире и ниже
+            var b = Mathf.Sin(t * Mathf.PI);
+            b *= b;
+            rt.localScale = new Vector3(1 + 0.04f * b, 1 - 0.03f * b, 1);
+            // zrise: буква ждёт до 28%, потом всплывает вправо вверх, растёт и тает
+            var k = Mathf.Clamp01((t - 0.28f) / 0.72f);
+            var e = 1 - (1 - k) * (1 - k);
+            var a = t < 0.28f ? 0 : t < 0.42f ? (t - 0.28f) / 0.14f : t < 0.8f ? 1 - 0.15f * (t - 0.42f) / 0.38f : 0.85f * (1 - (t - 0.8f) / 0.2f);
+            // left: 70%, top: 6% рамки 170×170; буква 32 px
+            z.anchoredPosition = new Vector2(119 + 9 + 24 * e, -(10 + 16) - 10 + 60 * e);
+            z.localScale = Vector3.one * Mathf.Lerp(0.5f, 1.15f, e);
+            z.localRotation = Quaternion.Euler(0, 0, -Mathf.Lerp(-8, 10, e));
+            var c = label.color; c.a = a; label.color = c;
+        }
+
+        public void Stop()
+        {
+            if (rt) rt.localScale = Vector3.one;
+            if (label) Destroy(label.gameObject);
+            Destroy(this);
+        }
+    }
+}
+
