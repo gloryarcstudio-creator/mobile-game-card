@@ -159,13 +159,13 @@ namespace Fitil.Game
         }
 
         /// <summary>Почтовый штемпель (achStamp в game.js): два кольца, слово по дуге, число и месяц, волнистые линии гашения.</summary>
-        static void Stamp(RectTransform host, double ts, Vector2 at)
+        static RectTransform Stamp(RectTransform host, double ts, Vector2 at, float scale = 1.15f, bool waves = true)
         {
             var ink = new Color(216 / 255f, 169 / 255f, 74 / 255f, 0.85f);
             var body = Ui.Node("ink", host);
             body.anchorMin = body.anchorMax = body.pivot = new Vector2(0.5f, 0.5f);
             body.sizeDelta = new Vector2(52, 52);
-            body.localScale = Vector3.one * 1.15f;
+            body.localScale = Vector3.one * scale;
             body.anchoredPosition = at;
             body.localEulerAngles = new Vector3(0, 0, 14);
             var outer = Ui.Img("ring", body, Ui.Ring(0.09f), ink);
@@ -194,13 +194,15 @@ namespace Fitil.Game
             var date = Ui.Label("date", body, d.ToString(Loc.Lang == "en" ? "MM'/'dd" : "dd'.'MM", System.Globalization.CultureInfo.InvariantCulture), 10, ink, TextAnchor.MiddleCenter, true);
             date.horizontalOverflow = HorizontalWrapMode.Overflow;
             date.rectTransform.Fill();
-            var waves = Ui.Label("waves", body, "~~~\n~~~\n~~~", 11, ink, TextAnchor.MiddleCenter);
-            waves.lineSpacing = 0.55f;
-            waves.horizontalOverflow = HorizontalWrapMode.Overflow;
-            var wr = waves.rectTransform;
+            if (!waves) return body;   // на плашке линий гашения нет: они заходили бы на звёзды у названия
+            var wave = Ui.Label("waves", body, "~~~\n~~~\n~~~", 11, ink, TextAnchor.MiddleCenter);
+            wave.lineSpacing = 0.55f;
+            wave.horizontalOverflow = HorizontalWrapMode.Overflow;
+            var wr = wave.rectTransform;
             wr.anchorMin = wr.anchorMax = wr.pivot = new Vector2(0.5f, 0.5f);
             wr.sizeDelta = new Vector2(24, 30);
             wr.anchoredPosition = new Vector2(-34, 0);
+            return body;
         }
 
         static void AchRow(RectTransform list, Dictionary<string, object> a, double since)

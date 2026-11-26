@@ -139,8 +139,13 @@ jobs:
           }
           tour ru screens
           tour en screens_en
+          tour uk screens_uk
           cp player_ru.log screens/player.log
           for f in screens_en/*.png; do cp "$f" "screens/en_$(basename "$f")"; done
+          for f in screens_uk/*.png; do cp "$f" "screens/uk_$(basename "$f")"; done
+          # надписи, которые обрезаны или вышли за рамку, по каждому языку
+          for l in en uk; do cp "screens_$l/overflow.txt" "screens/overflow_$l.txt" 2>/dev/null || true; done
+          wc -l screens/overflow*.txt || true
           ls -l screens
           test -f screens/log.txt
           test -f screens_en/log.txt
@@ -158,6 +163,7 @@ jobs:
               Image.open(f).convert('RGB').save('pub/' + os.path.basename(f)[:-4] + '.jpg', quality=88)
           PY
           cp screens/log.txt pub/
+          cp screens/overflow*.txt pub/ 2>/dev/null || true
           echo "$GITHUB_SHA" > pub/commit.txt
           cd pub
           git init -q

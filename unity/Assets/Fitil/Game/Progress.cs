@@ -327,6 +327,7 @@ namespace Fitil.Game
                 for (float t = 0; t < life && plate; t += Time.unscaledDeltaTime)
                 {
                     if (plate) plate.alpha = Mathf.Min(1, t / 0.2f, (life - t) / 0.3f);
+                    StampIn((t - (Settings.Fast ? 0.34f : 0.5f)) / 0.32f);
                     // окно открылось поверх плашки: убираем её, а если не успели прочитать — покажется снова
                     if (OverlayOpen) { if (t < (Settings.Fast ? 1f : 1.5f)) queue.Insert(0, a); break; }
                     yield return null;
@@ -353,7 +354,9 @@ namespace Fitil.Game
         internal static void TourToast()
         {
             var a = List.FirstOrDefault();
-            if (a != null) Plate(a).alpha = 1;
+            if (a == null) return;
+            Plate(a).alpha = 1;
+            StampIn(1);
         }
 
         static CanvasGroup Plate(Dictionary<string, object> a)
@@ -384,11 +387,39 @@ namespace Fitil.Game
             var small = summary ? Loc.Tr("Достижения получены") : Loc.Tr("Достижение получено");
             var name = summary ? Loc.Tr("И ещё {n}", ("n", Json.Int(Json.Get(a, "summary")))) : Json.Str(Json.Get(a, "name")) + Stars(a);
             float tx = low ? 86 : 101;
-            Ui.Label("small", box, small, low ? 11 : 13, Ui.GoldHi, TextAnchor.LowerLeft).rectTransform.Box(tx, low ? 9 : 14, 317 - tx, low ? 14 : 20);
+            // справа место под штемпель (padding-right 58, в низкой плашке 53): текст на него не заходит
+            var tw = (low ? 266 : 261) - tx;
+            Ui.Label("small", box, small, low ? 11 : 13, Ui.GoldHi, TextAnchor.LowerLeft).rectTransform.Box(tx, low ? 9 : 14, tw, low ? 14 : 20);
             var t = Ui.Label("name", box, name, low ? 16 : 18, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.UpperLeft, true).Shadow(1f);
-            t.rectTransform.Box(tx, low ? 23 : 35, 317 - tx, low ? 24 : 34);
-            t.Fit(13);
+            t.rectTransform.Box(tx, low ? 23 : 35, tw, low ? 24 : 34);
+            t.LineHeight(1.04f);
+            t.Fit(11);
+            // штемпель «Получено» с сегодняшней датой на нарисованном месте плитки (.achtoast .astamp): ставится на глазах
+            var host = Ui.Node("stamp", box);
+            host.anchorMin = host.anchorMax = host.pivot = new Vector2(0, 0.5f);
+            host.sizeDelta = Vector2.zero;
+            host.anchoredPosition = new Vector2(low ? 290 : 288.5f, low ? 0.5f : 2f);
+            stampScale = low ? 0.75f : 0.93f;
+            stamp = Stamp(host, Now, Vector2.zero, stampScale, false);
+            stampCg = stamp.gameObject.AddComponent<CanvasGroup>();
+            StampIn(0);
             return cg;
+        }
+
+        static RectTransform stamp;
+        static CanvasGroup stampCg;
+        static float stampScale;
+
+        /// <summary>Удар штемпеля (@keyframes stampin): k от 0 до 1, из крупного и повёрнутого в своё место, с лёгким отскоком.</summary>
+        static void StampIn(float k)
+        {
+            if (!stamp) return;
+            k = Mathf.Clamp01(k);
+            var e = 1 + 2.2f * Mathf.Pow(k - 1, 3) + 1.2f * Mathf.Pow(k - 1, 2);   // выход с перелётом, как cubic-bezier(.3, 1.5, .5, 1)
+            if (k >= 1) e = 1;
+            stamp.localScale = Vector3.one * stampScale * Mathf.LerpUnclamped(2.2f, 1f, e);
+            stamp.localEulerAngles = new Vector3(0, 0, Mathf.LerpUnclamped(24f, 14f, e));
+            stampCg.alpha = Mathf.Clamp01(k / 0.55f);
         }
 
         static string Stars(Dictionary<string, object> a)
