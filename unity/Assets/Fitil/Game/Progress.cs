@@ -167,7 +167,12 @@ namespace Fitil.Game
                 case "ach.flag": Flag(key); break;
                 case "ach.put": if (key != null && key.IndexOf(':') > 0) Put(Head(), Tail()); break;
                 case "codex": if (key != null && key.IndexOf(':') > 0) Codex(Head(), Tail()); break;
-                case "stats": StatAdd(key, n); break;
+                case "stats":
+                    StatAdd(key, n);
+                    // первые победы для аналитики: по ним оценивают, дошёл ли новый игрок до игры
+                    if (key == "fights" && Num(St, "fights") == 1) Analytics.Event("first_fight_won");
+                    if (key == "bosses" && Num(St, "bosses") == 1) Analytics.Event("first_boss_won");
+                    break;
                 case "stats.max": StatMax(key, n); break;
                 // сыгранная карта: счётчик растёт молча, на диск попадёт с концом боя
                 case "stats.cards": St["cards"] = Num(St, "cards") + 1; statsDirty = true; break;
@@ -450,6 +455,7 @@ namespace Fitil.Game
         public static void NewRun(RunState run)
         {
             StatAdd("runs");
+            Analytics.Event("run_start", ("hero", run.Cls ?? ""), ("difficulty", run.Diff), ("run_number", (int)Num(St, "runs")));
             Codex("h", run.Cls);
             run.St["last"] = Now;
         }
@@ -498,6 +504,8 @@ namespace Fitil.Game
             Put("winsCls", run.Cls);
             Put("winsDiff", (double)run.Diff);
             var rec = Finish(g, true, null, maxSteps);
+            Analytics.Event("run_won", ("hero", run.Cls ?? ""), ("difficulty", run.Diff));
+            RunEnd(run, true, maxSteps, maxSteps);
             SaveStats();
             return rec;
         }
@@ -508,8 +516,19 @@ namespace Fitil.Game
             if (finished == g.Run) return lastRec;
             St["losses"] = Num(St, "losses") + 1;
             var rec = Finish(g, false, by, maxSteps);
+            RunEnd(g.Run, false, Math.Min(maxSteps, g.Run.Step + 1), maxSteps);
             SaveStats();
             return rec;
+        }
+
+        // конец забега в аналитику: герой, сложность, до какого уровня дошли; лучший уровень — вехами 5, 10, 25, 50
+        static void RunEnd(RunState run, bool win, int level, int maxSteps)
+        {
+            Analytics.Event("run_end", ("hero", run.Cls ?? ""), ("difficulty", run.Diff), ("win", win), ("level", level), ("fights", run.Fights));
+            var best = (int)Num(C, "anBest");
+            foreach (var mark in new[] { 5, 10, 25, 50 })
+                if (level >= mark && best < mark) Analytics.Event("level_reached", ("level", mark));
+            if (level > best) { C["anBest"] = (double)level; achDirty = true; }
         }
 
         static RunState finished;
