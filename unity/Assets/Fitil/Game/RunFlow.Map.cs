@@ -29,7 +29,7 @@ namespace Fitil.Game
             if (hintText.Length > 1)
             {
                 var small = Ui.Label("small", p.Root, hintText[1], 15, new Color32(0xE6, 0xED, 0xF8, 0xFF), TextAnchor.UpperCenter).Shadow(1.5f, 1f).Outline(new Color(0.03f, 0.05f, 0.12f, 0.85f), 1.5f);
-                small.rectTransform.Box(24, 131, 352, 40);
+                small.rectTransform.Box(24, 137, 352, 40);
             }
 
             var widths = new float[choices.Count];
