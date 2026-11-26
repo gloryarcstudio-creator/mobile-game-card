@@ -301,8 +301,8 @@ namespace Fitil.Game
                 else
                 {
                     var lg = s.List.GetComponent<VerticalLayoutGroup>();
-                    lg.spacing = 14;                   // рамки плиток выступают за строку
-                    lg.padding = new RectOffset(6, 6, 14, 14);
+                    lg.spacing = 13;                   // рамки строк выступают за строку
+                    lg.padding = new RectOffset(4, 4, 14, 14);
                     for (var i = 0; i < list.Count; i++) { var k = i; RunRow(s.List, list[i], maxSteps, () => { open = k; Render(); }); }
                 }
                 var sub = list.Count > 1 ? Loc.Tr("последние {n}", ("n", list.Count)) : list.Count == 1 ? Loc.Tr("последний") : Loc.Tr("пока нет");
@@ -358,14 +358,14 @@ namespace Fitil.Game
             if (cls == null || !data.Classes.ContainsKey(cls)) cls = "lamp";
             var win = Json.Bool(Json.Get(r, "win"));
             var diff = data.Difficulties[Mathf.Clamp(Json.Int(Json.Get(r, "diff"), 1), 0, data.Difficulties.Count - 1)];
-            // плитка как у достижений (.runrow в оформлении skin): рамка ui2/tile, слева окошко с лицом героя
+            // .runrow в оформлении skin: рамка ui2/row2 с окошком для лица героя, как у строк базы знаний
             var rt = Ui.Node("runrow", list);
-            rt.Line(10, TextAnchor.MiddleLeft, 34, 30, 9, 7);
-            rt.Pref(360, -1, 72);
-            var frame = Ui.Frame(rt, "ui2/tile", 0.5205f, 9.4f, 15.6f, 6.2f, 8.8f);
+            rt.Line(12, TextAnchor.MiddleLeft, 20, 30, 6, 6);
+            rt.Pref(364, -1, 68);
+            var frame = Ui.Frame(rt, "ui2/row2", 0.41f, 7.4f, 12.3f, 4.9f, 7f);
             if (!frame.sprite) frame.color = win ? RowDone : RowBg;
             var port = Ui.Node("port", rt);
-            port.Pref(56, 56);
+            port.Pref(54, 50);
             Ui.Img("bg", port, Ui.HeroBg(cls), win ? Color.white : new Color(0.8f, 0.8f, 0.8f, 1)).rectTransform.Fill();
             var faceArt = Ui.Art("h/" + cls + "_face");
             // проигранный забег: лицо приглушено (filter: grayscale(.6) brightness(.85))
@@ -375,7 +375,7 @@ namespace Fitil.Game
 
             var text = Ui.Node("text", rt);
             text.Column(1, TextAnchor.MiddleLeft);
-            text.Pref(142);
+            text.Pref(150);
             var nm = Ui.Label("name", text, data.Classes[cls].Name, 18, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleLeft, true);
             nm.Pref(142);
             var small = new Color32(0xC9, 0xC0, 0xD8, 0xFF);
@@ -386,8 +386,8 @@ namespace Fitil.Game
             lv.Pref(142);
 
             var res = Ui.Node("res", rt);
-            res.Column(3, TextAnchor.MiddleRight);
-            res.Pref(88);
+            res.Column(3, TextAnchor.UpperRight);   // метка и дата в верхних двух строках: третья строка слева может быть длинной
+            res.Pref(88, 54);
             var pill = Ui.Round("em", res, win ? new Color32(0xDE, 0xB6, 0x5B, 0xFF) : new Color32(0x46, 0x2E, 0x37, 0xFF)).Radius(5);
             pill.rectTransform.Pref(88, 23);
             Ui.Label("t", pill.transform, win ? Loc.Tr("Доставлено") : Loc.Tr("Поражение"), 13,

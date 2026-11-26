@@ -336,23 +336,23 @@ namespace Fitil.Game
                 var r = defs.Relics[rid];
                 // .rrow в оформлении skin: плитка с окошком для значка, за названием цветная метка редкости
                 var rt = Ui.Node("rrow", list);
-                rt.Line(14, TextAnchor.MiddleLeft, 34, 28, 10, 8);
-                rt.Pref(356, -1, 78);
-                var frame = Ui.Frame(rt, "ui2/tile", 0.5205f, 9.4f, 15.6f, 6.2f, 8.8f);
+                rt.Line(14, TextAnchor.MiddleLeft, 22, 22, 8, 8);
+                rt.Pref(356, -1, 68);
+                var frame = Ui.Frame(rt, "ui2/row2", 0.41f, 7.4f, 12.3f, 4.9f, 7f);
                 if (!frame.sprite) frame.color = new Color32(0x26, 0x2D, 0x45, 0xEE);
                 var ic = Ui.Img("icon", rt, "r2/" + rid);
                 ic.preserveAspect = true;
-                ic.Pref(52, 52);
+                ic.Pref(50, 46);
                 var text = Ui.Node("text", rt);
                 text.Column(2, TextAnchor.MiddleLeft);
-                text.Pref(228);
+                text.Pref(246);
                 var nm = Ui.Label("name", text, r.Name, 17, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f);
                 nm.horizontalOverflow = HorizontalWrapMode.Overflow;
-                nm.Pref(228, 21);
-                Hud.TierTag(nm, 228, r.Tier, rid == h.Relic ? Loc.Tr("Особенность") : Hud.TierLabel(r.Tier));
+                nm.Pref(246, 21);
+                Hud.TierTag(nm, 246, r.Tier, rid == h.Relic ? Loc.Tr("Особенность") : Hud.TierLabel(r.Tier));
                 var d = Ui.Label("desc", text, r.Desc, 14, Ui.Paper, TextAnchor.MiddleLeft);
                 d.lineSpacing = 0.95f;
-                d.Pref(228);
+                d.Pref(246);
             }
             Hint(Loc.Tr("Стартовая колода") + " · " + h.Deck.Count);
             Cards(h.Deck.Select(k => new CardInst { Id = k }).ToList());
