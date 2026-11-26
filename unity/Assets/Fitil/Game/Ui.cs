@@ -339,7 +339,7 @@ namespace Fitil.Game
             var hasHint = !string.IsNullOrEmpty(hint);
             // высота свитка с пояснением — 55, как в веб-версии: строки Unity выше, поэтому они сдвинуты друг к другу
             rt.Column(hasHint ? -3 : 1, TextAnchor.MiddleCenter, 40, 40, hasHint ? 6 : 8, hasHint ? 10 : 7);
-            rt.Pref(width, -1, hasHint ? -1 : 43);
+            rt.Pref(width, -1, hasHint ? 57 : 43);   // свиток с пояснением в веб-версии занимает 57 по высоте (шаг 70 при зазоре 13)
             var frame = Frame(rt, "ui2/scroll", 0.5f, 20, 7.5f, 20, 6);
             frame.raycastTarget = true;
             if (glow) frame.Outline(new Color(1f, 0.82f, 0.43f, 0.75f), 2.5f);

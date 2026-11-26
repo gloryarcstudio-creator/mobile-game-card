@@ -55,9 +55,9 @@ namespace Fitil.Game
             col.anchorMin = Vector2.zero;
             col.anchorMax = Vector2.one;
             col.offsetMin = new Vector2(0, 12);
-            col.offsetMax = new Vector2(0, -16);
+            col.offsetMax = new Vector2(0, -9);   // заголовок на той же высоте, что в веб-версии
             col.Column(8, TextAnchor.UpperCenter, 14, 14, 0, 0);
-            Ui.Label("h2", col, Loc.Tr("Магазин"), 28, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f).Pref(372, 40);
+            Ui.Label("h2", col, Loc.Tr("Магазин"), 28, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f).Pref(372, 30);
             Ui.Label("sub", col, Loc.Tr("Поддержите почту Медовой Горки"), 15, Soft).Pref(372, 22);
             var list = Menus.ScrollList(col, 378);
             var data = Boot.Instance.Data;
