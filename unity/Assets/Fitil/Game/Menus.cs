@@ -312,7 +312,7 @@ namespace Fitil.Game
                 {
                     var pair = Json.Arr(item);
                     if (pair == null || pair.Count < 2) continue;
-                    Ui.Label("dt", list, Json.Str(pair[0]), 17, Ui.GoldHi, TextAnchor.LowerLeft, true).Pref(306, 28);
+                    Ui.Label("dt", list, Json.Str(pair[0]), 17, Ui.GoldHi, TextAnchor.LowerLeft, true).Pref(306, 31);
                     var dd = Ui.Label("dd", list, Json.Str(pair[1]), 15, Ui.Paper, TextAnchor.UpperLeft);
                     dd.LineHeight(1.2f);
                     dd.Pref(306);
