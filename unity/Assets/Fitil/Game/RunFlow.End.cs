@@ -140,7 +140,7 @@ namespace Fitil.Game
             page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
             page.Pref(372);
             Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
-            Ui.Label("title", page, title, 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250).GetComponent<Text>().fontStyle = FontStyle.Bold;
+            Ui.Label("title", page, title, 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Outline(new Color32(0x5A, 0x2A, 0x26, 0xB0), 0.45f).Pref(250);
             BookPic(page, pic, 220, dim);
             Ui.Label("story", page, story, 17, Ui.Ink, TextAnchor.UpperLeft).Pref(318);
             Ui.Label("stats", page, stats, 15, new Color32(0x5A, 0x2A, 0x26, 0xFF)).Pref(318);
@@ -197,7 +197,7 @@ namespace Fitil.Game
             page.Column(9, TextAnchor.UpperCenter, 27, 27, 14, 17);
             page.Pref(372);
             Ui.Frame(page, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
-            Ui.Label("title", page, Loc.Tr("Тени настигли"), 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Pref(250).GetComponent<Text>().fontStyle = FontStyle.Bold;
+            Ui.Label("title", page, Loc.Tr("Тени настигли"), 30, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true).Outline(new Color32(0x5A, 0x2A, 0x26, 0xB0), 0.45f).Pref(250);
             BookPic(page, "story_lose", 170, true);
             Ui.Label("story", page, Loc.Tr("Но письмо ещё можно спасти. Попробуй этот бой снова или вернись на развилку перед ним и выбери другой путь."), 17, Ui.Ink, TextAnchor.UpperLeft).Pref(318);
             Spacer(col, 16);
