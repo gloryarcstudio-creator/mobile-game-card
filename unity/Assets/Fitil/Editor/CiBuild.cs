@@ -75,7 +75,27 @@ namespace Fitil.EditorTools
             var report = BuildPipeline.BuildPlayer(options);
             var s = report.summary;
             Debug.Log("CiBuild: " + s.result + ", ошибок " + s.totalErrors + ", размер " + s.totalSize);
-            if (s.result != BuildResult.Succeeded) EditorApplication.Exit(1);
+            if (s.result != BuildResult.Succeeded) { EditorApplication.Exit(1); return; }
+
+            // Для Google Play: пакет AAB, где картинки и звук вынесены в набор ресурсов (Play Asset Delivery,
+            // ставится вместе с игрой). Основная часть остаётся далеко под лимитом 200 МБ, качество то же.
+            // APK выше нужен для проверки на телефоне. Путь задаёт CI_AAB_PATH; без него AAB не собирается.
+            var aab = Environment.GetEnvironmentVariable("CI_AAB_PATH");
+            if (target != BuildTarget.Android || string.IsNullOrEmpty(aab)) return;
+            EditorUserBuildSettings.buildAppBundle = true;
+            PlayerSettings.Android.splitApplicationBinary = true;
+            try
+            {
+                options.locationPathName = aab;
+                var r2 = BuildPipeline.BuildPlayer(options).summary;
+                Debug.Log("CiBuild: AAB " + r2.result + ", ошибок " + r2.totalErrors + ", размер " + r2.totalSize);
+                if (r2.result != BuildResult.Succeeded) EditorApplication.Exit(1);
+            }
+            finally
+            {
+                EditorUserBuildSettings.buildAppBundle = false;
+                PlayerSettings.Android.splitApplicationBinary = false;
+            }
         }
     }
 }

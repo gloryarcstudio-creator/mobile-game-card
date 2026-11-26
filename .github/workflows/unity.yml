@@ -106,12 +106,13 @@ jobs:
           VERSION=$(sed -n 's/^m_EditorVersion: //p' unity/ProjectSettings/ProjectVersion.txt)
           MODULE=$(echo "$TARGET" | tr '[:upper:]' '[:lower:]')
           OUT=build/$TARGET
-          if [ "$TARGET" = Android ]; then OUT=build/Android/LastRay.apk; fi
+          AAB=
+          if [ "$TARGET" = Android ]; then OUT=build/Android/LastRay.apk; AAB=/github/workspace/build/AndroidBundle/LastRay.aab; fi
           if [ "$TARGET" = StandaloneLinux64 ]; then MODULE=base; OUT=build/$TARGET/LastRay.x86_64; fi
           mkdir -p build
           docker run --rm \
             -v "$PWD:/github/workspace" -w /github/workspace \
-            -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" \
+            -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" -e CI_AAB_PATH="$AAB" \
             -e ADMOB_APP_ID_ANDROID -e ADMOB_APP_ID_IOS -e ADMOB_REWARDED_ANDROID -e ADMOB_REWARDED_IOS -e TENJIN_SDK_KEY \
             "unityci/editor:ubuntu-$VERSION-$MODULE-3" \
             bash -c 'LC=/opt/unity/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client
@@ -129,6 +130,8 @@ jobs:
           sudo chown -R "$USER" build
           sudo chmod -R u+rwX build
           du -sh build/*
+          # состав пакета для Google Play: основная часть должна быть меньше 200 МБ
+          if [ -f build/AndroidBundle/LastRay.aab ]; then unzip -l build/AndroidBundle/LastRay.aab | awk '{split($4,a,"/"); n[a[1]]+=$1} END {for (k in n) if (n[k] > 1000000) printf "AAB %s: %d МБ\n", k, n[k]/1048576}'; fi
           find build -maxdepth 3 | head -n 40
       # Игра сама проходит по всем экранам (Tour.cs) и сохраняет снимки: их сверяют с веб-версией
       - name: Снимки всех экранов
@@ -205,4 +208,10 @@ jobs:
         with:
           name: LastRay-${{ matrix.targetPlatform }}
           path: build/${{ matrix.targetPlatform }}
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'Android'
+        with:
+          name: LastRay-AndroidBundle
+          path: build/AndroidBundle
           retention-days: 14
