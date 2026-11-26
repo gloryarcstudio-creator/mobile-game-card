@@ -32,15 +32,15 @@ namespace Fitil.Game
         }
 
         /// <summary>Панель .settings: тёмная рамка ui2/panel, заголовок, крестик. Высота — по содержимому.</summary>
-        static RectTransform Panel(string title, float top, Action onClose, out RectTransform layer, int padBottom = 30, float height = 0)
+        static RectTransform Panel(string title, float top, Action onClose, out RectTransform layer, int padBottom = 30, float height = 0, float left = 24, float width = 352, float scale = 0.494f)
         {
             Close();
             open = Overlay.Open(out layer);
-            var col = Ui.Node("panel", layer).Box(24, top, 352, height > 0 ? height : 100);
+            var col = Ui.Node("panel", layer).Box(left, top, width, height > 0 ? height : 100);
             col.Column(0, TextAnchor.UpperCenter, 24, 24, 16, padBottom);
             // высота по содержимому; заданная высота — для окна с прокруткой (справочник)
             if (height <= 0) col.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            var frame = Ui.Frame(col, "ui2/panel", 0.494f, 2, 49, 2, 10);
+            var frame = Ui.Frame(col, "ui2/panel", scale, 4 * scale, 100 * scale, 4 * scale, 20 * scale);
             if (!frame.sprite) frame.color = new Color32(0x22, 0x1C, 0x30, 0xF5);
             var t = Ui.Label("title", col, title, 26, Title, TextAnchor.MiddleCenter, true).Shadow(2f);
             t.Pref(216, 34);
@@ -280,11 +280,14 @@ namespace Fitil.Game
             var flow = RunFlow.Current;
             if (flow == null) { ShowGlossary(); return; }
             var col = Panel(Loc.Tr("Пауза"), 230, Close, out _, 44);
+            // отступы как у окна паузы в веб-версии: между подписями шире, чем между кнопками
             col.GetComponent<VerticalLayoutGroup>().spacing = 11;
-            Ui.Label("who", col, flow.Hero.Name + " · " + flow.DiffName, 14, new Color(1, 1, 1, 0.8f)).Pref(270);
+            col.GetComponent<VerticalLayoutGroup>().padding.bottom = 47;
+            Ui.Label("who", col, flow.Hero.Name + " · " + flow.DiffName, 14, new Color(1, 1, 1, 0.8f)).Pref(270, 30);
             Ui.Label("hint", col, Loc.Tr(flow.InFight
                 ? "Прогресс сохранён до начала этого боя. Если выйти, бой начнётся заново."
                 : "Прогресс сохранён. Можно выйти и вернуться позже."), 14, new Color(1, 1, 1, 0.8f)).Pref(270);
+            Ui.Node("gap", col).Pref(1, 0);
             Ui.Push(col, Loc.Tr("Вернуться в игру"), Close, false, 20, 260, 52);
             Ui.Push(col, Loc.Tr("Справочник"), () => ShowGlossary(ShowPause), true, 18, 260, 48);
             Ui.Push(col, Loc.Tr("Настройки"), () => ShowSettings(ShowPause), true, 18, 260, 48);
@@ -301,18 +304,18 @@ namespace Fitil.Game
         public static void ShowGlossary(Action back = null)
         {
             // то же окно в рамке, что и настройки, во всю высоту экрана; закрывается крестиком
-            var col = Panel(Loc.Tr("Справочник"), 62, () => { if (back != null) back(); else Close(); }, out _, 58, 778);
-            var list = ScrollList(col, 304);
+            var col = Panel(Loc.Tr("Справочник"), 62, () => { if (back != null) back(); else Close(); }, out _, 58, 792, 9, 382, 0.53f);
+            var list = ScrollList(col, 318);
             var gl = Json.Arr(Json.Get(Boot.Instance.Data.Raw, "gloss"));
             if (gl != null)
                 foreach (var item in gl)
                 {
                     var pair = Json.Arr(item);
                     if (pair == null || pair.Count < 2) continue;
-                    Ui.Label("dt", list, Json.Str(pair[0]), 18, Ui.GoldHi, TextAnchor.LowerLeft, true).Pref(292, 30);
+                    Ui.Label("dt", list, Json.Str(pair[0]), 17, Ui.GoldHi, TextAnchor.LowerLeft, true).Pref(306, 28);
                     var dd = Ui.Label("dd", list, Json.Str(pair[1]), 15, Ui.Paper, TextAnchor.UpperLeft);
-                    dd.lineSpacing = 1.05f;
-                    dd.Pref(292);
+                    dd.LineHeight(1.2f);
+                    dd.Pref(306);
                 }
         }
 

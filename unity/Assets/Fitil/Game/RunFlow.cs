@@ -298,6 +298,7 @@ namespace Fitil.Game
             var sorted = list.OrderBy(c => c.Id, StringComparer.Ordinal).ThenBy(c => c.Up ? 1 : 0).ToList();
             var layer = Overlay.Open(out var root);
             var head = Ui.Label("title", root, title, 24, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f);
+            head.Outline(Ui.GoldHi, 0.45f);   // жирный заголовок, как h2 в веб-версии (у шрифта нет жирного начертания)
             head.rectTransform.Box(10, 40, 380, 35);
             var hint = previewUp ? Loc.Tr("Так карты будут выглядеть после улучшения") : note;
             var top = 91f;
