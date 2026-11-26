@@ -31,6 +31,7 @@ namespace Fitil.Game
             Bars(p);
             var col = Ui.Node("reward", p.Root).Box(0, 70, 400, 686);   // лента на 70, как .ribbon в веб-версии
             col.Column(13, TextAnchor.UpperCenter);
+            col.SetAsFirstSibling();   // лента уходит под верхнюю панель, как в веб-версии
             Ui.Ribbon(col, rw.Boss ? Loc.Tr("Босс повержен!") : Loc.Tr("Победа!"));
             var loot = Ui.Node("loot", col);
             loot.Line(6, TextAnchor.MiddleCenter, 10, 16, 3, 3);
@@ -83,6 +84,7 @@ namespace Fitil.Game
             Bars(p);
             var col = Ui.Node("trophy", p.Root).Box(0, 96, 400, 660);
             col.Column(12, TextAnchor.UpperCenter);
+            col.SetAsFirstSibling();
             Ui.Ribbon(col, Loc.Tr("Трофей босса"));
             Ui.Label("hint", col, Loc.Tr("Выбери один талисман"), 18, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow(2f, 1f).Pref(380, 36);
             foreach (var id in opts)

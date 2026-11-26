@@ -360,6 +360,8 @@ namespace Fitil.Game
             Frame(rt, "ui2/scroll", 0.5f, 20, 7.5f, 20, 6);
             var t = Label("text", rt, text, 27, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true);
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.verticalOverflow = VerticalWrapMode.Overflow;
+            t.Pref(-1, 30);   // строка 27 × 1.1, как в веб-версии: своя высота строки у шрифта больше и лента выходила выше
             return rt;
         }
 
