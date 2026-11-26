@@ -9,6 +9,11 @@ on:
   pull_request:
     paths: ['unity/**', 'tools/unity/**', 'js/**', 'assets/**', '.github/workflows/unity.yml']
   workflow_dispatch:
+    inputs:
+      firebase_probe:
+        description: 'Проверить сборку Android с Firebase без его проекта (файл-пустышка)'
+        type: boolean
+        default: false
 
 # Один прогон на ветку: новый коммит отменяет прежний прогон, а push и pull_request не идут дважды
 concurrency:
@@ -70,6 +75,17 @@ jobs:
           path: unity/Library
           key: Library2-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library2-${{ matrix.targetPlatform }}-
+      # Tenjin и Firebase пакетом из реестра не ставятся: скрипт скачивает их перед сборкой, в git они не попадают.
+      # Firebase входит в сборку, только когда в секретах есть файлы настроек его проекта (оба в base64)
+      - name: SDK аналитики
+        if: env.HAS_LICENSE == 'true'
+        env:
+          TARGET: ${{ matrix.targetPlatform }}
+          GITHUB_TOKEN: ${{ github.token }}
+          FIREBASE_GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
+          FIREBASE_GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.FIREBASE_GOOGLE_SERVICE_INFO_PLIST }}
+          FIREBASE_PROBE: ${{ github.event_name == 'workflow_dispatch' && inputs.firebase_probe }}
+        run: python3 -I tools/unity/fetch_sdks.py
       # Без шага с клиентом лицензий редактор молча не подключал модули Android и iOS
       # (в журнале: com.unity.editor.headless was not found) и собирал игру для Linux.
       # Лицензия Personal выдаётся по входу в аккаунт Unity (почта и пароль из секретов),

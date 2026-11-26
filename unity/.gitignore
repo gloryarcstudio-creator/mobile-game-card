@@ -42,3 +42,16 @@
 /Assets/GeneratedLocalRepo.meta
 /ProjectSettings/AndroidResolverDependencies.xml
 /ProjectSettings/GvhProjectSettings.xml
+# SDK, которые скачивает tools/unity/fetch_sdks.py перед сборкой
+/SdkCache/
+/Assets/Tenjin/
+/Assets/Tenjin.meta
+/Assets/Plugins/
+/Assets/Plugins.meta
+/Assets/Firebase/
+/Assets/Firebase.meta
+/Assets/ExternalDependencyManager/
+/Assets/ExternalDependencyManager.meta
+/Assets/Editor Default Resources/
+/Assets/Editor Default Resources.meta
+/Assets/StreamingAssets/google-services-desktop.json

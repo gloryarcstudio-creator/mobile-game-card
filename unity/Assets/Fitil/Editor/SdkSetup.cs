@@ -22,7 +22,7 @@ namespace Fitil.EditorTools
         const string TestIosAppId = "ca-app-pub-3940256099942544~1458002511";
 
         /// <summary>Текст системного запроса на отслеживание в iOS (NSUserTrackingUsageDescription).</summary>
-        const string AttText = "This lets us show you ads that are more relevant. The game stays free either way.";
+        public const string AttText = "This lets us show you ads that are more relevant. The game stays free either way.";
 
         const string IdsPath = "Assets/Fitil/Resources/sdk_ids.json";
 
@@ -40,6 +40,7 @@ namespace Fitil.EditorTools
         {
             WriteIds();
             AdMobSettings();
+            SdkDefines.Sync();
         }
 
         [Serializable]
