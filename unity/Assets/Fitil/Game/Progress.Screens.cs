@@ -525,13 +525,14 @@ namespace Fitil.Game
                 for (var i = 0; i < part.Count; i += per)
                 {
                     var line = Ui.Node("cxrow", list);
-                    line.Line(kind == "c" ? 5 : 7, TextAnchor.UpperLeft, kind == "c" ? 4 : 0);
+                    line.Line(kind == "c" ? 5 : 7, TextAnchor.UpperLeft, kind == "c" ? 4 : 0, 0, 0, 7);
                     line.Pref(372);
                     foreach (var id in part.Skip(i).Take(per)) Tile(line, kind, id, defs, open);
                 }
             }
             // у героев нет названия раздела: сетка начинается с отступа списка (.achlist padding-top 14)
-            if (kind == "h") { Ui.Node("gap", list).Pref(356, 6); Tiles(null, ids); return; }
+            Ui.Node("gap", list).Pref(356, kind == "h" ? 12 : 18);
+            if (kind == "h") { Tiles(null, ids); return; }
             if (kind == "e")
             {
                 // враг, который встречается в двух стадиях, стоит один раз: там, где встречается впервые
@@ -586,8 +587,12 @@ namespace Fitil.Game
             {
                 var tier = kind == "e" && defs.Enemies.TryGetValue(id, out var en) ? en.Tier : null;
                 var edge = !on ? RingOff : tier == "elite" ? RingElite : tier == "boss" ? RingBoss : (Color32)Ui.Gold;
-                var slot = Ui.Img("bg", slotRt, Ui.HeroBg(kind == "h" ? "cxhero" : "cx"), Color.white).Outline(edge, 1.2f);
+                // кайма — отдельная подложка: Outline на самой картинке обрезала бы её же маска
+                Ui.Img("edge", slotRt, (Sprite)null, edge).rectTransform.Fill();
+                var slot = Ui.Img("bg", slotRt, Ui.HeroBg(kind == "h" ? "cxhero" : "cx"), Color.white);
                 slot.rectTransform.Fill();
+                slot.rectTransform.offsetMin = new Vector2(1.6f, 1.6f);
+                slot.rectTransform.offsetMax = new Vector2(-1.6f, -1.6f);
                 slot.gameObject.AddComponent<RectMask2D>();
                 pic = Ui.Img("pic", slot.transform, art, Color.white);
             }
@@ -638,7 +643,9 @@ namespace Fitil.Game
                 var n = Ui.Label("name", rt, on ? CxName(kind, id, defs) : "???", 12, on ? (Color)new Color32(0xF1, 0xEA, 0xD8, 0xFF) : new Color32(0x8A, 0x80, 0x98, 0xFF), TextAnchor.UpperCenter);
                 n.lineSpacing = 0.9f;
                 n.rectTransform.Box(3, 82, 81.75f, kind == "h" ? 16 : 30);
-                n.Fit(9);
+                // длинное название через дефис переносится после него, как в веб-версии (overflow-wrap)
+                if (on && n.preferredWidth > 81 && n.text.Contains("-") && !n.text.Contains(" ")) n.text = n.text.Replace("-", "-\n");
+                n.Fit(10);
             }
             box.raycastTarget = true;
             var b = box.gameObject.AddComponent<Button>();
@@ -733,6 +740,7 @@ namespace Fitil.Game
         static void Detail(RectTransform list, string kind, string id, Defs defs, Action back)
         {
             // «‹ Назад» — небольшая кнопка слева (.cxback)
+            Ui.Node("gap", list).Pref(356, 18);
             var backRow = Ui.Node("backrow", list);
             backRow.Line(0, TextAnchor.MiddleLeft, 2);
             backRow.Pref(364, 44);
@@ -777,7 +785,7 @@ namespace Fitil.Game
                 inner.offsetMin = new Vector2(7, 7);
                 inner.offsetMax = new Vector2(-7, -7);
                 CxPic(inner, kind, id, defs, true, 2);
-                Ui.Frame(portBox, "ui2/btn_dark", 13f / 24f, 0, 0, 0, 0).transform.SetAsLastSibling();
+                Ui.Frame(portBox, "ui2/btn_dark", 13f / 24f, 0, 0, 0, 0).transform.SetAsFirstSibling();
             }
             else CxPic(portBox, kind, id, defs, true, 14);
             var tw = 364 - 12 - side;
