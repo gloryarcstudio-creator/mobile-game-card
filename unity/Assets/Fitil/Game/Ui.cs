@@ -243,6 +243,15 @@ namespace Fitil.Game
 
         static readonly Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
 
+        /// <summary>Система сообщила, что памяти мало: игра забывает картинки, которых сейчас нет на экране.
+        /// Те, что на экране, остаются; остальные загрузятся снова, когда понадобятся.</summary>
+        public static void TrimMemory()
+        {
+            sprites.Clear();
+            FxPlayer.Forget();
+            Resources.UnloadUnusedAssets();
+        }
+
         // Срезы рамок (border-image в css/style.css), в пикселях картинки: слева, снизу, справа, сверху
         static readonly Dictionary<string, Vector4> Borders = new Dictionary<string, Vector4>
         {

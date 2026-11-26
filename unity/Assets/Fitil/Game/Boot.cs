@@ -50,6 +50,8 @@ namespace Fitil.Game
             // на сервере у окна нет фокуса, а без фокуса игра на компьютере стоит на паузе
             if (Tour.Wanted) Application.runInBackground = true;
             Tour.Mark("awake");
+            Application.lowMemory -= Ui.TrimMemory;
+            Application.lowMemory += Ui.TrimMemory;
             LoadLanguage();
             Tour.Mark("language");
             Sound.Init(gameObject);

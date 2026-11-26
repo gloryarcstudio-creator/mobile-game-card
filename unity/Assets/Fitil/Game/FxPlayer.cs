@@ -58,6 +58,9 @@ namespace Fitil.Game
             if (cl != null) foreach (var kv in cl) frames[kv.Key] = Json.Int(kv.Value, 1);
         }
 
+        /// <summary>Забыть раскадровки эффектов (мало памяти): нужные загрузятся снова при следующем эффекте.</summary>
+        public static void Forget() => clips.Clear();
+
         static Texture2D Clip(string name)
         {
             if (clips.TryGetValue(name, out var t) && t) return t;
