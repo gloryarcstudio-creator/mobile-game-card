@@ -259,6 +259,7 @@ namespace Fitil.Game
             RunFlow.Drop();
             Clear();
             Corner("title");
+            Hud.ToastTop = 430;
             screen = new GameObject("Title");
             screen.transform.SetParent(transform, false);
             Sound.Music("title");

@@ -27,8 +27,8 @@ namespace Fitil.Game
         RectTransform root, back, hand, fxLayer, intentRow, eStatus, hStatus;
         RectTransform enemyBox, heroBar;
         Image enemyImg, eFill, eTrail, hFill, hTrail, flash, vignette;
-        Text eName, eHpText, hHpText, energyText, drawText, discText, stepText, toastText, sayText;
-        GameObject eBlock, hBlock, toast, sayBubble;
+        Text eName, eHpText, hHpText, energyText, drawText, discText, stepText, sayText;
+        GameObject eBlock, hBlock, sayBubble;
         Text eBlockText, hBlockText;
         Image[] pips;
         Sprite pipOn;
@@ -96,14 +96,6 @@ namespace Fitil.Game
             fx.Shake = p => { if (!dying) StartCoroutine(ZoneShake(p)); };
             fx.Tint = (c, s) => StartCoroutine(EnemyTint(c, s));
 
-            toast = Ui.Round("toast", root, new Color32(14, 16, 28, 235)).gameObject;
-            var tr = (RectTransform)toast.transform;
-            tr.At(new Vector2(0.5f, 0.5f), new Vector2(0, 40), new Vector2(340, 56));
-            toastText = Ui.Label("text", tr, "", 17, Ui.Paper).Shadow();
-            toastText.rectTransform.Fill();
-            toastText.rectTransform.offsetMin = new Vector2(12, 4);
-            toastText.rectTransform.offsetMax = new Vector2(-12, -4);
-            toast.SetActive(false);
         }
 
         void BuildTop()
@@ -1066,15 +1058,10 @@ namespace Fitil.Game
             if (box) Destroy(box.gameObject);
         }
 
-        Coroutine toastCo;
         void ShowToast(string text)
         {
-            if (string.IsNullOrEmpty(text)) return;
-            toastText.text = text;
-            toast.SetActive(true);
-            toast.transform.SetAsLastSibling();
-            if (toastCo != null) StopCoroutine(toastCo);
-            toastCo = StartCoroutine(HideLater(toast, 1.6f));
+            // то же сообщение, что и вне боя (toast в game.js): плашка по ширине текста с золотой каймой над рукой
+            Hud.Toast(text);
         }
 
         static IEnumerator HideLater(GameObject go, float sec)

@@ -22,8 +22,15 @@ namespace Fitil.Game
             snapStep = RunSave.Snap(Run);   // для «Вернуться до боя»
             Bars(p);
 
-            var hint = Ui.Label("hint", p.Root, MapHint(), 22, new Color32(0xE6, 0xED, 0xF8, 0xFF), TextAnchor.UpperCenter, true).Shadow(2f, 1f).Outline(new Color(0.03f, 0.05f, 0.12f, 0.6f), 1.5f);
-            hint.rectTransform.Box(10, 102, 380, 56);
+            // название крупно шрифтом заголовков, пояснение под ним обычным шрифтом (.map-hint b и small): так оно читается
+            var hintText = MapHint().Split('\n');
+            var hint = Ui.Label("hint", p.Root, hintText[0], 22, new Color32(0xE6, 0xED, 0xF8, 0xFF), TextAnchor.UpperCenter, true).Shadow(2f, 1f).Outline(new Color(0.03f, 0.05f, 0.12f, 0.6f), 1.5f);
+            hint.rectTransform.Box(10, 102, 380, 28);
+            if (hintText.Length > 1)
+            {
+                var small = Ui.Label("small", p.Root, hintText[1], 15, new Color32(0xE6, 0xED, 0xF8, 0xFF), TextAnchor.UpperCenter).Shadow(1.5f, 1f).Outline(new Color(0.03f, 0.05f, 0.12f, 0.85f), 1.5f);
+                small.rectTransform.Box(24, 131, 352, 40);
+            }
 
             var widths = new float[choices.Count];
             var total = 0f;
@@ -51,10 +58,10 @@ namespace Fitil.Game
             var g = defs.Stages[si];
             var intro = Json.Arr(Json.Get(defs.Story, "stageIntro"));
             if (Run.Step == g.Start && intro != null)
-                return g.Name + "\n<size=15>" + (si < intro.Count ? Json.Str(intro[si]) : "") + "</size>";
+                return g.Name + "\n" + (si < intro.Count ? Json.Str(intro[si]) : "");
             if (Run.Step == 0) return Loc.Tr("Выбери, куда идти");
             if (Run.Forced && Run.Choices != null && Run.Choices.TrueForAll(o => o.T == "fight" || o.T == "elite"))
-                return Loc.Tr("Уровень {n}", ("n", Run.Step + 1)) + "\n<size=15>" + Loc.Tr("После передышки дорога ведёт через бой") + "</size>";
+                return Loc.Tr("Уровень {n}", ("n", Run.Step + 1)) + "\n" + Loc.Tr("После передышки дорога ведёт через бой");
             return Loc.Tr("Уровень {n}", ("n", Run.Step + 1));
         }
 

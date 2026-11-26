@@ -172,6 +172,7 @@ namespace Fitil.Game
             // фон умеет опускаться под ноги того, кто стоит на экране (собеседник, сундук, ёж): Bg.StandOn
             page.Bg = GroundBg.Make(page.Back, art, Boot.FeetOf(art), null);
             boot.Corner("run");
+            Hud.ToastTop = 470;
             return page;
         }
 

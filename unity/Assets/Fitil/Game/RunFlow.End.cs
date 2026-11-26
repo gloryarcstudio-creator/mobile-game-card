@@ -27,6 +27,7 @@ namespace Fitil.Game
         Page RenderReward(Reward rw)
         {
             var p = Open();
+            Hud.ToastTop = 512;
             Bars(p);
             var col = Ui.Node("reward", p.Root).Box(0, 70, 400, 686);   // лента на 70, как .ribbon в веб-версии
             col.Column(13, TextAnchor.UpperCenter);
@@ -41,7 +42,7 @@ namespace Fitil.Game
             coin.Pref(30, 30);
             Ui.Label("n", loot, RunGame.Coins(rw.Gold) + (rw.Healed > 0 ? " · +" + rw.Healed + " HP" : ""), 22, Ui.GoldHi, TextAnchor.MiddleLeft).Shadow(1.5f).Pref(-1, 32);
 
-            var hint = Ui.Label("hint", col, Loc.Tr("Возьми одну карту в колоду"), 18, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow(2f, 1f);
+            var hint = Ui.Label("hint", col, Loc.Tr("Возьми одну карту в колоду"), 18, Ui.Paper, TextAnchor.MiddleCenter, true).Shadow(2f, 1f).Outline(new Color(0.04f, 0.06f, 0.14f, 0.75f), 1.5f);
             hint.Pref(380, 30);
 
             var n = rw.Ids.Count;
@@ -78,6 +79,7 @@ namespace Fitil.Game
             Save(new Pending { T = "bossrelic", Opts = opts });
             foreach (var r in opts) Progress.Codex("r", r);
             var p = Open();
+            Hud.ToastTop = 512;
             Bars(p);
             var col = Ui.Node("trophy", p.Root).Box(0, 96, 400, 660);
             col.Column(12, TextAnchor.UpperCenter);

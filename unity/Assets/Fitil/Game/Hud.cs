@@ -159,6 +159,11 @@ namespace Fitil.Game
 
         // ================= сообщения =================
         static int stack;
+        /// <summary>Где на экране встаёт сообщение (.toast top в style.css): 470, у событий и бесед 100, у награды 512, на титуле 430.</summary>
+        public static float ToastTop = 470;
+        // та же подсказка повторно (второе нажатие на недоступную карту) встаёт на своё место, а не второй строкой
+        static readonly System.Collections.Generic.Dictionary<string, (GameObject go, int slot)> liveToasts = new System.Collections.Generic.Dictionary<string, (GameObject, int)>();
+        static readonly System.Collections.Generic.HashSet<int> replaced = new System.Collections.Generic.HashSet<int>();
 
         /// <summary>Сообщение посреди экрана: висит дольше, если длинное; несколько встают столбиком.</summary>
         public static void Toast(string text)
@@ -177,8 +182,16 @@ namespace Fitil.Game
             fit.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             const float h = 40;
-            rt.anchoredPosition = new Vector2(0, -(470 + stack * 6) - Math.Min(stack, 4) * (h - 6));
-            stack++;
+            var slot = stack;
+            if (liveToasts.TryGetValue(text, out var old) && old.go)
+            {
+                slot = old.slot;
+                replaced.Add(old.go.GetInstanceID());
+                UnityEngine.Object.Destroy(old.go);
+            }
+            else stack++;
+            liveToasts[text] = (plate.gameObject, slot);
+            rt.anchoredPosition = new Vector2(0, -(ToastTop + slot * 6) - Math.Min(slot, 4) * (h - 6));
             var life = Mathf.Min(6.5f, 1.5f + Mathf.Max(0, text.Length - 22) * 0.05f) + Mathf.Min(4, stack - 1) * 0.5f;
             Boot.Instance.StartCoroutine(Fade(plate.gameObject, life));
         }
@@ -334,12 +347,14 @@ namespace Fitil.Game
         static IEnumerator Fade(GameObject go, float life)
         {
             var cg = go.AddComponent<CanvasGroup>();
+            var key = go.GetInstanceID();
             cg.blocksRaycasts = false;
             for (float t = 0; t < 0.15f && go; t += Time.deltaTime) { cg.alpha = t / 0.15f; yield return null; }
             if (go) cg.alpha = 1;
             yield return new WaitForSeconds(Mathf.Max(0.3f, life - 0.45f));
             for (float t = 0; t < 0.3f && go; t += Time.deltaTime) { cg.alpha = 1 - t / 0.3f; yield return null; }
             if (go) UnityEngine.Object.Destroy(go);
+            if (replaced.Remove(key)) yield break;   // место занял новый показ той же подсказки
             stack = Math.Max(0, stack - 1);
         }
 
@@ -358,7 +373,7 @@ namespace Fitil.Game
             if (dHp > 0) { Sound.Sfx("heal"); fx.Play("heal", "hero"); }
             if (dHp < 0) Sound.Sfx("hurt");
             var y = 0f;
-            if (dHp != 0) { Float(bar, dHp > 0 ? "+" + dHp : "−" + (-dHp), dHp > 0 ? Ui.Green : Ui.Red, y); y += 26; }
+            if (dHp != 0) { Float(bar, dHp > 0 ? "+" + dHp : "−" + (-dHp), dHp > 0 ? (Color)new Color32(0x8D, 0xFF, 0x9A, 0xFF) : new Color32(0xFF, 0x62, 0x50, 0xFF), y, dHp > 0 ? 34 : 24); y += 30; }
             if (dGold == 0) return;
             // монеты — следом за здоровьем, чтобы числа не легли одно на другое
             var gy = y;
@@ -366,7 +381,7 @@ namespace Fitil.Game
             {
                 if (!bar) return;
                 if (dGold > 0) fx.Play("gold", "hero");   // звон монет звучит в самом эффекте
-                Float(bar, dGold > 0 ? RunGame.Coins(dGold) : "−" + (-dGold), Coin, gy);
+                Float(bar, dGold > 0 ? RunGame.Coins(dGold) : "−" + (-dGold), new Color32(0xFF, 0xB8, 0x45, 0xFF), gy, 24);
             }));
         }
 
@@ -388,10 +403,13 @@ namespace Fitil.Game
             return fx;
         }
 
-        static void Float(RectTransform bar, string text, Color color, float dy)
+        // Вне боя число героя всплывает правее его имени, над полоской здоровья (.float.hf, floatlow в style.css)
+        static void Float(RectTransform bar, string text, Color color, float dy, int size)
         {
-            var t = Ui.Label("float", bar, text, 22, color, TextAnchor.MiddleCenter, true).Outline(Ui.Ink, 1.5f);
-            t.rectTransform.Box(-20, -40 - dy, 150, 30);
+            var t = Ui.Label("float", bar, text, size, color, TextAnchor.MiddleCenter, true).Outline(Ui.Ink, 2f);
+            t.fontStyle = FontStyle.Bold;
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.rectTransform.Box(100, -4 - dy, 200, 36);
             Boot.Instance.StartCoroutine(Rise(t));
         }
 
@@ -401,7 +419,7 @@ namespace Fitil.Game
             var from = rt.anchoredPosition;
             for (float k = 0; k < 1.2f && t; k += Time.deltaTime)
             {
-                rt.anchoredPosition = from + new Vector2(0, 40 * Mathf.Min(1, k / 0.8f));
+                rt.anchoredPosition = from + new Vector2(0, 30 * Mathf.Min(1, k / 0.8f));
                 var c = t.color; c.a = k < 0.8f ? 1 : 1 - (k - 0.8f) / 0.4f; t.color = c;
                 yield return null;
             }
