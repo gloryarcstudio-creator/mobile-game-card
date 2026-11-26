@@ -16,7 +16,7 @@ namespace UnityEngine.Purchasing
         public ProductType type { get; private set; }
     }
 
-    public class ProductMetadata { public string localizedPriceString { get; internal set; } }
+    public class ProductMetadata { public string localizedPriceString { get; internal set; } public decimal localizedPrice { get; internal set; } public string isoCurrencyCode { get; internal set; } }
 
     public class Product
     {
@@ -27,7 +27,7 @@ namespace UnityEngine.Purchasing
 
     public class CartItem { public Product Product { get; } }
     public interface ICart { IReadOnlyList<CartItem> Items(); }
-    public interface IOrderInfo { }
+    public interface IOrderInfo { string Receipt { get; } }
 
     public abstract class Order
     {
@@ -96,10 +96,32 @@ namespace GoogleMobileAds.Api
     public class LoadAdError : AdError { }
     public class Reward : EventArgs { public string Type; public double Amount; }
 
+    public class AdValue
+    {
+        public enum PrecisionType { Unknown, Estimated, PublisherProvided, Precise }
+        public PrecisionType Precision { get; set; }
+        public long Value { get; set; }
+        public string CurrencyCode { get; set; }
+    }
+
+    public class AdapterResponseInfo
+    {
+        public string AdapterClassName { get; }
+        public string AdSourceName { get; }
+    }
+
+    public class ResponseInfo
+    {
+        public AdapterResponseInfo GetLoadedAdapterResponseInfo() => null;
+        public string GetResponseId() => "";
+    }
+
     public class RewardedAd
     {
         public event Action OnAdFullScreenContentClosed;
         public event Action<AdError> OnAdFullScreenContentFailed;
+        public event Action<AdValue> OnAdPaid;
+        public ResponseInfo GetResponseInfo() => null;
         public static void Load(string adUnitId, AdRequest request, Action<RewardedAd, LoadAdError> adLoadCallback) { }
         public bool CanShowAd() => false;
         public void Show(Action<Reward> userRewardEarnedCallback) { }
@@ -132,4 +154,89 @@ namespace GoogleMobileAds.Ump.Api
         public static void LoadAndShowConsentFormIfRequired(Action<FormError> onDismissed) { }
         public static void ShowPrivacyOptionsForm(Action<FormError> onDismissed) { }
     }
+}
+
+namespace GoogleMobileAds.Common
+{
+    public class MobileAdsEventExecutor
+    {
+        public static void Initialize() { }
+    }
+}
+
+// Firebase Unity SDK: только то, чем пользуется Platform/Firebase/FirebaseSink.cs
+namespace Firebase
+{
+    public enum DependencyStatus { Available, UnavailableDisabled, UnavailableInvalid, UnavilableMissing, UnavailablePermission, UnavailableUpdaterequired, UnavailableUpdating, UnavailableOther }
+    public class FirebaseApp
+    {
+        public static Task<DependencyStatus> CheckAndFixDependenciesAsync() => Task.FromResult(DependencyStatus.Available);
+    }
+}
+
+namespace Firebase.Extensions
+{
+    public static class TaskExtension
+    {
+        public static Task ContinueWithOnMainThread<T>(this Task<T> task, Action<Task<T>> continuation) => task;
+        public static Task ContinueWithOnMainThread(this Task task, Action<Task> continuation) => task;
+    }
+}
+
+namespace Firebase.Analytics
+{
+    public enum ConsentType { AdStorage, AnalyticsStorage, AdUserData, AdPersonalization }
+    public enum ConsentStatus { Granted, Denied }
+    public class Parameter
+    {
+        public Parameter(string name, string value) { }
+        public Parameter(string name, long value) { }
+        public Parameter(string name, double value) { }
+    }
+    public static class FirebaseAnalytics
+    {
+        public static void LogEvent(string name, params Parameter[] parameters) { }
+        public static void SetConsent(IDictionary<ConsentType, ConsentStatus> consentSettings) { }
+    }
+}
+
+namespace Firebase.Crashlytics
+{
+    public static class Crashlytics
+    {
+        public static bool ReportUncaughtExceptionsAsFatal { get; set; }
+    }
+}
+
+namespace Firebase.RemoteConfig
+{
+    public enum ValueSource { StaticValue, RemoteValue, DefaultValue }
+    public struct ConfigValue
+    {
+        public double DoubleValue => 0;
+        public ValueSource Source => ValueSource.StaticValue;
+    }
+    public class FirebaseRemoteConfig
+    {
+        public static FirebaseRemoteConfig DefaultInstance => null;
+        public Task<bool> FetchAndActivateAsync() => Task.FromResult(true);
+        public ConfigValue GetValue(string key) => default;
+    }
+}
+
+// Tenjin Unity SDK (классы лежат без пространства имён)
+public enum AppStoreType { unspecified, googleplay, amazon, other }
+public abstract class BaseTenjin
+{
+    public abstract void Connect();
+    public abstract void OptIn();
+    public abstract void OptOut();
+    public abstract void SendEvent(string eventName);
+    public abstract void Transaction(string productId, string currencyCode, int quantity, double unitPrice, string transactionId, string receipt, string signature);
+    public abstract void AdMobImpressionFromJSON(string json);
+    public abstract void SetAppStoreType(AppStoreType appStoreType);
+}
+public static class Tenjin
+{
+    public static BaseTenjin getInstance(string apiKey) => null;
 }

@@ -42,6 +42,10 @@ namespace Fitil.Platform.Ads
         {
             if (started) return;
             started = true;
+            // Ответы плагина приходят не в главном потоке и ждут в очереди его объекта-исполнителя. Сам он создаётся только
+            // при MobileAds.Initialize, а она вызывается после согласия: без этой строки ответ о согласии при первом
+            // запуске оставался в очереди, и окно согласия не открывалось.
+            GoogleMobileAds.Common.MobileAdsEventExecutor.Initialize();
             MobileAds.RaiseAdEventsOnUnityMainThread = true;
             MobileAds.SetiOSAppPauseOnBackground(true);
             // сначала согласие (нужно только там, где его требует закон), потом сама реклама
@@ -52,6 +56,7 @@ namespace Fitil.Platform.Ads
                 {
                     if (formError != null) Debug.LogWarning("Окно согласия не показалось: " + formError.Message);
                     Init();
+                    Analytics.ApplyConsent();   // аналитика и Tenjin узнают ответ игрока
                 });
             });
             // согласие с прошлого запуска уже есть: не ждать ответа сети
@@ -82,6 +87,7 @@ namespace Fitil.Platform.Ads
                 }
                 fails = 0;
                 ad = loaded;
+                loaded.OnAdPaid += value => Paid(loaded, value);
             });
         }
 
@@ -144,6 +150,22 @@ namespace Fitil.Platform.Ads
             }
         }
 
+        // доход с показа: сумма в микроединицах валюты аккаунта AdMob, уходит в аналитику и Tenjin
+        static void Paid(RewardedAd shown, AdValue value)
+        {
+            if (value == null) return;
+            var imp = new AdImpression { AdUnit = Unit, Format = "rewarded", Placement = Analytics.Placement, Currency = value.CurrencyCode, ValueMicros = value.Value, Precision = value.Precision.ToString(), Network = "AdMob" };
+            try
+            {
+                var info = shown.GetResponseInfo();
+                var adapter = info != null ? info.GetLoadedAdapterResponseInfo() : null;
+                imp.ResponseId = info != null ? info.GetResponseId() : "";
+                if (adapter != null) { imp.AdapterClass = adapter.AdapterClassName; if (!string.IsNullOrEmpty(adapter.AdSourceName)) imp.Network = adapter.AdSourceName; }
+            }
+            catch (Exception e) { Debug.LogWarning("Доход с рекламы: " + e.Message); }
+            Analytics.AdRevenue(imp);
+        }
+
         public bool PrivacyOptions =>
             started && ConsentInformation.PrivacyOptionsRequirementStatus == PrivacyOptionsRequirementStatus.Required;
 
@@ -153,6 +175,7 @@ namespace Fitil.Platform.Ads
             {
                 if (error != null) Debug.LogWarning("Окно согласия не показалось: " + error.Message);
                 Init();
+                Analytics.ApplyConsent();
                 done?.Invoke();
             });
         }

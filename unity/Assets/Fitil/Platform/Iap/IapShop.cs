@@ -128,7 +128,24 @@ namespace Fitil.Platform.Iap
         void Pending(PendingOrder order)
         {
             foreach (var id in Ids(order)) { Answer(id, true, null); Store.Owned(id); }
+            Report(order);
             store.ConfirmPurchase(order);
+        }
+
+        // покупка в аналитику и Tenjin: цена и валюта площадки, чек для проверки
+        static void Report(Order order)
+        {
+            try
+            {
+                var receipt = order.Info != null ? order.Info.Receipt : null;
+                foreach (var it in order.CartOrdered.Items())
+                {
+                    if (it == null || it.Product == null) continue;
+                    var m = it.Product.metadata;
+                    Analytics.Purchase(it.Product.definition.id, m != null ? (double)m.localizedPrice : 0, m != null ? m.isoCurrencyCode : null, receipt);
+                }
+            }
+            catch (Exception e) { Debug.LogWarning("Покупка не попала в аналитику: " + e.Message); }
         }
 
         void Confirmed(Order order)

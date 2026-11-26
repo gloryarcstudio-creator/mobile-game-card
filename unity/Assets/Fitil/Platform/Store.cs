@@ -79,6 +79,8 @@ namespace Fitil.Platform
             foreach (var id in Products.Keys) ids.Add(StoreId(id));
             try { Shop?.Start(ids); } catch (Exception e) { Debug.LogWarning("Магазин площадки не запустился: " + e.Message); }
             try { Ads?.Start(); } catch (Exception e) { Debug.LogWarning("Реклама не запустилась: " + e.Message); }
+            // согласие для аналитики приходит из окна рекламного плагина; где его нет, читается сразу
+            Analytics.Start(Ads != null);
         }
 
         static void Load()
@@ -180,9 +182,11 @@ namespace Fitil.Platform
             AdNote = null;
             if (NoAds) { done?.Invoke(true); return; }
             if (Ads == null) { RealAd(host, reason, done); return; }
+            Analytics.Placement = reason ?? "";
             Ads.Show((ok, note) =>
             {
                 AdNote = ok ? null : note;
+                if (ok) Analytics.Event("ad_reward", ("placement", Analytics.Placement));
                 done?.Invoke(ok);
             });
         }
