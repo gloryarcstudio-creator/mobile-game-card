@@ -70,7 +70,7 @@ namespace Fitil.Game
         /// <summary>Настройки. back — куда вернуться по крестику (null — просто закрыть).</summary>
         public static void ShowSettings(Action back = null)
         {
-            var col = Panel(Loc.Tr("Настройки"), 120, () => { if (back != null) back(); else Close(); }, out _);
+            var col = Panel(Loc.Tr("Настройки"), 162, () => { if (back != null) back(); else Close(); }, out _);
 
             // четыре круглых кнопки: достижения, справочник, статистика, сброс
             var icons = Ui.Node("sicons", col);
@@ -279,7 +279,7 @@ namespace Fitil.Game
         {
             var flow = RunFlow.Current;
             if (flow == null) { ShowGlossary(); return; }
-            var col = Panel(Loc.Tr("Пауза"), 190, Close, out _, 44);
+            var col = Panel(Loc.Tr("Пауза"), 230, Close, out _, 44);
             col.GetComponent<VerticalLayoutGroup>().spacing = 11;
             Ui.Label("who", col, flow.Hero.Name + " · " + flow.DiffName, 14, new Color(1, 1, 1, 0.8f)).Pref(270);
             Ui.Label("hint", col, Loc.Tr(flow.InFight
@@ -345,7 +345,7 @@ namespace Fitil.Game
         // ================= сброс =================
         static void AskReset(Action back)
         {
-            var col = Panel(Loc.Tr("Сбросить прогресс?"), 190, () => ShowSettings(back), out _, 44);
+            var col = Panel(Loc.Tr("Сбросить прогресс?"), 230, () => ShowSettings(back), out _, 44);
             col.GetComponent<VerticalLayoutGroup>().spacing = 11;
             Ui.Label("hint", col, Loc.Tr("Сохранённый забег, статистика и достижения будут удалены. Настройки и покупки останутся."), 14, new Color(1, 1, 1, 0.8f)).Pref(270);
             Ui.Push(col, Loc.Tr("Сбросить"), () =>

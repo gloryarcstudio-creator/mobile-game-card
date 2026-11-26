@@ -107,7 +107,9 @@ namespace Fitil.Game
                 var text = Ui.Node("text", rt);
                 text.Column(1, TextAnchor.MiddleLeft);
                 text.Pref(248);
-                Ui.Label("name", text, r.Name, 16, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f).Pref(248);
+                var nm = Ui.Label("name", text, r.Name, 16, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f);
+                nm.Pref(248);
+                TierTag(nm, 248, r.Tier, TierLabel(r.Tier) + (r.Cls != null && Boot.Instance.Defs.Data.Classes.TryGetValue(r.Cls, out var oc) ? " · " + oc.Name : ""));
                 var d = Ui.Label("desc", text, r.Desc, 13, new Color(0.95f, 0.92f, 0.85f, 0.9f), TextAnchor.UpperLeft);
                 d.lineSpacing = 0.95f;
                 d.Pref(248);
@@ -156,6 +158,29 @@ namespace Fitil.Game
         }
 
         static int MaxEnergy(RunState run) => Balance.MaxEnergy + new[] { "hourglass", "bottomless", "crown", "sunstone" }.Count(run.HasRelic);
+
+        // ================= редкость талисмана =================
+        public static string TierLabel(string t) => Loc.Tr(
+            t == "uncommon" ? "Необычный" : t == "rare" ? "Редкий" : t == "epic" ? "Эпический" : t == "legendary" ? "Легендарный"
+            : t == "boss" ? "Трофей босса" : t == "class" ? "Особенность героя" : "Обычный");
+
+        /// <summary>Цветная метка редкости сразу за названием талисмана (.rtier): name — надпись в одну строку шириной width.</summary>
+        public static void TierTag(Text name, float width, string tier, string label)
+        {
+            var bg = tier == "uncommon" ? new Color32(0x8E, 0xE0, 0x9A, 0xFF) : tier == "rare" ? new Color32(0x7E, 0xC0, 0xFF, 0xFF)
+                : tier == "epic" ? new Color32(0xD0, 0xA0, 0xFF, 0xFF) : tier == "legendary" ? new Color32(0xFF, 0xB6, 0x52, 0xFF)
+                : tier == "boss" ? new Color32(0xF3, 0xD2, 0x7C, 0xFF) : tier == "class" ? new Color32(0x6F, 0xD8, 0xC8, 0xFF) : new Color32(0xB8, 0xB2, 0xA4, 0xFF);
+            var pill = Ui.Round("rtier", name.transform, bg).Radius(6);
+            var t = Ui.Label("t", pill.transform, label, 11, new Color32(0x1A, 0x15, 0x20, 0xFF));
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.rectTransform.Fill();
+            float W(Text x) => x.cachedTextGeneratorForLayout.GetPreferredWidth(x.text, x.GetGenerationSettings(Vector2.zero)) / x.pixelsPerUnit;
+            var pw = W(t) + 12;
+            var rt = pill.rectTransform;
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0, 0.5f);
+            rt.sizeDelta = new Vector2(pw, 16);
+            rt.anchoredPosition = new Vector2(Mathf.Min(W(name) + 6, Mathf.Max(0, width - pw)), 0);
+        }
 
         // ================= сообщения =================
         static int stack;

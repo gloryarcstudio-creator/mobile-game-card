@@ -68,7 +68,7 @@ namespace Fitil.Game
             if (shop.Relic != null)
             {
                 var r = defs.Relics[shop.Relic.Id];
-                Service(list, "r2/" + r.Id, r.Name, r.Desc, shop.Relic, () => ShopAct(shop, last, () => G.BuyRelic(shop)));
+                Service(list, "r2/" + r.Id, r.Name, r.Desc, shop.Relic, () => ShopAct(shop, last, () => G.BuyRelic(shop)), r.Tier ?? "common");
             }
             var tea = Math.Min(12, Run.MaxHp - Run.Hp);
             Service(list, "r2/thermos", Loc.Tr("Горячий сбитень"), Loc.Tr("Восстановить {n} HP", ("n", tea > 0 ? tea : 12)), shop.Tea, () => ShopAct(shop, last, () => G.BuyTea(shop) >= 0));
@@ -118,7 +118,7 @@ namespace Fitil.Game
             if (item.Sold) plate.gameObject.SetActive(false);
         }
 
-        void Service(RectTransform list, string icon, string title, string desc, ShopItem item, Action buy)
+        void Service(RectTransform list, string icon, string title, string desc, ShopItem item, Action buy, string tier = null)
         {
             // Плитка с окошком для значка (.svc в веб-версии): масштаб картинки .41, рамка выступает за края плитки.
             var row = Ui.Node("svc", list);
@@ -132,9 +132,26 @@ namespace Fitil.Game
             ic.rectTransform.Fill();
             ic.rectTransform.offsetMin = new Vector2(5, 0);
             ic.rectTransform.offsetMax = new Vector2(-5, 0);
-            var t = Ui.Label("text", row, "<color=#" + Ui.Hex(Ui.GoldHi) + ">" + title + "</color>\n<size=13>" + desc + "</size>", 15, Ui.Paper, TextAnchor.MiddleLeft).Shadow(1f);
-            t.lineSpacing = 0.95f;
-            t.Pref(208);
+            if (tier == null)
+            {
+                var t = Ui.Label("text", row, "<color=#" + Ui.Hex(Ui.GoldHi) + ">" + title + "</color>\n<size=13>" + desc + "</size>", 15, Ui.Paper, TextAnchor.MiddleLeft).Shadow(1f);
+                t.lineSpacing = 0.95f;
+                t.Pref(208);
+            }
+            else
+            {
+                // талисман: за названием цветная метка редкости (.rtier)
+                var col = Ui.Node("text", row);
+                col.Column(0, TextAnchor.MiddleLeft);
+                col.Pref(208);
+                var nm = Ui.Label("name", col, title, 15, Ui.GoldHi, TextAnchor.MiddleLeft).Shadow(1f);
+                nm.horizontalOverflow = HorizontalWrapMode.Overflow;
+                nm.Pref(208, 19);
+                Hud.TierTag(nm, 208, tier, Hud.TierLabel(tier));
+                var ds = Ui.Label("desc", col, desc, 13, Ui.Paper, TextAnchor.UpperLeft).Shadow(1f);
+                ds.lineSpacing = 0.95f;
+                ds.Pref(208);
+            }
             // цена: монета над числом
             var cost = Ui.Node("price", row);
             cost.Column(1, TextAnchor.MiddleCenter);
