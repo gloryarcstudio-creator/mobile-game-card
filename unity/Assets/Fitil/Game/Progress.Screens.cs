@@ -130,14 +130,14 @@ namespace Fitil.Game
 
         // ================= достижения =================
         /// <summary>Достижения по вкладкам: Путь, Мастерство, Коллекция, Истории. Новые с прошлого раза помечены.</summary>
-        public static void ShowAchievements(Action back = null)
+        public static void ShowAchievements(Action back = null, string startTab = null)
         {
             var since = Num(A, "seenAt");
             A["seenAt"] = (double)Now;
             SaveAch();
             var all = List;
             var cats = Cats;
-            var tab = cats.Count > 0 ? cats[0].id : "path";
+            var tab = startTab ?? (cats.Count > 0 ? cats[0].id : "path");
             Sheet s = null;
             void Render()
             {
@@ -260,10 +260,10 @@ namespace Fitil.Game
 
         // ================= статистика =================
         /// <summary>Статистика: «Итоги» — всё время и рекорды, «Забеги» — прошлые забеги с подробными итогами.</summary>
-        public static void ShowStats(Action back = null)
+        public static void ShowStats(Action back = null, string startTab = "sum", int startOpen = -1)
         {
-            var tab = "sum";
-            var open = -1;
+            var tab = startTab;
+            var open = startOpen;
             var list = Runs.Select(Json.Obj).Where(r => r != null).ToList();
             var maxSteps = Boot.Instance.Defs.MaxSteps;
             double Best(string k) => list.Aggregate(0.0, (m, r) => Math.Max(m, Num(r, k)));

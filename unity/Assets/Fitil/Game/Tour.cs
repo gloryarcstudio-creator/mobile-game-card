@@ -111,6 +111,27 @@ namespace Fitil.Game
             yield return Shot("46_cx_relics", () => Progress.ShowCodex(null, "r"));
             yield return Shot("47_cx_relic", () => Progress.ShowCodex(null, "r", "oilcan"));
 
+            // достижения полученными, история забегов и карты героя
+            Menus.Close();
+            try { Progress.TourSeed(); } catch (Exception e) { log.Add("seed: " + e); }
+            var cats = Progress.Cats;
+            for (var i = 0; i < cats.Count; i++)
+            {
+                var id = cats[i].id;
+                yield return Shot("5" + i + "_ach_" + id, () => Progress.ShowAchievements(null, id));
+            }
+            yield return Shot("55_stats_sum", () => Progress.ShowStats());
+            yield return Shot("56_stats_runs", () => Progress.ShowStats(null, "runs"));
+            yield return Shot("57_stats_run_win", () => Progress.ShowStats(null, "runs", 0));
+            yield return Shot("58_stats_run_lose", () => Progress.ShowStats(null, "runs", 1));
+            yield return Shot("59_hero_cards", () =>
+            {
+                Menus.Close();
+                boot.ShowHeroes();
+                var hs = UnityEngine.Object.FindFirstObjectByType<HeroSelect>();
+                if (hs) hs.TourCards("lamp");
+            });
+
             Menus.Close();
             try { boot.ShowTitle(); } catch (Exception e) { log.Add("title: " + e); }
             File.WriteAllLines(Path.Combine(dir, "log.txt"), log.Count > 0 ? log.ToArray() : new[] { "ok" });

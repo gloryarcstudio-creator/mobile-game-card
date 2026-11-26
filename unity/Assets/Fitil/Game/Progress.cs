@@ -215,6 +215,28 @@ namespace Fitil.Game
             CodexSync(true);
         }
 
+        /// <summary>Для обхода экранов: все достижения получены, в истории три забега с известными числами.</summary>
+        internal static void TourSeed()
+        {
+            var day = 86400000.0;
+            var i = 0;
+            foreach (var a in List) Got[Id(a)] = Now - day * (1 + i++ % 40);
+            A["seenAt"] = (double)Now;
+            Runs.Clear();
+            Dictionary<string, object> Rec(bool win, string cls, int diff, int lvl, double ago, string by, string fin, params string[] relics) => new Dictionary<string, object>
+            {
+                ["at"] = Now - ago * day, ["win"] = win, ["cls"] = cls, ["diff"] = (double)diff, ["lvl"] = (double)lvl,
+                ["ms"] = 1000.0 * 60 * (win ? 42 : 17), ["fights"] = (double)(win ? 14 : 6), ["elites"] = (double)(win ? 3 : 1), ["bosses"] = (double)(win ? 3 : 0),
+                ["dmg"] = win ? 2140.0 : 618.0, ["hit"] = win ? 64.0 : 31.0, ["taken"] = win ? 233.0 : 97.0, ["healed"] = win ? 88.0 : 12.0,
+                ["cards"] = win ? 412.0 : 151.0, ["gold"] = win ? 890.0 : 240.0, ["spent"] = win ? 640.0 : 120.0, ["deck"] = win ? 24.0 : 15.0, ["ups"] = win ? 9.0 : 2.0,
+                ["relics"] = relics.Select(r => (object)r).ToList(), ["by"] = by, ["fin"] = fin,
+                ["met"] = win ? 4.0 : 1.0, ["fallen"] = win ? 1.0 : 0.0, ["revives"] = 0.0,
+            };
+            Runs.Add(Rec(true, "lamp", 1, Boot.Instance.Defs.MaxSteps, 1, null, null, "oilcan", "snowman"));
+            Runs.Add(Rec(false, "lamp", 2, 7, 3, "scarfsnake", null, "oilcan"));
+            Runs.Add(Rec(false, "lamp", 0, 3, 9, "scarfsnake", null));
+        }
+
         static void CodexSync(bool silent)
         {
             int N(string kind, List<string> list) => list.Count(id => CxHas(kind, id));

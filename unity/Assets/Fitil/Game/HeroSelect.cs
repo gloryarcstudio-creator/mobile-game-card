@@ -292,6 +292,8 @@ namespace Fitil.Game
         }
 
         /// <summary>Свои карты героя, его талисманы и стартовая колода (showClassCards).</summary>
+        internal void TourCards(string id) => ShowCards(id);
+
         void ShowCards(string id)
         {
             var h = data.Classes[id];
