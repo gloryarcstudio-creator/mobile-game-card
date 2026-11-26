@@ -309,13 +309,14 @@ namespace Fitil.Game
             void Hint(string t) => Ui.Label("hint", list, t, 14, new Color(1, 1, 1, 0.75f)).Pref(356, 36);
             void Cards(System.Collections.Generic.List<CardInst> cards)
             {
-                const float w = 84, gap = 6;
-                for (var i = 0; i < cards.Count; i += 4)
+                // .grid в окне: по три маленькие карты в ряд, ряд по центру
+                const float w = 92, gap = 10;
+                for (var i = 0; i < cards.Count; i += 3)
                 {
                     var line = Ui.Node("line", list);
-                    line.Line(gap, TextAnchor.MiddleLeft);
+                    line.Line(gap, TextAnchor.MiddleCenter);
                     line.Pref(356, w * CardView.Ratio);
-                    foreach (var c in cards.Skip(i).Take(4))
+                    foreach (var c in cards.Skip(i).Take(3))
                     {
                         var slot = Ui.Node("slot", line);
                         slot.Pref(w, w * CardView.Ratio);
@@ -333,15 +334,25 @@ namespace Fitil.Game
             foreach (var rid in relics)
             {
                 var r = defs.Relics[rid];
-                var row = Ui.Round("rrow", list, new Color32(0x26, 0x2D, 0x45, 0xEE));
-                var rt = row.rectTransform;
-                rt.Line(10, TextAnchor.MiddleLeft, 8, 10, 6, 6);
-                rt.Pref(356, -1, 54);
+                // .rrow в оформлении skin: плитка с окошком для значка, за названием цветная метка редкости
+                var rt = Ui.Node("rrow", list);
+                rt.Line(14, TextAnchor.MiddleLeft, 34, 28, 10, 8);
+                rt.Pref(356, -1, 78);
+                var frame = Ui.Frame(rt, "ui2/tile", 0.5205f, 9.4f, 15.6f, 6.2f, 8.8f);
+                if (!frame.sprite) frame.color = new Color32(0x26, 0x2D, 0x45, 0xEE);
                 var ic = Ui.Img("icon", rt, "r2/" + rid);
                 ic.preserveAspect = true;
-                ic.Pref(42, 42);
-                var tag = rid == h.Relic ? Loc.Tr("Особенность") : Loc.Tr("Особенность героя");
-                Ui.Label("text", rt, "<b>" + r.Name + "</b>  <size=11><color=#C9C0D8>" + tag + "</color></size>\n<size=13>" + r.Desc + "</size>", 16, Ui.Paper, TextAnchor.MiddleLeft).Pref(286);
+                ic.Pref(52, 52);
+                var text = Ui.Node("text", rt);
+                text.Column(2, TextAnchor.MiddleLeft);
+                text.Pref(228);
+                var nm = Ui.Label("name", text, r.Name, 17, Ui.GoldHi, TextAnchor.MiddleLeft, true).Shadow(1f);
+                nm.horizontalOverflow = HorizontalWrapMode.Overflow;
+                nm.Pref(228, 21);
+                Hud.TierTag(nm, 228, r.Tier, rid == h.Relic ? Loc.Tr("Особенность") : Hud.TierLabel(r.Tier));
+                var d = Ui.Label("desc", text, r.Desc, 14, Ui.Paper, TextAnchor.MiddleLeft);
+                d.lineSpacing = 0.95f;
+                d.Pref(228);
             }
             Hint(Loc.Tr("Стартовая колода") + " · " + h.Deck.Count);
             Cards(h.Deck.Select(k => new CardInst { Id = k }).ToList());

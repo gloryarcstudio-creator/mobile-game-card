@@ -165,6 +165,7 @@ namespace Fitil.Game
             var body = Ui.Node("ink", host);
             body.anchorMin = body.anchorMax = body.pivot = new Vector2(0.5f, 0.5f);
             body.sizeDelta = new Vector2(52, 52);
+            body.localScale = Vector3.one * 1.15f;
             body.anchoredPosition = at;
             body.localEulerAngles = new Vector3(0, 0, 14);
             var outer = Ui.Img("ring", body, Ui.Ring(0.09f), ink);
@@ -241,20 +242,20 @@ namespace Fitil.Game
 
             var text = Ui.Node("text", rt);
             text.Column(3, TextAnchor.MiddleLeft);
-            text.Pref(done ? 157 : 233);
-            Ui.Label("name", text, Json.Str(Json.Get(a, "name")), 17, done ? Ui.GoldHi : Ui.Paper, TextAnchor.MiddleLeft, true).Pref(done ? 157 : 233);
+            text.Pref(done ? 179 : 233);
+            Ui.Label("name", text, Json.Str(Json.Get(a, "name")), 17, done ? Ui.GoldHi : Ui.Paper, TextAnchor.MiddleLeft, true).Pref(done ? 179 : 233);
             var desc = (Json.Str(Json.Get(a, "desc")) ?? "").Replace("{p}", "<color=#F3D27C>" + Fmt(p) + "/" + Fmt(goal) + "</color>");
             var d = Ui.Label("desc", text, desc, 14, new Color32(0xD8, 0xD0, 0xE4, 0xFF), TextAnchor.MiddleLeft);
             d.lineSpacing = 0.95f;
-            d.Pref(done ? 157 : 233);
+            d.Pref(done ? 179 : 233);
             if (!done && goal > 1) Bar(text, p, goal, 233, 6, false);
 
             if (done)
             {
                 // штемпель «Получено» с датой, как в списке веб-версии
                 var stamp = Ui.Node("stamp", rt);
-                stamp.Pref(64, 50);
-                Stamp(stamp, Num(Got, Id(a)), new Vector2(-8, 0));
+                stamp.Pref(42, 50);
+                Stamp(stamp, Num(Got, Id(a)), new Vector2(-12, 0));
             }
         }
 
@@ -298,7 +299,12 @@ namespace Fitil.Game
                 else if (list.Count == 0)
                     Ui.Label("empty", s.List, Loc.Tr("Здесь появятся итоги законченных забегов."), 16, Soft).Pref(360, 80);
                 else
+                {
+                    var lg = s.List.GetComponent<VerticalLayoutGroup>();
+                    lg.spacing = 14;                   // рамки плиток выступают за строку
+                    lg.padding = new RectOffset(6, 6, 14, 14);
                     for (var i = 0; i < list.Count; i++) { var k = i; RunRow(s.List, list[i], maxSteps, () => { open = k; Render(); }); }
+                }
                 var sub = list.Count > 1 ? Loc.Tr("последние {n}", ("n", list.Count)) : list.Count == 1 ? Loc.Tr("последний") : Loc.Tr("пока нет");
                 Tab(s.Tabs, Loc.Tr("Итоги"), Loc.Tr("всё время"), tab == "sum", 177, () => { tab = "sum"; open = -1; Render(); });
                 Tab(s.Tabs, Loc.Tr("Забеги"), sub, tab == "runs", 177, () => { tab = "runs"; open = -1; Render(); });
@@ -352,20 +358,48 @@ namespace Fitil.Game
             if (cls == null || !data.Classes.ContainsKey(cls)) cls = "lamp";
             var win = Json.Bool(Json.Get(r, "win"));
             var diff = data.Difficulties[Mathf.Clamp(Json.Int(Json.Get(r, "diff"), 1), 0, data.Difficulties.Count - 1)];
-            var row = Ui.Round("runrow", list, win ? RowDone : RowBg);
-            row.Dark();
-            var rt = row.rectTransform;
-            rt.Line(10, TextAnchor.MiddleLeft, 8, 10, 6, 6);
-            rt.Pref(360, -1, 64);
-            var face = Ui.CircleArt("face", rt, Ui.Art("h/" + cls + "_face"));
-            face.Pref(50, 50);
+            // плитка как у достижений (.runrow в оформлении skin): рамка ui2/tile, слева окошко с лицом героя
+            var rt = Ui.Node("runrow", list);
+            rt.Line(10, TextAnchor.MiddleLeft, 34, 30, 9, 7);
+            rt.Pref(360, -1, 72);
+            var frame = Ui.Frame(rt, "ui2/tile", 0.5205f, 9.4f, 15.6f, 6.2f, 8.8f);
+            if (!frame.sprite) frame.color = win ? RowDone : RowBg;
+            var port = Ui.Node("port", rt);
+            port.Pref(56, 56);
+            Ui.Img("bg", port, Ui.HeroBg(cls), win ? Color.white : new Color(0.8f, 0.8f, 0.8f, 1)).rectTransform.Fill();
+            var faceArt = Ui.Art("h/" + cls + "_face");
+            // проигранный забег: лицо приглушено (filter: grayscale(.6) brightness(.85))
+            var face = Ui.Img("face", port, win ? faceArt : Ui.Gray(faceArt, 0.6f), win ? Color.white : new Color(0.85f, 0.85f, 0.85f, 1));
+            face.preserveAspect = true;
+            face.rectTransform.Fill();
+
+            var text = Ui.Node("text", rt);
+            text.Column(1, TextAnchor.MiddleLeft);
+            text.Pref(142);
+            var nm = Ui.Label("name", text, data.Classes[cls].Name, 18, new Color32(0xFF, 0xF4, 0xD6, 0xFF), TextAnchor.MiddleLeft, true);
+            nm.Pref(142);
+            var small = new Color32(0xC9, 0xC0, 0xD8, 0xFF);
             var lvl = Loc.Tr("Уровень {a} из {b}", ("a", Json.Int(Json.Get(r, "lvl"))), ("b", maxSteps)) + " · " + FmtTime(Num(r, "ms"));
-            Ui.Label("text", rt, "<b>" + data.Classes[cls].Name + "</b>\n<size=12>" + diff.Name + "\n" + lvl + "</size>", 15, Ui.Paper, TextAnchor.MiddleLeft).Pref(186);
-            Ui.Label("res", rt, (win ? Loc.Tr("Доставлено") : Loc.Tr("Поражение")) + "\n<size=11>" + FmtDate(Num(r, "at")) + "</size>", 14,
-                win ? Ui.GoldHi : new Color32(0xE0, 0x8A, 0x7E, 0xFF), TextAnchor.MiddleRight, true).Pref(90);
-            row.raycastTarget = true;
-            var b = row.gameObject.AddComponent<Button>();
-            b.targetGraphic = row;
+            Ui.Label("diff", text, diff.Name, 13, small, TextAnchor.MiddleLeft).Pref(142);
+            var lv = Ui.Label("lvl", text, lvl, 13, small, TextAnchor.MiddleLeft);
+            lv.horizontalOverflow = HorizontalWrapMode.Overflow;
+            lv.Pref(142);
+
+            var res = Ui.Node("res", rt);
+            res.Column(3, TextAnchor.MiddleRight);
+            res.Pref(88);
+            var pill = Ui.Round("em", res, win ? new Color32(0xDE, 0xB6, 0x5B, 0xFF) : new Color32(0x46, 0x2E, 0x37, 0xFF)).Radius(5);
+            pill.rectTransform.Pref(88, 23);
+            Ui.Label("t", pill.transform, win ? Loc.Tr("Доставлено") : Loc.Tr("Поражение"), 13,
+                win ? new Color32(0x2A, 0x1C, 0x0C, 0xFF) : new Color32(0xF1, 0xD8, 0xD4, 0xFF), TextAnchor.MiddleCenter, true).rectTransform.Fill();
+            Ui.Label("date", res, FmtDate(Num(r, "at")), 13, new Color32(0xA8, 0x9C, 0xBC, 0xFF), TextAnchor.MiddleRight).Pref(88);
+
+            var hit = Ui.Img("hit", rt, (Sprite)null, new Color(0, 0, 0, 0));
+            hit.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            hit.rectTransform.Fill();
+            hit.raycastTarget = true;
+            var b = hit.gameObject.AddComponent<Button>();
+            b.targetGraphic = hit;
             b.transition = Selectable.Transition.None;
             b.onClick.AddListener(() => { Sound.Sfx("click"); open(); });
         }
