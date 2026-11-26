@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Fitil.Core;
 using UnityEngine;
 
 namespace Fitil.Game
@@ -196,6 +197,25 @@ namespace Fitil.Game
                 var hs = UnityEngine.Object.FindFirstObjectByType<HeroSelect>();
                 if (hs) hs.TourCards("lamp");
             });
+
+            // все карты игры страницами (обычные и улучшенные): проверка надписей на каждой
+            var all = new List<CardInst>();
+            foreach (var c in boot.Defs.Cards.Values) { all.Add(new CardInst { Id = c.Id }); if (c.Type != "status") all.Add(new CardInst { Id = c.Id, Up = true }); }
+            for (var page = 0; page * 20 < all.Count; page++)
+            {
+                var from = page * 20;
+                yield return Shot("7" + page.ToString("00") + "_quick_cards", () =>
+                {
+                    Menus.Window(out var layer);
+                    for (var i = from; i < Mathf.Min(from + 20, all.Count); i++)
+                    {
+                        var v = CardView.Make(layer, all[i], boot.Defs, null, 92);
+                        v.Rect.anchorMin = v.Rect.anchorMax = new Vector2(0, 1);
+                        v.Rect.pivot = new Vector2(0.5f, 0.5f);
+                        v.Rect.anchoredPosition = new Vector2(8 + 46 + (i - from) % 4 * 97, -(60 + 66 + (i - from) / 4 * 150));
+                    }
+                });
+            }
 
             Menus.Close();
             try { boot.ShowTitle(); } catch (Exception e) { log.Add("title: " + e); }
