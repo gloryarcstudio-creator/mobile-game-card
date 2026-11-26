@@ -76,7 +76,8 @@ namespace Fitil.Game
             Ui.Frame(sc.Box, "ui2/parch", 0.47f, 4.7f, 35.7f, 4.7f, 8.5f);
             sc.Title = Ui.Label("title", sc.Box, title, 24, new Color32(0x5A, 0x2A, 0x26, 0xFF), TextAnchor.MiddleCenter, true);
             sc.Title.lineSpacing = 0.95f;
-            sc.Title.fontStyle = FontStyle.Bold;   // h2 в веб-версии жирный
+            // h2 в веб-версии чуть утолщён; жирное начертание в Unity подменяло шрифт заголовков чужим
+            sc.Title.Outline(new Color32(0x5A, 0x2A, 0x26, 0xB0), 0.4f);
             // длинное название не уходит на вторую строку, а мельчает (h2.long, h2.xlong)
             if (sc.Title.preferredWidth > 224) { sc.Title.fontSize = 21; if (sc.Title.preferredWidth > 224) sc.Title.fontSize = 18; }
             sc.Title.Pref(224);

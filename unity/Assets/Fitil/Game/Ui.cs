@@ -138,6 +138,14 @@ namespace Fitil.Game
             return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), src.pixelsPerUnit);
         }
 
+        /// <summary>Высота строки как line-height в CSS (в долях кегля): у шрифтов своя высота строки больше, строки расходились.</summary>
+        public static Text LineHeight(this Text t, float css)
+        {
+            var f = t.font;
+            if (f && f.lineHeight > 0 && f.fontSize > 0) t.lineSpacing = Mathf.Clamp(css * f.fontSize / f.lineHeight, 0.5f, 1.3f);
+            return t;
+        }
+
         public static Text Fit(this Text t, int min)
         {
             t.resizeTextForBestFit = true;
@@ -337,6 +345,7 @@ namespace Fitil.Game
             if (glow) frame.Outline(new Color(1f, 0.82f, 0.43f, 0.75f), 2.5f);
             var t = Label("text", rt, text, 18, Ui.Ink, TextAnchor.MiddleCenter, true);
             t.lineSpacing = 0.9f;
+            t.LineHeight(1.08f);   // .scroll: line-height 1.05
             if (hasHint)
             {
                 var h = Label("hint", rt, hint, 13, new Color32(0x4A, 0x38, 0x2A, 0xFF));
