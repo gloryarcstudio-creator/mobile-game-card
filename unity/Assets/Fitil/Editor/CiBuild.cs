@@ -45,6 +45,7 @@ namespace Fitil.EditorTools
                 Debug.Log("CiBuild: платформа " + asked + ", была " + target);
                 target = asked;
             }
+            SdkSetup.Apply();   // идентификаторы SDK из секретов сборки (или пробные)
             var path = Environment.GetEnvironmentVariable("CI_BUILD_PATH");
             if (string.IsNullOrEmpty(path))
                 path = target == BuildTarget.Android ? "build/Android/LastRay.apk" : "build/" + target;

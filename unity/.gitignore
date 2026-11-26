@@ -26,3 +26,19 @@
 # Сцена, которую сборка в GitHub создаёт сама (CiBuild.cs)
 /Assets/Fitil/CiBoot.unity
 /Assets/Fitil/CiBoot.unity.meta
+# Идентификаторы SDK подставляются при сборке из секретов GitHub (SdkSetup.cs): в открытом репозитории их быть не должно
+/Assets/Fitil/Resources/sdk_ids.json
+/Assets/Fitil/Resources/sdk_ids.json.meta
+/Assets/GoogleMobileAds/
+/Assets/GoogleMobileAds.meta
+/Assets/google-services.json
+/Assets/google-services.json.meta
+/Assets/GoogleService-Info.plist
+/Assets/GoogleService-Info.plist.meta
+# Файлы, которые менеджер зависимостей Google скачивает при сборке
+/Assets/Plugins/Android/
+/Assets/Plugins/Android.meta
+/Assets/GeneratedLocalRepo/
+/Assets/GeneratedLocalRepo.meta
+/ProjectSettings/AndroidResolverDependencies.xml
+/ProjectSettings/GvhProjectSettings.xml

@@ -3,10 +3,10 @@
 // или редактор (Fitil.EditorTools.AdsDefine, если плагин поставлен файлом .unitypackage).
 // Без плагина этот файл не собирается, и вместо роликов идёт тестовый отсчёт.
 //
-// Рекламные блоки ниже — пробные блоки Google: показывают пробные ролики и денег не приносят.
-// Перед выпуском заменить на свои из AdMob (Приложения → Рекламные блоки → С вознаграждением).
-// Id блока — не секрет, он виден в любой сборке. Id приложения (с «~») задаётся не здесь,
-// а в редакторе: Assets → Google Mobile Ads → Settings. Без него сборка для Android не запустится.
+// Рекламный блок берётся из SdkIds: свой (секреты сборки в GitHub) или пробный блок Google, который показывает
+// пробные ролики и денег не приносит. Id приложения (с «~») ставит Fitil.EditorTools.SdkSetup перед сборкой.
+// Unity Ads подключён как сеть медиации AdMob (пакет com.google.ads.mobile.mediation.unity): кода для него нет,
+// согласие он берёт из того же окна Google.
 //
 // В Европе перед рекламой игрока спрашивают о согласии (окно Google, настраивается в AdMob →
 // Конфиденциальность и сообщения). Изменить ответ можно в настройках игры: «Согласие на рекламу».
@@ -23,10 +23,8 @@ namespace Fitil.Platform.Ads
 {
     public sealed class AdMobAds : IAds
     {
-        public const string AndroidUnit = "ca-app-pub-3940256099942544/5224354917";
-        public const string IosUnit = "ca-app-pub-3940256099942544/1712485313";
-
-        static string Unit => Application.platform == RuntimePlatform.IPhonePlayer ? IosUnit : AndroidUnit;
+        // рекламный блок: свой из секретов сборки или пробный блок Google (SdkIds)
+        static string Unit => SdkIds.AdMobRewarded;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Register()

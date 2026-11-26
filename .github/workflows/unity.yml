@@ -80,6 +80,12 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           TARGET: ${{ matrix.targetPlatform }}
+          # идентификаторы SDK: без секретов сборка идёт с пробными id Google
+          ADMOB_APP_ID_ANDROID: ${{ secrets.ADMOB_APP_ID_ANDROID }}
+          ADMOB_APP_ID_IOS: ${{ secrets.ADMOB_APP_ID_IOS }}
+          ADMOB_REWARDED_ANDROID: ${{ secrets.ADMOB_REWARDED_ANDROID }}
+          ADMOB_REWARDED_IOS: ${{ secrets.ADMOB_REWARDED_IOS }}
+          TENJIN_SDK_KEY: ${{ secrets.TENJIN_SDK_KEY }}
         run: |
           VERSION=$(sed -n 's/^m_EditorVersion: //p' unity/ProjectSettings/ProjectVersion.txt)
           MODULE=$(echo "$TARGET" | tr '[:upper:]' '[:lower:]')
@@ -90,6 +96,7 @@ jobs:
           docker run --rm \
             -v "$PWD:/github/workspace" -w /github/workspace \
             -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" \
+            -e ADMOB_APP_ID_ANDROID -e ADMOB_APP_ID_IOS -e ADMOB_REWARDED_ANDROID -e ADMOB_REWARDED_IOS -e TENJIN_SDK_KEY \
             "unityci/editor:ubuntu-$VERSION-$MODULE-3" \
             bash -c 'LC=/opt/unity/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client
               # Лицензия Personal выдаётся на эту машину: с ней редактор получает права на Android и iOS
