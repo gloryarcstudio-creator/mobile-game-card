@@ -205,6 +205,16 @@ namespace Fitil.Game
             fn();
         }
 
+        /// <summary>Для обхода экранов: вся база знаний открыта, без плашек достижений.</summary>
+        internal static void TourOpenAll()
+        {
+            foreach (var k in new[] { "h", "e", "c", "r" })
+                foreach (var id in CodexList(k))
+                    if (!CxHas(k, id)) Set(CxSet[k]).Add(id);
+            achDirty = true;
+            CodexSync(true);
+        }
+
         static void CodexSync(bool silent)
         {
             int N(string kind, List<string> list) => list.Count(id => CxHas(kind, id));

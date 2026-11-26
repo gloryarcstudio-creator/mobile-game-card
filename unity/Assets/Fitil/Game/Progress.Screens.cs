@@ -475,10 +475,10 @@ namespace Fitil.Game
         static readonly (string k, string name)[] CxTabs = { ("h", "Герои"), ("e", "Враги"), ("c", "Карты"), ("r", "Талисманы") };
 
         /// <summary>База знаний: герои, враги, карты и талисманы, которые уже встречались в игре.</summary>
-        public static void ShowCodex(Action back = null)
+        public static void ShowCodex(Action back = null, string startTab = "h", string startOpen = null)
         {
-            var tab = "h";
-            string open = null;
+            var tab = startTab;
+            var open = startOpen;
             var defs = Boot.Instance.Defs;
             void Render()
             {

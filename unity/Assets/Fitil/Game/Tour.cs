@@ -99,6 +99,18 @@ namespace Fitil.Game
                 foreach (var (name, show) in flow.TourSteps())
                     yield return Shot(name, show, name.Contains("quick") ? 0.45f : name.Contains("fight") || name.Contains("defeat") ? 3.2f : 1.8f);
 
+            // база знаний с открытыми записями: вкладки и страницы записей
+            Menus.Close();
+            try { boot.ShowTitle(); Progress.TourOpenAll(); } catch (Exception e) { log.Add("codex: " + e); }
+            yield return Shot("40_cx_heroes", () => Progress.ShowCodex());
+            yield return Shot("41_cx_hero", () => Progress.ShowCodex(null, "h", "lamp"));
+            yield return Shot("42_cx_enemies", () => Progress.ShowCodex(null, "e"));
+            yield return Shot("43_cx_enemy", () => Progress.ShowCodex(null, "e", "scarfsnake"));
+            yield return Shot("44_cx_cards", () => Progress.ShowCodex(null, "c"));
+            yield return Shot("45_cx_card", () => Progress.ShowCodex(null, "c", "eveninglamp"));
+            yield return Shot("46_cx_relics", () => Progress.ShowCodex(null, "r"));
+            yield return Shot("47_cx_relic", () => Progress.ShowCodex(null, "r", "oilcan"));
+
             Menus.Close();
             try { boot.ShowTitle(); } catch (Exception e) { log.Add("title: " + e); }
             File.WriteAllLines(Path.Combine(dir, "log.txt"), log.Count > 0 ? log.ToArray() : new[] { "ok" });
