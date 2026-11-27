@@ -1,0 +1,59 @@
+# Unity
+/Library/
+/Temp/
+/Obj/
+/Build/
+/Builds/
+/Logs/
+/UserSettings/
+/MemoryCaptures/
+/*.csproj
+/*.sln
+*.pidb
+*.userprefs
+.vs/
+.idea/
+# Тесты Core (dotnet)
+/Tests/**/bin/
+/Tests/**/obj/
+# Картинки и звук для Unity собираются из assets/ скриптом tools/unity/export_assets.py:
+# в git они заняли бы сотни мегабайт PNG поверх тех же WebP
+/Assets/Fitil/Resources/Art/
+/Assets/Fitil/Resources/Art.meta
+/Assets/Fitil/Resources/Audio/Music/
+/Assets/Fitil/Resources/Audio/Music.meta
+/Screens/
+# Сцена, которую сборка в GitHub создаёт сама (CiBuild.cs)
+/Assets/Fitil/CiBoot.unity
+/Assets/Fitil/CiBoot.unity.meta
+# Идентификаторы SDK подставляются при сборке из секретов GitHub (SdkSetup.cs): в открытом репозитории их быть не должно
+/Assets/Fitil/Resources/sdk_ids.json
+/Assets/Fitil/Resources/sdk_ids.json.meta
+/Assets/GoogleMobileAds/
+/Assets/GoogleMobileAds.meta
+/Assets/google-services.json
+/Assets/google-services.json.meta
+/Assets/GoogleService-Info.plist
+/Assets/GoogleService-Info.plist.meta
+# Файлы, которые менеджер зависимостей Google скачивает при сборке
+/Assets/Plugins/Android/
+/Assets/Plugins/Android.meta
+/Assets/GeneratedLocalRepo/
+/Assets/GeneratedLocalRepo.meta
+/ProjectSettings/AndroidResolverDependencies.xml
+/ProjectSettings/GvhProjectSettings.xml
+# SDK, которые скачивает tools/unity/fetch_sdks.py перед сборкой
+/SdkCache/
+/Assets/Tenjin/
+/Assets/Tenjin.meta
+/Assets/Plugins/
+/Assets/Plugins.meta
+/Assets/Firebase/
+/Assets/Firebase.meta
+/Assets/ExternalDependencyManager/
+/Assets/ExternalDependencyManager.meta
+/Assets/Editor Default Resources/
+/Assets/Editor Default Resources.meta
+/Assets/StreamingAssets/google-services-desktop.json
+# Идентификаторы SDK для сборки на своём компьютере (SdkSetup.cs)
+/sdk_local.txt

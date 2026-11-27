@@ -1,0 +1,18 @@
+{
+    "name": "Fitil.Platform.Firebase",
+    "rootNamespace": "Fitil.Platform.Firebase",
+    "references": ["Fitil.Core", "Fitil.Platform"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": ["FITIL_FIREBASE"],
+    "versionDefines": [
+        { "name": "com.google.firebase.analytics", "expression": "11.0.0", "define": "FITIL_FIREBASE" },
+        { "name": "com.google.firebase.crashlytics", "expression": "11.0.0", "define": "FITIL_CRASHLYTICS" },
+        { "name": "com.google.firebase.remote-config", "expression": "11.0.0", "define": "FITIL_FIREBASE_RC" }
+    ],
+    "noEngineReferences": false
+}

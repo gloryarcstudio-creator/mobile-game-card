@@ -1,0 +1,538 @@
+{
+ "strike": {
+  "base": "Deal ⟦dmg:6⟧ damage.",
+  "up": "Deal ⟦dmg:9⟧ damage."
+ },
+ "guard": {
+  "base": "Gain ⟦blk:5⟧ Block.",
+  "up": "Gain ⟦blk:8⟧ Block."
+ },
+ "kindle": {
+  "base": "+1 Flame. Draw 1 card.",
+  "up": "+1 Flame. Draw 2 cards."
+ },
+ "spark": {
+  "base": "Deal ⟦dmg:3⟧ damage. +1 Flame.",
+  "up": "Deal ⟦dmg:5⟧ damage. +1 Flame."
+ },
+ "sparks": {
+  "base": "Deal ⟦dmg:3⟧ damage 3 times.",
+  "up": "Deal ⟦dmg:4⟧ damage 3 times."
+ },
+ "cloak": {
+  "base": "Gain ⟦blk:8⟧ Block.",
+  "up": "Gain ⟦blk:11⟧ Block."
+ },
+ "tea": {
+  "base": "Heal 6 HP.",
+  "up": "Heal 9 HP."
+ },
+ "wind": {
+  "base": "Draw 2 cards.",
+  "up": "Draw 3 cards."
+ },
+ "oil": {
+  "base": "+2 Flames.",
+  "up": "+2 Flames."
+ },
+ "mirror": {
+  "base": "Gain ⟦blk:5⟧ Block. +1 Flame.",
+  "up": "Gain ⟦blk:8⟧ Block. +1 Flame."
+ },
+ "heavy": {
+  "base": "Deal ⟦dmg:13⟧ damage.",
+  "up": "Deal ⟦dmg:18⟧ damage."
+ },
+ "wax": {
+  "base": "Gain ⟦blk:6⟧ Block. Enemy is Weak for 1 turn.",
+  "up": "Gain ⟦blk:8⟧ Block. Enemy is Weak for 2 turns."
+ },
+ "ember": {
+  "base": "Deal ⟦dmg:5⟧ damage. Burn ⟦burn:3⟧.",
+  "up": "Deal ⟦dmg:7⟧ damage. Burn ⟦burn:4⟧."
+ },
+ "snowkick": {
+  "base": "Deal ⟦dmg:5⟧ damage. Gain ⟦blk:5⟧ Block.",
+  "up": "Deal ⟦dmg:7⟧ damage. Gain ⟦blk:7⟧ Block."
+ },
+ "payback": {
+  "base": "Deal damage equal to your Block.",
+  "up": "Deal damage equal to your Block.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "luckycoin": {
+  "base": "Deal ⟦dmg:4⟧ damage. +5 coins.",
+  "up": "Deal ⟦dmg:6⟧ damage. +8 coins."
+ },
+ "snowball": {
+  "base": "Deal ⟦dmg:5⟧ damage. Its damage grows by 3 this combat.",
+  "up": "Deal ⟦dmg:7⟧ damage. Its damage grows by 4 this combat.",
+  "dynamic": [
+   "c.grow"
+  ]
+ },
+ "flurry": {
+  "base": "Combo: ⟦dmg:3⟧ damage, +3 for each card played before it this turn.",
+  "up": "Combo: ⟦dmg:3⟧ damage, +4 for each card played before it this turn.",
+  "dynamic": [
+   "played"
+  ]
+ },
+ "icethrow": {
+  "base": "Deal ⟦dmg:6⟧ damage. Enemy loses 1 Strength.",
+  "up": "Deal ⟦dmg:9⟧ damage. Enemy loses 1 Strength."
+ },
+ "heavybag": {
+  "base": "Deal ⟦dmg:10⟧ damage. Gain ⟦blk:6⟧ Block.",
+  "up": "Deal ⟦dmg:13⟧ damage. Gain ⟦blk:8⟧ Block."
+ },
+ "sbiten": {
+  "base": "Heal 3 HP. Draw 1 card.",
+  "up": "Heal 5 HP. Draw 1 card."
+ },
+ "sledram": {
+  "base": "Deal ⟦dmg:5⟧ damage. Delivery: +1 energy.",
+  "up": "Deal ⟦dmg:8⟧ damage. Delivery: +1 energy."
+ },
+ "hornblow": {
+  "base": "Gain ⟦blk:5⟧ Block. +2 Resolve this turn.",
+  "up": "Gain ⟦blk:7⟧ Block. +3 Resolve this turn."
+ },
+ "patch": {
+  "base": "Gain ⟦blk:6⟧ Block. Exhaust Clutter in your hand.",
+  "up": "Gain ⟦blk:9⟧ Block. Exhaust Clutter in your hand."
+ },
+ "snowstorm": {
+  "base": "Deal ⟦dmg:2⟧ damage 5 times. Enemy is Weak for 1 turn.",
+  "up": "Deal ⟦dmg:3⟧ damage 5 times. Enemy is Weak for 1 turn."
+ },
+ "icelantern": {
+  "base": "Enemy is Vulnerable for 1 turn. Draw 1 card. +1 Flame.",
+  "up": "Enemy is Vulnerable for 2 turns. Draw 1 card. +1 Flame.",
+  "dynamic": [
+   "vulnNum"
+  ]
+ },
+ "cancel": {
+  "base": "Deal ⟦dmg:6⟧ damage. Twice if the enemy is Vulnerable.",
+  "up": "Deal ⟦dmg:8⟧ damage. Twice if the enemy is Vulnerable."
+ },
+ "carbon": {
+  "base": "Repeat the previous card played this turn.",
+  "up": "Repeat the previous card played this turn.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "nightshift": {
+  "base": "At the end of your turn, gain 3 Block for each unspent energy.",
+  "up": "At the end of your turn, gain 4 Block for each unspent energy."
+ },
+ "kindling": {
+  "base": "Burn ⟦burn:4⟧. Draw 1 card.",
+  "up": "Burn ⟦burn:6⟧. Draw 1 card."
+ },
+ "stamp": {
+  "base": "Deal ⟦dmg:6⟧ damage. Enemy is Vulnerable for 1 turn.",
+  "up": "Deal ⟦dmg:8⟧ damage. Enemy is Vulnerable for 2 turns.",
+  "dynamic": [
+   "vulnNum"
+  ]
+ },
+ "redseal": {
+  "base": "Enemy is Vulnerable for 2 turns. Draw 1 card.",
+  "up": "Enemy is Vulnerable for 3 turns. Draw 1 card.",
+  "dynamic": [
+   "vulnNum"
+  ]
+ },
+ "whistle": {
+  "base": "+1 Resolve until the end of combat.",
+  "up": "+2 Resolve until the end of combat."
+ },
+ "cocoa": {
+  "base": "+2 Resolve this turn.",
+  "up": "+3 Resolve this turn."
+ },
+ "prickly": {
+  "base": "Gain ⟦blk:4⟧ Block. Thorns ⟦thorns:2⟧.",
+  "up": "Gain ⟦blk:6⟧ Block. Thorns ⟦thorns:3⟧."
+ },
+ "frostlace": {
+  "base": "Enemy loses 2 Strength. Gain ⟦blk:4⟧ Block.",
+  "up": "Enemy loses 3 Strength. Gain ⟦blk:6⟧ Block."
+ },
+ "parcel": {
+  "base": "Delivery: +2 energy.",
+  "up": "Delivery: +2 energy and 1 card."
+ },
+ "telegram": {
+  "base": "Delivery: draw 2 cards.",
+  "up": "Delivery: draw 3 cards."
+ },
+ "surprise": {
+  "base": "Delivery: deal ⟦dmg:14⟧ damage.",
+  "up": "Delivery: deal ⟦dmg:20⟧ damage."
+ },
+ "umbrella": {
+  "base": "Gain ⟦blk:7⟧ Block.",
+  "up": "Gain ⟦blk:10⟧ Block."
+ },
+ "blotter": {
+  "base": "Draw 1 card. Exhaust Clutter in your hand and draw 1 more card for each.",
+  "up": "Draw 2 cards. Exhaust Clutter in your hand and draw 1 more card for each."
+ },
+ "mittens": {
+  "base": "At the start of each turn, gain 3 Block.",
+  "up": "At the start of each turn, gain 5 Block."
+ },
+ "inkpen": {
+  "base": "Each Skill you play deals 2 damage to the enemy.",
+  "up": "Each Skill you play deals 3 damage to the enemy."
+ },
+ "palm": {
+  "base": "Spend all Flames. 7 damage for each.",
+  "up": "Spend all Flames. 9 damage for each.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "shadow": {
+  "base": "Enemy is Weak for 2 turns. Draw 1 card.",
+  "up": "Enemy is Weak for 3 turns. Draw 2 cards."
+ },
+ "blaze": {
+  "base": "Burn ⟦burn:8⟧. +1 Flame.",
+  "up": "Burn ⟦burn:11⟧. +1 Flame."
+ },
+ "breath": {
+  "base": "+2 energy.",
+  "up": "+2 energy. Draw 1 card."
+ },
+ "lullaby": {
+  "base": "The enemy falls asleep and skips its next turn.",
+  "up": "The enemy falls asleep and skips its next turn."
+ },
+ "lastword": {
+  "base": "Deal ⟦dmg:10⟧ damage. If this defeats the enemy: +3 max HP.",
+  "up": "Deal ⟦dmg:14⟧ damage. If this defeats the enemy: +4 max HP."
+ },
+ "secret": {
+  "base": "Deal ⟦dmg:8⟧ damage. Each turn in your hand: +4 damage.",
+  "up": "Deal ⟦dmg:11⟧ damage. Each turn in your hand: +5 damage.",
+  "dynamic": [
+   "c.grow"
+  ]
+ },
+ "finale": {
+  "base": "⟦dmg:4⟧ damage for each card played this turn, including this one.",
+  "up": "⟦dmg:5⟧ damage for each card played this turn, including this one.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "flashpoint": {
+  "base": "Lamp Flare without spending Flames.",
+  "up": "Lamp Flare without spending Flames. +1 Flame."
+ },
+ "drift": {
+  "base": "Double your Block.",
+  "up": "Double your Block.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "pockethog": {
+  "base": "Thorns ⟦thorns:5⟧ until the end of combat.",
+  "up": "Thorns ⟦thorns:7⟧ until the end of combat."
+ },
+ "drafts": {
+  "base": "Exhaust all other cards in your hand. +1 Flame for each.",
+  "up": "Exhaust all other cards in your hand. +1 Flame for each."
+ },
+ "eveninglamp": {
+  "base": "At the start of each turn, +1 Flame.",
+  "up": "At the start of each turn, +1 Flame."
+ },
+ "stubborn": {
+  "base": "At the start of each turn, +1 Resolve.",
+  "up": "At the start of each turn, +1 Resolve."
+ },
+ "compass": {
+  "base": "Draw 1 extra card each turn.",
+  "up": "Draw 1 extra card each turn."
+ },
+ "hearth": {
+  "base": "At the start of each turn, Burn ⟦burn:3⟧.",
+  "up": "At the start of each turn, Burn ⟦burn:4⟧."
+ },
+ "rhythm": {
+  "base": "Every third card you play in a turn: +1 Flame.",
+  "up": "Every third card you play in a turn: +1 Flame."
+ },
+ "avalanche": {
+  "base": "Deal 2 damage for each card in your discard pile.",
+  "up": "Deal 3 damage for each card in your discard pile.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "moneyorder": {
+  "base": "Delivery: +1 energy, 2 cards and 15 coins.",
+  "up": "Delivery: +1 energy, 2 cards and 25 coins."
+ },
+ "aurora": {
+  "base": "At the start of each turn, +1 energy.",
+  "up": "At the start of each turn, +1 energy."
+ },
+ "returnaddr": {
+  "base": "Return the last 2 cards from your discard pile to your hand.",
+  "up": "Return the last 3 cards from your discard pile to your hand."
+ },
+ "frostbite": {
+  "base": "Enemy is Vulnerable for 2 turns, Weak for 2 turns and loses 2 Strength.",
+  "up": "Enemy is Vulnerable for 2 turns, Weak for 2 turns and loses 2 Strength.",
+  "dynamic": [
+   "vulnNum"
+  ]
+ },
+ "poste": {
+  "base": "Delivery: play the top 2 cards of your deck for free.",
+  "up": "Delivery: play the top 3 cards of your deck for free."
+ },
+ "starfall": {
+  "base": "Deal ⟦dmg:4⟧ damage 3 times. +1 Flame after each hit.",
+  "up": "Deal ⟦dmg:5⟧ damage 3 times. +1 Flame after each hit."
+ },
+ "iceprison": {
+  "base": "Gain ⟦blk:10⟧ Block. Enemy loses 4 Strength and is Weak for 3 turns.",
+  "up": "Gain ⟦blk:14⟧ Block. Enemy loses 4 Strength and is Weak for 3 turns."
+ },
+ "bonfire": {
+  "base": "Burn ⟦burn:10⟧. Heal 4 HP.",
+  "up": "Burn ⟦burn:14⟧. Heal 6 HP."
+ },
+ "registered": {
+  "base": "Deal ⟦dmg:6⟧ damage. Each turn in your hand, its damage doubles (up to ×8).",
+  "up": "Deal ⟦dmg:9⟧ damage. Each turn in your hand, its damage doubles (up to ×8).",
+  "dynamic": [
+   "c.mult"
+  ]
+ },
+ "chimes": {
+  "base": "Until the end of the turn, all cards cost 0. Draw 2 cards.",
+  "up": "Until the end of the turn, all cards cost 0. Draw 2 cards."
+ },
+ "lastlight": {
+  "base": "Deal ⟦dmg:30⟧ damage and set off a Lamp Flare.",
+  "up": "Deal ⟦dmg:30⟧ damage and set off a Lamp Flare."
+ },
+ "firebird": {
+  "base": "At the start of each turn, +2 Flames and Burn ⟦burn:3⟧.",
+  "up": "At the start of each turn, +2 Flames and Burn ⟦burn:3⟧."
+ },
+ "eternalwinter": {
+  "base": "At the start of each turn, the enemy loses 2 Strength and you gain 8 Block.",
+  "up": "At the start of each turn, the enemy loses 2 Strength and you gain 8 Block."
+ },
+ "firefly": {
+  "base": "+1 Flame.",
+  "up": "+1 Flame. Draw 1 card."
+ },
+ "lampglass": {
+  "base": "Gain 3 Block plus 2 for each Flame.",
+  "up": "Gain 5 Block plus 3 for each Flame.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "beam": {
+  "base": "Deal ⟦dmg:10⟧ damage. Lamp Flare without spending Flames.",
+  "up": "Deal ⟦dmg:14⟧ damage. Lamp Flare without spending Flames."
+ },
+ "urgent": {
+  "base": "Deal ⟦dmg:3⟧ damage. Draw 1 card.",
+  "up": "Deal ⟦dmg:5⟧ damage. Draw 1 card."
+ },
+ "express": {
+  "base": "Gain ⟦blk:4⟧ Block. Delivery: +1 energy and 2 cards.",
+  "up": "Gain ⟦blk:7⟧ Block. Delivery: +1 energy and 2 cards."
+ },
+ "rushmail": {
+  "base": "Combo: +1 energy for every 2 cards played before this one this turn. Draw 2 cards.",
+  "up": "Combo: +1 energy for every 2 cards played before this one this turn. Draw 3 cards.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "icewall": {
+  "base": "Gain ⟦blk:13⟧ Block. Enemy loses 1 Strength.",
+  "up": "Gain ⟦blk:17⟧ Block. Enemy loses 2 Strength."
+ },
+ "hedge": {
+  "base": "Thorns ⟦thorns:2⟧. Gain Block equal to double your Thorns.",
+  "up": "Thorns ⟦thorns:3⟧. Gain Block equal to double your Thorns.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "standfast": {
+  "base": "Your Block no longer expires at the start of your turn.",
+  "up": "Your Block no longer expires at the start of your turn."
+ },
+ "flue": {
+  "base": "Burn ⟦burn:3⟧. Gain Block equal to the enemy’s Burn.",
+  "up": "Burn ⟦burn:5⟧. Gain Block equal to the enemy’s Burn."
+ },
+ "poker": {
+  "base": "Deal ⟦dmg:6⟧ damage. Twice if the enemy is burning.",
+  "up": "Deal ⟦dmg:8⟧ damage. Twice if the enemy is burning."
+ },
+ "fan": {
+  "base": "Double the enemy’s Burn.",
+  "up": "Double the enemy’s Burn.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "gingerbread": {
+  "base": "Deal ⟦dmg:3⟧ damage. Gain ⟦blk:3⟧ Block.",
+  "up": "Deal ⟦dmg:5⟧ damage. Gain ⟦blk:5⟧ Block."
+ },
+ "dough": {
+  "base": "Add 2 Gingerbread to your hand.",
+  "up": "Add 3 Gingerbread to your hand."
+ },
+ "rollingpin": {
+  "base": "Deal ⟦dmg:6⟧ damage. Add a Gingerbread to your hand.",
+  "up": "Deal ⟦dmg:9⟧ damage. Add a Gingerbread to your hand."
+ },
+ "glaze": {
+  "base": "Gain ⟦blk:6⟧ Block. All Gingerbread is upgraded until the end of combat.",
+  "up": "Gain ⟦blk:9⟧ Block. All Gingerbread is upgraded until the end of combat."
+ },
+ "gingerhouse": {
+  "base": "Each Gingerbread you play deals 4 more damage to the enemy.",
+  "up": "Each Gingerbread you play deals 4 more damage to the enemy."
+ },
+ "fair": {
+  "base": "Deal 3 damage for each Gingerbread eaten this combat.",
+  "up": "Deal 4 damage for each Gingerbread eaten this combat.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "hone": {
+  "base": "Gain ⟦blk:5⟧ Block. Sharpen 1 card in your hand.",
+  "up": "Gain ⟦blk:7⟧ Block. Sharpen 2 cards in your hand."
+ },
+ "gritsparks": {
+  "base": "Deal ⟦dmg:4⟧ damage, +2 for each upgraded card in your hand.",
+  "up": "Deal ⟦dmg:6⟧ damage, +3 for each upgraded card in your hand.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "oselok": {
+  "base": "Sharpen all cards in your hand.",
+  "up": "Draw 1 card. Sharpen all cards in your hand."
+ },
+ "apprentice": {
+  "base": "At the start of each turn, Sharpen 2 more cards in your hand.",
+  "up": "At the start of each turn, Sharpen 2 more cards in your hand."
+ },
+ "steelring": {
+  "base": "Deal 3 damage for each upgraded card in your deck, hand and discard pile.",
+  "up": "Deal 4 damage for each upgraded card in your deck, hand and discard pile.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "sic": {
+  "base": "Buddy’s Rage +1. Buddy bites right away.",
+  "up": "Buddy’s Rage +2. Buddy bites right away."
+ },
+ "heel": {
+  "base": "Gain 4 Block plus as much as Buddy’s Rage.",
+  "up": "Gain 6 Block plus as much as Buddy’s Rage.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "bone": {
+  "base": "Buddy’s Rage +3.",
+  "up": "Buddy’s Rage +4."
+ },
+ "wolfhound": {
+  "base": "At the end of each turn, Buddy bites one more time.",
+  "up": "At the end of each turn, Buddy bites one more time."
+ },
+ "howl": {
+  "base": "Double Buddy’s Rage. He bites right away.",
+  "up": "Double Buddy’s Rage. He bites right away.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "bitterroot": {
+  "base": "Price 2. Deal ⟦dmg:11⟧ damage.",
+  "up": "Price 2. Deal ⟦dmg:15⟧ damage.",
+  "price": [
+   2,
+   2
+  ]
+ },
+ "chamomile": {
+  "base": "Gain ⟦blk:5⟧ Block. Heal 3 HP.",
+  "up": "Gain ⟦blk:7⟧ Block. Heal 4 HP."
+ },
+ "wormwood": {
+  "base": "Price 3. +2 energy.",
+  "up": "Price 2. +2 energy.",
+  "price": [
+   3,
+   2
+  ]
+ },
+ "sleepgrass": {
+  "base": "Price 4. The enemy falls asleep and skips its next turn.",
+  "up": "Price 2. The enemy falls asleep and skips its next turn.",
+  "price": [
+   4,
+   2
+  ]
+ },
+ "livingwater": {
+  "base": "Heal as much HP as you have paid as Price this combat.",
+  "up": "Heal as much HP as you have paid as Price this combat.",
+  "dynamic": [
+   "state"
+  ]
+ },
+ "blot": {
+  "base": "Does nothing.",
+  "up": "Does nothing."
+ },
+ "icy": {
+  "base": "Unplayable. Melts at the end of your turn.",
+  "up": "Unplayable. Melts at the end of your turn."
+ },
+ "sealwax": {
+  "base": "Unplayable. Seals a spot in your hand.",
+  "up": "Unplayable. Seals a spot in your hand."
+ },
+ "dread": {
+  "base": "Unplayable. If it’s in your hand at the end of your turn: −2 HP.",
+  "up": "Unplayable. If it’s in your hand at the end of your turn: −2 HP."
+ },
+ "ash": {
+  "base": "Unplayable. If it’s in your hand at the end of your turn: −3 HP.",
+  "up": "Unplayable. If it’s in your hand at the end of your turn: −3 HP."
+ },
+ "stale": {
+  "base": "Does nothing.",
+  "up": "Does nothing."
+ }
+}

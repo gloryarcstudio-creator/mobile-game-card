@@ -1,0 +1,306 @@
+# Unity-версия «Последнего луча»: тесты логики и сборки для телефонов.
+# Тесты Core идут всегда. Сборки Android и iOS идут, когда в секретах репозитория есть
+# UNITY_LICENSE, UNITY_EMAIL и UNITY_PASSWORD (бесплатная лицензия Unity Personal).
+name: unity
+
+on:
+  push:
+    paths: ['unity/**', 'tools/unity/**', 'js/**', 'assets/**', '.github/workflows/unity.yml']
+  pull_request:
+    paths: ['unity/**', 'tools/unity/**', 'js/**', 'assets/**', '.github/workflows/unity.yml']
+  workflow_dispatch:
+    inputs:
+      firebase_probe:
+        description: 'Проверить сборку Android с Firebase без его проекта (файл-пустышка)'
+        type: boolean
+        default: false
+      project_zip:
+        description: 'Собрать архив проекта для сборки на своём компьютере (картинки и SDK внутри, без ключей)'
+        type: boolean
+        default: false
+
+# Один прогон на ветку: новый коммит отменяет прежний прогон, а push и pull_request не идут дважды
+concurrency:
+  group: unity-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  core-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - name: Данные и эталоны из веб-версии совпадают с закоммиченными
+        run: |
+          node tools/unity/export_data.js
+          node tools/unity/export_card_text.js
+          node tools/unity/parity_fixtures.js
+          git diff --stat --exit-code -- unity/Assets/Fitil/Resources/Data unity/Tests/Fixtures
+      - name: Тесты Core
+        run: dotnet run --project unity/Tests/Core.Tests
+      - name: Код для Unity собирается (справочные сборки UnityEngine из NuGet)
+        run: dotnet build unity/Tests/CompileCheck -nologo
+      - name: Код покупок и рекламы собирается (заглушки Unity IAP и Google Mobile Ads)
+        run: dotnet build unity/Tests/SdkCheck -nologo
+
+  # Архив проекта для сборки и подписи на своём компьютере: картинки уже переведены в PNG, Tenjin и Firebase скачаны.
+  # Секреты сюда не передаются: id рекламы и файлы настроек Firebase владелец кладёт у себя (unity/README.md)
+  project-zip:
+    if: github.event_name == 'workflow_dispatch' && inputs.project_zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Картинки и SDK
+        env:
+          TARGET: Android
+          GITHUB_TOKEN: ${{ github.token }}
+          FIREBASE_PROBE: 'true'
+        run: |
+          pip install pillow numpy
+          python3 -I tools/unity/export_assets.py
+          python3 -I tools/unity/fetch_sdks.py
+          # файл-пустышка нужен был только чтобы скрипт скачал пакеты Firebase
+          rm -f unity/Assets/google-services.json unity/Assets/GoogleService-Info.plist
+          cp unity/sdk_local.example.txt unity/sdk_local.txt
+          test -d unity/Assets/Tenjin && ls unity/SdkCache/*.tgz
+          rm -rf unity/Tests
+          du -sh unity
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LastRay-UnityProject
+          path: unity
+          include-hidden-files: true
+          compression-level: 1
+          retention-days: 14
+
+  build:
+    needs: core-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # снимки экранов кладутся в отдельную ветку ci-screens
+    strategy:
+      fail-fast: false
+      matrix:
+        # StandaloneLinux64 собирается только ради снимков экранов (шаг ниже)
+        targetPlatform: [Android, iOS, StandaloneLinux64]
+    env:
+      HAS_LICENSE: ${{ secrets.UNITY_LICENSE != '' }}
+    steps:
+      - name: Нет лицензии Unity
+        if: env.HAS_LICENSE != 'true'
+        run: |
+          echo "::notice::Сборка пропущена, нет секретов UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD"
+      - uses: actions/checkout@v4
+        if: env.HAS_LICENSE == 'true'
+      - uses: actions/setup-python@v5
+        if: env.HAS_LICENSE == 'true'
+        with: { python-version: '3.12' }
+      - name: Картинки для Unity из assets/
+        if: env.HAS_LICENSE == 'true'
+        run: |
+          pip install pillow numpy
+          python3 -I tools/unity/export_assets.py
+      - uses: actions/cache@v4
+        if: env.HAS_LICENSE == 'true'
+        with:
+          path: unity/Library
+          key: Library2-${{ matrix.targetPlatform }}-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library2-${{ matrix.targetPlatform }}-
+      # Библиотеки Android, которые Gradle качает с Maven: с кэшем сборка не упирается в лимит запросов Maven Central (ответ 429)
+      - uses: actions/cache@v4
+        if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'Android'
+        with:
+          path: gradle-home/caches/modules-2
+          key: Gradle-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}-${{ github.run_id }}
+          restore-keys: Gradle-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}-
+      # Tenjin и Firebase пакетом из реестра не ставятся: скрипт скачивает их перед сборкой, в git они не попадают.
+      # Firebase входит в сборку, только когда в секретах есть файлы настроек его проекта (оба в base64)
+      - name: SDK аналитики
+        if: env.HAS_LICENSE == 'true'
+        env:
+          TARGET: ${{ matrix.targetPlatform }}
+          GITHUB_TOKEN: ${{ github.token }}
+          FIREBASE_GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
+          FIREBASE_GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.FIREBASE_GOOGLE_SERVICE_INFO_PLIST }}
+          FIREBASE_PROBE: ${{ github.event_name == 'workflow_dispatch' && inputs.firebase_probe }}
+        run: python3 -I tools/unity/fetch_sdks.py
+      # Без шага с клиентом лицензий редактор молча не подключал модули Android и iOS
+      # (в журнале: com.unity.editor.headless was not found) и собирал игру для Linux.
+      # Лицензия Personal выдаётся по входу в аккаунт Unity (почта и пароль из секретов),
+      # поэтому редактор запускается напрямую из образа unityci/editor, без серийного номера
+      - name: Сборка в Unity
+        if: env.HAS_LICENSE == 'true'
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          TARGET: ${{ matrix.targetPlatform }}
+          # идентификаторы SDK: без секретов сборка идёт с пробными id Google
+          ADMOB_APP_ID_ANDROID: ${{ secrets.ADMOB_APP_ID_ANDROID }}
+          ADMOB_APP_ID_IOS: ${{ secrets.ADMOB_APP_ID_IOS }}
+          ADMOB_REWARDED_ANDROID: ${{ secrets.ADMOB_REWARDED_ANDROID }}
+          ADMOB_REWARDED_IOS: ${{ secrets.ADMOB_REWARDED_IOS }}
+          TENJIN_SDK_KEY: ${{ secrets.TENJIN_SDK_KEY }}
+          # подпись для Google Play: файл ключа (base64) и пароли. Без них сборка подписана отладочным ключом
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+          CI_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          # ключ кладётся в отдельную папку, которая не уходит в артефакты, и стирается сразу после сборки
+          # (с папкой, подключённой к контейнеру только для чтения, Unity файл ключа не находил)
+          mkdir -p "$PWD/sign-tmp"
+          trap 'rm -rf "$PWD/sign-tmp"' EXIT
+          export ANDROID_KEYSTORE_PATH=
+          if [ "$TARGET" = Android ] && [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            if printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d ' \r\n' | base64 -d > "$PWD/sign-tmp/upload.keystore" 2>/dev/null && [ -s "$PWD/sign-tmp/upload.keystore" ]; then
+              ANDROID_KEYSTORE_PATH=/github/workspace/sign-tmp/upload.keystore
+            else
+              echo "::warning::ANDROID_KEYSTORE_BASE64 не читается как base64, сборка подписана отладочным ключом"
+            fi
+          fi
+          VERSION=$(sed -n 's/^m_EditorVersion: //p' unity/ProjectSettings/ProjectVersion.txt)
+          MODULE=$(echo "$TARGET" | tr '[:upper:]' '[:lower:]')
+          OUT=build/$TARGET
+          AAB=
+          if [ "$TARGET" = Android ]; then OUT=build/Android/LastRay.apk; AAB=/github/workspace/build/AndroidBundle/LastRay.aab; fi
+          if [ "$TARGET" = StandaloneLinux64 ]; then MODULE=base; OUT=build/$TARGET/LastRay.x86_64; fi
+          mkdir -p build gradle-home
+          docker run --rm \
+            -v "$PWD:/github/workspace" -w /github/workspace -v "$PWD/gradle-home:/root/.gradle" \
+            -e ANDROID_KEYSTORE_PATH -e ANDROID_KEYSTORE_PASS -e ANDROID_KEY_ALIAS -e ANDROID_KEY_PASS -e CI_VERSION_CODE \
+            -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" -e CI_AAB_PATH="$AAB" \
+            -e ADMOB_APP_ID_ANDROID -e ADMOB_APP_ID_IOS -e ADMOB_REWARDED_ANDROID -e ADMOB_REWARDED_IOS -e TENJIN_SDK_KEY \
+            "unityci/editor:ubuntu-$VERSION-$MODULE-3" \
+            bash -c 'LC=/opt/unity/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client
+              # Лицензия Personal выдаётся на эту машину: с ней редактор получает права на Android и iOS
+              "$LC" --activate-ulf --username "$UNITY_EMAIL" --password "$UNITY_PASSWORD" --include-personal 2>&1 | tail -n 5 || true
+              echo "Права лицензии:"; "$LC" --showEntitlements 2>&1 | grep -o "com\.unity\.editor[a-z.-]*" | sort -u | tr "\n" " "; echo
+              unity-editor -batchmode -nographics -quit -logFile /dev/stdout \
+              -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
+              -projectPath unity -buildTarget "$TARGET" \
+              -executeMethod Fitil.EditorTools.CiBuild.Build'
+      # Редактор в контейнере пишет от имени root: права возвращаются, а в журнал идёт состав и вес сборки
+      - name: Что получилось
+        if: env.HAS_LICENSE == 'true'
+        run: |
+          sudo chown -R "$USER" build gradle-home
+          sudo chmod -R u+rwX build gradle-home
+          rm -f gradle-home/caches/modules-2/modules-2.lock gradle-home/caches/modules-2/gc.properties
+          du -sh build/*
+          # состав пакета для Google Play: основная часть должна быть меньше 200 МБ
+          if [ -f build/AndroidBundle/LastRay.aab ]; then unzip -l build/AndroidBundle/LastRay.aab | awk '{split($4,a,"/"); n[a[1]]+=$1} END {for (k in n) if (n[k] > 1000000) printf "AAB %s: %d МБ\n", k, n[k]/1048576}'; fi
+          find build -maxdepth 3 | head -n 40
+      # Игра сама проходит по всем экранам (Tour.cs) и сохраняет снимки: их сверяют с веб-версией
+      - name: Снимки всех экранов
+        if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libegl1 gdb > /dev/null
+          sudo chown -R "$USER" build
+          export LIBGL_ALWAYS_SOFTWARE=1
+          # обход идёт дважды: по-русски (сверка с веб-версией) и по-английски (длинные слова, переносы строк)
+          tour() {
+            mkdir -p "$2"
+            xvfb-run -a -s "-screen 0 400x860x24 +extension GLX +render -noreset" \
+              build/StandaloneLinux64/LastRay.x86_64 -force-glcore -screen-fullscreen 0 \
+              -screen-width 400 -screen-height 860 -tour -tourLang "$1" -tourDir "$PWD/$2" -logFile - > "player_$1.log" 2>&1 &
+            # обход занимает около двух минут; игра закрывается сама, когда готов log.txt
+            for i in $(seq 1 60); do
+              sleep 5
+              if [ -f "$2/log.txt" ] || ! pgrep -x LastRay.x86_64 > /dev/null; then break; fi
+              if [ "$i" = 12 ] && ! ls "$2"/*.png > /dev/null 2>&1; then
+                echo "::group::Игра не дошла до первого снимка за минуту: где она стоит"
+                sudo gdb -p "$(pgrep -x LastRay.x86_64)" -batch -ex "bt 45" 2>&1 | grep -vE "^\[New|^warning|^Reading|^Loaded" | head -n 90
+                echo "::endgroup::"
+                break
+              fi
+            done
+            sleep 2
+            pkill -x LastRay.x86_64 || true
+            sleep 1
+            grep -vE "memorysetup|ALSA|SDL_GL|GL_[A-Z]|FMOD" "player_$1.log" | tail -n 150
+          }
+          # Изредка игра под xvfb встаёт до первого кадра (в журнале нет «TOUR first update»): это запуск окна
+          # на сервере, а не код игры. Такой обход повторяется один раз; второй сбой роняет шаг
+          tour2() {
+            tour "$1" "$2"
+            if [ ! -f "$2/log.txt" ] && ! ls "$2"/*.png > /dev/null 2>&1; then
+              echo "::warning::Обход $1 не дошёл до первого снимка, повтор"
+              rm -rf "$2"
+              tour "$1" "$2"
+            fi
+          }
+          tour2 ru screens
+          tour2 en screens_en
+          tour2 uk screens_uk
+          cp player_ru.log screens/player.log
+          for f in screens_en/*.png; do cp "$f" "screens/en_$(basename "$f")"; done
+          for f in screens_uk/*.png; do cp "$f" "screens/uk_$(basename "$f")"; done
+          # надписи, которые обрезаны или вышли за рамку, по каждому языку
+          for l in en uk; do cp "screens_$l/overflow.txt" "screens/overflow_$l.txt" 2>/dev/null || true; done
+          wc -l screens/overflow*.txt || true
+          ls -l screens
+          test -f screens/log.txt
+          test -f screens_en/log.txt
+      # Последние снимки лежат одной записью в ветке ci-screens (уменьшенные JPEG): их видно прямо в репозитории
+      - name: Снимки в ветку ci-screens
+        if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir pub
+          python3 -I - <<'PY'
+          import glob, os
+          from PIL import Image
+          from PIL import ImageFilter
+          os.makedirs('pub/store', exist_ok=True)
+          for f in sorted(glob.glob('screens/*.png')):
+              name = os.path.basename(f)[:-4]
+              im = Image.open(f).convert('RGB')
+              if 'store_' not in name:
+                  im.save('pub/' + name + '.jpg', quality=88)
+                  continue
+              # снимок для магазина: Google Play не берёт кадры выше 2:1, поэтому по бокам добавляются
+              # узкие поля из размытого края самого кадра
+              w, h = im.size
+              W = (h + 1) // 2
+              if W > w:
+                  out = im.resize((W, h)).filter(ImageFilter.GaussianBlur(30))
+                  out.paste(im, ((W - w) // 2, 0))
+                  im = out
+              lang = name.split('store_')[0].strip('_') or 'ru'
+              im.save('pub/store/%s_%s.jpg' % (lang, name.split('store_')[1]), quality=93)
+          PY
+          cp screens/log.txt pub/
+          cp screens/overflow*.txt pub/ 2>/dev/null || true
+          echo "$GITHUB_SHA" > pub/commit.txt
+          cd pub
+          git init -q
+          git checkout -q --orphan ci-screens
+          git add .
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Снимки экранов Unity для $GITHUB_SHA"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:ci-screens
+      - uses: actions/upload-artifact@v4
+        if: always() && env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'StandaloneLinux64'
+        with:
+          name: Screens
+          path: screens
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_LICENSE == 'true'
+        with:
+          name: LastRay-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_LICENSE == 'true' && matrix.targetPlatform == 'Android'
+        with:
+          name: LastRay-AndroidBundle
+          path: build/AndroidBundle
+          retention-days: 14

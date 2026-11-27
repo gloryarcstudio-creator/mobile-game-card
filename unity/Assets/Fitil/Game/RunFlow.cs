@@ -1,0 +1,392 @@
+// Забег на экране: карта пути и всё, куда она ведёт (game.js: goMap, chooseEncounter, advance, startCombat,
+// winCombat, goReward, goBossRelic, goVictory, goDefeat). Правила забега — в Fitil.Core.RunGame,
+// здесь только экраны и переходы между ними. Экраны разнесены по файлам RunFlow.*.cs.
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Fitil.Core;
+using Fitil.Platform;
+using UnityEngine;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
+
+namespace Fitil.Game
+{
+    /// <summary>Экран забега: фон, слой содержимого, верхняя панель и панель героя.</summary>
+    public sealed class Page
+    {
+        public RectTransform Back, Root, Top, Bar;
+        public GroundBg Bg;
+
+        public void Close()
+        {
+            if (Back) Object.Destroy(Back.gameObject);
+            if (Root) Object.Destroy(Root.gameObject);
+        }
+    }
+
+    public sealed partial class RunFlow
+    {
+        readonly Defs defs;
+        public readonly RunGame G;
+        RunState Run => G.Run;
+        Page page;
+        CombatScreen combat;
+
+        /// <summary>Забег, который сейчас на экране (пауза, смена языка), или null.</summary>
+        public static RunFlow Current { get; private set; }
+
+        public RunFlow(Defs defs, string cls, int diff = 1)
+        {
+            this.defs = defs;
+            G = RunGame.New(defs, cls, diff, Rng.NewSeed());
+            G.OnTrack = Progress.Track;
+            G.OnRelic = ShowRelic;
+            Loc.Gender = () => G.Hero.Female;
+            Current = this;
+            Progress.NewRun(G.Run);
+        }
+
+        RunFlow(Defs defs, SaveFile s)
+        {
+            this.defs = defs;
+            G = new RunGame(defs, s.Run);
+            G.OnTrack = Progress.Track;
+            G.OnRelic = ShowRelic;
+            snapStep = s.Back;
+            Loc.Gender = () => G.Hero.Female;
+            Current = this;
+        }
+
+        public HeroClass Hero => G.Hero;
+        /// <summary>Идёт бой (выход из него начнёт бой заново).</summary>
+        public bool InFight => combat;
+        /// <summary>Бой проигрывает ход: выходить нельзя, пока он не закончится.</summary>
+        public bool FightBusy => combat && combat.Busy;
+
+        /// <summary>Выйти из забега (он уже сохранён); toTitle — сразу в главное меню.</summary>
+        public void Quit(bool toTitle = true)
+        {
+            Close();
+            if (Current == this) Current = null;
+            if (toTitle) Boot.Instance.ShowTitle();
+        }
+
+        /// <summary>Главное меню открылось: забега на экране больше нет.</summary>
+        public static void Drop() => Current = null;
+
+        public void Start() => Map();
+
+        // ================= сохранение =================
+        string snapStep;                     // забег на развилке перед боем (вторая попытка «Вернуться до боя»)
+        string snapFight;                    // забег в начале боя (вторая попытка «Начать бой заново»)
+        Pending lastP;                       // экран, на котором забег сохранён последний раз
+        bool ended;                          // забег закончен: сохранения больше нет
+        string lastFoe;                      // враг последнего боя (итоги проигранного забега)
+
+        public static string SaveKey(Defs d) => "lastray.save." + d.StoryId;
+
+        /// <summary>Сохранение, с которого можно продолжить, или null.</summary>
+        public static SaveFile LoadSave(Defs d)
+        {
+            var json = SaveStore.Read(SaveKey(d));
+            return json == null ? null : RunSave.Read(d, json);
+        }
+
+        public static void ClearSave(Defs d) => SaveStore.Remove(SaveKey(d));
+
+        /// <summary>Записать забег и экран, на котором он сейчас (save в game.js).</summary>
+        void Save(Pending p = null)
+        {
+            Progress.Tick(Run);
+            lastP = p;
+            var back = p != null && snapStep != null ? snapStep : null;
+            SaveStore.Write(SaveKey(defs), RunSave.Write(new SaveFile { Run = Run, P = p, Back = back, At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }));
+        }
+
+        /// <summary>Игра свернулась или закрывается: дописать время в пути (вне боя — бой и так начнётся заново).</summary>
+        public void SaveNow()
+        {
+            if (ended || combat) return;
+            Save(lastP);
+        }
+
+        Pending P(string t, string enemy = null, string tier = null) => new Pending { T = t, Enemy = enemy, Tier = tier };
+
+        /// <summary>Продолжить сохранённый забег с того экрана, на котором из него вышли (continueRun).</summary>
+        public static void Continue(Defs defs, SaveFile s)
+        {
+            var f = new RunFlow(defs, s);
+            try { f.Resume(s.P); }
+            catch (Exception e)
+            {
+                // последняя страховка: экран из сохранения не открылся — к выбору дороги на том же уровне
+                Debug.LogException(e);
+                f.Close();
+                Object.Destroy(GameObject.Find("overlay"));
+                if (f.Run.Hp <= 0) { f.EndRun(); return; }
+                f.Run.Choices = null;
+                f.Map();
+            }
+        }
+
+        void Resume(Pending p)
+        {
+            if (p == null) { Map(); return; }
+            switch (p.T)
+            {
+                case "defeat":
+                    if (p.Fight == null) { EndRun(); return; }
+                    snapFight = p.Fight;
+                    Defeat(p.Enemy, p.Tier);
+                    return;
+                case "fight": case "elite": case "boss": Fight(p.Enemy, p.T); return;
+                case "event": Event(p.Ev); return;
+                case "shop": ShopScreen(p.Shop ?? G.NewShop(), p.Last); return;
+                case "chest": Chest(); return;
+                case "rest": Rest(p.Last); return;
+                case "next": Next(); return;
+                case "reward": RenderReward(p.Reward); return;
+                case "bossrelic": BossRelic(p.Opts); return;
+                case "meet": Meet(p.Hero); return;
+                case "talk": Talk(p.Enemy, p.Tier); return;
+                case "after": Plea(p.Enemy, p.Tier); return;
+                case "afterdone": if (p.Tier == "boss") BossRelic(); else Reward(p.Tier); return;
+                default: Map(); return;
+            }
+        }
+
+        // ================= экраны =================
+        /// <summary>Новый экран на месте прежнего. place — нарисованная сцена (shop, rest, meet), иначе фон пути.</summary>
+        Page Open(string place = null)
+        {
+            Close();
+            var boot = Boot.Instance;
+            page = new Page
+            {
+                Back = Ui.Node("run back", boot.Back).Fill(),
+                Root = Ui.Node("run", boot.Safe).Fill(),
+            };
+            var art = place == "shop" ? "bg/scene_shop" : place == "rest" ? "bg/scene_campfire" : place == "meet" ? "bg/scene_meet" : Boot.BgFor(defs, Run.Step);
+            // фон умеет опускаться под ноги того, кто стоит на экране (собеседник, сундук, ёж): Bg.StandOn
+            page.Bg = GroundBg.Make(page.Back, art, Boot.FeetOf(art), null);
+            boot.Corner("run");
+            Hud.ToastTop = 470;
+            return page;
+        }
+
+        void Close()
+        {
+            page?.Close();
+            page = null;
+            if (combat) Object.Destroy(combat.gameObject);
+            combat = null;
+        }
+
+        /// <summary>Верхняя панель и панель героя (перерисовываются после покупок и ответов).</summary>
+        void Bars(Page p)
+        {
+            if (p.Top) Object.Destroy(p.Top.gameObject);
+            if (p.Bar) Object.Destroy(p.Bar.gameObject);
+            p.Top = Hud.Top(p.Root, G);
+            p.Bar = Hud.Hero(p.Root, G, () => ShowDeck(Run.Deck, Loc.Tr("Колода") + " · " + Run.Deck.Count, null));
+        }
+
+        /// <summary>Перерисовать панели и показать, что изменилось у героя (showGain) и что сказала логика (toast).</summary>
+        void After(Page p, int hp0, int gold0)
+        {
+            Bars(p);
+            Hud.Gain(p.Bar, Run.Hp - hp0, Run.Gold - gold0);
+            Hud.Flush(G);
+        }
+
+        static IEnumerator Later(float s, Action fn)
+        {
+            yield return new WaitForSeconds(s);
+            fn();
+        }
+
+        void Delay(float s, Action fn) => Boot.Instance.StartCoroutine(Later(s, fn));
+
+        /// <summary>Переход после выбора карты: после крупного показа (улучшена, убрана) экран ждёт его конца
+        /// и не принимает касаний (afterMoment), иначе короткая пауза.</summary>
+        void AfterPrompt(DeckPrompt p, Action fn)
+        {
+            var wait = p == DeckPrompt.Upgrade || p == DeckPrompt.Remove ? Hud.MomentWait : 0.5f;
+            Hud.Block(wait);
+            Delay(wait, fn);
+        }
+
+        // ================= путь =================
+        void Next()
+        {
+            G.Advance();
+            Sound.Sfx("step");
+            Map();
+        }
+
+        void Choose(int i)
+        {
+            var o = G.Choose(i, out var talk);
+            Save(Pending.Of(o));
+            switch (o.T)
+            {
+                case "fight": case "elite": case "boss":
+                    if (talk) Talk(o.Enemy, o.T); else Fight(o.Enemy, o.T);
+                    break;
+                case "meet": Meet(o.Hero); break;
+                case "event": Event(o.Ev); break;
+                case "shop": Shop(o.Last); break;
+                case "chest": Chest(); break;
+                case "rest": Rest(o.Last); break;
+                default: Next(); break;
+            }
+        }
+
+        // ================= бой =================
+        void Fight(string id, string tier)
+        {
+            Close();
+            snapFight = RunSave.Snap(Run);
+            Save(P(tier, id));
+            lastFoe = id;
+            Progress.Codex("e", id);
+            // бой: у боссов своя музыка, обычные бои чередуют две пьесы после каждой победы
+            Sound.Music(tier == "boss" ? (defs.IsFinalStep(Run.Step) ? "final" : "boss") : Run.Fights % 2 == 1 ? "battle2" : "battle");
+            var setup = G.SetupFor(id, tier);
+            combat = CombatScreen.Show(defs, Run, id, tier, setup, end => AfterFight(end));
+            Boot.Instance.Corner("combat");
+        }
+
+        void AfterFight(CombatEnd end)
+        {
+            if (!combat) return;
+            var c = combat.C;
+            if (end != CombatEnd.Win) { Defeat(c.Id, c.Tier); return; }
+            var next = G.Win(c);
+            Hud.Flush(G);
+            switch (next)
+            {
+                case AfterWin.Victory: Victory(); break;
+                case AfterWin.Plea: Plea(c.Id, c.Tier); break;
+                case AfterWin.BossRelic: BossRelic(); break;
+                default: Reward(c.Tier); break;
+            }
+            snapFight = null;
+        }
+
+        // ================= колода =================
+        // новый талисман: звук и крупный показ с лучами; находку из сундука показывает сам экран сундука
+        void ShowRelic(string id, bool quiet)
+        {
+            Sound.Sfx("relic");
+            if (!quiet) Hud.MomentRelic(defs, id);
+        }
+
+        /// <summary>Стопка в бою: что осталось в колоде или что уже в сбросе. Только посмотреть.</summary>
+        public void ShowPile(List<CardInst> list, string title)
+        {
+            Sound.Sfx("click");
+            ShowDeck(list, title + " · " + list.Count, null);
+        }
+
+        /// <summary>Колода или выбор карты из неё (showDeck): карты по названию, улучшенные после обычных.
+        /// onPick == null — только посмотреть; иначе нажатие на карту выбирает её, «Отмена» отдаёт null.</summary>
+        void ShowDeck(List<CardInst> list, string title, Action<CardInst> onPick, bool previewUp = false, string note = null)
+        {
+            var sorted = list.OrderBy(c => c.Id, StringComparer.Ordinal).ThenBy(c => c.Up ? 1 : 0).ToList();
+            var layer = Overlay.Open(out var root);
+            var head = Ui.Label("title", root, title, 24, Ui.GoldHi, TextAnchor.MiddleCenter, true).Shadow(2f);
+            head.Outline(Ui.GoldHi, 0.45f);   // жирный заголовок, как h2 в веб-версии (у шрифта нет жирного начертания)
+            head.rectTransform.Box(10, 40, 380, 35);
+            var hint = previewUp ? Loc.Tr("Так карты будут выглядеть после улучшения") : note;
+            var top = 91f;
+            if (!string.IsNullOrEmpty(hint))
+            {
+                var h = Ui.Label("hint", root, hint, 15, new Color(0.9f, 0.88f, 0.8f, 0.85f)).Shadow();
+                h.rectTransform.Box(20, 76, 360, 22);
+                top = 104;
+            }
+            // прокручиваемая сетка: по три карты в ряд шириной 90, как .grid в веб-версии (между рядами 16, между картами 8).
+            // Кнопка закрытия стоит сразу под сеткой, а у длинной колоды держится у нижнего края (position: sticky).
+            const int cols = 3;
+            const float w = 90, gap = 8, rowGap = 16;
+            var hgt = w * CardView.Ratio;
+            var rows = Mathf.Max(1, (sorted.Count + cols - 1) / cols);
+            var gridH = rows * (hgt + rowGap) - rowGap;
+            var closeY = Mathf.Min(top + gridH + 38, 860 - 14 - 50);
+            var view = Ui.Node("view", root).Box(8, top - 8, 384, closeY - 6 - (top - 8));
+            view.gameObject.AddComponent<RectMask2D>();
+            var hitImg = view.gameObject.AddComponent<Image>();
+            hitImg.color = new Color(0, 0, 0, 0);
+            var content = Ui.Node("content", view);
+            content.anchorMin = new Vector2(0, 1);
+            content.anchorMax = new Vector2(1, 1);
+            content.pivot = new Vector2(0.5f, 1);
+            content.sizeDelta = new Vector2(0, gridH + 16);
+            var x0 = (384 - (cols * w + (cols - 1) * gap)) / 2;
+            content.anchoredPosition = Vector2.zero;
+            var scroll = view.gameObject.AddComponent<ScrollRect>();
+            scroll.content = content;
+            scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 30;
+            for (var i = 0; i < sorted.Count; i++)
+            {
+                var inst = sorted[i];
+                var shown = previewUp ? new CardInst { Uid = inst.Uid, Id = inst.Id, Up = true } : inst;
+                var v = CardView.Make(content, shown, defs, null, w);
+                var rt = v.Rect;
+                rt.anchorMin = rt.anchorMax = new Vector2(0, 1);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.anchoredPosition = new Vector2(x0 + w / 2 + (i % cols) * (w + gap), -(8 + hgt / 2 + (i / cols) * (hgt + rowGap)));
+                if (onPick != null)
+                {
+                    var catcher = v.gameObject.AddComponent<Image>();
+                    catcher.color = new Color(0, 0, 0, 0);
+                    var b = v.gameObject.AddComponent<Button>();
+                    b.transition = Selectable.Transition.None;
+                    b.onClick.AddListener(() => { Object.Destroy(layer); onPick(inst); });
+                }
+            }
+            if (sorted.Count == 0)
+            {
+                var empty = Ui.Label("empty", content, Loc.Tr("Пусто"), 18, Ui.Paper);
+                empty.rectTransform.Box(0, 20, 384, 30);
+            }
+            var close = Ui.Push(root, onPick != null ? Loc.Tr("Отмена") : Loc.Tr("Закрыть"), () => { Object.Destroy(layer); onPick?.Invoke(null); }, false, 20, 130, 50);
+            ((RectTransform)close.transform).Box(135, closeY, 130, 50);
+        }
+
+        /// <summary>Выбор карты для улучшения, удаления, копии или обмена (подсказки Prompt у событий и встреч).</summary>
+        void Prompt(DeckPrompt p, int cost, Action<bool> done)
+        {
+            var list = G.PromptList(p);
+            if (p == DeckPrompt.Upgrade && list.Count == 0) { Hud.Toast(Loc.Tr("Все карты уже улучшены")); done(false); return; }
+            string title, note = null;
+            switch (p)
+            {
+                case DeckPrompt.Upgrade: title = Loc.Tr("Выбери карту для улучшения"); break;
+                case DeckPrompt.Remove: title = Loc.Tr("Выбери карту, которую убрать"); break;
+                case DeckPrompt.Duplicate:
+                    title = Loc.Tr("Выбери карту для копии");
+                    if (list.Count < Run.Deck.Count(c => defs.Cards[c.Id].Rarity != "status")) note = Loc.Tr("Легендарные карты зеркало не повторяет");
+                    break;
+                default: title = Loc.Tr("Какую карту отдать?"); break;
+            }
+            ShowDeck(list, title, c =>
+            {
+                if (c == null) { done(false); return; }
+                var name = G.CardName(c);
+                G.ApplyPrompt(p, c, cost);
+                Sound.Sfx(p == DeckPrompt.Remove ? "snuff" : "relic");
+                // карту показывают крупно: улучшенную с лучами, убранную — темнеющей. Экран под ней ждёт конца показа
+                if (p == DeckPrompt.Upgrade) Hud.MomentCard(defs, c, Loc.Tr("Улучшена: {name}", ("name", G.CardName(c))), false);
+                if (p == DeckPrompt.Remove) Hud.MomentCard(defs, c, Loc.Tr("Убрана: {name}", ("name", name)), true);
+                Hud.Flush(G);
+                done(true);
+            }, p == DeckPrompt.Upgrade, note);
+        }
+    }
+}
