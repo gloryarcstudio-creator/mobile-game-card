@@ -152,12 +152,14 @@ jobs:
           ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
           CI_VERSION_CODE: ${{ github.run_number }}
         run: |
-          # ключ кладётся вне папки репозитория и вне папок, которые уходят в артефакты
-          mkdir -p "$RUNNER_TEMP/sign"
+          # ключ кладётся в отдельную папку, которая не уходит в артефакты, и стирается сразу после сборки
+          # (с папкой, подключённой к контейнеру только для чтения, Unity файл ключа не находил)
+          mkdir -p "$PWD/sign-tmp"
+          trap 'rm -rf "$PWD/sign-tmp"' EXIT
           export ANDROID_KEYSTORE_PATH=
           if [ "$TARGET" = Android ] && [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
-            if printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d ' \r\n' | base64 -d > "$RUNNER_TEMP/sign/upload.keystore" 2>/dev/null && [ -s "$RUNNER_TEMP/sign/upload.keystore" ]; then
-              ANDROID_KEYSTORE_PATH=/sign/upload.keystore
+            if printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d ' \r\n' | base64 -d > "$PWD/sign-tmp/upload.keystore" 2>/dev/null && [ -s "$PWD/sign-tmp/upload.keystore" ]; then
+              ANDROID_KEYSTORE_PATH=/github/workspace/sign-tmp/upload.keystore
             else
               echo "::warning::ANDROID_KEYSTORE_BASE64 не читается как base64, сборка подписана отладочным ключом"
             fi
@@ -170,7 +172,7 @@ jobs:
           if [ "$TARGET" = StandaloneLinux64 ]; then MODULE=base; OUT=build/$TARGET/LastRay.x86_64; fi
           mkdir -p build gradle-home
           docker run --rm \
-            -v "$PWD:/github/workspace" -w /github/workspace -v "$PWD/gradle-home:/root/.gradle" -v "$RUNNER_TEMP/sign:/sign:ro" \
+            -v "$PWD:/github/workspace" -w /github/workspace -v "$PWD/gradle-home:/root/.gradle" \
             -e ANDROID_KEYSTORE_PATH -e ANDROID_KEYSTORE_PASS -e ANDROID_KEY_ALIAS -e ANDROID_KEY_PASS -e CI_VERSION_CODE \
             -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" -e CI_AAB_PATH="$AAB" \
             -e ADMOB_APP_ID_ANDROID -e ADMOB_APP_ID_IOS -e ADMOB_REWARDED_ANDROID -e ADMOB_REWARDED_IOS -e TENJIN_SDK_KEY \
@@ -183,7 +185,6 @@ jobs:
               -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
               -projectPath unity -buildTarget "$TARGET" \
               -executeMethod Fitil.EditorTools.CiBuild.Build'
-          rm -rf "$RUNNER_TEMP/sign"
       # Редактор в контейнере пишет от имени root: права возвращаются, а в журнал идёт состав и вес сборки
       - name: Что получилось
         if: env.HAS_LICENSE == 'true'
