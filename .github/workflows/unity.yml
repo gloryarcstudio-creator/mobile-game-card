@@ -14,6 +14,10 @@ on:
         description: 'Проверить сборку Android с Firebase без его проекта (файл-пустышка)'
         type: boolean
         default: false
+      project_zip:
+        description: 'Собрать архив проекта для сборки на своём компьютере (картинки и SDK внутри, без ключей)'
+        type: boolean
+        default: false
 
 # Один прогон на ветку: новый коммит отменяет прежний прогон, а push и pull_request не идут дважды
 concurrency:
@@ -41,6 +45,38 @@ jobs:
         run: dotnet build unity/Tests/CompileCheck -nologo
       - name: Код покупок и рекламы собирается (заглушки Unity IAP и Google Mobile Ads)
         run: dotnet build unity/Tests/SdkCheck -nologo
+
+  # Архив проекта для сборки и подписи на своём компьютере: картинки уже переведены в PNG, Tenjin и Firebase скачаны.
+  # Секреты сюда не передаются: id рекламы и файлы настроек Firebase владелец кладёт у себя (unity/README.md)
+  project-zip:
+    if: github.event_name == 'workflow_dispatch' && inputs.project_zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Картинки и SDK
+        env:
+          TARGET: Android
+          GITHUB_TOKEN: ${{ github.token }}
+          FIREBASE_PROBE: 'true'
+        run: |
+          pip install pillow numpy
+          python3 -I tools/unity/export_assets.py
+          python3 -I tools/unity/fetch_sdks.py
+          # файл-пустышка нужен был только чтобы скрипт скачал пакеты Firebase
+          rm -f unity/Assets/google-services.json unity/Assets/GoogleService-Info.plist
+          cp unity/sdk_local.example.txt unity/sdk_local.txt
+          test -d unity/Assets/Tenjin && ls unity/SdkCache/*.tgz
+          rm -rf unity/Tests
+          du -sh unity
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LastRay-UnityProject
+          path: unity
+          include-hidden-files: true
+          compression-level: 1
+          retention-days: 14
 
   build:
     needs: core-tests

@@ -26,6 +26,19 @@
 3. Нажать Play в любой сцене: игра запускается кодом (`Fitil.Game.Boot`), сцены не нужны.
    Для проверки высоких экранов и выреза камеры: Window → General → Device Simulator.
 
+## Сборка для Google Play на своём компьютере
+
+Сборки из GitHub подписаны отладочным ключом, Google Play их не принимает. Подписанный пакет собирается в редакторе:
+
+1. Архив проекта `LastRay-UnityProject` (GitHub → Actions → unity → Run workflow с галочкой `project_zip`) распаковать и открыть в Unity 6000.0.58f2 или новее из 6000.0 LTS.
+   В архиве уже лежат картинки, Tenjin и пакеты Firebase. Ключей и id в нём нет.
+2. Файлы Firebase из его консоли положить в папку `Assets`: `google-services.json` (и `GoogleService-Info.plist` для iOS).
+3. В `sdk_local.txt` рядом с папкой `Assets` вписать id AdMob и ключ Tenjin (образец: `sdk_local.example.txt`).
+4. Edit → Project Settings → Player → Android → Publishing Settings: включить Custom Keystore, создать ключ через Keystore Manager
+   (или выбрать готовый), выбрать alias, ввести оба пароля. Файл ключа и пароли хранить вне проекта: потерянный ключ загрузки восстанавливается только через поддержку Google.
+5. Меню Fitil → Сборка → AAB для Google Play. Результат: `Builds/LastRay.aab`.
+6. Перед каждой следующей загрузкой увеличить Bundle Version Code на 1 (Player → Other Settings).
+
 ## Что где
 
 | Папка | Что |

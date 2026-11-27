@@ -55,3 +55,5 @@
 /Assets/Editor Default Resources/
 /Assets/Editor Default Resources.meta
 /Assets/StreamingAssets/google-services-desktop.json
+# Идентификаторы SDK для сборки на своём компьютере (SdkSetup.cs)
+/sdk_local.txt

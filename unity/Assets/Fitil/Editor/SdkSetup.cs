@@ -29,13 +29,30 @@ namespace Fitil.EditorTools
         public int callbackOrder => -100;
         public void OnPreprocessBuild(BuildReport report) => Apply();
 
+        /// <summary>Файл в корне проекта для сборки на своём компьютере: строки ИМЯ=значение, те же имена, что у секретов. В git не попадает.</summary>
+        public const string LocalFile = "sdk_local.txt";
+
         static string Env(string key)
         {
             var v = Environment.GetEnvironmentVariable(key);
+            if (string.IsNullOrWhiteSpace(v)) v = Local(key);
             return string.IsNullOrWhiteSpace(v) ? null : v.Trim();
         }
 
-        [MenuItem("Fitil/SDK/Apply ids from environment")]
+        static string Local(string key)
+        {
+            if (!File.Exists(LocalFile)) return null;
+            foreach (var raw in File.ReadAllLines(LocalFile))
+            {
+                var line = raw.Trim();
+                if (line.Length == 0 || line[0] == '#') continue;
+                var eq = line.IndexOf('=');
+                if (eq > 0 && line.Substring(0, eq).Trim() == key) return line.Substring(eq + 1).Trim();
+            }
+            return null;
+        }
+
+        [MenuItem("Fitil/SDK/Apply ids (sdk_local.txt или переменные окружения)")]
         public static void Apply()
         {
             WriteIds();

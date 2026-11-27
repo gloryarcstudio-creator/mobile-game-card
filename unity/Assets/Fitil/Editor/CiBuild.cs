@@ -11,6 +11,65 @@ namespace Fitil.EditorTools
 {
     public static class CiBuild
     {
+        /// <summary>Сборка для Google Play на своём компьютере: AAB с набором ресурсов, подписанный ключом из
+        /// Player Settings → Publishing Settings. Результат: Builds/LastRay.aab рядом с папкой Assets.</summary>
+        [MenuItem("Fitil/Сборка/AAB для Google Play")]
+        public static void BuildPlayAab()
+        {
+            if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android, BuildTarget.Android))
+            {
+                EditorUtility.DisplayDialog("Последний луч", "В редакторе нет модуля Android Build Support. Его ставит Unity Hub: Installs → шестерёнка у версии → Add modules.", "Понятно");
+                return;
+            }
+            if (!PlayerSettings.Android.useCustomKeystore || string.IsNullOrEmpty(PlayerSettings.Android.keystoreName)
+                || string.IsNullOrEmpty(PlayerSettings.Android.keystorePass) || string.IsNullOrEmpty(PlayerSettings.Android.keyaliasPass))
+            {
+                EditorUtility.DisplayDialog("Последний луч", "Не задан ключ подписи. Edit → Project Settings → Player → Android → Publishing Settings: "
+                    + "включить Custom Keystore, выбрать или создать файл ключа, выбрать alias и ввести оба пароля. Пароли Unity не запоминает: их вводят после каждого запуска редактора. "
+                    + "Без своего ключа Google Play пакет не примет.", "Понятно");
+                return;
+            }
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android
+                && !EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android))
+            {
+                EditorUtility.DisplayDialog("Последний луч", "Не удалось переключить проект на Android.", "Понятно");
+                return;
+            }
+            ProjectSetup.Apply();
+            SdkSetup.Apply();
+            const string scenePath = "Assets/Fitil/CiBoot.unity";
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            EditorSceneManager.SaveScene(scene, scenePath);
+            const string outPath = "Builds/LastRay.aab";
+            System.IO.Directory.CreateDirectory("Builds");
+            var wasBundle = EditorUserBuildSettings.buildAppBundle;
+            var wasSplit = PlayerSettings.Android.splitApplicationBinary;
+            EditorUserBuildSettings.buildAppBundle = true;
+            PlayerSettings.Android.splitApplicationBinary = true;
+            try
+            {
+                var s = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+                {
+                    scenes = new[] { scenePath },
+                    locationPathName = outPath,
+                    target = BuildTarget.Android,
+                    options = BuildOptions.None,
+                }).summary;
+                var ok = s.result == BuildResult.Succeeded;
+                Debug.Log("Сборка AAB: " + s.result + ", ошибок " + s.totalErrors + ", код версии " + PlayerSettings.Android.bundleVersionCode);
+                EditorUtility.DisplayDialog("Последний луч", ok
+                    ? "Готово: " + System.IO.Path.GetFullPath(outPath) + "\nВерсия " + PlayerSettings.bundleVersion + ", код версии " + PlayerSettings.Android.bundleVersionCode
+                      + ". Для следующей загрузки в Google Play код версии нужно увеличить на 1 (Player → Other Settings → Bundle Version Code)."
+                    : "Сборка не прошла, ошибок " + s.totalErrors + ". Подробности в окне Console.", "Понятно");
+                if (ok) EditorUtility.RevealInFinder(outPath);
+            }
+            finally
+            {
+                EditorUserBuildSettings.buildAppBundle = wasBundle;
+                PlayerSettings.Android.splitApplicationBinary = wasSplit;
+            }
+        }
+
         public static void Build()
         {
             ProjectSetup.Apply();
