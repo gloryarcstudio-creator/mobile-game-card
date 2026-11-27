@@ -145,7 +145,23 @@ jobs:
           ADMOB_REWARDED_ANDROID: ${{ secrets.ADMOB_REWARDED_ANDROID }}
           ADMOB_REWARDED_IOS: ${{ secrets.ADMOB_REWARDED_IOS }}
           TENJIN_SDK_KEY: ${{ secrets.TENJIN_SDK_KEY }}
+          # подпись для Google Play: файл ключа (base64) и пароли. Без них сборка подписана отладочным ключом
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+          CI_VERSION_CODE: ${{ github.run_number }}
         run: |
+          # ключ кладётся вне папки репозитория и вне папок, которые уходят в артефакты
+          mkdir -p "$RUNNER_TEMP/sign"
+          export ANDROID_KEYSTORE_PATH=
+          if [ "$TARGET" = Android ] && [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            if printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d ' \r\n' | base64 -d > "$RUNNER_TEMP/sign/upload.keystore" 2>/dev/null && [ -s "$RUNNER_TEMP/sign/upload.keystore" ]; then
+              ANDROID_KEYSTORE_PATH=/sign/upload.keystore
+            else
+              echo "::warning::ANDROID_KEYSTORE_BASE64 не читается как base64, сборка подписана отладочным ключом"
+            fi
+          fi
           VERSION=$(sed -n 's/^m_EditorVersion: //p' unity/ProjectSettings/ProjectVersion.txt)
           MODULE=$(echo "$TARGET" | tr '[:upper:]' '[:lower:]')
           OUT=build/$TARGET
@@ -154,7 +170,8 @@ jobs:
           if [ "$TARGET" = StandaloneLinux64 ]; then MODULE=base; OUT=build/$TARGET/LastRay.x86_64; fi
           mkdir -p build gradle-home
           docker run --rm \
-            -v "$PWD:/github/workspace" -w /github/workspace -v "$PWD/gradle-home:/root/.gradle" \
+            -v "$PWD:/github/workspace" -w /github/workspace -v "$PWD/gradle-home:/root/.gradle" -v "$RUNNER_TEMP/sign:/sign:ro" \
+            -e ANDROID_KEYSTORE_PATH -e ANDROID_KEYSTORE_PASS -e ANDROID_KEY_ALIAS -e ANDROID_KEY_PASS -e CI_VERSION_CODE \
             -e UNITY_EMAIL -e UNITY_PASSWORD -e TARGET -e CI_BUILD_PATH="/github/workspace/$OUT" -e CI_AAB_PATH="$AAB" \
             -e ADMOB_APP_ID_ANDROID -e ADMOB_APP_ID_IOS -e ADMOB_REWARDED_ANDROID -e ADMOB_REWARDED_IOS -e TENJIN_SDK_KEY \
             "unityci/editor:ubuntu-$VERSION-$MODULE-3" \
@@ -166,6 +183,7 @@ jobs:
               -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
               -projectPath unity -buildTarget "$TARGET" \
               -executeMethod Fitil.EditorTools.CiBuild.Build'
+          rm -rf "$RUNNER_TEMP/sign"
       # Редактор в контейнере пишет от имени root: права возвращаются, а в журнал идёт состав и вес сборки
       - name: Что получилось
         if: env.HAS_LICENSE == 'true'

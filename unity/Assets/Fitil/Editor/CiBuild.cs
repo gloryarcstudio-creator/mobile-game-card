@@ -70,6 +70,30 @@ namespace Fitil.EditorTools
             }
         }
 
+        // Подпись для Google Play: файл ключа и пароли приходят из секретов репозитория. Без них сборка подписана
+        // отладочным ключом (годится для проверки на телефоне, Google Play её не примет). Значения в журнал не идут.
+        static void Signing()
+        {
+            var store = Environment.GetEnvironmentVariable("ANDROID_KEYSTORE_PATH");
+            var storePass = Environment.GetEnvironmentVariable("ANDROID_KEYSTORE_PASS");
+            var alias = Environment.GetEnvironmentVariable("ANDROID_KEY_ALIAS");
+            var keyPass = Environment.GetEnvironmentVariable("ANDROID_KEY_PASS");
+            if (string.IsNullOrEmpty(keyPass)) keyPass = storePass;
+            var own = !string.IsNullOrEmpty(store) && System.IO.File.Exists(store) && !string.IsNullOrEmpty(storePass) && !string.IsNullOrEmpty(alias);
+            PlayerSettings.Android.useCustomKeystore = own;
+            if (own)
+            {
+                PlayerSettings.Android.keystoreName = store;
+                PlayerSettings.Android.keystorePass = storePass;
+                PlayerSettings.Android.keyaliasName = alias.Trim();
+                PlayerSettings.Android.keyaliasPass = keyPass;
+            }
+            // код версии: Google Play принимает только больший, чем у прошлой загрузки
+            if (int.TryParse(Environment.GetEnvironmentVariable("CI_VERSION_CODE"), out var code) && code > 0)
+                PlayerSettings.Android.bundleVersionCode = code;
+            Debug.Log("CiBuild: подпись " + (own ? "своим ключом" : "отладочная") + ", код версии " + PlayerSettings.Android.bundleVersionCode);
+        }
+
         public static void Build()
         {
             ProjectSetup.Apply();
@@ -105,6 +129,7 @@ namespace Fitil.EditorTools
                 target = asked;
             }
             SdkSetup.Apply();   // идентификаторы SDK из секретов сборки (или пробные)
+            if (target == BuildTarget.Android) Signing();
             var path = Environment.GetEnvironmentVariable("CI_BUILD_PATH");
             if (string.IsNullOrEmpty(path))
                 path = target == BuildTarget.Android ? "build/Android/LastRay.apk" : "build/" + target;
