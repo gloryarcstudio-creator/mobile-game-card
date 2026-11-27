@@ -46,6 +46,7 @@ namespace Fitil.EditorTools
             var wasSplit = PlayerSettings.Android.splitApplicationBinary;
             EditorUserBuildSettings.buildAppBundle = true;
             PlayerSettings.Android.splitApplicationBinary = true;
+            BundleSymbols(true);
             try
             {
                 var s = BuildPipeline.BuildPlayer(new BuildPlayerOptions
@@ -65,6 +66,7 @@ namespace Fitil.EditorTools
             }
             finally
             {
+                BundleSymbols(false);
                 EditorUserBuildSettings.buildAppBundle = wasBundle;
                 PlayerSettings.Android.splitApplicationBinary = wasSplit;
             }
@@ -92,6 +94,28 @@ namespace Fitil.EditorTools
             if (int.TryParse(Environment.GetEnvironmentVariable("CI_VERSION_CODE"), out var code) && code > 0)
                 PlayerSettings.Android.bundleVersionCode = code;
             Debug.Log("CiBuild: подпись " + (own ? "своим ключом" : "отладочная") + ", код версии " + PlayerSettings.Android.bundleVersionCode);
+        }
+
+        // Отладочные символы нативного кода внутри AAB: с ними Google Play показывает понятные места сбоев и не
+        // предупреждает при загрузке. Игрокам они не скачиваются. Настройка появилась в Unity 6, поэтому ставится
+        // через отражение: в редакторе без неё сборка идёт как раньше.
+        static void BundleSymbols(bool on)
+        {
+            try
+            {
+                Type settings = null, level = null, format = null;
+                foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    settings = settings ?? a.GetType("UnityEditor.Android.UserBuildSettings+DebugSymbols", false);
+                    level = level ?? a.GetType("Unity.Android.Types.DebugSymbolLevel", false);
+                    format = format ?? a.GetType("Unity.Android.Types.DebugSymbolFormat", false);
+                }
+                if (settings == null || level == null || format == null) { Debug.Log("CiBuild: настройки символов не найдены, AAB без символов"); return; }
+                settings.GetProperty("Level").SetValue(null, Enum.Parse(level, on ? "SymbolTable" : "None"));
+                if (on) settings.GetProperty("Format").SetValue(null, Enum.Parse(format, "IncludeInBundle"));
+                Debug.Log("CiBuild: символы в AAB " + (on ? "включены" : "выключены"));
+            }
+            catch (Exception e) { Debug.Log("CiBuild: символы в AAB не настроены: " + e.Message); }
         }
 
         public static void Build()
@@ -168,6 +192,7 @@ namespace Fitil.EditorTools
             if (target != BuildTarget.Android || string.IsNullOrEmpty(aab)) return;
             EditorUserBuildSettings.buildAppBundle = true;
             PlayerSettings.Android.splitApplicationBinary = true;
+            BundleSymbols(true);
             try
             {
                 options.locationPathName = aab;
@@ -177,6 +202,7 @@ namespace Fitil.EditorTools
             }
             finally
             {
+                BundleSymbols(false);
                 EditorUserBuildSettings.buildAppBundle = false;
                 PlayerSettings.Android.splitApplicationBinary = false;
             }
