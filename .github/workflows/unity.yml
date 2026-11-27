@@ -258,8 +258,24 @@ jobs:
           python3 -I - <<'PY'
           import glob, os
           from PIL import Image
+          from PIL import ImageFilter
+          os.makedirs('pub/store', exist_ok=True)
           for f in sorted(glob.glob('screens/*.png')):
-              Image.open(f).convert('RGB').save('pub/' + os.path.basename(f)[:-4] + '.jpg', quality=88)
+              name = os.path.basename(f)[:-4]
+              im = Image.open(f).convert('RGB')
+              if 'store_' not in name:
+                  im.save('pub/' + name + '.jpg', quality=88)
+                  continue
+              # снимок для магазина: Google Play не берёт кадры выше 2:1, поэтому по бокам добавляются
+              # узкие поля из размытого края самого кадра
+              w, h = im.size
+              W = (h + 1) // 2
+              if W > w:
+                  out = im.resize((W, h)).filter(ImageFilter.GaussianBlur(30))
+                  out.paste(im, ((W - w) // 2, 0))
+                  im = out
+              lang = name.split('store_')[0].strip('_') or 'ru'
+              im.save('pub/store/%s_%s.jpg' % (lang, name.split('store_')[1]), quality=93)
           PY
           cp screens/log.txt pub/
           cp screens/overflow*.txt pub/ 2>/dev/null || true

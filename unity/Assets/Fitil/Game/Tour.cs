@@ -21,6 +21,9 @@ namespace Fitil.Game
             && !Application.isEditor && Array.IndexOf(Environment.GetCommandLineArgs(), "-tour") >= 0).Value;
         static bool? wanted;
 
+        // Экраны, которые идут на страницу игры в Google Play и App Store
+        static readonly string[] StoreShots = { "00_title", "01_heroes", "10_map", "11_fight", "15_event", "16_shop", "19_reward", "20_boss_fight", "24_deck", "44_cx_cards" };
+
         /// <summary>Язык снимков: ключ -tourLang ru|en|uk.</summary>
         public static string Lang => Arg("-tourLang");
 
@@ -139,6 +142,12 @@ namespace Fitil.Game
                 try { Audit(name, audit); } catch (Exception e) { log.Add("audit " + name + ": " + e.Message); }
                 ScreenCapture.CaptureScreenshot(Path.Combine(dir, name + ".png"));
                 yield return new WaitForSecondsRealtime(0.35f);
+                // снимки для страницы в магазине: те же экраны втрое крупнее (1200×2580)
+                if (Array.IndexOf(StoreShots, name) >= 0)
+                {
+                    ScreenCapture.CaptureScreenshot(Path.Combine(dir, "store_" + name + ".png"), 3);
+                    yield return new WaitForSecondsRealtime(0.6f);
+                }
             }
 
             yield return Shot("00_title", boot.ShowTitle);

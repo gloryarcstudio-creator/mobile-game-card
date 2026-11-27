@@ -62,7 +62,49 @@ namespace Fitil.EditorTools
 
             // Ровная анимация на телефонах с 90/120 Гц: частоту задаёт Boot
             QualitySettings.vSyncCount = 0;
+
+            try { Icons(); } catch (System.Exception e) { Debug.LogWarning("ProjectSetup: значок не поставлен: " + e.Message); }
         }
+
+        // Значок приложения из Assets/Fitil/Icons. icon.png: квадрат без скруглений (их добавляет система);
+        // icon_adaptive_bg.png: тот же рисунок с запасом по краям для Android 8+, где значок обрезается кругом или
+        // скруглённым квадратом; icon_adaptive_fg.png: прозрачный верхний слой.
+        static void Icons()
+        {
+            const string dir = "Assets/Fitil/Icons/";
+            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(dir + "icon.png");
+            if (icon == null) return; // проект ещё не импортирован: значок встанет при следующем вызове
+            PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
+
+            var bg = AssetDatabase.LoadAssetAtPath<Texture2D>(dir + "icon_adaptive_bg.png");
+            var fg = AssetDatabase.LoadAssetAtPath<Texture2D>(dir + "icon_adaptive_fg.png");
+            // виды значков Android лежат в модуле Android Build Support: без него их просто нет
+            System.Type kinds = null;
+            foreach (var a in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                kinds = a.GetType("UnityEditor.Android.AndroidPlatformIconKind", false);
+                if (kinds != null) break;
+            }
+            if (kinds == null) return;
+            var set = "";
+            foreach (var name in new[] { "Adaptive", "Round", "Legacy" })
+            {
+                var member = kinds.GetField(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                var kind = member?.GetValue(null) as PlatformIconKind;
+                if (kind == null) continue;
+                var icons = PlayerSettings.GetPlatformIcons(NamedBuildTarget.Android, kind);
+                foreach (var i in icons)
+                {
+                    if (name == "Adaptive" && bg != null && fg != null && i.maxLayerCount >= 2) i.SetTextures(bg, fg);
+                    else i.SetTextures(name == "Adaptive" && bg != null ? bg : icon);
+                }
+                PlayerSettings.SetPlatformIcons(NamedBuildTarget.Android, kind, icons);
+                set += name + " " + icons.Length + " ";
+            }
+            if (!s_iconsLogged) { s_iconsLogged = true; Debug.Log("ProjectSetup: значок приложения поставлен, Android: " + set); }
+        }
+
+        static bool s_iconsLogged;
 
         static void CheckUnityVersion()
         {

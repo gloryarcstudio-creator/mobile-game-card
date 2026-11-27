@@ -13,12 +13,24 @@ namespace Fitil.EditorTools
     public sealed class TextureImport : AssetPostprocessor
     {
         const string Art = "Assets/Fitil/Resources/Art/";
+        const string Icons = "Assets/Fitil/Icons/";
 
         // Номер правил: при его смене Unity заново сжимает все картинки, даже взятые из сохранённой папки Library
         public override uint GetVersion() => 2;
 
         void OnPreprocessTexture()
         {
+            if (assetPath.StartsWith(Icons))
+            {
+                // значок приложения: без сжатия, Unity сам уменьшает его до нужных размеров
+                var icon = (TextureImporter)assetImporter;
+                icon.textureType = TextureImporterType.Default;
+                icon.npotScale = TextureImporterNPOTScale.None;
+                icon.mipmapEnabled = false;
+                icon.alphaIsTransparency = true;
+                icon.textureCompression = TextureImporterCompression.Uncompressed;
+                return;
+            }
             if (!assetPath.StartsWith(Art)) return;
             var ti = (TextureImporter)assetImporter;
             ti.textureType = TextureImporterType.Default;
