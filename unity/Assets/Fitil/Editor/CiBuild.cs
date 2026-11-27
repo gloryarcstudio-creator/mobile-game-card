@@ -111,8 +111,19 @@ namespace Fitil.EditorTools
                     format = format ?? a.GetType("Unity.Android.Types.DebugSymbolFormat", false);
                 }
                 if (settings == null || level == null || format == null) { Debug.Log("CiBuild: настройки символов не найдены, AAB без символов"); return; }
-                settings.GetProperty("Level").SetValue(null, Enum.Parse(level, on ? "SymbolTable" : "None"));
-                if (on) settings.GetProperty("Format").SetValue(null, Enum.Parse(format, "IncludeInBundle"));
+                // свойства названы со строчной буквы (level, format); на случай смены имён ищем без учёта регистра
+                const System.Reflection.BindingFlags any = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.IgnoreCase;
+                var pLevel = settings.GetProperty("level", any);
+                var pFormat = settings.GetProperty("format", any);
+                if (pLevel == null || pFormat == null)
+                {
+                    var have = new System.Collections.Generic.List<string>();
+                    foreach (var m in settings.GetMembers(any)) have.Add(m.Name);
+                    Debug.Log("CiBuild: у настроек символов другие имена: " + string.Join(", ", have));
+                    return;
+                }
+                pLevel.SetValue(null, Enum.Parse(level, on ? "SymbolTable" : "None"));
+                if (on) pFormat.SetValue(null, Enum.Parse(format, "IncludeInBundle"));
                 Debug.Log("CiBuild: символы в AAB " + (on ? "включены" : "выключены"));
             }
             catch (Exception e) { Debug.Log("CiBuild: символы в AAB не настроены: " + e.Message); }
