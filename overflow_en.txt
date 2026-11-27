@@ -1,0 +1,146 @@
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+09_map_toast | out 3 of ink 35x59 | Top area/Top/achtoast/stamp/ink/c | E
+09_map_toast | out 6 of ink 35x59 | Top area/Top/achtoast/stamp/ink/c | R
+11_fight | out 4 of card guard 113x139 | Safe area/Safe/combat/hand/card guard/type | Skill
+11_fight | out 7 of card guard 121x132 | Safe area/Safe/combat/hand/card guard/cost | 1
+11_fight | out 7 of card guard 121x132 | Safe area/Safe/combat/hand/card guard/type | Skill
+11_fight | out 11 of card spark 85x157 | Safe area/Safe/combat/hand/card spark/cost | 0
+18_chest | out 31 of chest 170x170 | Safe area/Safe/run/chest/z | z
+20_boss_fight | out 9 of card strike 85x157 | Safe area/Safe/combat/hand/card strike/cost | 1
+20_boss_fight | out 4 of card strike 121x132 | Safe area/Safe/combat/hand/card strike/type | Attack
+20_boss_fight | out 8 of card strike 121x132 | Safe area/Safe/combat/hand/card strike/cost | 1
+20_boss_fight | out 4 of card kindle 113x139 | Safe area/Safe/combat/hand/card kindle/type | Skill
+26_fight_toast | out 9 of card strike 85x157 | Safe area/Safe/combat/hand/card strike/cost | 1
+26_fight_toast | out 7 of card guard 121x132 | Safe area/Safe/combat/hand/card guard/type | Skill
+26_fight_toast | out 7 of card guard 121x132 | Safe area/Safe/combat/hand/card guard/cost | 1
+26_fight_toast | out 5 of ink 28x47 | Top area/Top/achtoast/stamp/ink/c | R
+27_fight_select | out 4 of card spark 121x132 | Safe area/Safe/combat/hand/card spark/type | Attack
+27_fight_select | out 8 of card spark 121x132 | Safe area/Safe/combat/hand/card spark/cost | 0
+27_fight_select | out 11 of card guard 85x157 | Safe area/Safe/combat/hand/card guard/cost | 1
+27_fight_select | out 4 of card guard 113x139 | Safe area/Safe/combat/hand/card guard/type | Skill
+28_fight_hit | out 4 of card kindle 117x135 | Safe area/Safe/combat/hand/card kindle/cost | 1
+28_fight_hit | out 5 of card kindle 117x135 | Safe area/Safe/combat/hand/card kindle/type | Skill
+28_fight_hit | out 7 of card guard 90x155 | Safe area/Safe/combat/hand/card guard/cost | 1
+29_fight_enemy_turn | off 65 | Safe area/Safe/combat/hand/card guard/title/t | Shutter
+29_fight_enemy_turn | off 169 | Safe area/Safe/combat/hand/card spark/desc/t | Deal 5 damage. +1 Flame.
+29_fight_enemy_turn | off 59 | Safe area/Safe/combat/hand/card guard/title/t | Shutter
+29_fight_enemy_turn | out 4 of card spark 121x132, off 193 | Safe area/Safe/combat/hand/card spark/type | Attack
+29_fight_enemy_turn | off 160 | Safe area/Safe/combat/hand/card guard/desc/t | Gain 5 Block.
+29_fight_enemy_turn | off 191 | Safe area/Safe/combat/hand/card guard/type | Skill
+29_fight_enemy_turn | off 178 | Safe area/Safe/combat/hand/card lampglass/desc/t | Gain 3 Block plus 2 for each Flame.
+29_fight_enemy_turn | out 8 of card spark 121x132, off 64 | Safe area/Safe/combat/hand/card spark/cost | 0
+29_fight_enemy_turn | off 71 | Safe area/Safe/combat/hand/card lampglass/title/t | Lamp Glass
+29_fight_enemy_turn | out 4 of card firefly 113x139, off 191 | Safe area/Safe/combat/hand/card firefly/type | Skill
+29_fight_enemy_turn | off 167 | Safe area/Safe/combat/hand/card firefly/desc/t | +1 Flame. Exhaust.
+29_fight_enemy_turn | off 65 | Safe area/Safe/combat/hand/card guard/cost | 1
+29_fight_enemy_turn | off 61 | Safe area/Safe/combat/hand/card firefly/cost | 0
+29_fight_enemy_turn | off 186 | Safe area/Safe/combat/hand/card guard/type | Skill
+29_fight_enemy_turn | off 166 | Safe area/Safe/combat/hand/card guard/desc/t | Gain 5 Block.
+29_fight_enemy_turn | out 11 of card lampglass 85x157, off 74 | Safe area/Safe/combat/hand/card lampglass/cost | 1
+29_fight_enemy_turn | off 68 | Safe area/Safe/combat/hand/card firefly/title/t | Firefly
+29_fight_enemy_turn | off 195 | Safe area/Safe/combat/hand/card lampglass/type | Skill
+29_fight_enemy_turn | off 104 | Safe area/Safe/combat/hand/card spark/title/t | Spark
+29_fight_enemy_turn | off 58 | Safe area/Safe/combat/hand/card guard/cost | 1
+37_quick_reward_gain | out 20 of herobar 400x92 | Safe area/Safe/run/herobar/float | +16 coins
+38_quick_combat_toast | out 11 of card spark 85x157 | Safe area/Safe/combat/hand/card spark/cost | 0
+38_quick_combat_toast | out 4 of card guard 113x139 | Safe area/Safe/combat/hand/card guard/type | Skill
+38_quick_combat_toast | out 7 of card guard 121x132, off 96 | Safe area/Safe/combat/hand/card guard/type | Skill
+38_quick_combat_toast | out 7 of card guard 121x132 | Safe area/Safe/combat/hand/card guard/cost | 1
+38_quick_combat_toast | off 73 | Safe area/Safe/combat/hand/card guard/desc/t | Gain 5 Block.
+32_summary_win | out 3 of ink 35x59 | Top area/Top/achtoast/stamp/ink/c | E
+32_summary_win | out 6 of ink 35x59 | Top area/Top/achtoast/stamp/ink/c | R
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | E
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | R
+59_hero_cards | off 125 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card spark/type | Attack
+59_hero_cards | off 128 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card firefly/type | Skill
+59_hero_cards | off 128 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card lampglass/type | Skill
+59_hero_cards | off 110 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card lampglass/desc/t | Gain 3 Block plus 2 for each Flame.
+59_hero_cards | off 105 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card firefly/desc/t | +1 Flame. Exhaust.
+59_hero_cards | off 104 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card spark/desc/t | Deal 3 damage. +1 Flame.

@@ -1,0 +1,343 @@
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+04_achievements | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+04_achievements | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+04_achievements | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+09_map_toast | out 3 of ink 35x59 | Top area/Top/achtoast/stamp/ink/c | Т
+09_map_toast | out 6 of ink 35x59 | Top area/Top/achtoast/stamp/ink/c | О
+11_fight | out 7 of card guard 121x132 | Safe area/Safe/combat/hand/card guard/cost | 1
+11_fight | out 4 of card guard 113x139 | Safe area/Safe/combat/hand/card guard/type | Навичка
+11_fight | out 8 of card guard 121x132 | Safe area/Safe/combat/hand/card guard/type | Навичка
+11_fight | out 11 of card guard 85x157 | Safe area/Safe/combat/hand/card guard/cost | 1
+11_fight | out 5 of title 76x7 | Safe area/Safe/combat/hand/card guard/title/t | Віконниця
+18_chest | out 30 of chest 170x170 | Safe area/Safe/run/chest/z | z
+20_boss_fight | out 4 of card guard 113x139 | Safe area/Safe/combat/hand/card guard/type | Навичка
+20_boss_fight | out 9 of card strike 85x157 | Safe area/Safe/combat/hand/card strike/cost | 1
+20_boss_fight | out 3 of title 76x7 | Safe area/Safe/combat/hand/card kindle/title/t | Розпалити ґніт
+20_boss_fight | out 7 of card kindle 121x132 | Safe area/Safe/combat/hand/card kindle/cost | 1
+20_boss_fight | out 8 of card kindle 121x132 | Safe area/Safe/combat/hand/card kindle/type | Навичка
+26_fight_toast | out 5 of ink 28x47 | Top area/Top/achtoast/stamp/ink/c | О
+26_fight_toast | out 11 of card kindle 85x157 | Safe area/Safe/combat/hand/card kindle/cost | 1
+26_fight_toast | out 8 of card strike 121x132 | Safe area/Safe/combat/hand/card strike/cost | 1
+26_fight_toast | out 4 of card strike 121x132 | Safe area/Safe/combat/hand/card strike/type | Атака
+26_fight_toast | out 4 of title 63x15 | Safe area/Safe/combat/hand/card strike/title/t | Удар ліхтарем
+26_fight_toast | out 4 of card firefly 113x139 | Safe area/Safe/combat/hand/card firefly/type | Навичка
+27_fight_select | out 5 of desc 83x27 | Safe area/Safe/combat/hand/card lampglass/desc/t | Отримати 3 захисту і ще 2 за кожен Вогни
+27_fight_select | out 8 of card lampglass 121x132 | Safe area/Safe/combat/hand/card lampglass/type | Навичка
+27_fight_select | out 5 of title 76x7 | Safe area/Safe/combat/hand/card lampglass/title/t | Лампове скло
+27_fight_select | out 11 of card guard 85x157 | Safe area/Safe/combat/hand/card guard/cost | 1
+27_fight_select | out 7 of card lampglass 121x132 | Safe area/Safe/combat/hand/card lampglass/cost | 1
+28_fight_hit | out 7 of card guard 90x155 | Safe area/Safe/combat/hand/card guard/cost | 1
+28_fight_hit | out 5 of card strike 117x135 | Safe area/Safe/combat/hand/card strike/cost | 1
+29_fight_enemy_turn | off 170 | Safe area/Safe/combat/hand/card kindle/desc/t | +1 Вогник. Взяти 1 карту.
+29_fight_enemy_turn | off 61 | Safe area/Safe/combat/hand/card kindle/title/t | Розпалити ґніт
+29_fight_enemy_turn | off 171 | Safe area/Safe/combat/hand/card guard/desc/t | Отримати 5 захисту.
+29_fight_enemy_turn | off 173 | Safe area/Safe/combat/hand/card firefly/desc/t | +1 Вогник. Згоряє.
+29_fight_enemy_turn | off 189 | Safe area/Safe/combat/hand/card spark/type | Атака
+29_fight_enemy_turn | off 167 | Safe area/Safe/combat/hand/card spark/desc/t | Завдати 3 шкоди. +1 Вогник.
+29_fight_enemy_turn | off 188 | Safe area/Safe/combat/hand/card guard/type | Навичка
+29_fight_enemy_turn | off 61 | Safe area/Safe/combat/hand/card kindle/cost | 1
+29_fight_enemy_turn | out 5 of card firefly 117x135, off 63 | Safe area/Safe/combat/hand/card firefly/cost | 0
+29_fight_enemy_turn | out 6 of card firefly 117x135, off 194 | Safe area/Safe/combat/hand/card firefly/type | Навичка
+29_fight_enemy_turn | off 71 | Safe area/Safe/combat/hand/card spark/title/t | Іскра
+29_fight_enemy_turn | off 117 | Safe area/Safe/combat/hand/card firefly/title/t | Світлячок
+29_fight_enemy_turn | off 59 | Safe area/Safe/combat/hand/card guard/cost | 1
+29_fight_enemy_turn | off 188 | Safe area/Safe/combat/hand/card kindle/type | Навичка
+29_fight_enemy_turn | off 64 | Safe area/Safe/combat/hand/card guard/title/t | Віконниця
+29_fight_enemy_turn | out 6 of card spark 90x155, off 70 | Safe area/Safe/combat/hand/card spark/cost | 0
+37_quick_reward_gain | out 19 of herobar 400x92 | Safe area/Safe/run/herobar/float | +19 монет
+38_quick_combat_toast | out 11 of card guard 85x157 | Safe area/Safe/combat/hand/card guard/cost | 1
+38_quick_combat_toast | out 4 of title 63x15 | Safe area/Safe/combat/hand/card strike/title/t | Удар ліхтарем
+38_quick_combat_toast | off 64 | Safe area/Safe/combat/hand/card spark/desc/t | Завдати 3 шкоди. +1 Вогник.
+38_quick_combat_toast | off 67 | Safe area/Safe/combat/hand/card strike/desc/t | Завдати 6 шкоди.
+38_quick_combat_toast | out 4 of card strike 121x132, off 92 | Safe area/Safe/combat/hand/card strike/type | Атака
+38_quick_combat_toast | off 87 | Safe area/Safe/combat/hand/card spark/type | Атака
+38_quick_combat_toast | out 8 of card strike 121x132 | Safe area/Safe/combat/hand/card strike/cost | 1
+32_summary_win | out 6 of ink 35x59 | Top area/Top/achtoast/stamp/ink/c | О
+32_summary_win | out 3 of ink 35x59 | Top area/Top/achtoast/stamp/ink/c | Т
+41_cx_hero | out 3 of txt 237x89 | Top area/Top/overlay/inner/sheet/scroll/content/cxhead/txt/sub | Ліхтарниця · Вогники й Спалахи
+44_cx_cards | off 794 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card umbrella/type | Навичка
+44_cx_cards | off 2133 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card firebird/desc/t | На початку кожного ходу +2 Вогники і Під
+44_cx_cards | off 2131 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card eternalwinter/desc/t | На початку кожного ходу ворог втрачає 2 
+44_cx_cards | off 1228 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card finale/desc/t | 4 шкоди за кожну карту цього ходу, врахо
+44_cx_cards | off 4493 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card blot/desc/t | Нічого не робить.
+44_cx_cards | off 3117 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card gingerbread/desc/t | Завдати 3 шкоди. Отримати 3 захисту. Зго
+44_cx_cards | off 1096 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card lullaby/type | Навичка
+44_cx_cards | off 2929 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card poker/type | Атака
+44_cx_cards | off 1096 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card breath/type | Навичка
+44_cx_cards | off 35 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card snowball/type | Атака
+44_cx_cards | off 488 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card stamp/type | Атака
+44_cx_cards | off 945 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card blotter/type | Навичка
+44_cx_cards | off 1984 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card lastlight/desc/t | Завдати 30 шкоди й викликати Спалах ламп
+44_cx_cards | off 2539 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card urgent/type | Атака
+44_cx_cards | off 327 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card icelantern/desc/t | Ворог Вразливий на 1 хід. Взяти 1 карту.
+44_cx_cards | off 1243 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card lastword/type | Атака
+44_cx_cards | off 18 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card heavybag/desc/t | Завдати 10 шкоди. Отримати 6 захисту.
+44_cx_cards | off 23 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card snowball/desc/t | Завдати 5 шкоди. У цьому бою шкода зрост
+44_cx_cards | off 4317 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card livingwater/type | Навичка
+44_cx_cards | off 2533 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card rushmail/desc/t | Серія: +1 енергія за кожні 2 карти перед
+44_cx_cards | off 35 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card icethrow/type | Атака
+44_cx_cards | off 3606 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card steelring/desc/t | Завдати по 3 шкоди за кожну покращену ка
+44_cx_cards | off 2917 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card poker/desc/t | Завдати 6 шкоди. Двічі, якщо ворог горит
+44_cx_cards | off 2002 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card bonfire/type | Навичка
+44_cx_cards | off 772 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card surprise/desc/t | Доставка: завдати 14 шкоди.
+44_cx_cards | off 628 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card cocoa/desc/t | Рішучість +2 до кінця ходу.
+44_cx_cards | off 4511 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card blot/type | Перешкода
+44_cx_cards | off 2149 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card firebird/type | Чари
+44_cx_cards | off 794 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card parcel/type | Навичка
+44_cx_cards | off 1689 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card returnaddr/desc/t | Повернути в руку 2 останні карти зі скид
+44_cx_cards | off 2149 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card eternalwinter/type | Чари
+44_cx_cards | off 1696 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card avalanche/type | Атака
+44_cx_cards | off 2531 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card express/desc/t | Отримати 4 захисту. Доставка: +1 енергія
+44_cx_cards | off 643 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card prickly/type | Навичка
+44_cx_cards | off 1377 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card eveninglamp/desc/t | На початку кожного ходу +1 Вогник.
+44_cx_cards | off 1545 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card compass/type | Чари
+44_cx_cards | off 2002 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card chimes/type | Навичка
+44_cx_cards | off 3275 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card gingerhouse/type | Чари
+44_cx_cards | off 1545 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card hearth/type | Чари
+44_cx_cards | off 3959 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card howl/desc/t | Подвоїти Злість Дружка. Він одразу кусає
+44_cx_cards | off 190 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sbiten/type | Навичка
+44_cx_cards | off 3805 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card bone/desc/t | Злість Дружка +3. Згоряє.
+44_cx_cards | off 1243 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card finale/type | Атака
+44_cx_cards | off 1851 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card iceprison/type | Навичка
+44_cx_cards | off 477 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card kindling/desc/t | Підпал 4. Взяти 1 карту.
+44_cx_cards | off 2918 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card fan/desc/t | Подвоїти Підпал ворога. Згоряє.
+44_cx_cards | off 926 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card inkpen/desc/t | Кожна ваша Навичка завдає ворогові 2 шко
+44_cx_cards | off 1525 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card rhythm/desc/t | Кожна третя карта за хід: +1 Вогник.
+44_cx_cards | off 481 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card redseal/desc/t | Ворог Вразливий на 2 ходи. Взяти 1 карту
+44_cx_cards | off 3261 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card fair/desc/t | Завдати по 3 шкоди за кожен Пряник, з’їд
+44_cx_cards | off 643 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card frostlace/type | Навичка
+44_cx_cards | off 779 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card telegram/desc/t | Доставка: взяти 2 карти.
+44_cx_cards | off 341 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card icelantern/type | Навичка
+44_cx_cards | off 1228 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card lastword/desc/t | Завдати 10 шкоди. Якщо ворога переможено
+44_cx_cards | off 3801 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card wolfhound/desc/t | Наприкінці кожного ходу Дружок кусає ще 
+44_cx_cards | off 325 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card cancel/desc/t | Завдати 6 шкоди. Двічі, якщо ворог Вразл
+44_cx_cards | off 492 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card kindling/type | Навичка
+44_cx_cards | off 4498 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card dread/desc/t | Не можна розіграти. Якщо наприкінці ходу
+44_cx_cards | off 3820 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sic/type | Навичка
+44_cx_cards | off 169 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sledram/desc/t | Завдати 5 шкоди. Доставка: +1 енергія.
+44_cx_cards | off 3128 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card gingerbread/type | Навичка
+44_cx_cards | off 4166 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sleepgrass/type | Навичка
+44_cx_cards | off 3820 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card bone/type | Навичка
+44_cx_cards | off 3470 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card apprentice/type | Чари
+44_cx_cards | off 330 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card carbon/desc/t | Повторити попередню карту цього ходу.
+44_cx_cards | off 3474 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card oselok/type | Навичка
+44_cx_cards | off 4146 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card wormwood/desc/t | Ціна 3. +2 енергії.
+44_cx_cards | off 35 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card flurry/type | Атака
+44_cx_cards | off 4502 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card icy/desc/t | Не можна розіграти. Тане наприкінці ходу
+44_cx_cards | off 1398 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card pockethog/type | Навичка
+44_cx_cards | off 190 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card patch/type | Навичка
+44_cx_cards | off 337 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card cancel/type | Атака
+44_cx_cards | off 3275 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card fair/type | Атака
+44_cx_cards | off 179 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sbiten/desc/t | Відновити 3 HP. Взяти 1 карту. Згоряє.
+44_cx_cards | off 3128 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card glaze/type | Навичка
+44_cx_cards | off 4166 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card wormwood/type | Навичка
+44_cx_cards | off 4511 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card dread/type | Перешкода
+44_cx_cards | off 179 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card hornblow/desc/t | Отримати 5 захисту. Рішучість +2 до кінц
+44_cx_cards | off 2727 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card icewall/desc/t | Отримати 13 захисту. Ворог втрачає 1 Сил
+44_cx_cards | off 1075 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card blaze/desc/t | Підпал 8. +1 Вогник.
+44_cx_cards | off 35 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card heavybag/type | Атака
+44_cx_cards | off 2724 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card hedge/desc/t | Шипи 2. Отримати стільки захисту, скільк
+44_cx_cards | off 492 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card redseal/type | Навичка
+44_cx_cards | off 1831 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card starfall/desc/t | Завдати 4 шкоди 3 рази. Після кожного уд
+44_cx_cards | off 643 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card whistle/type | Навичка
+44_cx_cards | off 1398 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card drafts/type | Навичка
+44_cx_cards | off 2522 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card urgent/desc/t | Завдати 3 шкоди. Взяти 1 карту.
+44_cx_cards | off 2330 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card beam/desc/t | Завдати 10 шкоди. Спалах лампи без витра
+44_cx_cards | off 4499 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sealwax/desc/t | Не можна розіграти. Запечатує місце в ру
+44_cx_cards | off 3128 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card dough/type | Навичка
+44_cx_cards | off 774 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card parcel/desc/t | Доставка: +2 енергії.
+44_cx_cards | off 4144 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card bitterroot/desc/t | Ціна 2. Завдати 11 шкоди.
+44_cx_cards | off 3971 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card howl/type | Навичка
+44_cx_cards | off 1679 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card avalanche/desc/t | Завдати по 2 шкоди за кожну карту в скид
+44_cx_cards | off 926 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card palm/desc/t | Витратити всі Вогники. 7 шкоди за кожен.
+44_cx_cards | off 4511 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card icy/type | Перешкода
+44_cx_cards | off 3621 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card steelring/type | Атака
+44_cx_cards | off 4154 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sleepgrass/desc/t | Ціна 4. Ворог засинає й пропускає свій н
+44_cx_cards | off 4166 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card chamomile/type | Навичка
+44_cx_cards | off 1526 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card compass/desc/t | Щоходу брати на 1 карту більше.
+44_cx_cards | off 3470 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card gritsparks/type | Атака
+44_cx_cards | off 4511 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sealwax/type | Перешкода
+44_cx_cards | off 337 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card snowstorm/type | Атака
+44_cx_cards | off 1247 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card flashpoint/type | Навичка
+44_cx_cards | off 1998 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card registered/type | Атака
+44_cx_cards | off 322 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card snowstorm/desc/t | Завдати 2 шкоди 5 разів. Ворог Ослаблени
+44_cx_cards | off 1387 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card drafts/desc/t | Спалити решту карт у руці. +1 Вогник за 
+44_cx_cards | off 1084 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card lullaby/desc/t | Ворог засинає й пропускає свій наступний
+44_cx_cards | off 1096 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card blaze/type | Навичка
+44_cx_cards | off 1398 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card drift/type | Навичка
+44_cx_cards | off 2933 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card flue/type | Навичка
+44_cx_cards | off 3259 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card gingerhouse/desc/t | Кожен зіграний Пряник завдає ворогові ще
+44_cx_cards | off 4644 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card stale/desc/t | Нічого не робить.
+44_cx_cards | off 3808 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card heel/desc/t | Отримати 4 захисту і ще стільки, скільки
+44_cx_cards | off 1096 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card shadow/type | Навичка
+44_cx_cards | off 1986 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card bonfire/desc/t | Підпал 10. Відновити 4 HP.
+44_cx_cards | off 1847 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card starfall/type | Атака
+44_cx_cards | off 3124 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card rollingpin/type | Атака
+44_cx_cards | off 1990 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card chimes/desc/t | До кінця ходу всі карти коштують 0. Взят
+44_cx_cards | off 2734 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card standfast/type | Чари
+44_cx_cards | off 1696 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card aurora/type | Чари
+44_cx_cards | off 3462 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card hone/desc/t | Отримати 5 захисту. Нагострити 1 карту в
+44_cx_cards | off 2719 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card standfast/desc/t | Захист більше не згоряє на початку ходу.
+44_cx_cards | off 2344 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card beam/type | Атака
+44_cx_cards | off 1236 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card flashpoint/desc/t | Спалах лампи без витрати Вогників. Згоря
+44_cx_cards | off 4662 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card ash/type | Перешкода
+44_cx_cards | off 2738 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card hedge/type | Навичка
+44_cx_cards | off 4662 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card stale/type | Перешкода
+44_cx_cards | off 2933 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card fan/type | Навичка
+44_cx_cards | off 18 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card icethrow/desc/t | Завдати 6 шкоди. Ворог втрачає 1 Силу.
+44_cx_cards | off 2543 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card rushmail/type | Навичка
+44_cx_cards | off 1700 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card returnaddr/type | Навичка
+44_cx_cards | off 1529 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card hearth/desc/t | На початку кожного ходу Підпал 3.
+44_cx_cards | off 1998 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card lastlight/type | Атака
+44_cx_cards | off 341 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card carbon/type | Навичка
+44_cx_cards | off 926 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card mittens/desc/t | На початку кожного ходу 3 захисту.
+44_cx_cards | off 1700 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card moneyorder/type | Навичка
+44_cx_cards | off 474 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card stamp/desc/t | Завдати 6 шкоди. Ворог Вразливий на 1 хі
+44_cx_cards | off 1229 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card secret/desc/t | Завдати 8 шкоди. Кожен хід у руці: +4 шк
+44_cx_cards | off 3809 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sic/desc/t | Злість Дружка +1. Дружок одразу кусає.
+44_cx_cards | off 3456 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card gritsparks/desc/t | Завдати 4 шкоди, +2 за кожну покращену к
+44_cx_cards | off 1851 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card poste/type | Навичка
+44_cx_cards | off 2348 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card firefly/type | Навичка
+44_cx_cards | off 790 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card surprise/type | Атака
+44_cx_cards | off 2738 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card icewall/type | Навичка
+44_cx_cards | off 1530 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card stubborn/desc/t | На початку кожного ходу Рішучість +1.
+44_cx_cards | off 4649 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card ash/desc/t | Не можна розіграти. Якщо наприкінці ходу
+44_cx_cards | off 1085 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card shadow/desc/t | Ворог Ослаблений на 2 ходи. Взяти 1 карт
+44_cx_cards | off 779 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card umbrella/desc/t | Отримати 7 захисту. Утримання.
+44_cx_cards | off 3820 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card heel/type | Навичка
+44_cx_cards | off 3474 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card hone/type | Навичка
+44_cx_cards | off 1681 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card aurora/desc/t | На початку кожного ходу +1 енергія.
+44_cx_cards | off 2328 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card firefly/desc/t | +1 Вогник. Згоряє.
+44_cx_cards | off 4162 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card bitterroot/type | Атака
+44_cx_cards | off 1545 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card stubborn/type | Чари
+44_cx_cards | off 472 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card nightshift/desc/t | Наприкінці ходу 3 захисту за кожну невит
+44_cx_cards | off 643 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card cocoa/type | Навичка
+44_cx_cards | off 2348 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card lampglass/type | Навичка
+44_cx_cards | off 3454 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card apprentice/desc/t | На початку кожного ходу нагострити ще 2 
+44_cx_cards | off 1545 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card rhythm/type | Чари
+44_cx_cards | off 21 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card flurry/desc/t | Серія: 3 шкоди, +3 за кожну карту перед 
+44_cx_cards | off 2543 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card express/type | Навичка
+44_cx_cards | off 4307 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card livingwater/desc/t | Відновити стільки HP, скільки ви заплати
+44_cx_cards | off 1839 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card poste/desc/t | Доставка: безплатно розіграти 2 верхні к
+44_cx_cards | off 3113 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card dough/desc/t | Покласти в руку 2 Пряники.
+44_cx_cards | off 941 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card mittens/type | Чари
+44_cx_cards | off 1243 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card secret/type | Атака
+44_cx_cards | off 1841 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card iceprison/desc/t | Отримати 10 захисту. Ворог втрачає 4 Сил
+44_cx_cards | off 488 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card nightshift/type | Чари
+44_cx_cards | off 936 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card blotter/desc/t | Взяти 1 карту. Спалити перешкоди в руці 
+44_cx_cards | off 794 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card telegram/type | Навичка
+44_cx_cards | off 941 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card palm/type | Атака
+44_cx_cards | off 1841 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card frostbite/desc/t | Ворог Вразливий на 2 ходи, Ослаблений на
+44_cx_cards | off 190 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card hornblow/type | Навичка
+44_cx_cards | off 2335 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card lampglass/desc/t | Отримати 3 захисту і ще 2 за кожен Вогни
+44_cx_cards | off 186 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card sledram/type | Атака
+44_cx_cards | off 1076 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card breath/desc/t | +2 енергії. Згоряє.
+44_cx_cards | off 179 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card patch/desc/t | Отримати 6 захисту. Спалити перешкоди в 
+44_cx_cards | off 1987 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card registered/desc/t | Завдати 6 шкоди. Кожен хід у руці шкода 
+44_cx_cards | off 3112 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card rollingpin/desc/t | Завдати 6 шкоди. Покласти в руку Пряник.
+44_cx_cards | off 1383 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card pockethog/desc/t | Шипи 5 до кінця бою. Згоряє.
+44_cx_cards | off 3116 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card glaze/desc/t | Отримати 6 захисту. До кінця бою всі Пря
+44_cx_cards | off 1394 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card eveninglamp/type | Чари
+44_cx_cards | off 4153 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card chamomile/desc/t | Отримати 5 захисту. Відновити 3 HP.
+44_cx_cards | off 632 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card frostlace/desc/t | Ворог втрачає 2 Сили. Отримати 4 захисту
+44_cx_cards | off 1851 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card frostbite/type | Навичка
+44_cx_cards | off 1688 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card moneyorder/desc/t | Доставка: +1 енергія, 2 карти і 15 монет
+44_cx_cards | off 628 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card whistle/desc/t | Рішучість +1 до кінця бою. Згоряє.
+44_cx_cards | off 3463 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card oselok/desc/t | Нагострити всі карти в руці. Згоряє.
+44_cx_cards | off 628 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card prickly/desc/t | Отримати 4 захисту. Шипи 2.
+44_cx_cards | off 2920 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card flue/desc/t | Підпал 3. Отримати стільки захисту, скіл
+44_cx_cards | off 1377 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card drift/desc/t | Подвоїти захист.
+44_cx_cards | off 941 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card inkpen/type | Чари
+44_cx_cards | off 3816 | Top area/Top/overlay/inner/sheet/scroll/content/cxrow/cxtile/card wolfhound/type | Чари
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+50_ach_path | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+50_ach_path | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+50_ach_path | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+51_ach_fight | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+51_ach_fight | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+52_ach_collect | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+52_ach_collect | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+52_ach_collect | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+53_ach_story | out 30 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/waves | ~~~ ~~~ ~~~
+53_ach_story | out 4 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | Т
+53_ach_story | out 7 of ink 44x72 | Top area/Top/overlay/inner/sheet/scroll/content/arow/stamp/ink/c | О
+59_hero_cards | off 128 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card firefly/type | Навичка
+59_hero_cards | off 115 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card lampglass/desc/t | Отримати 3 захисту і ще 2 за кожен Вогни
+59_hero_cards | off 108 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card firefly/desc/t | +1 Вогник. Згоряє.
+59_hero_cards | off 125 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card spark/type | Атака
+59_hero_cards | off 128 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card lampglass/type | Навичка
+59_hero_cards | off 104 | Top area/Top/overlay/inner/cards/scroll/content/line/slot/card spark/desc/t | Завдати 3 шкоди. +1 Вогник.
