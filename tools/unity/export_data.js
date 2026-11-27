@@ -120,6 +120,9 @@ for (const lang of ['ru', 'en', 'uk']) {
     for (const k of Object.keys(dict)) {
       if (typeof dict[k] === 'string') strings[k] = dict[k]; else fns.push(k);
     }
+    // строки, которые есть только в Unity (магазин площадки, реклама, политика): переводы лежат рядом со скриптом
+    const extra = JSON.parse(fs.readFileSync(path.join(__dirname, 'unity_strings.json'), 'utf8'))[lang] || {};
+    for (const k of Object.keys(extra)) if (!(k in strings)) strings[k] = extra[k];
     report.functionStrings[lang] = fns;
     report.counts[lang].strings = Object.keys(strings).length;
     fs.writeFileSync(path.join(OUT, `strings.${lang}.json`), JSON.stringify(strings, null, 1));

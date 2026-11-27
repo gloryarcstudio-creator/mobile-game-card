@@ -1217,5 +1217,14 @@
  "Карта героя: {name}": "Hero card: {name}",
  "Слева обычная, справа улучшенная": "Left: normal. Right: upgraded",
  "Подкидывают: {list}": "Slipped in by: {list}",
- "Ещё не встречалось в игре": "Not encountered yet"
+ "Ещё не встречалось в игре": "Not encountered yet",
+ "Магазин сейчас недоступен. Проверьте интернет и попробуйте ещё раз.": "The store is unavailable right now. Check your internet connection and try again.",
+ "Покупка ждёт подтверждения. Товар откроется, как только оплата пройдёт.": "The purchase is awaiting confirmation. The item will unlock as soon as the payment goes through.",
+ "Покупка не прошла. Деньги не списаны.": "The purchase did not go through. You have not been charged.",
+ "Покупка открыта: {name}": "Purchase unlocked: {name}",
+ "Реклама сейчас недоступна. Проверьте интернет и попробуйте чуть позже.": "Ads are unavailable right now. Check your internet connection and try again a bit later.",
+ "Согласие на рекламу": "Ad consent",
+ "Спрашиваем магазин…": "Asking the store…",
+ "Этот товар пока недоступен в магазине.": "This item is not available in the store yet.",
+ "Политика конфиденциальности": "Privacy policy"
 }

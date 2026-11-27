@@ -124,9 +124,17 @@ namespace Fitil.Game
                 link.Pref(304, 30);
                 Link(link, Loc.Tr("Согласие на рекламу"));
             }
+            // политика конфиденциальности студии: раздел этой игры на сайте
+            {
+                var link = Ui.Hit("policy", col, () => { Sound.Sfx("click"); Application.OpenURL(PolicyUrl); });
+                link.Pref(304, 30);
+                Link(link, Loc.Tr("Политика конфиденциальности"));
+            }
             var foot = Ui.Label("sfoot", col, Loc.Tr("Версия {v}", ("v", Application.version)), 12, new Color(1, 1, 1, 0.6f), TextAnchor.MiddleLeft);
             foot.Pref(304, 18);
         }
+
+        public const string PolicyUrl = "https://protekgames.com/privacy/#last-ray";
 
         // подчёркнутая ссылка шрифтом заголовков (.slink)
         static void Link(Component link, string text)
